@@ -16,7 +16,10 @@ public class Hongo {
     @Column(name = "HONGO_NOMBRE")
     private String nombre;
 
-    @Column(name = "HONGO_TIPO")
     @Enumerated(EnumType.STRING)
+    @Column(name = "HONGO_TIPO")
     private tipoHongo tipo;
+
+    @Column(name = "HONGO_ACTIVO")
+    private boolean activo;
 }

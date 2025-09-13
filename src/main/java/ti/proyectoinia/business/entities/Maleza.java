@@ -16,5 +16,6 @@ public class Maleza {
     @Column(name = "MALEZA_NOMBRE")
     private String nombre;
 
-
+    @Column(name = "MAlEZA_ACTIVO")
+    private boolean activo;
 }
