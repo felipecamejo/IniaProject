@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>ti</groupId>
-    <artifactId>proyectojava</artifactId>
+    <artifactId>proyectoInia</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Projecto Java EE</name>
-    <description>Proyecto para el taller</description>
+    <name>Projecto Inia</name>
+    <description>Proyecto para la empresa Inia</description>
     <url/>
     <licenses>
         <license/>

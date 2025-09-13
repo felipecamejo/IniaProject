@@ -1,4 +1,4 @@
-package ti.proyectojava;
+package ti.proyectoinia;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,7 +11,7 @@ import java.util.TimeZone;
 @SpringBootApplication
 @EnableScheduling
 @EnableAsync
-public class ProjectoJavaEeApplication {
+public class ProjectoIniaApplication {
 
 	@PostConstruct
 	void started() {
@@ -19,7 +19,7 @@ public class ProjectoJavaEeApplication {
 	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(ProjectoJavaEeApplication.class, args);
+		SpringApplication.run(ProjectoIniaApplication.class, args);
 	}
 
 }
