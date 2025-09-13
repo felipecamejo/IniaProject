@@ -50,4 +50,7 @@ public class Recibo {
 
     @Column(name = "ARTICULO")
     private int articulo;
+
+    @Column(name = "RECIBO_ACTIVO")
+    private boolean activo;
 }

@@ -44,4 +44,7 @@ public class Pureza {
 
     @Column(name = "ESTANDAR")
     private boolean estandar;
+
+    @Column(name = "PUREZA_ACTIVO")
+    private boolean activo;
 }

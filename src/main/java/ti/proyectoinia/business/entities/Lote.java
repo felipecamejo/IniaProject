@@ -15,4 +15,7 @@ public class Lote {
 
     @Column(name = "LOTE_NOMBRE")
     private String nombre;
+
+    @Column(name = "LOTE_ACTIVO")
+    private boolean activo;
 }

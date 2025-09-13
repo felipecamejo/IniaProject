@@ -30,4 +30,7 @@ public class PMS {
 
     @Column(name = "OBSERVACIONES")
     private String observaciones;
+
+    @Column(name = "PMS_ACTIVO")
+    private boolean activo;
 }
