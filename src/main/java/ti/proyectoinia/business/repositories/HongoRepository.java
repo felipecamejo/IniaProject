@@ -4,7 +4,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import ti.proyectoinia.business.entities.Hongo;
 
+import java.util.List;
+
 @Repository
 public interface HongoRepository  extends JpaRepository<Hongo, Long> {
 
+    List<Hongo> findByActivoTrue();
 }

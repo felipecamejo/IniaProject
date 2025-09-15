@@ -2,14 +2,11 @@ package ti.proyectoinia.api.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.Generated;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import ti.proyectoinia.api.responses.ResponseListadoHongos;
-import ti.proyectoinia.business.entities.Hongo;
 import ti.proyectoinia.dtos.HongoDto;
 import ti.proyectoinia.services.HongoService;
 
@@ -23,7 +20,6 @@ public class HongoController {
     public HongoController(HongoService hongoService) {
         this.hongoService = hongoService;
     }
-
 
     @PostMapping({"/crear"})
     @Secured({"ADMIN"})
@@ -46,8 +42,18 @@ public class HongoController {
 
     @GetMapping({"/listar"})
     public ResponseEntity<ResponseListadoHongos> getHongos() {
-        ResponseListadoHongos response = this.hongoService.listadoHongos();
-        return new ResponseEntity(response, HttpStatus.OK);
+        ResponseListadoHongos response = this.hongoService.listadoHongos().getBody();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping({"/{id}"})
+    public ResponseEntity<?> getHongoById(@PathVariable Long id) {
+        HongoDto hongoDto = this.hongoService.obtenerHongoPorId(id);
+        if (hongoDto != null) {
+            return new ResponseEntity<>(hongoDto, HttpStatus.OK);
+        } else {
+            return new ResponseEntity("Hongo no encontrado", HttpStatus.NOT_FOUND);
+        }
     }
 
     @PutMapping({"/editar"})
@@ -69,10 +75,9 @@ public class HongoController {
     @Operation(
             description = "Esta Funcion elimina un hongo"
     )
-    public ResponseEntity<String> eliminarPersona(@RequestBody Long id) {
+    public ResponseEntity<String> eliminarHongo(@RequestBody Long id) {
         try {
-            Hongo hongo = this.hongoService.eliminarHongo(id);
-            String mensaje = "Hongo eliminado correctamente. ID:" + hongo.getId();
+            String mensaje = this.hongoService.eliminarHongo(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Hongo: " + e.getMessage());
