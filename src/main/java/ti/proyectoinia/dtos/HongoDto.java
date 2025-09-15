@@ -4,6 +4,8 @@ import lombok.Generated;
 import lombok.Getter;
 import ti.proyectoinia.business.entities.tipoHongo;
 
+import java.util.Objects;
+
 public class HongoDto {
     
     @Getter
@@ -15,45 +17,12 @@ public class HongoDto {
 
     @Generated
     public boolean equals(final Object o) {
-        if (o == this) {
-            return true;
-        } else if (!(o instanceof HongoDto)) {
-            return false;
-        } else {
-            HongoDto other = (HongoDto)o;
-            if (!other.canEqual(this)) {
-                return false;
-            } else {
-                Object this$id = this.getId();
-                Object other$id = other.getId();
-                if (this$id == null) {
-                    if (other$id != null) {
-                        return false;
-                    }
-                } else if (!this$id.equals(other$id)) {
-                    return false;
-                }
-                Object this$nombre = this.getNombre();
-                Object other$nombre = other.getNombre();
-                if (this$nombre == null) {
-                    if (other$nombre != null) {
-                        return false;
-                    }
-                } else if (!this$nombre.equals(other$nombre)) {
-                    return false;
-                }
-                Object this$tipo = this.getTipo();
-                Object other$tipo = other.getTipo();
-                if (this$tipo == null) {
-                    if (other$tipo != null) {
-                        return false;
-                    }
-                } else if (!this$tipo.equals(other$tipo)) {
-                    return false;
-                }
-                return true;
-            }
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        HongoDto that = (HongoDto) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(nombre, that.nombre) &&
+                Objects.equals(tipo, that.tipo);
     }
 
     @Generated
