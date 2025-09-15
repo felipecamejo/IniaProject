@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import ti.proyectoinia.business.entities.Maleza;
 
 @Repository
-public interface MalezaRerpository extends JpaRepository<Long, Maleza> {
+public interface MalezaRerpository extends JpaRepository<Maleza, Long> {
 }

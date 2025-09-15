@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository;
 import ti.proyectoinia.business.entities.Hongo;
 
 @Repository
-public interface HongoRepository  extends JpaRepository<Long, Hongo> {
+public interface HongoRepository  extends JpaRepository<Hongo, Long> {
 
 }

@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import ti.proyectoinia.business.entities.Sanitario;
 
 @Repository
-public interface SanitarioRepository extends JpaRepository<Long, Sanitario> {
+public interface SanitarioRepository extends JpaRepository<Sanitario, Long> {
 }
