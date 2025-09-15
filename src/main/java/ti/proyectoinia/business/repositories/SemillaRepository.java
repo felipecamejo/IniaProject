@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import ti.proyectoinia.business.entities.Semilla;
 
 @Repository
-public interface SemillaRepository extends JpaRepository<Long, Semilla>{
+public interface SemillaRepository extends JpaRepository<Semilla, Long>{
 }

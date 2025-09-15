@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import ti.proyectoinia.business.entities.Cultivo;
 
 @Repository
-public interface CultivoRepository extends JpaRepository<Long, Cultivo>{
+public interface CultivoRepository extends JpaRepository<Cultivo, Long>{
 }

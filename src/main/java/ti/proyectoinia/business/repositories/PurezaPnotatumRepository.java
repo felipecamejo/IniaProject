@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import ti.proyectoinia.business.entities.PurezaPnotatum;
 
 @Repository
-public interface PurezaPnotatumRepository extends JpaRepository<Long, PurezaPnotatum>{
+public interface PurezaPnotatumRepository extends JpaRepository<PurezaPnotatum, Long>{
 }

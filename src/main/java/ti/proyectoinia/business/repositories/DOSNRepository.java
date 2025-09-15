@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import ti.proyectoinia.business.entities.DOSN;
 
 @Repository
-public interface DOSNRepository extends JpaRepository<Long, DOSN>{
+public interface DOSNRepository extends JpaRepository<DOSN, Long>{
 }
