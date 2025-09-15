@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository;
 import ti.proyectoinia.business.entities.Germinacion;
 
 @Repository
-public interface GerminacionRepository extends JpaRepository<Long, Germinacion> {
+public interface GerminacionRepository extends JpaRepository<Germinacion, Long> {
 
 }

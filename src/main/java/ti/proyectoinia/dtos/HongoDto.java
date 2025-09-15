@@ -1,18 +1,18 @@
 package ti.proyectoinia.dtos;
 
+import lombok.Data;
 import lombok.Generated;
-import lombok.Getter;
+
 import ti.proyectoinia.business.entities.tipoHongo;
 
 import java.util.Objects;
 
+@Data
 public class HongoDto {
     
-    @Getter
+
     private Long id;
-    @Getter
     private String nombre;
-    @Getter
     private tipoHongo tipo;
 
     @Generated
@@ -46,5 +46,5 @@ public class HongoDto {
     public String toString() {
         return "HongoDto(id=" + this.getId() + ", nombre=" + this.getNombre() + ", tipo=" + String.valueOf(this.getTipo()) + ")";
     }
-    
+
 }
