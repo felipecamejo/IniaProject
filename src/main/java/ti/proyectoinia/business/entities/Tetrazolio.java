@@ -95,4 +95,7 @@ public class Tetrazolio {
 
     @Column(name = "TETRAZOLIO_DANIOS_POR_PORCENTAJES")
     private Integer daniosPorPorcentajes;
+
+    @Column(name = "TETRAZOLIO_ACTIVO")
+    private boolean activo;
 }

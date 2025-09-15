@@ -44,4 +44,7 @@ public class DOSN {
 
     @Column(name = "DOSN_FECHA_ANALISIS")
     private LocalDateTime fechaAnalisis;
+
+    @Column(name = "DOSN_ACTIVO")
+    private boolean activo;
 }
