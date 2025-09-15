@@ -15,4 +15,7 @@ public class Cultivo {
 
     @Column(name = "CULTIVO_NOMBRE")
     private String nombre;
+
+    @Column(name = "CULTIVO_ACTIVO")
+    private boolean activo;
 }

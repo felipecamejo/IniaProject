@@ -36,4 +36,7 @@ public class PurezaPnotatum {
 
     @Column(name = "PUREZA_SEMILLAS_LS")
     private float semillasLS;
+
+    @Column(name = "PUREZA_ACTIVO")
+    private boolean activo;
 }

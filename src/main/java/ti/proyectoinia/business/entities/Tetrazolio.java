@@ -16,10 +16,10 @@ public class Tetrazolio {
     private Integer tetrazolioId;
 
     @Column(name = "TETRAZOLIO_REPETICION")
-    private int repeticion;
+    private Integer repeticion;
 
     @Column(name = "TETRAZOLIO_NRO_SEMILLAS_POR_REPETICION")
-    private int nroSemillasPorRepeticion;
+    private Integer nroSemillasPorRepeticion;
 
     @ManyToOne
     @JoinColumn(name = "PRETRATAMIENTO_ID")
@@ -56,43 +56,46 @@ public class Tetrazolio {
     private float promedio;
 
     @Column(name = "TETRAZOLIO_PORCENTAJE")
-    private int porcentaje;
+    private Integer porcentaje;
 
     @ManyToOne
     @JoinColumn(name = "VIABILIDAD_TZ_ID")
     private ViabilidadPorTz viabilidadPorTetrazolio;
 
     @Column(name = "TETRAZOLIO_NRO_SEMILLAS")
-    private int nroSemillas;
+    private Integer nroSemillas;
 
     @Column(name = "TETRAZOLIO_DANIOS_NRO_SEMILLAS")
-    private int daniosNroSemillas;
+    private Integer daniosNroSemillas;
 
     @Column(name = "TETRAZOLIO_DANIOS_MECANICOS")
-    private int daniosMecanicos;
+    private Integer daniosMecanicos;
 
     @Column(name = "TETRAZOLIO_DANIO_AMBIENTE")
-    private int danioAmbiente;
+    private Integer danioAmbiente;
 
     @Column(name = "TETRAZOLIO_DANIOS_CHINCHES")
-    private int daniosChinches;
+    private Integer daniosChinches;
 
     @Column(name = "TETRAZOLIO_DANIOS_FRACTURAS")
-    private int daniosFracturas;
+    private Integer daniosFracturas;
 
     @Column(name = "TETRAZOLIO_DANIOS_OTROS")
-    private int daniosOtros;
+    private Integer daniosOtros;
 
     @Column(name = "TETRAZOLIO_DANIOS_DURAS")
-    private int daniosDuras;
+    private Integer daniosDuras;
 
     @ManyToOne
     @JoinColumn(name = "VIABILIDAD_VIGOR_TZ_ID")
     private ViabilidadVigorTZ viabilidadVigorTz;
 
     @Column(name = "TETRAZOLIO_PORCENTAJE_FINAL")
-    private int porcentajeFinal;
+    private Integer porcentajeFinal;
 
     @Column(name = "TETRAZOLIO_DANIOS_POR_PORCENTAJES")
-    private int daniosPorPorcentajes;
+    private Integer daniosPorPorcentajes;
+
+    @Column(name = "TETRAZOLIO_ACTIVO")
+    private boolean activo;
 }

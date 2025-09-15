@@ -15,4 +15,7 @@ public class Semilla {
 
     @Column(name = "SEMILLA_NRO_SEMILLAS_PURA")
     private int nroSemillasPura;
+
+    @Column(name = "SEMILLA_ACTIVO")
+    private boolean activo;
 }
