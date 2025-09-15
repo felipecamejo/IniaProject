@@ -29,14 +29,14 @@ public class HongoController {
     public ResponseEntity<String> crearHongo(@RequestBody HongoDto hongoDto) {
         if (hongoDto.getNombre() != null && !hongoDto.getNombre().trim().isEmpty()) {
             if (hongoDto.getNombre().matches(".*\\d.*")) {
-                return new ResponseEntity("El nombre del Hongo no puede contener números", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>("El nombre del Hongo no puede contener números", HttpStatus.BAD_REQUEST);
             }
             hongoDto.setId((Long)null);
             String response = this.hongoService.crearHongo(hongoDto);
-            return new ResponseEntity(response, HttpStatus.CREATED);
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
 
         } else {
-            return new ResponseEntity("El nombre del Hongo es obligatorio", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("El nombre del Hongo es obligatorio", HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -52,7 +52,7 @@ public class HongoController {
         if (hongoDto != null) {
             return new ResponseEntity<>(hongoDto, HttpStatus.OK);
         } else {
-            return new ResponseEntity("Hongo no encontrado", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Hongo no encontrado", HttpStatus.NOT_FOUND);
         }
     }
 
@@ -61,12 +61,12 @@ public class HongoController {
     public ResponseEntity<String> editarHongo(@RequestBody HongoDto hongoDto) {
         if (hongoDto.getNombre() != null && !hongoDto.getNombre().trim().isEmpty()) {
             if (hongoDto.getNombre().matches(".*\\d.*")) {
-                return new ResponseEntity("El nombre del cliente no puede contener números", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>("El nombre del cliente no puede contener números", HttpStatus.BAD_REQUEST);
             }
             String result = this.hongoService.editarHongo(hongoDto);
             return ResponseEntity.ok(result);
         } else {
-            return new ResponseEntity("El nombre del Hongo es obligatorio", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("El nombre del Hongo es obligatorio", HttpStatus.BAD_REQUEST);
         }
     }
 
