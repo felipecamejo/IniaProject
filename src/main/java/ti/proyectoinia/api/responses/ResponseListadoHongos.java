@@ -2,11 +2,12 @@ package ti.proyectoinia.api.responses;
 
 import lombok.Generated;
 import ti.proyectoinia.business.entities.Hongo;
+import ti.proyectoinia.dtos.HongoDto;
 
 import java.util.List;
 
 public class ResponseListadoHongos {
-    private List<Hongo> hongos;
+    private List<HongoDto> hongos;
 
     @Generated
     public List<HongoDto> getHongos() {
@@ -30,7 +31,7 @@ public class ResponseListadoHongos {
                 return false;
             } else {
                 Object this$hongos = this.getHongos();
-                Object other$hongos = other.setHongos();
+                Object other$hongos = other;
                 if (this$hongos == null) {
                     if (other$hongos != null) {
                         return false;
