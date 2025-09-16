@@ -7,6 +7,8 @@ import ti.proyectoinia.business.entities.Hongo;
 import ti.proyectoinia.business.repositories.HongoRepository;
 import ti.proyectoinia.dtos.HongoDto;
 
+import java.util.List;
+
 @Service
 public class HongoService {
 
@@ -42,7 +44,9 @@ public class HongoService {
     }
 
     public ResponseEntity<ResponseListadoHongos> listadoHongos() {
-        ResponseListadoHongos responseListadoHongos = (ResponseListadoHongos) this.hongoRepository.findByActivoTrue();
+        List<Hongo> hongosActivos = this.hongoRepository.findByActivoTrue();
+        ResponseListadoHongos responseListadoHongos = new ResponseListadoHongos();
+        responseListadoHongos.setHongos(hongosActivos);
         return ResponseEntity.ok(responseListadoHongos);
     }
 }

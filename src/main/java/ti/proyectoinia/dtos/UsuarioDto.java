@@ -1,21 +1,27 @@
 package ti.proyectoinia.dtos;
 
+import lombok.Data;
 import lombok.Generated;
 import lombok.Getter;
+import ti.proyectoinia.business.entities.Lote;
 
+import java.util.List;
+
+@Data
 public class UsuarioDto {
-    @Getter
     private Long id;
-    @Getter
+
     private String email;
-    @Getter
+
     private String nombre;
-    @Getter
+
     private String password;
-    @Getter
+
     private String rol;
-    @Getter
+
     private boolean activo;
+
+    private List<LoteDto> lotes;
 
     @Generated
     public boolean equals(final Object o) {

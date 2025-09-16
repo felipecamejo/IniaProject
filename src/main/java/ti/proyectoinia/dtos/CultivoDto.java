@@ -1,12 +1,14 @@
 package ti.proyectoinia.dtos;
 
+import lombok.Data;
 import lombok.Generated;
 import lombok.Getter;
 
+@Data
 public class CultivoDto {
-    @Getter
-    private Integer cultivoId;
-    @Getter
+
+    private Long id;
+
     private String nombre;
 
     @Generated
@@ -14,16 +16,16 @@ public class CultivoDto {
         if (o == this) return true;
         if (!(o instanceof CultivoDto)) return false;
         CultivoDto other = (CultivoDto) o;
-        return cultivoId != null && cultivoId.equals(other.cultivoId);
+        return id != null && id.equals(other.id);
     }
 
     @Generated
     public int hashCode() {
-        return cultivoId != null ? cultivoId.hashCode() : 0;
+        return id != null ? id.hashCode() : 0;
     }
 
     @Generated
     public String toString() {
-        return "CultivoDto(cultivoId=" + cultivoId + ", nombre=" + nombre + ")";
+        return "CultivoDto(cultivoId=" + id + ", nombre=" + nombre + ")";
     }
 }

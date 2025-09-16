@@ -1,25 +1,26 @@
 package ti.proyectoinia.dtos;
 
+import lombok.Data;
 import lombok.Generated;
 import lombok.Getter;
 import ti.proyectoinia.business.entities.Lote;
-
+@Data
 public class PMSDto {
-    @Getter
+
     private Long id;
-    @Getter
+
     private Lote lote;
-    @Getter
+
     private float pesoMilSemillas;
-    @Getter
+
     private float humedadPorcentual;
-    @Getter
+
     private float fechaMedicion;
-    @Getter
+
     private String metodo;
-    @Getter
+
     private String observaciones;
-    @Getter
+
     private boolean activo;
 
     @Generated

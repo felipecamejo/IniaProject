@@ -11,7 +11,7 @@ public class Semilla {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "SEMILLA_ID")
-    private Integer semillaId;
+    private Long id;
 
     @Column(name = "SEMILLA_NRO_SEMILLAS_PURA")
     private int nroSemillasPura;

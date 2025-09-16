@@ -2,10 +2,12 @@ package ti.proyectoinia.services;
 
 import ti.proyectoinia.business.entities.Germinacion;
 import ti.proyectoinia.business.entities.Hongo;
+import ti.proyectoinia.business.entities.Lote;
 import ti.proyectoinia.business.entities.Maleza;
 import ti.proyectoinia.business.entities.Sanitario;
 import ti.proyectoinia.dtos.GerminacionDto;
 import ti.proyectoinia.dtos.HongoDto;
+import ti.proyectoinia.dtos.LoteDto;
 import ti.proyectoinia.dtos.MalezaDto;
 import ti.proyectoinia.dtos.SanitarioDto;
 
@@ -194,5 +196,28 @@ public class MapsDtoEntityService {
         sanitario.setActivo(sanitarioDto.isActivo());
 
         return sanitario;
+    }
+
+    public LoteDto mapToDtoLote(Lote lote) {
+        if (lote == null) {
+            return null;
+        }
+        LoteDto loteDto = new LoteDto();
+        loteDto.setId(lote.getId());
+        loteDto.setNombre(lote.getNombre());
+        loteDto.setActivo(lote.isActivo());
+        return loteDto;
+    }
+
+    public Lote mapToEntityLote(LoteDto loteDto) {
+        if (loteDto == null) {
+            return null;
+        }
+        Lote lote = new Lote();
+        lote.setId(loteDto.getId());
+        lote.setNombre(loteDto.getNombre());
+        lote.setActivo(loteDto.isActivo());
+
+        return lote;
     }
 }

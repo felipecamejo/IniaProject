@@ -1,39 +1,41 @@
 package ti.proyectoinia.dtos;
 
+import lombok.Data;
 import lombok.Generated;
 import lombok.Getter;
 import java.time.LocalDateTime;
 
+@Data
 public class ReciboDto {
-    @Getter
+    
     private Long id;
-    @Getter
+    
     private int nroAnalisis;
-    @Getter
+    
     private String especie;
-    @Getter
+    
     private String ficha;
-    @Getter
+    
     private LocalDateTime fechaRecibo;
-    @Getter
+    
     private String remitente;
-    @Getter
+    
     private String origen;
-    @Getter
+    
     private String cultivar;
-    @Getter
+    
     private String deposito;
-    @Getter
+    
     private String estado;
-    @Getter
+    
     private int lote;
-    @Getter
+    
     private float kgLimpios;
-    @Getter
+    
     private String analisisSolicitados;
-    @Getter
+    
     private int articulo;
-    @Getter
+    
     private boolean activo;
 
     @Generated

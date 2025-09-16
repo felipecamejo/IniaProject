@@ -13,7 +13,7 @@ public class DOSN {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "DOSN_ID")
-    private Integer DOSNId;
+    private Long id;
 
     @Column(name = "DOSN_FECHA")
     private LocalDateTime fecha;

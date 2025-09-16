@@ -1,14 +1,16 @@
 package ti.proyectoinia.dtos;
 
+import lombok.Data;
 import lombok.Generated;
 import lombok.Getter;
 
+@Data
 public class LoteDto {
-    @Getter
+
     private Long id;
-    @Getter
+
     private String nombre;
-    @Getter
+
     private boolean activo;
 
     @Generated
