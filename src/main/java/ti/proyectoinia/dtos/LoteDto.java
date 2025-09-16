@@ -1,31 +1,42 @@
 package ti.proyectoinia.dtos;
 
+import lombok.Data;
 import lombok.Generated;
-import lombok.Getter;
 
+@Data
 public class LoteDto {
-    @Getter
     private Long id;
-    @Getter
     private String nombre;
-    @Getter
     private boolean activo;
 
     @Generated
     public boolean equals(final Object o) {
-        if (o == this) return true;
-        if (!(o instanceof LoteDto)) return false;
-        LoteDto other = (LoteDto) o;
-        return id != null && id.equals(other.id);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LoteDto that = (LoteDto) o;
+        return java.util.Objects.equals(id, that.id) &&
+                java.util.Objects.equals(nombre, that.nombre) &&
+                activo == that.activo;
+    }
+
+    @Generated
+    protected boolean canEqual(final Object other) {
+        return other instanceof LoteDto;
     }
 
     @Generated
     public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+        int result = 1;
+        Object $id = this.getId();
+        result = result * 59 + ($id == null ? 43 : $id.hashCode());
+        Object $nombre = this.getNombre();
+        result = result * 59 + ($nombre == null ? 43 : $nombre.hashCode());
+        result = result * 59 + (this.isActivo() ? 79 : 97);
+        return result;
     }
 
     @Generated
     public String toString() {
-        return "LoteDto(id=" + id + ", nombre=" + nombre + ")";
+        return "LoteDto(id=" + this.getId() + ", nombre=" + this.getNombre() + ")";
     }
 }
