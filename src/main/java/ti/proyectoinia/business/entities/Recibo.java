@@ -2,6 +2,7 @@ package ti.proyectoinia.business.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.util.List;
 
 @Entity
 @Data
@@ -53,4 +54,26 @@ public class Recibo {
 
     @Column(name = "RECIBO_ACTIVO")
     private boolean activo;
+
+    // Relaciones con los diferentes tipos de análisis
+    @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<DOSN> dosnAnalisis;
+
+    @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PMS> pmsAnalisis;
+
+    @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Pureza> purezaAnalisis;
+
+    @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Germinacion> germinacionAnalisis;
+
+    @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PurezaPNotatum> purezaPNotatumAnalisis;
+
+    @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Sanitario> sanitarioAnalisis;
+
+    @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Tetrazolio> tetrazolioAnalisis;
 }

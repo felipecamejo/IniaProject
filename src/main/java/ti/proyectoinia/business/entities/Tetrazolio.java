@@ -96,6 +96,10 @@ public class Tetrazolio {
     @Column(name = "TETRAZOLIO_DANIOS_POR_PORCENTAJES")
     private Integer daniosPorPorcentajes;
 
+    @ManyToOne
+    @JoinColumn(name = "RECIBO_ID")
+    private Recibo recibo;
+
     @Column(name = "TETRAZOLIO_ACTIVO")
     private boolean activo;
 }

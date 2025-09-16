@@ -45,6 +45,10 @@ public class Pureza {
     @Column(name = "ESTANDAR")
     private boolean estandar;
 
+    @ManyToOne
+    @JoinColumn(name = "RECIBO_ID")
+    private Recibo recibo;
+
     @Column(name = "PUREZA_ACTIVO")
     private boolean activo;
 }
