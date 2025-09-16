@@ -1,15 +1,18 @@
 package ti.proyectoinia.services;
 
+import java.util.stream.Collectors;
 import ti.proyectoinia.business.entities.Germinacion;
 import ti.proyectoinia.business.entities.Hongo;
 import ti.proyectoinia.business.entities.Lote;
 import ti.proyectoinia.business.entities.Maleza;
 import ti.proyectoinia.business.entities.Sanitario;
+import ti.proyectoinia.business.entities.Usuario;
 import ti.proyectoinia.dtos.GerminacionDto;
 import ti.proyectoinia.dtos.HongoDto;
 import ti.proyectoinia.dtos.LoteDto;
 import ti.proyectoinia.dtos.MalezaDto;
 import ti.proyectoinia.dtos.SanitarioDto;
+import ti.proyectoinia.dtos.UsuarioDto;
 
 public class MapsDtoEntityService {
 
@@ -206,6 +209,11 @@ public class MapsDtoEntityService {
         loteDto.setId(lote.getId());
         loteDto.setNombre(lote.getNombre());
         loteDto.setActivo(lote.isActivo());
+        if (lote.getUsuarios() != null) {
+            loteDto.setUsuarios(lote.getUsuarios().stream().map(this::mapToDtoUsuarioBasic).collect(Collectors.toList()));
+        } else {
+            loteDto.setUsuarios(null);
+        }
         return loteDto;
     }
 
@@ -217,7 +225,81 @@ public class MapsDtoEntityService {
         lote.setId(loteDto.getId());
         lote.setNombre(loteDto.getNombre());
         lote.setActivo(loteDto.isActivo());
+        if (loteDto.getUsuarios() != null) {
+            lote.setUsuarios(loteDto.getUsuarios().stream().map(this::mapToEntityUsuarioBasic).collect(Collectors.toList()));
+        } else {
+            lote.setUsuarios(null);
+        }
+        return lote;
+    }
 
+    public UsuarioDto mapToDtoUsuario(Usuario usuario) {
+        if (usuario == null) {
+            return null;
+        }
+        UsuarioDto usuarioDto = new UsuarioDto();
+        usuarioDto.setId(usuario.getId());
+        usuarioDto.setEmail(usuario.getEmail());
+        usuarioDto.setNombre(usuario.getNombre());
+        usuarioDto.setPassword(usuario.getPassword());
+        usuarioDto.setRol(usuario.getRol());
+        usuarioDto.setActivo(usuario.isActivo());
+        if (usuario.getLotes() != null) {
+            usuarioDto.setLotes(usuario.getLotes().stream().map(this::mapToDtoLoteBasic).collect(Collectors.toList()));
+        } else {
+            usuarioDto.setLotes(null);
+        }
+        return usuarioDto;
+    }
+
+    public Usuario mapToEntityUsuario(UsuarioDto usuarioDto) {
+        if (usuarioDto == null) {
+            return null;
+        }
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioDto.getId());
+        usuario.setEmail(usuarioDto.getEmail());
+        usuario.setNombre(usuarioDto.getNombre());
+        usuario.setPassword(usuarioDto.getPassword());
+        usuario.setRol(usuarioDto.getRol());
+        usuario.setActivo(usuarioDto.isActivo());
+        if (usuarioDto.getLotes() != null) {
+            usuario.setLotes(usuarioDto.getLotes().stream().map(this::mapToEntityLoteBasic).collect(Collectors.toList()));
+        } else {
+            usuario.setLotes(null);
+        }
+        return usuario;
+    }
+
+    // Métodos básicos para evitar ciclos
+    private UsuarioDto mapToDtoUsuarioBasic(Usuario usuario) {
+        if (usuario == null) return null;
+        UsuarioDto dto = new UsuarioDto();
+        dto.setId(usuario.getId());
+        dto.setNombre(usuario.getNombre());
+        dto.setEmail(usuario.getEmail());
+        return dto;
+    }
+    private Usuario mapToEntityUsuarioBasic(UsuarioDto usuarioDto) {
+        if (usuarioDto == null) return null;
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioDto.getId());
+        usuario.setNombre(usuarioDto.getNombre());
+        usuario.setEmail(usuarioDto.getEmail());
+        return usuario;
+    }
+    private LoteDto mapToDtoLoteBasic(Lote lote) {
+        if (lote == null) return null;
+        LoteDto dto = new LoteDto();
+        dto.setId(lote.getId());
+        dto.setNombre(lote.getNombre());
+        return dto;
+    }
+    private Lote mapToEntityLoteBasic(LoteDto loteDto) {
+        if (loteDto == null) return null;
+        Lote lote = new Lote();
+        lote.setId(loteDto.getId());
+        lote.setNombre(loteDto.getNombre());
         return lote;
     }
 }

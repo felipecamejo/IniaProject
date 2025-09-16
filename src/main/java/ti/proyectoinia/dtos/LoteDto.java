@@ -1,5 +1,7 @@
 package ti.proyectoinia.dtos;
 
+import java.util.List;
+
 import lombok.Data;
 import lombok.Generated;
 import lombok.Getter;
@@ -12,6 +14,8 @@ public class LoteDto {
     private String nombre;
 
     private boolean activo;
+
+    private List<UsuarioDto> usuarios;
 
     @Generated
     public boolean equals(final Object o) {
