@@ -10,7 +10,7 @@ public class Pureza {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "PUREZA_ID")
-    private int purezaId;
+    private Long id;
 
     @Column(name = "FECHA")
     private java.time.LocalDateTime fecha;

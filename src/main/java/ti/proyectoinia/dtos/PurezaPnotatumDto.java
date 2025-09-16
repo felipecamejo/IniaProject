@@ -1,26 +1,28 @@
 package ti.proyectoinia.dtos;
 
+import lombok.Data;
 import lombok.Generated;
 import lombok.Getter;
 
+@Data
 public class PurezaPnotatumDto {
-    @Getter
-    private Integer purezaPnotatumId;
-    @Getter
+    
+    private Long id;
+    
     private float porcentaje;
-    @Getter
+    
     private float pesoInicial;
-    @Getter
+    
     private int repeticiones;
-    @Getter
+    
     private float Pi;
-    @Getter
+    
     private float At;
-    @Getter
+    
     private float porcentajeA;
-    @Getter
+    
     private int totalA;
-    @Getter
+    
     private float semillasLS;
 
     @Generated
@@ -28,16 +30,16 @@ public class PurezaPnotatumDto {
         if (o == this) return true;
         if (!(o instanceof PurezaPnotatumDto)) return false;
         PurezaPnotatumDto other = (PurezaPnotatumDto) o;
-        return purezaPnotatumId != null && purezaPnotatumId.equals(other.purezaPnotatumId);
+        return id != null && id.equals(other.id);
     }
 
     @Generated
     public int hashCode() {
-        return purezaPnotatumId != null ? purezaPnotatumId.hashCode() : 0;
+        return id != null ? id.hashCode() : 0;
     }
 
     @Generated
     public String toString() {
-        return "PurezaPnotatumDto(purezaPnotatumId=" + purezaPnotatumId + ", porcentaje=" + porcentaje + ", pesoInicial=" + pesoInicial + ")";
+        return "PurezaPnotatumDto(id=" + id + ", porcentaje=" + porcentaje + ", pesoInicial=" + pesoInicial + ")";
     }
 }

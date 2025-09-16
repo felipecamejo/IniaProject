@@ -12,7 +12,9 @@ public class HongoDto {
     
 
     private Long id;
+
     private String nombre;
+
     private tipoHongo tipo;
 
     @Generated

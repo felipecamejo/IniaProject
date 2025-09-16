@@ -11,7 +11,7 @@ public class PurezaPnotatum {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "PUREZA_PNOTATUM_ID")
-    private Integer purezaPnotatumId;
+    private Long Id;
 
     @Column(name = "PUREZA_PORCENTAJE")
     private float porcentaje;

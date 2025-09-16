@@ -1,12 +1,14 @@
 package ti.proyectoinia.dtos;
 
+import lombok.Data;
 import lombok.Generated;
 import lombok.Getter;
 
+@Data
 public class SemillaDto {
-    @Getter
-    private Integer semillaId;
-    @Getter
+    
+    private Long id;
+    
     private int nroSemillasPura;
 
     @Generated
@@ -14,16 +16,16 @@ public class SemillaDto {
         if (o == this) return true;
         if (!(o instanceof SemillaDto)) return false;
         SemillaDto other = (SemillaDto) o;
-        return semillaId != null && semillaId.equals(other.semillaId);
+        return id != null && id.equals(other.id);
     }
 
     @Generated
     public int hashCode() {
-        return semillaId != null ? semillaId.hashCode() : 0;
+        return id != null ? id.hashCode() : 0;
     }
 
     @Generated
     public String toString() {
-        return "SemillaDto(semillaId=" + semillaId + ", nroSemillasPura=" + nroSemillasPura + ")";
+        return "SemillaDto(id=" + id + ", nroSemillasPura=" + nroSemillasPura + ")";
     }
 }

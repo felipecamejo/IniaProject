@@ -11,7 +11,7 @@ public class Cultivo {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "CULTIVO_ID")
-    private Integer cultivoId;
+    private Long id;
 
     @Column(name = "CULTIVO_NOMBRE")
     private String nombre;
