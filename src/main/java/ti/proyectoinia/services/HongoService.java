@@ -7,10 +7,6 @@ import ti.proyectoinia.business.entities.Hongo;
 import ti.proyectoinia.business.repositories.HongoRepository;
 import ti.proyectoinia.dtos.HongoDto;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
-
 @Service
 public class HongoService {
 
@@ -28,7 +24,11 @@ public class HongoService {
     }
 
     public HongoDto obtenerHongoPorId(Long id) {
-        return mapsDtoEntityService.mapToDtoHongo(this.hongoRepository.findById(id).orElse(null));
+        Hongo hongo = this.hongoRepository.findById(id).orElse(null);
+        if (hongo == null || !hongo.isActivo()) {
+            return null;
+        }
+        return mapsDtoEntityService.mapToDtoHongo(hongo);
     }
 
     public String eliminarHongo(Long id) {

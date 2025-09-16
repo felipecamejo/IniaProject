@@ -3,8 +3,10 @@ package ti.proyectoinia.business.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import ti.proyectoinia.dtos.HongoDto;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Data
@@ -44,6 +46,14 @@ public class Sanitario {
 
     @Column(name = "SANITARIO_NROSEMILLASREPETICION")
     private int nroSemillasRepeticion;
+
+    @ManyToOne
+    @JoinColumn(name = "RECIBO_ID")
+    private Recibo recibo;
+
+    @OneToMany
+    @JoinColumn(name = "SANITARIO_ID")
+    private List<Hongo> hongos;
 
     @Column(name = "SANITARIO_ACTIVO")
     private boolean activo;

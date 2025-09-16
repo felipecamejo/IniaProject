@@ -114,6 +114,10 @@ public class Germinacion {
     @Column(name = "GERMINACION_COMENTARIOS")
     private String comentarios;
 
+    @ManyToOne
+    @JoinColumn(name = "RECIBO_ID")
+    private Recibo recibo;
+
     @Column(name = "GERMINACION_ACTIVO")
     private boolean activo;
 

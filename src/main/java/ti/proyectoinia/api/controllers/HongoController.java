@@ -11,7 +11,7 @@ import ti.proyectoinia.dtos.HongoDto;
 import ti.proyectoinia.services.HongoService;
 
 @RestController
-@RequestMapping({"api/v1/hongos"})
+@RequestMapping({"api/v1/hongo"})
 public class HongoController {
 
     @Generated
