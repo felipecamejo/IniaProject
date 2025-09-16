@@ -1,21 +1,7 @@
 package ti.proyectoinia.services;
 
-import ti.proyectoinia.business.entities.Germinacion;
-import ti.proyectoinia.business.entities.Hongo;
-import ti.proyectoinia.business.entities.Maleza;
-import ti.proyectoinia.business.entities.Sanitario;
-import ti.proyectoinia.business.entities.Usuario;
-import ti.proyectoinia.business.entities.Lote;
-import ti.proyectoinia.business.entities.PMS;
-import ti.proyectoinia.business.entities.Pureza;
-import ti.proyectoinia.dtos.GerminacionDto;
-import ti.proyectoinia.dtos.HongoDto;
-import ti.proyectoinia.dtos.MalezaDto;
-import ti.proyectoinia.dtos.SanitarioDto;
-import ti.proyectoinia.dtos.UsuarioDto;
-import ti.proyectoinia.dtos.LoteDto;
-import ti.proyectoinia.dtos.PMSDto;
-import ti.proyectoinia.dtos.PurezaDto;
+import ti.proyectoinia.business.entities.*;
+import ti.proyectoinia.dtos.*;
 
 import java.util.stream.Collectors;
 
@@ -452,5 +438,179 @@ public class MapsDtoEntityService {
         lote.setId(loteDto.getId());
         lote.setNombre(loteDto.getNombre());
         return lote;
+    }
+
+    public DOSNDto mapToDtoDOSN(DOSN dosn) {
+        if (dosn == null) {
+            return null;
+        }
+        DOSNDto dto = new DOSNDto();
+        dto.setId(dosn.getId());
+        dto.setFecha(dosn.getFecha());
+        dto.setGramosAnalizados(dosn.getGramosAnalizados());
+        dto.setTiposDeanalisis(dosn.getTiposDeanalisis());
+        dto.setCompletoReducido(dosn.isCompletoReducido());
+        dto.setMalezasToleranciaCero(dosn.getMalezasToleranciaCero());
+        dto.setOtrosCultivos(dosn.getOtrosCultivos());
+        dto.setDeterminacionBrassica(dosn.getDeterminacionBrassica());
+        dto.setDeterminacionCuscuta(dosn.getDeterminacionCuscuta());
+        dto.setEstandar(dosn.isEstandar());
+        dto.setFechaAnalisis(dosn.getFechaAnalisis());
+
+        if (dosn.getCultivos() != null) {
+            dto.setCultivos(dosn.getCultivos().stream().map(this::mapToDtoCultivo).collect(Collectors.toList()));
+        } else {
+            dto.setCultivos(null);
+        }
+        return dto;
+    }
+
+    public DOSN mapToEntityDOSN(DOSNDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        DOSN dosn = new DOSN();
+        dosn.setId(dto.getId());
+        dosn.setFecha(dto.getFecha());
+        dosn.setGramosAnalizados(dto.getGramosAnalizados());
+        dosn.setTiposDeanalisis(dto.getTiposDeanalisis());
+        dosn.setCompletoReducido(dto.isCompletoReducido());
+        dosn.setMalezasToleranciaCero(dto.getMalezasToleranciaCero());
+        dosn.setOtrosCultivos(dto.getOtrosCultivos());
+        dosn.setDeterminacionBrassica(dto.getDeterminacionBrassica());
+        dosn.setDeterminacionCuscuta(dto.getDeterminacionCuscuta());
+        dosn.setEstandar(dto.isEstandar());
+        dosn.setFechaAnalisis(dto.getFechaAnalisis());
+
+        if (dto.getCultivos() != null) {
+            dosn.setCultivos(dto.getCultivos().stream().map(this::mapToEntityCultivo).collect(Collectors.toList()));
+        } else {
+            dosn.setCultivos(null);
+        }
+        return dosn;
+    }
+
+    private CultivoDto mapToDtoCultivo(Cultivo cultivo) {
+        if (cultivo == null) return null;
+        CultivoDto dto = new CultivoDto();
+        dto.setId(cultivo.getId());
+        dto.setNombre(cultivo.getNombre());
+        return dto;
+    }
+    private Cultivo mapToEntityCultivo(CultivoDto dto) {
+        if (dto == null) return null;
+        Cultivo cultivo = new Cultivo();
+        cultivo.setId(dto.getId());
+        cultivo.setNombre(dto.getNombre());
+        return cultivo;
+    }
+
+    public PurezaPNotatumDto mapToDtoPurezaPNotatum(PurezaPNotatum pureza) {
+        if (pureza == null) {
+            return null;
+        }
+        PurezaPNotatumDto dto = new PurezaPNotatumDto();
+        dto.setId(pureza.getId());
+        dto.setPorcentaje(pureza.getPorcentaje());
+        dto.setPesoInicial(pureza.getPesoInicial());
+        dto.setRepeticiones(pureza.getRepeticiones());
+        dto.setPi(pureza.getPi());
+        dto.setAt(pureza.getAt());
+        dto.setPorcentajeA(pureza.getPorcentajeA());
+        dto.setTotalA(pureza.getTotalA());
+        dto.setSemillasLS(pureza.getSemillasLS());
+        return dto;
+    }
+
+    public PurezaPNotatum mapToEntityPurezaPNotatum(PurezaPNotatumDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        PurezaPNotatum pureza = new PurezaPNotatum();
+        pureza.setId(dto.getId());
+        pureza.setPorcentaje(dto.getPorcentaje());
+        pureza.setPesoInicial(dto.getPesoInicial());
+        pureza.setRepeticiones(dto.getRepeticiones());
+        pureza.setPi(dto.getPi());
+        pureza.setAt(dto.getAt());
+        pureza.setPorcentajeA(dto.getPorcentajeA());
+        pureza.setTotalA(dto.getTotalA());
+        pureza.setSemillasLS(dto.getSemillasLS());
+        return pureza;
+    }
+
+    public TetrazolioDto mapToDtoTetrazolio(Tetrazolio tetrazolio) {
+        if (tetrazolio == null) {
+            return null;
+        }
+        TetrazolioDto dto = new TetrazolioDto();
+        dto.setId(tetrazolio.getId());
+        dto.setRepeticion(tetrazolio.getRepeticion());
+        dto.setNroSemillasPorRepeticion(tetrazolio.getNroSemillasPorRepeticion());
+        if (tetrazolio.getPretratamiento() != null) {
+            dto.setPretratamientoId(tetrazolio.getPretratamiento().ordinal());
+        }
+        dto.setConcentracion(tetrazolio.getConcentracion());
+        dto.setTincionHoras(tetrazolio.getTincionHoras());
+        dto.setTincionGrados(tetrazolio.getTincionGrados());
+        dto.setFecha(tetrazolio.getFecha());
+        dto.setViables(tetrazolio.getViables());
+        dto.setNoViables(tetrazolio.getNoViables());
+        dto.setDuras(tetrazolio.getDuras());
+        dto.setTotal(tetrazolio.getTotal());
+        dto.setPromedio(tetrazolio.getPromedio());
+        dto.setPorcentaje(tetrazolio.getPorcentaje());
+        if (tetrazolio.getViabilidadPorTetrazolio() != null) {
+            dto.setViabilidadPorTetrazolioId(tetrazolio.getViabilidadPorTetrazolio().getId());
+        }
+        dto.setNroSemillas(tetrazolio.getNroSemillas());
+        dto.setDaniosNroSemillas(tetrazolio.getDaniosNroSemillas());
+        dto.setDaniosMecanicos(tetrazolio.getDaniosMecanicos());
+        dto.setDanioAmbiente(tetrazolio.getDanioAmbiente());
+        dto.setDaniosChinches(tetrazolio.getDaniosChinches());
+        dto.setDaniosFracturas(tetrazolio.getDaniosFracturas());
+        dto.setDaniosOtros(tetrazolio.getDaniosOtros());
+        dto.setDaniosDuras(tetrazolio.getDaniosDuras());
+        if (tetrazolio.getViabilidadVigorTz() != null) {
+            dto.setViabilidadVigorTzId(tetrazolio.getViabilidadVigorTz().getId());
+        }
+        dto.setPorcentajeFinal(tetrazolio.getPorcentajeFinal());
+        dto.setDaniosPorPorcentajes(tetrazolio.getDaniosPorPorcentajes());
+        return dto;
+    }
+
+    public Tetrazolio mapToEntityTetrazolio(TetrazolioDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        Tetrazolio tetrazolio = new Tetrazolio();
+        tetrazolio.setId(dto.getId());
+        tetrazolio.setRepeticion(dto.getRepeticion());
+        tetrazolio.setNroSemillasPorRepeticion(dto.getNroSemillasPorRepeticion());
+        if (dto.getPretratamientoId() != null) {
+            tetrazolio.setPretratamiento(PreTratamiento.values()[dto.getPretratamientoId()]);
+        }
+        tetrazolio.setConcentracion(dto.getConcentracion());
+        tetrazolio.setTincionHoras(dto.getTincionHoras());
+        tetrazolio.setTincionGrados(dto.getTincionGrados());
+        tetrazolio.setFecha(dto.getFecha());
+        tetrazolio.setViables(dto.getViables());
+        tetrazolio.setNoViables(dto.getNoViables());
+        tetrazolio.setDuras(dto.getDuras());
+        tetrazolio.setTotal(dto.getTotal());
+        tetrazolio.setPromedio(dto.getPromedio());
+        tetrazolio.setPorcentaje(dto.getPorcentaje());
+        // ViabilidadPorTz y ViabilidadVigorTZ requieren fetch por id si es necesario
+        tetrazolio.setNroSemillas(dto.getNroSemillas());
+        tetrazolio.setDaniosNroSemillas(dto.getDaniosNroSemillas());
+        tetrazolio.setDaniosMecanicos(dto.getDaniosMecanicos());
+        tetrazolio.setDanioAmbiente(dto.getDanioAmbiente());
+        tetrazolio.setDaniosChinches(dto.getDaniosChinches());
+        tetrazolio.setDaniosFracturas(dto.getDaniosFracturas());
+        tetrazolio.setDaniosOtros(dto.getDaniosOtros());
+        tetrazolio.setDaniosDuras(dto.getDaniosDuras());
+        tetrazolio.setPorcentajeFinal(dto.getPorcentajeFinal());
+        tetrazolio.setDaniosPorPorcentajes(dto.getDaniosPorPorcentajes());
+        return tetrazolio;
     }
 }

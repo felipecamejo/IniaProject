@@ -5,6 +5,7 @@ import lombok.Generated;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class DOSNDto {
@@ -30,6 +31,8 @@ public class DOSNDto {
     private boolean estandar;
     
     private LocalDateTime fechaAnalisis;
+
+    private List<CultivoDto> cultivos;
 
     @Generated
     public boolean equals(final Object o) {
