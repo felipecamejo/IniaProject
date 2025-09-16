@@ -3,6 +3,8 @@ package ti.proyectoinia.business.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.Date;
+
 @Entity
 @Data
 @Table(name = "PUREZA")
@@ -13,7 +15,7 @@ public class Pureza {
     private Long id;
 
     @Column(name = "FECHA")
-    private java.time.LocalDateTime fecha;
+    private Date fecha;
 
     @Column(name = "PESO_INICIAL")
     private float pesoInicial;
@@ -40,7 +42,7 @@ public class Pureza {
     private float otrosCultivo;
 
     @Column(name = "FECHA_ESTANDAR")
-    private java.time.LocalDateTime fechaEstandar;
+    private Date fechaEstandar;
 
     @Column(name = "ESTANDAR")
     private boolean estandar;

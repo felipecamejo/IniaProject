@@ -3,6 +3,8 @@ package ti.proyectoinia.business.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.Date;
+
 @Entity
 @Data
 @Table(name = "RECIBO")
@@ -22,7 +24,7 @@ public class Recibo {
     private String ficha;
 
     @Column(name = "FECHA_RECIBO")
-    private java.time.LocalDateTime fechaRecibo;
+    private Date fechaRecibo;
 
     @Column(name = "REMITENTE")
     private String remitente;

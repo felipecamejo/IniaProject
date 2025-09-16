@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Data
@@ -38,7 +39,7 @@ public class Tetrazolio {
     private float tincionGrados;
 
     @Column(name = "TETRAZOLIO_FECHA")
-    private LocalDateTime fecha;
+    private Date fecha;
 
     @Column(name = "TETRAZOLIO_VIABLES")
     private float viables;

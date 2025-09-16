@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -44,7 +45,7 @@ public class DOSN {
     private boolean estandar;
 
     @Column(name = "DOSN_FECHA_ANALISIS")
-    private LocalDateTime fechaAnalisis;
+    private Date fechaAnalisis;
 
     @OneToMany
     @JoinColumn(name = "DOSN_ID")
