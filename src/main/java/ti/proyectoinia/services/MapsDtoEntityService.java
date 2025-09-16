@@ -147,7 +147,7 @@ public class MapsDtoEntityService {
             return null;
         }
         ti.proyectoinia.dtos.ReciboDto reciboDto = new ti.proyectoinia.dtos.ReciboDto();
-        reciboDto.setId((long) recibo.getId());
+        reciboDto.setId(recibo.getId());
         reciboDto.setNroAnalisis(recibo.getNroAnalisis());
         reciboDto.setEspecie(recibo.getEspecie());
         reciboDto.setFicha(recibo.getFicha());
@@ -257,7 +257,7 @@ public class MapsDtoEntityService {
             return null;
         }
         UsuarioDto usuarioDto = new UsuarioDto();
-        usuarioDto.setId((long) usuario.getId());
+        usuarioDto.setId(usuario.getId());
         usuarioDto.setEmail(usuario.getEmail());
         usuarioDto.setNombre(usuario.getNombre());
         usuarioDto.setPassword(usuario.getPassword());
@@ -287,7 +287,7 @@ public class MapsDtoEntityService {
             return null;
         }
         LoteDto loteDto = new LoteDto();
-        loteDto.setId((long) lote.getId());
+        loteDto.setId(lote.getId());
         loteDto.setNombre(lote.getNombre());
         loteDto.setActivo(lote.isActivo());
         return loteDto;
@@ -351,7 +351,7 @@ public class MapsDtoEntityService {
             return null;
         }
         PurezaDto dto = new PurezaDto();
-        dto.setId((long) pureza.getId());
+        dto.setId(pureza.getId());
         dto.setFecha(pureza.getFecha());
         dto.setPesoInicial(pureza.getPesoInicial());
         dto.setSemillaPura(pureza.getSemillaPura());
