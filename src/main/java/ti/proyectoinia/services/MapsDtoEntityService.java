@@ -561,7 +561,7 @@ public class MapsDtoEntityService {
         dto.setPromedio(tetrazolio.getPromedio());
         dto.setPorcentaje(tetrazolio.getPorcentaje());
         if (tetrazolio.getViabilidadPorTetrazolio() != null) {
-            dto.setViabilidadPorTetrazolioId(tetrazolio.getViabilidadPorTetrazolio().getId());
+            dto.setViabilidadPorTetrazolio(tetrazolio.getViabilidadPorTetrazolio());
         }
         dto.setNroSemillas(tetrazolio.getNroSemillas());
         dto.setDaniosNroSemillas(tetrazolio.getDaniosNroSemillas());
@@ -572,7 +572,7 @@ public class MapsDtoEntityService {
         dto.setDaniosOtros(tetrazolio.getDaniosOtros());
         dto.setDaniosDuras(tetrazolio.getDaniosDuras());
         if (tetrazolio.getViabilidadVigorTz() != null) {
-            dto.setViabilidadVigorTzId(tetrazolio.getViabilidadVigorTz().getId());
+            dto.setViabilidadPorTetrazolio(tetrazolio.getViabilidadPorTetrazolio());
         }
         dto.setPorcentajeFinal(tetrazolio.getPorcentajeFinal());
         dto.setDaniosPorPorcentajes(tetrazolio.getDaniosPorPorcentajes());
@@ -600,7 +600,8 @@ public class MapsDtoEntityService {
         tetrazolio.setTotal(dto.getTotal());
         tetrazolio.setPromedio(dto.getPromedio());
         tetrazolio.setPorcentaje(dto.getPorcentaje());
-        // ViabilidadPorTz y ViabilidadVigorTZ requieren fetch por id si es necesario
+        tetrazolio.setViabilidadPorTetrazolio(dto.getViabilidadPorTetrazolio());
+        tetrazolio.setViabilidadVigorTz(dto.getViabilidadVigorTz());
         tetrazolio.setNroSemillas(dto.getNroSemillas());
         tetrazolio.setDaniosNroSemillas(dto.getDaniosNroSemillas());
         tetrazolio.setDaniosMecanicos(dto.getDaniosMecanicos());

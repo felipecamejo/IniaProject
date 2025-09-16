@@ -3,6 +3,8 @@ package ti.proyectoinia.dtos;
 import lombok.Data;
 import lombok.Generated;
 import lombok.Getter;
+import ti.proyectoinia.business.entities.ViabilidadPorTz;
+import ti.proyectoinia.business.entities.ViabilidadVigorTZ;
 
 import java.time.LocalDateTime;
 
@@ -37,7 +39,7 @@ public class TetrazolioDto {
     
     private Integer porcentaje;
     
-    private Integer viabilidadPorTetrazolioId;
+    private ViabilidadPorTz viabilidadPorTetrazolio;
     
     private Integer nroSemillas;
     
@@ -55,7 +57,7 @@ public class TetrazolioDto {
     
     private Integer daniosDuras;
     
-    private Integer viabilidadVigorTzId;
+    private ViabilidadVigorTZ viabilidadVigorTz;
     
     private Integer porcentajeFinal;
     
