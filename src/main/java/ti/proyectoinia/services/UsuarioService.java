@@ -24,7 +24,7 @@ public class UsuarioService {
     }
 
     public UsuarioDto obtenerUsuarioPorId(Long id) {
-        Usuario usuario = this.usuarioRepository.findById(id == null ? null : id.intValue()).orElse(null);
+        Usuario usuario = this.usuarioRepository.findById(id).orElse(null);
         if (usuario == null || !usuario.isActivo()) {
             return null;
         }
@@ -33,7 +33,7 @@ public class UsuarioService {
 
     public String eliminarUsuario(Long id) {
         if (id != null) {
-            this.usuarioRepository.deleteById(id.intValue());
+            this.usuarioRepository.deleteById(id);
         }
         return "Usuario eliminado correctamente";
     }

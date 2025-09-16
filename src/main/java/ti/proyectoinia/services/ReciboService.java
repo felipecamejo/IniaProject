@@ -24,7 +24,7 @@ public class ReciboService {
     }
 
     public ReciboDto obtenerReciboPorId(Long id) {
-        Recibo recibo = this.reciboRepository.findById(id == null ? null : id.intValue()).orElse(null);
+        Recibo recibo = this.reciboRepository.findById(id).orElse(null);
         if (recibo == null || !recibo.isActivo()) {
             return null;
         }
@@ -33,7 +33,7 @@ public class ReciboService {
 
     public String eliminarRecibo(Long id) {
         if (id != null) {
-            this.reciboRepository.deleteById(id.intValue());
+            this.reciboRepository.deleteById(id);
         }
         return "Recibo eliminado correctamente";
     }

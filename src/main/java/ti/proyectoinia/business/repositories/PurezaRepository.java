@@ -6,6 +6,6 @@ import ti.proyectoinia.business.entities.Pureza;
 import java.util.List;
 
 @Repository
-public interface PurezaRepository extends JpaRepository<Pureza, Integer> {
+public interface PurezaRepository extends JpaRepository<Pureza, Long> {
     List<Pureza> findByActivoTrue();
 }

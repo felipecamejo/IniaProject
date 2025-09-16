@@ -24,7 +24,7 @@ public class PurezaService {
     }
 
     public PurezaDto obtenerPurezaPorId(Long id) {
-        Pureza pureza = this.purezaRepository.findById(id == null ? null : id.intValue()).orElse(null);
+        Pureza pureza = this.purezaRepository.findById(id).orElse(null);
         if (pureza == null || !pureza.isActivo()) {
             return null;
         }
@@ -33,7 +33,7 @@ public class PurezaService {
 
     public String eliminarPureza(Long id) {
         if (id != null) {
-            this.purezaRepository.deleteById(id.intValue());
+            this.purezaRepository.deleteById(id);
         }
         return "Pureza eliminada correctamente";
     }
