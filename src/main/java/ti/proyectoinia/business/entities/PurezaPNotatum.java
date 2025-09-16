@@ -37,6 +37,10 @@ public class PurezaPNotatum {
     @Column(name = "PUREZA_SEMILLAS_LS")
     private float semillasLS;
 
+    @ManyToOne
+    @JoinColumn(name = "RECIBO_ID")
+    private Recibo recibo;
+
     @Column(name = "PUREZA_ACTIVO")
     private boolean activo;
 }

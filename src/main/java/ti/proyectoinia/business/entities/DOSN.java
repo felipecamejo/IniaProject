@@ -51,6 +51,10 @@ public class DOSN {
     @JoinColumn(name = "DOSN_ID")
     private List<Cultivo> cultivos;
 
+    @ManyToOne
+    @JoinColumn(name = "RECIBO_ID")
+    private Recibo recibo;
+
     @Column(name = "DOSN_ACTIVO")
     private boolean activo;
 }

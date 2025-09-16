@@ -13,8 +13,9 @@ public class PMS {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "LOTE_ID")
-    private Lote lote;
+    @JoinColumn(name = "RECIBO_ID")
+    private Recibo recibo;
+    
 
     @Column(name = "PESO_MIL_SEMILLAS")
     private float pesoMilSemillas; // en gramos
