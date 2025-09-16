@@ -1,21 +1,9 @@
 package ti.proyectoinia.services;
 
-import ti.proyectoinia.business.entities.Germinacion;
-import ti.proyectoinia.business.entities.Hongo;
-import ti.proyectoinia.business.entities.Maleza;
-import ti.proyectoinia.business.entities.Sanitario;
-import ti.proyectoinia.business.entities.Usuario;
-import ti.proyectoinia.business.entities.Lote;
-import ti.proyectoinia.business.entities.PMS;
-import ti.proyectoinia.business.entities.Pureza;
-import ti.proyectoinia.dtos.GerminacionDto;
-import ti.proyectoinia.dtos.HongoDto;
-import ti.proyectoinia.dtos.MalezaDto;
-import ti.proyectoinia.dtos.SanitarioDto;
-import ti.proyectoinia.dtos.UsuarioDto;
-import ti.proyectoinia.dtos.LoteDto;
-import ti.proyectoinia.dtos.PMSDto;
-import ti.proyectoinia.dtos.PurezaDto;
+import ti.proyectoinia.business.entities.*;
+import ti.proyectoinia.dtos.*;
+
+import java.util.stream.Collectors;
 
 public class MapsDtoEntityService {
 
@@ -252,6 +240,7 @@ public class MapsDtoEntityService {
         return sanitario;
     }
 
+<<<<<<< HEAD
     public UsuarioDto mapToDtoUsuario(Usuario usuario) {
         if (usuario == null) {
             return null;
@@ -306,6 +295,8 @@ public class MapsDtoEntityService {
         return lote;
     }
 
+=======
+>>>>>>> main
     public PMSDto mapToDtoPMS(PMS pms) {
         if (pms == null) {
             return null;
@@ -388,5 +379,296 @@ public class MapsDtoEntityService {
         pureza.setEstandar(dto.isEstandar());
         pureza.setActivo(dto.isActivo());
         return pureza;
+    }
+
+    public LoteDto mapToDtoLote(Lote lote) {
+        if (lote == null) {
+            return null;
+        }
+        LoteDto loteDto = new LoteDto();
+        loteDto.setId(lote.getId());
+        loteDto.setNombre(lote.getNombre());
+        loteDto.setActivo(lote.isActivo());
+
+        if (lote.getRecibo() != null) {
+            loteDto.setRecibo(mapToDtoRecibo(lote.getRecibo()));
+        } else {
+            loteDto.setRecibo(null);
+        }
+
+        if (lote.getUsuarios() != null) {
+            loteDto.setUsuarios(lote.getUsuarios().stream().map(this::mapToDtoUsuarioBasic).collect(Collectors.toList()));
+        } else {
+            loteDto.setUsuarios(null);
+        }
+        return loteDto;
+    }
+
+    public Lote mapToEntityLote(LoteDto loteDto) {
+        if (loteDto == null) {
+            return null;
+        }
+        Lote lote = new Lote();
+        lote.setId(loteDto.getId());
+        lote.setNombre(loteDto.getNombre());
+        lote.setActivo(loteDto.isActivo());
+
+        if (loteDto.getRecibo() != null) {
+            lote.setRecibo(mapToEntityRecibo(loteDto.getRecibo()));
+        } else {
+            lote.setRecibo(null);
+        }
+
+        if (loteDto.getUsuarios() != null) {
+            lote.setUsuarios(loteDto.getUsuarios().stream().map(this::mapToEntityUsuarioBasic).collect(Collectors.toList()));
+        } else {
+            lote.setUsuarios(null);
+        }
+        return lote;
+    }
+
+    public UsuarioDto mapToDtoUsuario(Usuario usuario) {
+        if (usuario == null) {
+            return null;
+        }
+        UsuarioDto usuarioDto = new UsuarioDto();
+        usuarioDto.setId(usuario.getId());
+        usuarioDto.setEmail(usuario.getEmail());
+        usuarioDto.setNombre(usuario.getNombre());
+        usuarioDto.setPassword(usuario.getPassword());
+        usuarioDto.setRol(usuario.getRol());
+        usuarioDto.setActivo(usuario.isActivo());
+        if (usuario.getLotes() != null) {
+            usuarioDto.setLotes(usuario.getLotes().stream().map(this::mapToDtoLoteBasic).collect(Collectors.toList()));
+        } else {
+            usuarioDto.setLotes(null);
+        }
+        return usuarioDto;
+    }
+
+    public Usuario mapToEntityUsuario(UsuarioDto usuarioDto) {
+        if (usuarioDto == null) {
+            return null;
+        }
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioDto.getId());
+        usuario.setEmail(usuarioDto.getEmail());
+        usuario.setNombre(usuarioDto.getNombre());
+        usuario.setPassword(usuarioDto.getPassword());
+        usuario.setRol(usuarioDto.getRol());
+        usuario.setActivo(usuarioDto.isActivo());
+        if (usuarioDto.getLotes() != null) {
+            usuario.setLotes(usuarioDto.getLotes().stream().map(this::mapToEntityLoteBasic).collect(Collectors.toList()));
+        } else {
+            usuario.setLotes(null);
+        }
+        return usuario;
+    }
+
+    // Métodos básicos para evitar ciclos
+    private UsuarioDto mapToDtoUsuarioBasic(Usuario usuario) {
+        if (usuario == null) return null;
+        UsuarioDto dto = new UsuarioDto();
+        dto.setId(usuario.getId());
+        dto.setNombre(usuario.getNombre());
+        dto.setEmail(usuario.getEmail());
+        return dto;
+    }
+    private Usuario mapToEntityUsuarioBasic(UsuarioDto usuarioDto) {
+        if (usuarioDto == null) return null;
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioDto.getId());
+        usuario.setNombre(usuarioDto.getNombre());
+        usuario.setEmail(usuarioDto.getEmail());
+        return usuario;
+    }
+    private LoteDto mapToDtoLoteBasic(Lote lote) {
+        if (lote == null) return null;
+        LoteDto dto = new LoteDto();
+        dto.setId(lote.getId());
+        dto.setNombre(lote.getNombre());
+        return dto;
+    }
+    private Lote mapToEntityLoteBasic(LoteDto loteDto) {
+        if (loteDto == null) return null;
+        Lote lote = new Lote();
+        lote.setId(loteDto.getId());
+        lote.setNombre(loteDto.getNombre());
+        return lote;
+    }
+
+    public DOSNDto mapToDtoDOSN(DOSN dosn) {
+        if (dosn == null) {
+            return null;
+        }
+        DOSNDto dto = new DOSNDto();
+        dto.setId(dosn.getId());
+        dto.setFecha(dosn.getFecha());
+        dto.setGramosAnalizados(dosn.getGramosAnalizados());
+        dto.setTiposDeanalisis(dosn.getTiposDeanalisis());
+        dto.setCompletoReducido(dosn.isCompletoReducido());
+        dto.setMalezasToleranciaCero(dosn.getMalezasToleranciaCero());
+        dto.setOtrosCultivos(dosn.getOtrosCultivos());
+        dto.setDeterminacionBrassica(dosn.getDeterminacionBrassica());
+        dto.setDeterminacionCuscuta(dosn.getDeterminacionCuscuta());
+        dto.setEstandar(dosn.isEstandar());
+        dto.setFechaAnalisis(dosn.getFechaAnalisis());
+
+        if (dosn.getCultivos() != null) {
+            dto.setCultivos(dosn.getCultivos().stream().map(this::mapToDtoCultivo).collect(Collectors.toList()));
+        } else {
+            dto.setCultivos(null);
+        }
+        return dto;
+    }
+
+    public DOSN mapToEntityDOSN(DOSNDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        DOSN dosn = new DOSN();
+        dosn.setId(dto.getId());
+        dosn.setFecha(dto.getFecha());
+        dosn.setGramosAnalizados(dto.getGramosAnalizados());
+        dosn.setTiposDeanalisis(dto.getTiposDeanalisis());
+        dosn.setCompletoReducido(dto.isCompletoReducido());
+        dosn.setMalezasToleranciaCero(dto.getMalezasToleranciaCero());
+        dosn.setOtrosCultivos(dto.getOtrosCultivos());
+        dosn.setDeterminacionBrassica(dto.getDeterminacionBrassica());
+        dosn.setDeterminacionCuscuta(dto.getDeterminacionCuscuta());
+        dosn.setEstandar(dto.isEstandar());
+        dosn.setFechaAnalisis(dto.getFechaAnalisis());
+
+        if (dto.getCultivos() != null) {
+            dosn.setCultivos(dto.getCultivos().stream().map(this::mapToEntityCultivo).collect(Collectors.toList()));
+        } else {
+            dosn.setCultivos(null);
+        }
+        return dosn;
+    }
+
+    private CultivoDto mapToDtoCultivo(Cultivo cultivo) {
+        if (cultivo == null) return null;
+        CultivoDto dto = new CultivoDto();
+        dto.setId(cultivo.getId());
+        dto.setNombre(cultivo.getNombre());
+        return dto;
+    }
+    private Cultivo mapToEntityCultivo(CultivoDto dto) {
+        if (dto == null) return null;
+        Cultivo cultivo = new Cultivo();
+        cultivo.setId(dto.getId());
+        cultivo.setNombre(dto.getNombre());
+        return cultivo;
+    }
+
+    public PurezaPNotatumDto mapToDtoPurezaPNotatum(PurezaPNotatum pureza) {
+        if (pureza == null) {
+            return null;
+        }
+        PurezaPNotatumDto dto = new PurezaPNotatumDto();
+        dto.setId(pureza.getId());
+        dto.setPorcentaje(pureza.getPorcentaje());
+        dto.setPesoInicial(pureza.getPesoInicial());
+        dto.setRepeticiones(pureza.getRepeticiones());
+        dto.setPi(pureza.getPi());
+        dto.setAt(pureza.getAt());
+        dto.setPorcentajeA(pureza.getPorcentajeA());
+        dto.setTotalA(pureza.getTotalA());
+        dto.setSemillasLS(pureza.getSemillasLS());
+        return dto;
+    }
+
+    public PurezaPNotatum mapToEntityPurezaPNotatum(PurezaPNotatumDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        PurezaPNotatum pureza = new PurezaPNotatum();
+        pureza.setId(dto.getId());
+        pureza.setPorcentaje(dto.getPorcentaje());
+        pureza.setPesoInicial(dto.getPesoInicial());
+        pureza.setRepeticiones(dto.getRepeticiones());
+        pureza.setPi(dto.getPi());
+        pureza.setAt(dto.getAt());
+        pureza.setPorcentajeA(dto.getPorcentajeA());
+        pureza.setTotalA(dto.getTotalA());
+        pureza.setSemillasLS(dto.getSemillasLS());
+        return pureza;
+    }
+
+    public TetrazolioDto mapToDtoTetrazolio(Tetrazolio tetrazolio) {
+        if (tetrazolio == null) {
+            return null;
+        }
+        TetrazolioDto dto = new TetrazolioDto();
+        dto.setId(tetrazolio.getId());
+        dto.setRepeticion(tetrazolio.getRepeticion());
+        dto.setNroSemillasPorRepeticion(tetrazolio.getNroSemillasPorRepeticion());
+        if (tetrazolio.getPretratamiento() != null) {
+            dto.setPretratamientoId(tetrazolio.getPretratamiento().ordinal());
+        }
+        dto.setConcentracion(tetrazolio.getConcentracion());
+        dto.setTincionHoras(tetrazolio.getTincionHoras());
+        dto.setTincionGrados(tetrazolio.getTincionGrados());
+        dto.setFecha(tetrazolio.getFecha());
+        dto.setViables(tetrazolio.getViables());
+        dto.setNoViables(tetrazolio.getNoViables());
+        dto.setDuras(tetrazolio.getDuras());
+        dto.setTotal(tetrazolio.getTotal());
+        dto.setPromedio(tetrazolio.getPromedio());
+        dto.setPorcentaje(tetrazolio.getPorcentaje());
+        if (tetrazolio.getViabilidadPorTetrazolio() != null) {
+            dto.setViabilidadPorTetrazolio(tetrazolio.getViabilidadPorTetrazolio());
+        }
+        dto.setNroSemillas(tetrazolio.getNroSemillas());
+        dto.setDaniosNroSemillas(tetrazolio.getDaniosNroSemillas());
+        dto.setDaniosMecanicos(tetrazolio.getDaniosMecanicos());
+        dto.setDanioAmbiente(tetrazolio.getDanioAmbiente());
+        dto.setDaniosChinches(tetrazolio.getDaniosChinches());
+        dto.setDaniosFracturas(tetrazolio.getDaniosFracturas());
+        dto.setDaniosOtros(tetrazolio.getDaniosOtros());
+        dto.setDaniosDuras(tetrazolio.getDaniosDuras());
+        if (tetrazolio.getViabilidadVigorTz() != null) {
+            dto.setViabilidadPorTetrazolio(tetrazolio.getViabilidadPorTetrazolio());
+        }
+        dto.setPorcentajeFinal(tetrazolio.getPorcentajeFinal());
+        dto.setDaniosPorPorcentajes(tetrazolio.getDaniosPorPorcentajes());
+        return dto;
+    }
+
+    public Tetrazolio mapToEntityTetrazolio(TetrazolioDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        Tetrazolio tetrazolio = new Tetrazolio();
+        tetrazolio.setId(dto.getId());
+        tetrazolio.setRepeticion(dto.getRepeticion());
+        tetrazolio.setNroSemillasPorRepeticion(dto.getNroSemillasPorRepeticion());
+        if (dto.getPretratamientoId() != null) {
+            tetrazolio.setPretratamiento(PreTratamiento.values()[dto.getPretratamientoId()]);
+        }
+        tetrazolio.setConcentracion(dto.getConcentracion());
+        tetrazolio.setTincionHoras(dto.getTincionHoras());
+        tetrazolio.setTincionGrados(dto.getTincionGrados());
+        tetrazolio.setFecha(dto.getFecha());
+        tetrazolio.setViables(dto.getViables());
+        tetrazolio.setNoViables(dto.getNoViables());
+        tetrazolio.setDuras(dto.getDuras());
+        tetrazolio.setTotal(dto.getTotal());
+        tetrazolio.setPromedio(dto.getPromedio());
+        tetrazolio.setPorcentaje(dto.getPorcentaje());
+        tetrazolio.setViabilidadPorTetrazolio(dto.getViabilidadPorTetrazolio());
+        tetrazolio.setViabilidadVigorTz(dto.getViabilidadVigorTz());
+        tetrazolio.setNroSemillas(dto.getNroSemillas());
+        tetrazolio.setDaniosNroSemillas(dto.getDaniosNroSemillas());
+        tetrazolio.setDaniosMecanicos(dto.getDaniosMecanicos());
+        tetrazolio.setDanioAmbiente(dto.getDanioAmbiente());
+        tetrazolio.setDaniosChinches(dto.getDaniosChinches());
+        tetrazolio.setDaniosFracturas(dto.getDaniosFracturas());
+        tetrazolio.setDaniosOtros(dto.getDaniosOtros());
+        tetrazolio.setDaniosDuras(dto.getDaniosDuras());
+        tetrazolio.setPorcentajeFinal(dto.getPorcentajeFinal());
+        tetrazolio.setDaniosPorPorcentajes(dto.getDaniosPorPorcentajes());
+        return tetrazolio;
     }
 }
