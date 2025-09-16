@@ -2,10 +2,9 @@ package ti.proyectoinia.dtos;
 
 import lombok.Data;
 import lombok.Generated;
-import lombok.Getter;
 
 @Data
-public class PurezaPnotatumDto {
+public class PurezaPNotatumDto {
     
     private Long id;
     
@@ -28,8 +27,8 @@ public class PurezaPnotatumDto {
     @Generated
     public boolean equals(final Object o) {
         if (o == this) return true;
-        if (!(o instanceof PurezaPnotatumDto)) return false;
-        PurezaPnotatumDto other = (PurezaPnotatumDto) o;
+        if (!(o instanceof PurezaPNotatumDto)) return false;
+        PurezaPNotatumDto other = (PurezaPNotatumDto) o;
         return id != null && id.equals(other.id);
     }
 

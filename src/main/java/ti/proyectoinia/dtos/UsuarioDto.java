@@ -3,15 +3,24 @@ package ti.proyectoinia.dtos;
 import lombok.Data;
 import lombok.Generated;
 
+import java.util.List;
+
 @Data
 public class UsuarioDto {
 
     private Long id;
+
     private String email;
+
     private String nombre;
+
     private String password;
+
     private String rol;
+
     private boolean activo;
+
+    private List<LoteDto> lotes;
 
     @Generated
     public boolean equals(final Object o) {
