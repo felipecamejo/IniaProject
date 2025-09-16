@@ -24,7 +24,7 @@ public class LoteService {
     }
 
     public LoteDto obtenerLotePorId(Long id) {
-        Lote lote = this.loteRepository.findById(id == null ? null : id.intValue()).orElse(null);
+        Lote lote = this.loteRepository.findById(id).orElse(null);
         if (lote == null || !lote.isActivo()) {
             return null;
         }
@@ -33,7 +33,7 @@ public class LoteService {
 
     public String eliminarLote(Long id) {
         if (id != null) {
-            this.loteRepository.deleteById(id.intValue());
+            this.loteRepository.deleteById(id);
         }
         return "Lote eliminado correctamente";
     }

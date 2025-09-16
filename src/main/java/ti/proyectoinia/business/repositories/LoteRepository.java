@@ -6,6 +6,6 @@ import ti.proyectoinia.business.entities.Lote;
 import java.util.List;
 
 @Repository
-public interface LoteRepository extends JpaRepository<Lote, Integer> {
+public interface LoteRepository extends JpaRepository<Lote, Long> {
     List<Lote> findByActivoTrue();
 }

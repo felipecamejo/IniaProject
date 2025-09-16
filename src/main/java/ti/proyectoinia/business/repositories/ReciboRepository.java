@@ -6,6 +6,6 @@ import ti.proyectoinia.business.entities.Recibo;
 import java.util.List;
 
 @Repository
-public interface ReciboRepository extends JpaRepository<Recibo, Integer> {
+public interface ReciboRepository extends JpaRepository<Recibo, Long> {
     List<Recibo> findByActivoTrue();
 }

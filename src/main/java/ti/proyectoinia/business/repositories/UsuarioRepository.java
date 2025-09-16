@@ -6,6 +6,6 @@ import ti.proyectoinia.business.entities.Usuario;
 import java.util.List;
 
 @Repository
-public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     List<Usuario> findByActivoTrue();
 }
