@@ -346,6 +346,13 @@ public class MapsDtoEntityService {
         loteDto.setId(lote.getId());
         loteDto.setNombre(lote.getNombre());
         loteDto.setActivo(lote.isActivo());
+
+        if (lote.getRecibo() != null) {
+            loteDto.setRecibo(mapToDtoRecibo(lote.getRecibo()));
+        } else {
+            loteDto.setRecibo(null);
+        }
+
         if (lote.getUsuarios() != null) {
             loteDto.setUsuarios(lote.getUsuarios().stream().map(this::mapToDtoUsuarioBasic).collect(Collectors.toList()));
         } else {
@@ -362,6 +369,13 @@ public class MapsDtoEntityService {
         lote.setId(loteDto.getId());
         lote.setNombre(loteDto.getNombre());
         lote.setActivo(loteDto.isActivo());
+
+        if (loteDto.getRecibo() != null) {
+            lote.setRecibo(mapToEntityRecibo(loteDto.getRecibo()));
+        } else {
+            lote.setRecibo(null);
+        }
+
         if (loteDto.getUsuarios() != null) {
             lote.setUsuarios(loteDto.getUsuarios().stream().map(this::mapToEntityUsuarioBasic).collect(Collectors.toList()));
         } else {
@@ -440,4 +454,3 @@ public class MapsDtoEntityService {
         return lote;
     }
 }
-

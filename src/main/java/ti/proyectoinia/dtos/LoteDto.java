@@ -12,6 +12,7 @@ public class LoteDto {
     private boolean activo;
 
     private List<UsuarioDto> usuarios;
+    private ReciboDto recibo;
 
     @Generated
     public boolean equals(final Object o) {
