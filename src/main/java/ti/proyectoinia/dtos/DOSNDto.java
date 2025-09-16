@@ -1,32 +1,34 @@
 package ti.proyectoinia.dtos;
 
+import lombok.Data;
 import lombok.Generated;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
+@Data
 public class DOSNDto {
-    @Getter
-    private Integer DOSNId;
-    @Getter
+    
+    private Long id;
+    
     private LocalDateTime fecha;
-    @Getter
+    
     private float gramosAnalizados;
-    @Getter
+    
     private String tiposDeanalisis;
-    @Getter
+    
     private boolean completoReducido;
-    @Getter
+    
     private float malezasToleranciaCero;
-    @Getter
+    
     private float otrosCultivos;
-    @Getter
+    
     private float determinacionBrassica;
-    @Getter
+    
     private float determinacionCuscuta;
-    @Getter
+    
     private boolean estandar;
-    @Getter
+    
     private LocalDateTime fechaAnalisis;
 
     @Generated
@@ -34,16 +36,16 @@ public class DOSNDto {
         if (o == this) return true;
         if (!(o instanceof DOSNDto)) return false;
         DOSNDto other = (DOSNDto) o;
-        return DOSNId != null && DOSNId.equals(other.DOSNId);
+        return id != null && id.equals(other.id);
     }
 
     @Generated
     public int hashCode() {
-        return DOSNId != null ? DOSNId.hashCode() : 0;
+        return id != null ? id.hashCode() : 0;
     }
 
     @Generated
     public String toString() {
-        return "DOSNDto(DOSNId=" + DOSNId + ", fecha=" + fecha + ", tiposDeanalisis=" + tiposDeanalisis + ")";
+        return "DOSNDto(id=" + id + ", fecha=" + fecha + ", tiposDeanalisis=" + tiposDeanalisis + ")";
     }
 }

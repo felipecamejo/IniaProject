@@ -3,6 +3,8 @@ package ti.proyectoinia.business.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
 @Data
 @Table(name = "USUARIO")
@@ -10,7 +12,7 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "USUARIO_ID")
-    private int usuarioId;
+    private Long id;
 
     @Column(name = "EMAIL")
     private String email;
@@ -26,5 +28,8 @@ public class Usuario {
 
     @Column(name = "USUARIO_ACTIVO")
     private boolean activo;
+
+
+    private List<Lote> lotes;
 
 }

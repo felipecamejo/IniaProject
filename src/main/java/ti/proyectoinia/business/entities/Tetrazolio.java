@@ -13,7 +13,7 @@ public class Tetrazolio {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "TETRAZOLIO_ID")
-    private Integer tetrazolioId;
+    private Long id;
 
     @Column(name = "TETRAZOLIO_REPETICION")
     private Integer repeticion;

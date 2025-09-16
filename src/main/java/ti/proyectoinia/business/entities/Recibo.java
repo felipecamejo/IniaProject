@@ -10,7 +10,7 @@ public class Recibo {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "RECIBO_ID")
-    private int reciboId;
+    private Long id;
 
     @Column(name = "NRO_ANALISIS")
     private int nroAnalisis;
