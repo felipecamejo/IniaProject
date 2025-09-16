@@ -147,7 +147,7 @@ public class MapsDtoEntityService {
             return null;
         }
         ti.proyectoinia.dtos.ReciboDto reciboDto = new ti.proyectoinia.dtos.ReciboDto();
-        reciboDto.setId((long) recibo.getReciboId());
+        reciboDto.setId((long) recibo.getId());
         reciboDto.setNroAnalisis(recibo.getNroAnalisis());
         reciboDto.setEspecie(recibo.getEspecie());
         reciboDto.setFicha(recibo.getFicha());
@@ -171,7 +171,7 @@ public class MapsDtoEntityService {
         }
         ti.proyectoinia.business.entities.Recibo recibo = new ti.proyectoinia.business.entities.Recibo();
         if (reciboDto.getId() != null) {
-            recibo.setReciboId(reciboDto.getId().intValue());
+            recibo.setId(reciboDto.getId());
         }
         recibo.setNroAnalisis(reciboDto.getNroAnalisis());
         recibo.setEspecie(reciboDto.getEspecie());
@@ -257,7 +257,7 @@ public class MapsDtoEntityService {
             return null;
         }
         UsuarioDto usuarioDto = new UsuarioDto();
-        usuarioDto.setId((long) usuario.getUsuarioId());
+        usuarioDto.setId((long) usuario.getId());
         usuarioDto.setEmail(usuario.getEmail());
         usuarioDto.setNombre(usuario.getNombre());
         usuarioDto.setPassword(usuario.getPassword());
@@ -272,7 +272,7 @@ public class MapsDtoEntityService {
         }
         Usuario usuario = new Usuario();
         if (usuarioDto.getId() != null) {
-            usuario.setUsuarioId(usuarioDto.getId().intValue());
+            usuario.setId(usuarioDto.getId());
         }
         usuario.setEmail(usuarioDto.getEmail());
         usuario.setNombre(usuarioDto.getNombre());
@@ -287,7 +287,7 @@ public class MapsDtoEntityService {
             return null;
         }
         LoteDto loteDto = new LoteDto();
-        loteDto.setId((long) lote.getLoteId());
+        loteDto.setId((long) lote.getId());
         loteDto.setNombre(lote.getNombre());
         loteDto.setActivo(lote.isActivo());
         return loteDto;
@@ -299,7 +299,7 @@ public class MapsDtoEntityService {
         }
         Lote lote = new Lote();
         if (loteDto.getId() != null) {
-            lote.setLoteId(loteDto.getId().intValue());
+            lote.setId(loteDto.getId());
         }
         lote.setNombre(loteDto.getNombre());
         lote.setActivo(loteDto.isActivo());
@@ -351,7 +351,7 @@ public class MapsDtoEntityService {
             return null;
         }
         PurezaDto dto = new PurezaDto();
-        dto.setId((long) pureza.getPurezaId());
+        dto.setId((long) pureza.getId());
         dto.setFecha(pureza.getFecha());
         dto.setPesoInicial(pureza.getPesoInicial());
         dto.setSemillaPura(pureza.getSemillaPura());
@@ -373,7 +373,7 @@ public class MapsDtoEntityService {
         }
         Pureza pureza = new Pureza();
         if (dto.getId() != null) {
-            pureza.setPurezaId(dto.getId().intValue());
+            pureza.setId(dto.getId());
         }
         pureza.setFecha(dto.getFecha());
         pureza.setPesoInicial(dto.getPesoInicial());
