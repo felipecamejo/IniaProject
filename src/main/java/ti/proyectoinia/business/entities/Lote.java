@@ -23,7 +23,7 @@ public class Lote {
 
     @OneToMany
     @JoinColumn(name = "LOTE_ID")
-    private Recibo recibo;
+    private List<Recibo> recibos;
 
     @ManyToMany(mappedBy = "lotes")
     private List<Usuario> usuarios;
