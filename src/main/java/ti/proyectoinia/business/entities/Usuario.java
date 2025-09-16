@@ -29,7 +29,12 @@ public class Usuario {
     @Column(name = "USUARIO_ACTIVO")
     private boolean activo;
 
-
+    @ManyToMany
+    @JoinTable(
+        name = "USUARIO_LOTE",
+        joinColumns = @JoinColumn(name = "USUARIO_ID"),
+        inverseJoinColumns = @JoinColumn(name = "LOTE_ID")
+    )
     private List<Lote> lotes;
 
 }
