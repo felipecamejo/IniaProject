@@ -25,17 +25,17 @@ public class DOSNController {
     @Operation(
             description = "Esta Funcion crea una nueva DOSN"
     )
-    public ResponseEntity<String> crearDOSN(@RequestBody DOSNDto DOSNDto) {
-        DOSNDto.setId((Long)null);
-        String response = this.DOSNService.crearDOSN(DOSNDto);
+    public ResponseEntity<String> crearDOSN(@RequestBody DOSNDto dosnDto) {
+        dosnDto.setId((Long)null);
+        String response = this.DOSNService.crearDOSN(dosnDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping({"/{id}"})
     public ResponseEntity<?> getDOSNPorId(@PathVariable Long id) {
-        DOSNDto hongoDto = this.DOSNService.obtenerDOSNPorId(id);
-        if (hongoDto != null) {
-            return new ResponseEntity<>(hongoDto, HttpStatus.OK);
+        DOSNDto dosnDto = this.DOSNService.obtenerDOSNPorId(id);
+        if (dosnDto != null) {
+            return new ResponseEntity<>(dosnDto, HttpStatus.OK);
         } else {
             return new ResponseEntity<>("DOSN no encontrada", HttpStatus.NOT_FOUND);
         }
@@ -43,8 +43,8 @@ public class DOSNController {
 
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
-    public ResponseEntity<String> editarDOSN(@RequestBody DOSNDto DOSNDto) {
-        String result = this.DOSNService.editarDOSN(DOSNDto);
+    public ResponseEntity<String> editarDOSN(@RequestBody DOSNDto dosnDto) {
+        String result = this.DOSNService.editarDOSN(dosnDto);
         return ResponseEntity.ok(result);
     }
 

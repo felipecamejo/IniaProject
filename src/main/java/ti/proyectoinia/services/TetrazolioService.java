@@ -9,34 +9,34 @@ import ti.proyectoinia.dtos.TetrazolioDto;
 @Service
 public class TetrazolioService {
 
-    private final TetrazolioRepository TetrazolioRepository;
+    private final TetrazolioRepository tetrazolioRepository;
     private final MapsDtoEntityService mapsDtoEntityService;
 
-    public TetrazolioService(TetrazolioRepository TetrazolioRepository, MapsDtoEntityService mapsDtoEntityService) {
+    public TetrazolioService(TetrazolioRepository tetrazolioRepository, MapsDtoEntityService mapsDtoEntityService) {
         this.mapsDtoEntityService = mapsDtoEntityService;
-        this.TetrazolioRepository = TetrazolioRepository;
+        this.tetrazolioRepository = tetrazolioRepository;
     }
 
-    public String crearTetrazolio(TetrazolioDto TetrazolioDto) {
-        this.TetrazolioRepository.save(mapsDtoEntityService.mapToEntityTetrazolio(TetrazolioDto));
+    public String crearTetrazolio(TetrazolioDto tetrazolioDto) {
+        this.tetrazolioRepository.save(mapsDtoEntityService.mapToEntityTetrazolio(tetrazolioDto));
         return "Tetrazolio creada correctamente";
     }
 
     public TetrazolioDto obtenerTetrazolioPorId(Long id) {
-        Tetrazolio Tetrazolio = this.TetrazolioRepository.findById(id).orElse(null);
-        if (Tetrazolio == null || !Tetrazolio.isActivo()) {
+        Tetrazolio tetrazolio = this.tetrazolioRepository.findById(id).orElse(null);
+        if (tetrazolio == null || !tetrazolio.isActivo()) {
             return null;
         }
-        return mapsDtoEntityService.mapToDtoTetrazolio(Tetrazolio);
+        return mapsDtoEntityService.mapToDtoTetrazolio(tetrazolio);
     }
 
     public String eliminarTetrazolio(Long id) {
-        this.TetrazolioRepository.deleteById(id);
+        this.tetrazolioRepository.deleteById(id);
         return "Tetrazolio eliminada correctamente";
     }
 
-    public String editarTetrazolio(TetrazolioDto TetrazolioDto) {
-        this.TetrazolioRepository.save(mapsDtoEntityService.mapToEntityTetrazolio(TetrazolioDto));
+    public String editarTetrazolio(TetrazolioDto tetrazolioDto) {
+        this.tetrazolioRepository.save(mapsDtoEntityService.mapToEntityTetrazolio(tetrazolioDto));
         return "Tetrazolio actualizada correctamente";
     }
 

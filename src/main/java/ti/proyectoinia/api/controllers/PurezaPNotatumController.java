@@ -14,10 +14,10 @@ import ti.proyectoinia.services.PurezaPNotatumService;
 public class PurezaPNotatumController {
 
     @Generated
-    private final PurezaPNotatumService PurezaPNotatumService;
+    private final PurezaPNotatumService purezaPNotatumService;
 
-    public PurezaPNotatumController(PurezaPNotatumService PurezaPNotatumService) {
-        this.PurezaPNotatumService = PurezaPNotatumService;
+    public PurezaPNotatumController(PurezaPNotatumService purezaPNotatumService) {
+        this.purezaPNotatumService = purezaPNotatumService;
     }
 
     @PostMapping({"/crear"})
@@ -25,17 +25,17 @@ public class PurezaPNotatumController {
     @Operation(
             description = "Esta Funcion crea una nueva PurezaPNotatum"
     )
-    public ResponseEntity<String> crearPurezaPNotatum(@RequestBody PurezaPNotatumDto PurezaPNotatumDto) {
-        PurezaPNotatumDto.setId((Long)null);
-        String response = this.PurezaPNotatumService.crearPurezaPNotatum(PurezaPNotatumDto);
+    public ResponseEntity<String> crearPurezaPNotatum(@RequestBody PurezaPNotatumDto purezaPNotatumDto) {
+        purezaPNotatumDto.setId((Long)null);
+        String response = this.purezaPNotatumService.crearPurezaPNotatum(purezaPNotatumDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping({"/{id}"})
     public ResponseEntity<?> getPurezaPNotatumPorId(@PathVariable Long id) {
-        PurezaPNotatumDto hongoDto = this.PurezaPNotatumService.obtenerPurezaPNotatumPorId(id);
-        if (hongoDto != null) {
-            return new ResponseEntity<>(hongoDto, HttpStatus.OK);
+        PurezaPNotatumDto purezaPNotatumDto = this.purezaPNotatumService.obtenerPurezaPNotatumPorId(id);
+        if (purezaPNotatumDto != null) {
+            return new ResponseEntity<>(purezaPNotatumDto, HttpStatus.OK);
         } else {
             return new ResponseEntity<>("PurezaPNotatum no encontrada", HttpStatus.NOT_FOUND);
         }
@@ -43,8 +43,8 @@ public class PurezaPNotatumController {
 
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
-    public ResponseEntity<String> editarPurezaPNotatum(@RequestBody PurezaPNotatumDto PurezaPNotatumDto) {
-        String result = this.PurezaPNotatumService.editarPurezaPNotatum(PurezaPNotatumDto);
+    public ResponseEntity<String> editarPurezaPNotatum(@RequestBody PurezaPNotatumDto purezaPNotatumDto) {
+        String result = this.purezaPNotatumService.editarPurezaPNotatum(purezaPNotatumDto);
         return ResponseEntity.ok(result);
     }
 
@@ -55,7 +55,7 @@ public class PurezaPNotatumController {
     )
     public ResponseEntity<String> eliminarPurezaPNotatum(@RequestBody Long id) {
         try {
-            String mensaje = this.PurezaPNotatumService.eliminarPurezaPNotatum(id)+ ". ID:" + id.toString();
+            String mensaje = this.purezaPNotatumService.eliminarPurezaPNotatum(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar la PurezaPNotatum: " + e.getMessage());

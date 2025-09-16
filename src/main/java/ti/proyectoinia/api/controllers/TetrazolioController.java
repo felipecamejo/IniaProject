@@ -14,10 +14,10 @@ import ti.proyectoinia.services.TetrazolioService;
 public class TetrazolioController {
 
     @Generated
-    private final TetrazolioService TetrazolioService;
+    private final TetrazolioService tetrazolioService;
 
-    public TetrazolioController(TetrazolioService TetrazolioService) {
-        this.TetrazolioService = TetrazolioService;
+    public TetrazolioController(TetrazolioService tetrazolioService) {
+        this.tetrazolioService = tetrazolioService;
     }
 
     @PostMapping({"/crear"})
@@ -25,17 +25,17 @@ public class TetrazolioController {
     @Operation(
             description = "Esta Funcion crea una nueva Tetrazolio"
     )
-    public ResponseEntity<String> crearTetrazolio(@RequestBody TetrazolioDto TetrazolioDto) {
-        TetrazolioDto.setId((Long)null);
-        String response = this.TetrazolioService.crearTetrazolio(TetrazolioDto);
+    public ResponseEntity<String> crearTetrazolio(@RequestBody TetrazolioDto tetrazolioDto) {
+        tetrazolioDto.setId((Long)null);
+        String response = this.tetrazolioService.crearTetrazolio(tetrazolioDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping({"/{id}"})
     public ResponseEntity<?> getTetrazolioPorId(@PathVariable Long id) {
-        TetrazolioDto hongoDto = this.TetrazolioService.obtenerTetrazolioPorId(id);
-        if (hongoDto != null) {
-            return new ResponseEntity<>(hongoDto, HttpStatus.OK);
+        TetrazolioDto tetrazolioDto = this.tetrazolioService.obtenerTetrazolioPorId(id);
+        if (tetrazolioDto != null) {
+            return new ResponseEntity<>(tetrazolioDto, HttpStatus.OK);
         } else {
             return new ResponseEntity<>("Tetrazolio no encontrada", HttpStatus.NOT_FOUND);
         }
@@ -43,8 +43,8 @@ public class TetrazolioController {
 
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
-    public ResponseEntity<String> editarTetrazolio(@RequestBody TetrazolioDto TetrazolioDto) {
-        String result = this.TetrazolioService.editarTetrazolio(TetrazolioDto);
+    public ResponseEntity<String> editarTetrazolio(@RequestBody TetrazolioDto tetrazolioDto) {
+        String result = this.tetrazolioService.editarTetrazolio(tetrazolioDto);
         return ResponseEntity.ok(result);
     }
 
@@ -55,7 +55,7 @@ public class TetrazolioController {
     )
     public ResponseEntity<String> eliminarTetrazolio(@RequestBody Long id) {
         try {
-            String mensaje = this.TetrazolioService.eliminarTetrazolio(id)+ ". ID:" + id.toString();
+            String mensaje = this.tetrazolioService.eliminarTetrazolio(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar la Tetrazolio: " + e.getMessage());

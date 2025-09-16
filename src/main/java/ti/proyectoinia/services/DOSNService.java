@@ -9,21 +9,21 @@ import ti.proyectoinia.dtos.DOSNDto;
 @Service
 public class DOSNService {
 
-    private final DOSNRepository DOSNRepository;
+    private final DOSNRepository dosnRepository;
     private final MapsDtoEntityService mapsDtoEntityService;
 
-    public DOSNService(DOSNRepository DOSNRepository, MapsDtoEntityService mapsDtoEntityService) {
+    public DOSNService(DOSNRepository dosnRepository, MapsDtoEntityService mapsDtoEntityService) {
         this.mapsDtoEntityService = mapsDtoEntityService;
-        this.DOSNRepository = DOSNRepository;
+        this.dosnRepository = dosnRepository;
     }
 
-    public String crearDOSN(DOSNDto DOSNDto) {
-        this.DOSNRepository.save(mapsDtoEntityService.mapToEntityDOSN(DOSNDto));
+    public String crearDOSN(DOSNDto dosnDto) {
+        this.dosnRepository.save(mapsDtoEntityService.mapToEntityDOSN(dosnDto));
         return "DOSN creada correctamente";
     }
 
     public DOSNDto obtenerDOSNPorId(Long id) {
-        DOSN DOSN = this.DOSNRepository.findById(id).orElse(null);
+        DOSN DOSN = this.dosnRepository.findById(id).orElse(null);
         if (DOSN == null || !DOSN.isActivo()) {
             return null;
         }
@@ -31,12 +31,12 @@ public class DOSNService {
     }
 
     public String eliminarDOSN(Long id) {
-        this.DOSNRepository.deleteById(id);
+        this.dosnRepository.deleteById(id);
         return "DOSN eliminada correctamente";
     }
 
-    public String editarDOSN(DOSNDto DOSNDto) {
-        this.DOSNRepository.save(mapsDtoEntityService.mapToEntityDOSN(DOSNDto));
+    public String editarDOSN(DOSNDto dosnDto) {
+        this.dosnRepository.save(mapsDtoEntityService.mapToEntityDOSN(dosnDto));
         return "DOSN actualizada correctamente";
     }
 
