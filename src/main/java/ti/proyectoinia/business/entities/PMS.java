@@ -2,6 +2,7 @@ package ti.proyectoinia.business.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.util.Date;
 
 @Entity
 @Data
@@ -24,7 +25,7 @@ public class PMS {
     private float humedadPorcentual; // 0-100
 
     @Column(name = "FECHA_MEDICION")
-    private float fechaMedicion;
+    private Date fechaMedicion;
 
     @Column(name = "METODO")
     private String metodo;

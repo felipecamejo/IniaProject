@@ -2,7 +2,7 @@ package ti.proyectoinia.dtos;
 
 import lombok.Data;
 import lombok.Generated;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 public class ReciboDto {
@@ -10,7 +10,7 @@ public class ReciboDto {
     private int nroAnalisis;
     private String especie;
     private String ficha;
-    private LocalDateTime fechaRecibo;
+    private Date fechaRecibo;
     private String remitente;
     private String origen;
     private String cultivar;

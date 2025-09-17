@@ -2,9 +2,8 @@ package ti.proyectoinia.dtos;
 
 import lombok.Data;
 import lombok.Generated;
-import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -12,7 +11,7 @@ public class DOSNDto {
     
     private Long id;
     
-    private LocalDateTime fecha;
+    private Date fecha;
     
     private float gramosAnalizados;
     
@@ -30,7 +29,7 @@ public class DOSNDto {
     
     private boolean estandar;
     
-    private LocalDateTime fechaAnalisis;
+    private Date fechaAnalisis;
 
     private List<CultivoDto> cultivos;
 

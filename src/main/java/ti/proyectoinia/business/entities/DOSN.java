@@ -3,7 +3,6 @@ package ti.proyectoinia.business.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -18,7 +17,7 @@ public class DOSN {
     private Long id;
 
     @Column(name = "DOSN_FECHA")
-    private LocalDateTime fecha;
+    private Date fecha;
 
     @Column(name = "DOSN_GRAMOS_ANALIZADOS")
     private float gramosAnalizados;

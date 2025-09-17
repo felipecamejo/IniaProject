@@ -120,7 +120,7 @@ public class MapsDtoEntityService {
         germinacion.setGerminacion(germinacionDto.getGerminacion());
         germinacion.setComentarios(germinacionDto.getComentarios());
 
-        // Map ReciboDto a Recibo si no es null
+
         if (germinacionDto.getRecibo() != null) {
             germinacion.setRecibo(mapToEntityRecibo(germinacionDto.getRecibo()));
         } else {
@@ -240,63 +240,6 @@ public class MapsDtoEntityService {
         return sanitario;
     }
 
-<<<<<<< HEAD
-    public UsuarioDto mapToDtoUsuario(Usuario usuario) {
-        if (usuario == null) {
-            return null;
-        }
-        UsuarioDto usuarioDto = new UsuarioDto();
-        usuarioDto.setId(usuario.getId());
-        usuarioDto.setEmail(usuario.getEmail());
-        usuarioDto.setNombre(usuario.getNombre());
-        usuarioDto.setPassword(usuario.getPassword());
-        usuarioDto.setRol(usuario.getRol());
-        usuarioDto.setActivo(usuario.isActivo());
-        return usuarioDto;
-    }
-
-    public Usuario mapToEntityUsuario(UsuarioDto usuarioDto) {
-        if (usuarioDto == null) {
-            return null;
-        }
-        Usuario usuario = new Usuario();
-        if (usuarioDto.getId() != null) {
-            usuario.setId(usuarioDto.getId());
-        }
-        usuario.setEmail(usuarioDto.getEmail());
-        usuario.setNombre(usuarioDto.getNombre());
-        usuario.setPassword(usuarioDto.getPassword());
-        usuario.setRol(usuarioDto.getRol());
-        usuario.setActivo(usuarioDto.isActivo());
-        return usuario;
-    }
-
-    public LoteDto mapToDtoLote(Lote lote) {
-        if (lote == null) {
-            return null;
-        }
-        LoteDto loteDto = new LoteDto();
-        loteDto.setId(lote.getId());
-        loteDto.setNombre(lote.getNombre());
-        loteDto.setActivo(lote.isActivo());
-        return loteDto;
-    }
-
-    public Lote mapToEntityLote(LoteDto loteDto) {
-        if (loteDto == null) {
-            return null;
-        }
-        Lote lote = new Lote();
-        if (loteDto.getId() != null) {
-            lote.setId(loteDto.getId());
-        }
-        lote.setNombre(loteDto.getNombre());
-        lote.setActivo(loteDto.isActivo());
-        return lote;
-    }
-
-=======
->>>>>>> main
     public PMSDto mapToDtoPMS(PMS pms) {
         if (pms == null) {
             return null;
@@ -309,11 +252,7 @@ public class MapsDtoEntityService {
         pmsDto.setMetodo(pms.getMetodo());
         pmsDto.setObservaciones(pms.getObservaciones());
         pmsDto.setActivo(pms.isActivo());
-        if (pms.getLote() != null) {
-            pmsDto.setLote(mapToDtoLote(pms.getLote()));
-        } else {
-            pmsDto.setLote(null);
-        }
+        
         return pmsDto;
     }
 
@@ -329,11 +268,7 @@ public class MapsDtoEntityService {
         pms.setMetodo(pmsDto.getMetodo());
         pms.setObservaciones(pmsDto.getObservaciones());
         pms.setActivo(pmsDto.isActivo());
-        if (pmsDto.getLote() != null) {
-            pms.setLote(mapToEntityLote(pmsDto.getLote()));
-        } else {
-            pms.setLote(null);
-        }
+       
         return pms;
     }
 
@@ -390,11 +325,7 @@ public class MapsDtoEntityService {
         loteDto.setNombre(lote.getNombre());
         loteDto.setActivo(lote.isActivo());
 
-        if (lote.getRecibo() != null) {
-            loteDto.setRecibo(mapToDtoRecibo(lote.getRecibo()));
-        } else {
-            loteDto.setRecibo(null);
-        }
+        
 
         if (lote.getUsuarios() != null) {
             loteDto.setUsuarios(lote.getUsuarios().stream().map(this::mapToDtoUsuarioBasic).collect(Collectors.toList()));
@@ -413,11 +344,7 @@ public class MapsDtoEntityService {
         lote.setNombre(loteDto.getNombre());
         lote.setActivo(loteDto.isActivo());
 
-        if (loteDto.getRecibo() != null) {
-            lote.setRecibo(mapToEntityRecibo(loteDto.getRecibo()));
-        } else {
-            lote.setRecibo(null);
-        }
+    
 
         if (loteDto.getUsuarios() != null) {
             lote.setUsuarios(loteDto.getUsuarios().stream().map(this::mapToEntityUsuarioBasic).collect(Collectors.toList()));
@@ -465,7 +392,7 @@ public class MapsDtoEntityService {
         return usuario;
     }
 
-    // Métodos básicos para evitar ciclos
+
     private UsuarioDto mapToDtoUsuarioBasic(Usuario usuario) {
         if (usuario == null) return null;
         UsuarioDto dto = new UsuarioDto();
@@ -629,7 +556,7 @@ public class MapsDtoEntityService {
         dto.setDaniosOtros(tetrazolio.getDaniosOtros());
         dto.setDaniosDuras(tetrazolio.getDaniosDuras());
         if (tetrazolio.getViabilidadVigorTz() != null) {
-            dto.setViabilidadPorTetrazolio(tetrazolio.getViabilidadPorTetrazolio());
+            dto.setViabilidadVigorTz(tetrazolio.getViabilidadVigorTz());
         }
         dto.setPorcentajeFinal(tetrazolio.getPorcentajeFinal());
         dto.setDaniosPorPorcentajes(tetrazolio.getDaniosPorPorcentajes());

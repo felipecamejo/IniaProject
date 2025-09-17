@@ -2,14 +2,14 @@ package ti.proyectoinia.dtos;
 
 import lombok.Data;
 import lombok.Generated;
+import java.util.Date;
 
 @Data
 public class PMSDto {
     private Long id;
-    private LoteDto lote;
     private float pesoMilSemillas;
     private float humedadPorcentual;
-    private float fechaMedicion;
+    private Date fechaMedicion;
     private String metodo;
     private String observaciones;
     private boolean activo;
@@ -22,7 +22,7 @@ public class PMSDto {
         return java.util.Objects.equals(id, that.id) &&
                 Float.compare(pesoMilSemillas, that.pesoMilSemillas) == 0 &&
                 Float.compare(humedadPorcentual, that.humedadPorcentual) == 0 &&
-                Float.compare(fechaMedicion, that.fechaMedicion) == 0 &&
+                java.util.Objects.equals(fechaMedicion, that.fechaMedicion) &&
                 java.util.Objects.equals(metodo, that.metodo) &&
                 java.util.Objects.equals(observaciones, that.observaciones) &&
                 activo == that.activo;
@@ -40,7 +40,8 @@ public class PMSDto {
         result = result * 59 + ($id == null ? 43 : $id.hashCode());
         result = result * 59 + Float.floatToIntBits(this.getPesoMilSemillas());
         result = result * 59 + Float.floatToIntBits(this.getHumedadPorcentual());
-        result = result * 59 + Float.floatToIntBits(this.getFechaMedicion());
+        Object $fechaMedicion = this.getFechaMedicion();
+        result = result * 59 + ($fechaMedicion == null ? 43 : $fechaMedicion.hashCode());
         Object $metodo = this.getMetodo();
         result = result * 59 + ($metodo == null ? 43 : $metodo.hashCode());
         Object $observaciones = this.getObservaciones();

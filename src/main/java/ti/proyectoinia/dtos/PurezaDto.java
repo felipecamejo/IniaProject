@@ -2,12 +2,12 @@ package ti.proyectoinia.dtos;
 
 import lombok.Data;
 import lombok.Generated;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 public class PurezaDto {
     private Long id;
-    private LocalDateTime fecha;
+    private Date fecha;
     private float pesoInicial;
     private float semillaPura;
     private float materialInerte;
@@ -16,7 +16,7 @@ public class PurezaDto {
     private float malezasToleradas;
     private float pesoTotal;
     private float otrosCultivo;
-    private LocalDateTime fechaEstandar;
+    private Date fechaEstandar;
     private boolean estandar;
     private boolean activo;
 
