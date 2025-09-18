@@ -46,7 +46,11 @@ public class HongoService {
     }
 
     public ResponseEntity<ResponseListadoHongos> listadoHongos() {
-        ResponseListadoHongos hongosActivos = (ResponseListadoHongos) this.hongoRepository.findByActivoTrue();
-        return ResponseEntity.ok(hongosActivos);
+        var hongosActivos = this.hongoRepository.findByActivoTrue();
+        var hongosDto = hongosActivos.stream()
+                .map(mapsDtoEntityService::mapToDtoHongo)
+                .toList();
+        ResponseListadoHongos responseListadoHongos = new ResponseListadoHongos(hongosDto);
+        return ResponseEntity.ok(responseListadoHongos);
     }
 }

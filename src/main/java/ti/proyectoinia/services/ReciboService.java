@@ -44,9 +44,11 @@ public class ReciboService {
     }
 
     public ResponseEntity<ResponseListadoRecibos> listadoRecibos() {
-        ResponseListadoRecibos responseListadoRecibos = (ResponseListadoRecibos) this.reciboRepository.findByActivoTrue();
+        var recibosActivos = this.reciboRepository.findByActivoTrue();
+        var recibosDto = recibosActivos.stream()
+                .map(mapsDtoEntityService::mapToDtoRecibo)
+                .toList();
+        ResponseListadoRecibos responseListadoRecibos = new ResponseListadoRecibos(recibosDto);
         return ResponseEntity.ok(responseListadoRecibos);
     }
 }
-
-

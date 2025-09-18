@@ -42,9 +42,11 @@ public class PMSService {
     }
 
     public ResponseEntity<ResponseListadoPMS> listadoPMS() {
-        ResponseListadoPMS responseListadoPMS = (ResponseListadoPMS) this.pmsRepository.findByActivoTrue();
+        var pmsActivos = this.pmsRepository.findByActivoTrue();
+        var pmsDto = pmsActivos.stream()
+                .map(mapsDtoEntityService::mapToDtoPMS)
+                .toList();
+        ResponseListadoPMS responseListadoPMS = new ResponseListadoPMS(pmsDto);
         return ResponseEntity.ok(responseListadoPMS);
     }
 }
-
-

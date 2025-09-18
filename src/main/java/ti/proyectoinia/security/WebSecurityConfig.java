@@ -42,7 +42,7 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 //.addFilterBefore(new FiltroJWTAutorizacion(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-
+                        /*
                         // Rutas públicas (no requieren autenticación ni token)
                         .requestMatchers(antMatcher("/api/seguridad/**")).permitAll()
                         .requestMatchers(antMatcher("/v3/api-docs/**")).permitAll() // Documentación Swagger
@@ -53,6 +53,9 @@ public class WebSecurityConfig {
                         // Cualquier otra petición requiere autenticación (esta regla actúa como "catch-all" para APIs no listadas específicamente, pero las anteriores tienen prioridad)
                         .anyRequest()
                         .authenticated());
+                        */
+                        .anyRequest().permitAll());
+
 
         return http.build();
     }

@@ -24,7 +24,14 @@ public class MalezaService {
         }
 
         public ResponseEntity<ResponseListadoMalezas> listadoMalezas() {
-            ResponseListadoMalezas responseListadoMalezas = (ResponseListadoMalezas) this.malezaRepository.findByActivoTrue();
+            // Obtener entidades activas
+            var malezasActivas = this.malezaRepository.findByActivoTrue();
+            // Mapear a DTOs
+            var malezasDto = malezasActivas.stream()
+                    .map(mapsDtoEntityService::mapToDtoMaleza)
+                    .toList();
+            // Crear response
+            ResponseListadoMalezas responseListadoMalezas = new ResponseListadoMalezas(malezasDto);
             return ResponseEntity.ok(responseListadoMalezas);
         }
 

@@ -44,9 +44,11 @@ public class PurezaService {
     }
 
     public ResponseEntity<ResponseListadoPurezas> listadoPurezas() {
-        ResponseListadoPurezas responseListadoPurezas = (ResponseListadoPurezas) this.purezaRepository.findByActivoTrue();
+        var purezasActivas = this.purezaRepository.findByActivoTrue();
+        var purezasDto = purezasActivas.stream()
+                .map(mapsDtoEntityService::mapToDtoPureza)
+                .toList();
+        ResponseListadoPurezas responseListadoPurezas = new ResponseListadoPurezas(purezasDto);
         return ResponseEntity.ok(responseListadoPurezas);
     }
 }
-
-

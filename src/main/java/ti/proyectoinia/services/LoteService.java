@@ -44,9 +44,11 @@ public class LoteService {
     }
 
     public ResponseEntity<ResponseListadoLotes> listadoLotes() {
-        ResponseListadoLotes responseListadoLotes = (ResponseListadoLotes) this.loteRepository.findByActivoTrue();
+        var lotesActivos = this.loteRepository.findByActivoTrue();
+        var lotesDto = lotesActivos.stream()
+                .map(mapsDtoEntityService::mapToDtoLote)
+                .toList();
+        ResponseListadoLotes responseListadoLotes = new ResponseListadoLotes(lotesDto);
         return ResponseEntity.ok(responseListadoLotes);
     }
 }
-
-

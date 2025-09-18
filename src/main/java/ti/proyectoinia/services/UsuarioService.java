@@ -44,9 +44,11 @@ public class UsuarioService {
     }
 
     public ResponseEntity<ResponseListadoUsuarios> listadoUsuarios() {
-        ResponseListadoUsuarios responseListadoUsuarios = (ResponseListadoUsuarios) this.usuarioRepository.findByActivoTrue();
+        var usuariosActivos = this.usuarioRepository.findByActivoTrue();
+        var usuariosDto = usuariosActivos.stream()
+                .map(mapsDtoEntityService::mapToDtoUsuario)
+                .toList();
+        ResponseListadoUsuarios responseListadoUsuarios = new ResponseListadoUsuarios(usuariosDto);
         return ResponseEntity.ok(responseListadoUsuarios);
     }
 }
-
-
