@@ -21,20 +21,17 @@ public class Tetrazolio {
     @Column(name = "TETRAZOLIO_NRO_SEMILLAS_POR_REPETICION")
     private Integer nroSemillasPorRepeticion;
 
-    @ManyToOne
-    @JoinColumn(name = "PRETRATAMIENTO_ID")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "PRETRATAMIENTO")
     private PreTratamiento pretratamiento;
 
-    @ManyToOne
-    @JoinColumn(name = "CONCENTRACION_ID")
+    @Column(name = "CONCENTRACION")
     private float concentracion;
 
-    @ManyToOne
-    @JoinColumn(name = "TINCION_HS_ID")
+    @Column(name = "TINCION_HS")
     private float tincionHoras;
 
-    @ManyToOne
-    @JoinColumn(name = "TINCION_GRADOS_ID")
+    @Column(name = "TINCION_GRADOS")
     private float tincionGrados;
 
     @Column(name = "TETRAZOLIO_FECHA")
@@ -58,8 +55,8 @@ public class Tetrazolio {
     @Column(name = "TETRAZOLIO_PORCENTAJE")
     private Integer porcentaje;
 
-    @ManyToOne
-    @JoinColumn(name = "VIABILIDAD_TZ_ID")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "VIABILIDAD_TZ")
     private ViabilidadPorTz viabilidadPorTetrazolio;
 
     @Column(name = "TETRAZOLIO_NRO_SEMILLAS")
@@ -86,8 +83,8 @@ public class Tetrazolio {
     @Column(name = "TETRAZOLIO_DANIOS_DURAS")
     private Integer daniosDuras;
 
-    @ManyToOne
-    @JoinColumn(name = "VIABILIDAD_VIGOR_TZ_ID")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "VIABILIDAD_VIGOR_TZ")
     private ViabilidadVigorTZ viabilidadVigorTz;
 
     @Column(name = "TETRAZOLIO_PORCENTAJE_FINAL")

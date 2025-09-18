@@ -41,15 +41,15 @@ public class TetrazolioController {
         }
     }
 
-    @PutMapping({"/editar"})
     @Secured({"ADMIN"})
+    @PutMapping({"/editar"})
     public ResponseEntity<String> editarTetrazolio(@RequestBody TetrazolioDto tetrazolioDto) {
         String result = this.tetrazolioService.editarTetrazolio(tetrazolioDto);
         return ResponseEntity.ok(result);
     }
+    @Secured({"ADMIN"})
 
     @PutMapping({"/eliminar"})
-    @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina una Tetrazolio"
     )

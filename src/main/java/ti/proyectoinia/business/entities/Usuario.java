@@ -29,6 +29,7 @@ public class Usuario {
     @Column(name = "USUARIO_ACTIVO")
     private boolean activo;
 
+
     @ManyToMany
     @JoinTable(
         name = "USUARIO_LOTE",

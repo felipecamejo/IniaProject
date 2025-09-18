@@ -21,7 +21,7 @@ public class DOSNController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    //@Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion crea una nueva DOSN"
     )
@@ -42,14 +42,14 @@ public class DOSNController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
+    //@Secured({"ADMIN"})
     public ResponseEntity<String> editarDOSN(@RequestBody DOSNDto dosnDto) {
         String result = this.DOSNService.editarDOSN(dosnDto);
         return ResponseEntity.ok(result);
     }
 
     @PutMapping({"/eliminar"})
-    @Secured({"ADMIN"})
+    //@Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina una DOSN"
     )

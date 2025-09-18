@@ -21,7 +21,7 @@ public class GerminacionController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    //@Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion crea una nueva germinacion"
     )
@@ -42,14 +42,14 @@ public class GerminacionController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
+    //@Secured({"ADMIN"})
     public ResponseEntity<String> editarGerminacion(@RequestBody GerminacionDto germinacionDto) {
         String result = this.germinacionService.editarGerminacion(germinacionDto);
         return ResponseEntity.ok(result);
     }
 
     @PutMapping({"/eliminar"})
-    @Secured({"ADMIN"})
+    //@Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina una germinacion"
     )

@@ -1,10 +1,12 @@
 package ti.proyectoinia.services;
 
+import org.springframework.stereotype.Service;
 import ti.proyectoinia.business.entities.*;
 import ti.proyectoinia.dtos.*;
 
 import java.util.stream.Collectors;
 
+@Service
 public class MapsDtoEntityService {
 
     public HongoDto mapToDtoHongo(Hongo hongo) {

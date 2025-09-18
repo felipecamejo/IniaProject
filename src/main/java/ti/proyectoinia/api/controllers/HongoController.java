@@ -22,7 +22,7 @@ public class HongoController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    //@Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion crea un nuevo Hongo"
     )

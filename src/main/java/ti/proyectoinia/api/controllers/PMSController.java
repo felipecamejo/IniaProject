@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.Generated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import ti.proyectoinia.api.responses.ResponseListadoPMS;
 import ti.proyectoinia.dtos.PMSDto;
@@ -22,7 +21,7 @@ public class PMSController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    //@Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion crea un nuevo PMS"
     )
@@ -49,14 +48,14 @@ public class PMSController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
+    //@Secured({"ADMIN"})
     public ResponseEntity<String> editarPMS(@RequestBody PMSDto pmsDto) {
         String result = this.pmsService.editarPMS(pmsDto);
         return ResponseEntity.ok(result);
     }
 
     @PutMapping({"/eliminar"})
-    @Secured({"ADMIN"})
+    //@Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina un PMS"
     )
@@ -69,5 +68,3 @@ public class PMSController {
         }
     }
 }
-
-
