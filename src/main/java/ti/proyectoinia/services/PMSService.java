@@ -2,6 +2,7 @@ package ti.proyectoinia.services;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ti.proyectoinia.api.responses.ResponseListadoHongos;
 import ti.proyectoinia.api.responses.ResponseListadoPMS;
 import ti.proyectoinia.business.entities.PMS;
 import ti.proyectoinia.business.repositories.PMSRepository;
@@ -46,7 +47,9 @@ public class PMSService {
         var pmsDto = pmsActivos.stream()
                 .map(mapsDtoEntityService::mapToDtoPMS)
                 .toList();
-        ResponseListadoPMS responseListadoPMS = new ResponseListadoPMS(pmsDto);
+        ResponseListadoPMS responseListadoPMS= new ResponseListadoPMS(pmsDto);
         return ResponseEntity.ok(responseListadoPMS);
     }
 }
+
+

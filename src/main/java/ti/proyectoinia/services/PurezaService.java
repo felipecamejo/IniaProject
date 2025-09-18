@@ -2,6 +2,7 @@ package ti.proyectoinia.services;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ti.proyectoinia.api.responses.ResponseListadoMalezas;
 import ti.proyectoinia.api.responses.ResponseListadoPurezas;
 import ti.proyectoinia.business.entities.Pureza;
 import ti.proyectoinia.business.repositories.PurezaRepository;
@@ -52,3 +53,5 @@ public class PurezaService {
         return ResponseEntity.ok(responseListadoPurezas);
     }
 }
+
+

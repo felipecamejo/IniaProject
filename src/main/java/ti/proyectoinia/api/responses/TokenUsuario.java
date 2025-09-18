@@ -6,6 +6,4 @@
 // @AllArgsConstructor
 // @Getter
 // public class TokenUsuario {
-//     private String nombre, email, token;
-//     private String[] roles;
-// }
+

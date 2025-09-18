@@ -2,6 +2,7 @@ package ti.proyectoinia.services;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ti.proyectoinia.api.responses.ResponseListadoHongos;
 import ti.proyectoinia.api.responses.ResponseListadoMalezas;
 import ti.proyectoinia.business.entities.Maleza;
 import ti.proyectoinia.business.repositories.MalezaRepository;
@@ -24,13 +25,10 @@ public class MalezaService {
         }
 
         public ResponseEntity<ResponseListadoMalezas> listadoMalezas() {
-            // Obtener entidades activas
             var malezasActivas = this.malezaRepository.findByActivoTrue();
-            // Mapear a DTOs
             var malezasDto = malezasActivas.stream()
                     .map(mapsDtoEntityService::mapToDtoMaleza)
                     .toList();
-            // Crear response
             ResponseListadoMalezas responseListadoMalezas = new ResponseListadoMalezas(malezasDto);
             return ResponseEntity.ok(responseListadoMalezas);
         }

@@ -2,6 +2,7 @@ package ti.proyectoinia.services;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ti.proyectoinia.api.responses.ResponseListadoHongos;
 import ti.proyectoinia.api.responses.ResponseListadoLotes;
 import ti.proyectoinia.business.entities.Lote;
 import ti.proyectoinia.business.repositories.LoteRepository;
@@ -52,3 +53,5 @@ public class LoteService {
         return ResponseEntity.ok(responseListadoLotes);
     }
 }
+
+

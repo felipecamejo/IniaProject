@@ -2,6 +2,7 @@ package ti.proyectoinia.services;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ti.proyectoinia.api.responses.ResponseListadoPurezas;
 import ti.proyectoinia.api.responses.ResponseListadoRecibos;
 import ti.proyectoinia.business.entities.Recibo;
 import ti.proyectoinia.business.repositories.ReciboRepository;
@@ -52,3 +53,5 @@ public class ReciboService {
         return ResponseEntity.ok(responseListadoRecibos);
     }
 }
+
+
