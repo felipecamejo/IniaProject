@@ -1,0 +1,89 @@
+$app-bg: #f5f5f5;
+$app-border: #0071bc;
+$app-text: #333;
+
+.app-header {
+  background-color: $app-bg;
+  border-bottom: 4px solid $app-border;
+  padding: 0.5rem 1rem;
+
+  &__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+
+    img {
+      height: 40px;
+      margin-right: 0.75rem;
+    }
+
+    &__text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+
+      .header__title {
+        font-size: 1.5rem;
+        color: $app-border;
+        font-weight: bold;
+      }
+
+      .header__subtitle {
+        font-size: 0.75rem;
+        color: $app-text;
+        letter-spacing: 1px;
+      }
+    }
+  }
+
+  &__nav {
+    display: flex;
+    gap: 1rem;
+
+    .nav__item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      color: $app-border;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      border-radius: 0.25rem;
+
+      &:hover,
+      &:focus {
+        background-color: $app-border;
+        color: #fff;
+      }
+    }
+
+    .nav__icon {
+      font-size: 1.25rem;
+      /* Remplaza las clases icon-* por la librería de íconos elegida */
+    }
+  }
+}
+
+/* Responsive: en pantallas muy pequeñas */
+@media (max-width: 480px) {
+  .app-header__nav {
+    gap: 0.5rem;
+
+    .nav__item {
+      width: 2rem;
+      height: 2rem;
+
+      .nav__icon {
+        font-size: 1rem;
+      }
+    }
+  }
+}
