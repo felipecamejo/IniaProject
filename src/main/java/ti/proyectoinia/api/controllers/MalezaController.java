@@ -71,12 +71,12 @@ public class MalezaController {
         }
     }
 
-    @PutMapping({"/eliminar"})
+    @PutMapping({"/eliminar/{id}"})
     @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina un malezaS"
     )
-    public ResponseEntity<String> eliminarMaleza(@RequestBody Long id) {
+    public ResponseEntity<String> eliminarMaleza(@PathVariable Long id) {
         try {
             String mensaje = this.MalezaService.eliminarMaleza(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);

@@ -48,12 +48,12 @@ public class GerminacionController {
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping({"/eliminar"})
+    @PutMapping({"/eliminar/{id}"})
     //@Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina una germinacion"
     )
-    public ResponseEntity<String> eliminarGerminacion(@RequestBody Long id) {
+    public ResponseEntity<String> eliminarGerminacion(@PathVariable Long id) {
         try {
             String mensaje = this.germinacionService.eliminarGerminacion(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);

@@ -37,7 +37,12 @@ public class HongoService {
     }
 
     public String eliminarHongo(Long id) {
-        this.hongoRepository.deleteById(id);
+        if (id != null) {
+            this.hongoRepository.findById(id).ifPresent(hongo -> {
+                hongo.setActivo(false);
+                this.hongoRepository.save(hongo);
+            });
+        }
         return "Hongo eliminado correctamente";
     }
 

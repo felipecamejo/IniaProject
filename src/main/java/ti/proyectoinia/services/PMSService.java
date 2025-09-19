@@ -33,7 +33,12 @@ public class PMSService {
     }
 
     public String eliminarPMS(Long id) {
-        this.pmsRepository.deleteById(id);
+        if (id != null) {
+            this.pmsRepository.findById(id).ifPresent(pms -> {
+                pms.setActivo(false);
+                this.pmsRepository.save(pms);
+            });
+        }
         return "PMS eliminado correctamente";
     }
 

@@ -31,7 +31,12 @@ public class DOSNService {
     }
 
     public String eliminarDOSN(Long id) {
-        this.dosnRepository.deleteById(id);
+        if (id != null) {
+            this.dosnRepository.findById(id).ifPresent(dosn -> {
+                dosn.setActivo(false);
+                this.dosnRepository.save(dosn);
+            });
+        }
         return "DOSN eliminada correctamente";
     }
 

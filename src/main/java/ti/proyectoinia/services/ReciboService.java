@@ -34,7 +34,10 @@ public class ReciboService {
 
     public String eliminarRecibo(Long id) {
         if (id != null) {
-            this.reciboRepository.deleteById(id);
+            this.reciboRepository.findById(id).ifPresent(recibo -> {
+                recibo.setActivo(false);
+                this.reciboRepository.save(recibo);
+            });
         }
         return "Recibo eliminado correctamente";
     }

@@ -63,12 +63,12 @@ public class LoteController {
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping({"/eliminar"})
+    @PutMapping({"/eliminar/{id}"})
     @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina un Lote"
     )
-    public ResponseEntity<String> eliminarLote(@RequestBody Long id) {
+    public ResponseEntity<String> eliminarLote(@PathVariable Long id) {
         try {
             String mensaje = this.loteService.eliminarLote(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);

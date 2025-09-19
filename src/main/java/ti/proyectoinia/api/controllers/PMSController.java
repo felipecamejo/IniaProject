@@ -54,12 +54,12 @@ public class PMSController {
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping({"/eliminar"})
+    @PutMapping({"/eliminar/{id}"})
     //@Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina un PMS"
     )
-    public ResponseEntity<String> eliminarPMS(@RequestBody Long id) {
+    public ResponseEntity<String> eliminarPMS(@PathVariable Long id) {
         try {
             String mensaje = this.pmsService.eliminarPMS(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);

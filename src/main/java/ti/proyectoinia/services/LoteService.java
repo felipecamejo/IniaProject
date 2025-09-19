@@ -34,7 +34,10 @@ public class LoteService {
 
     public String eliminarLote(Long id) {
         if (id != null) {
-            this.loteRepository.deleteById(id);
+            this.loteRepository.findById(id).ifPresent(lote -> {
+                lote.setActivo(false);
+                this.loteRepository.save(lote);
+            });
         }
         return "Lote eliminado correctamente";
     }

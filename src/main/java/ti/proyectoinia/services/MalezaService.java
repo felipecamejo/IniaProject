@@ -47,7 +47,12 @@ public class MalezaService {
         }
 
         public String eliminarMaleza(Long id) {
-            this.malezaRepository.deleteById(id);
+            if (id != null) {
+                this.malezaRepository.findById(id).ifPresent(maleza -> {
+                    maleza.setActivo(false);
+                    this.malezaRepository.save(maleza);
+                });
+            }
             return "maleza eliminada correctamente";
         }
 

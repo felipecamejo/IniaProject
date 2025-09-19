@@ -33,7 +33,10 @@ public class UsuarioService {
 
     public String eliminarUsuario(Long id) {
         if (id != null) {
-            this.usuarioRepository.deleteById(id);
+            this.usuarioRepository.findById(id).ifPresent(usuario -> {
+                usuario.setActivo(false);
+                this.usuarioRepository.save(usuario);
+            });
         }
         return "Usuario eliminado correctamente";
     }

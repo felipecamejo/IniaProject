@@ -34,7 +34,10 @@ public class PurezaService {
 
     public String eliminarPureza(Long id) {
         if (id != null) {
-            this.purezaRepository.deleteById(id);
+            this.purezaRepository.findById(id).ifPresent(pureza -> {
+                pureza.setActivo(false);
+                this.purezaRepository.save(pureza);
+            });
         }
         return "Pureza eliminada correctamente";
     }

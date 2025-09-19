@@ -48,12 +48,12 @@ public class DOSNController {
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping({"/eliminar"})
+    @PutMapping({"/eliminar/{id}"})
     //@Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina una DOSN"
     )
-    public ResponseEntity<String> eliminarDOSN(@RequestBody Long id) {
+    public ResponseEntity<String> eliminarDOSN(@PathVariable Long id) {
         try {
             String mensaje = this.DOSNService.eliminarDOSN(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);

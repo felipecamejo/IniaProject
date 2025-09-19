@@ -48,12 +48,12 @@ public class PurezaPNotatumController {
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping({"/eliminar"})
+    @PutMapping({"/eliminar/{id}"})
     @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina una PurezaPNotatum"
     )
-    public ResponseEntity<String> eliminarPurezaPNotatum(@RequestBody Long id) {
+    public ResponseEntity<String> eliminarPurezaPNotatum(@PathVariable Long id) {
         try {
             String mensaje = this.purezaPNotatumService.eliminarPurezaPNotatum(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);

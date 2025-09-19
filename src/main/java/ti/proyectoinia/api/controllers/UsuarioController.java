@@ -58,12 +58,12 @@ public class UsuarioController {
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping({"/eliminar"})
+    @PutMapping({"/eliminar/{id}"})
     @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina un usuario"
     )
-    public ResponseEntity<String> eliminarUsuario(@RequestBody Long id) {
+    public ResponseEntity<String> eliminarUsuario(@PathVariable Long id) {
         try {
             String mensaje = this.usuarioService.eliminarUsuario(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);

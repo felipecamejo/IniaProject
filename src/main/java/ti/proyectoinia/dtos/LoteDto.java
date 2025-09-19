@@ -8,10 +8,12 @@ import lombok.Generated;
 @Data
 public class LoteDto {
     private Long id;
+
     private String nombre;
+
     private boolean activo;
 
-    private List<UsuarioDto> usuarios;
+    private List<Long> usuariosId;
 
     @Generated
     public boolean equals(final Object o) {

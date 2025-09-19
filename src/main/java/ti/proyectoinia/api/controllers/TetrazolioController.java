@@ -49,11 +49,11 @@ public class TetrazolioController {
     }
     @Secured({"ADMIN"})
 
-    @PutMapping({"/eliminar"})
+    @PutMapping({"/eliminar/{id}"})
     @Operation(
             description = "Esta Funcion elimina una Tetrazolio"
     )
-    public ResponseEntity<String> eliminarTetrazolio(@RequestBody Long id) {
+    public ResponseEntity<String> eliminarTetrazolio(@PathVariable Long id) {
         try {
             String mensaje = this.tetrazolioService.eliminarTetrazolio(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);

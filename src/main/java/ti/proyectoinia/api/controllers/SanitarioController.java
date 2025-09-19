@@ -49,12 +49,12 @@ public class SanitarioController {
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping({"/eliminar"})
+    @PutMapping({"/eliminar/{id}"})
     @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina un sanitario"
     )
-    public ResponseEntity<String> eliminarSanitario(@RequestBody Long id) {
+    public ResponseEntity<String> eliminarSanitario(@PathVariable Long id) {
         try {
             String mensaje = this.sanitarioService.eliminarSanitario(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);

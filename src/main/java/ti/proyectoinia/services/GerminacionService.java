@@ -31,7 +31,12 @@ public class GerminacionService {
     }
 
     public String eliminarGerminacion(Long id) {
-        this.germinacionRepository.deleteById(id);
+        if (id != null) {
+            this.germinacionRepository.findById(id).ifPresent(germinacion -> {
+                germinacion.setActivo(false);
+                this.germinacionRepository.save(germinacion);
+            });
+        }
         return "Germinacion eliminada correctamente";
     }
 

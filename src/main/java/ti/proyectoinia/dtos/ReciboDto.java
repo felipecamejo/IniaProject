@@ -19,7 +19,7 @@ public class ReciboDto {
     private int lote;
     private float kgLimpios;
     private String analisisSolicitados;
-    private int articulo;
+    private Integer articulo;
     private boolean activo;
 
     @Generated

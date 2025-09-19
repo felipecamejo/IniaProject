@@ -31,7 +31,12 @@ public class PurezaPNotatumService {
     }
 
     public String eliminarPurezaPNotatum(Long id) {
-        this.purezaPNotatumRepository.deleteById(id);
+        if (id != null) {
+            this.purezaPNotatumRepository.findById(id).ifPresent(purezaPNotatum -> {
+                purezaPNotatum.setActivo(false);
+                this.purezaPNotatumRepository.save(purezaPNotatum);
+            });
+        }
         return "PurezaPNotatum eliminada correctamente";
     }
 

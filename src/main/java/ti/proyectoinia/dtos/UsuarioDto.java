@@ -20,7 +20,7 @@ public class UsuarioDto {
 
     private boolean activo;
 
-    private List<LoteDto> lotes;
+    private List<Long> lotesId;
 
     @Generated
     public boolean equals(final Object o) {

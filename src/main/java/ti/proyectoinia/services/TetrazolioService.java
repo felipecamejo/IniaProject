@@ -31,7 +31,12 @@ public class TetrazolioService {
     }
 
     public String eliminarTetrazolio(Long id) {
-        this.tetrazolioRepository.deleteById(id);
+        if (id != null) {
+            this.tetrazolioRepository.findById(id).ifPresent(tetrazolio -> {
+                tetrazolio.setActivo(false);
+                this.tetrazolioRepository.save(tetrazolio);
+            });
+        }
         return "Tetrazolio eliminada correctamente";
     }
 

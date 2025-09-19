@@ -70,12 +70,12 @@ public class HongoController {
         }
     }
 
-    @PutMapping({"/eliminar"})
+    @PutMapping({"/eliminar/{id}"})
     @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina un hongo"
     )
-    public ResponseEntity<String> eliminarHongo(@RequestBody Long id) {
+    public ResponseEntity<String> eliminarHongo(@PathVariable Long id) {
         try {
             String mensaje = this.hongoService.eliminarHongo(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);

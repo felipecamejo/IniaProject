@@ -35,7 +35,12 @@ public class SanitarioService {
     }
 
     public String eliminarSanitario(Long id) {
-        this.sanitarioRepository.deleteById(id);
+        if (id != null) {
+            this.sanitarioRepository.findById(id).ifPresent(sanitario -> {
+                sanitario.setActivo(false);
+                this.sanitarioRepository.save(sanitario);
+            });
+        }
         return "Sanitario eliminado correctamente";
     }
 

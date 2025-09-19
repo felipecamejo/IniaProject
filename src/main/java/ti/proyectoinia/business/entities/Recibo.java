@@ -52,7 +52,7 @@ public class Recibo {
     private String analisisSolicitados;
 
     @Column(name = "ARTICULO")
-    private int articulo;
+    private Integer articulo;
 
     @Column(name = "RECIBO_ACTIVO")
     private boolean activo;

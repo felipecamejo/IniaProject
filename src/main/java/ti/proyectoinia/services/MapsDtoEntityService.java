@@ -13,6 +13,7 @@ public class MapsDtoEntityService {
         if (hongo == null) {
             return null;
         }
+
         HongoDto hongoDto = new HongoDto();
         hongoDto.setId(hongo.getId());
         hongoDto.setNombre(hongo.getNombre());
@@ -24,6 +25,7 @@ public class MapsDtoEntityService {
         if (hongoDto == null) {
             return null;
         }
+
         Hongo hongo = new Hongo();
         hongo.setId(hongoDto.getId());
         hongo.setNombre(hongoDto.getNombre());
@@ -35,6 +37,7 @@ public class MapsDtoEntityService {
         if (germinacion == null) {
             return null;
         }
+
         GerminacionDto germinacionDto = new GerminacionDto();
         germinacionDto.setId(germinacion.getId());
         germinacionDto.setFechaInicio(germinacion.getFechaInicio());
@@ -86,6 +89,7 @@ public class MapsDtoEntityService {
         if (germinacionDto == null) {
             return null;
         }
+
         Germinacion germinacion = new Germinacion();
         germinacion.setId(germinacionDto.getId());
         germinacion.setFechaInicio(germinacionDto.getFechaInicio());
@@ -129,6 +133,7 @@ public class MapsDtoEntityService {
             germinacion.setRecibo(null);
         }
         germinacion.setActivo(germinacionDto.isActivo());
+
         return germinacion;
     }
 
@@ -136,6 +141,7 @@ public class MapsDtoEntityService {
         if (recibo == null) {
             return null;
         }
+
         ti.proyectoinia.dtos.ReciboDto reciboDto = new ti.proyectoinia.dtos.ReciboDto();
         reciboDto.setId(recibo.getId());
         reciboDto.setNroAnalisis(recibo.getNroAnalisis());
@@ -152,6 +158,7 @@ public class MapsDtoEntityService {
         reciboDto.setAnalisisSolicitados(recibo.getAnalisisSolicitados());
         reciboDto.setArticulo(recibo.getArticulo());
         reciboDto.setActivo(recibo.isActivo());
+
         return reciboDto;
     }
 
@@ -159,10 +166,12 @@ public class MapsDtoEntityService {
         if (reciboDto == null) {
             return null;
         }
+
         ti.proyectoinia.business.entities.Recibo recibo = new ti.proyectoinia.business.entities.Recibo();
         if (reciboDto.getId() != null) {
             recibo.setId(reciboDto.getId());
         }
+
         recibo.setNroAnalisis(reciboDto.getNroAnalisis());
         recibo.setEspecie(reciboDto.getEspecie());
         recibo.setFicha(reciboDto.getFicha());
@@ -177,6 +186,7 @@ public class MapsDtoEntityService {
         recibo.setAnalisisSolicitados(reciboDto.getAnalisisSolicitados());
         recibo.setArticulo(reciboDto.getArticulo());
         recibo.setActivo(reciboDto.isActivo());
+
         return recibo;
     }
 
@@ -184,21 +194,25 @@ public class MapsDtoEntityService {
         if (maleza == null) {
             return null;
         }
+
         MalezaDto malezaDto = new MalezaDto();
         malezaDto.setId(maleza.getId());
         malezaDto.setNombre(maleza.getNombre());
         malezaDto.setActivo(maleza.isActivo());
         return malezaDto;
+
     }
 
     public Maleza mapToEntityMaleza(MalezaDto malezaDto) {
         if (malezaDto == null) {
             return null;
         }
+
         Maleza maleza = new Maleza();
         maleza.setId(malezaDto.getId());
         maleza.setNombre(malezaDto.getNombre());
         maleza.setActivo(malezaDto.isActivo());
+
         return maleza;
     }
 
@@ -206,6 +220,7 @@ public class MapsDtoEntityService {
         if (sanitario == null) {
             return null;
         }
+
         SanitarioDto sanitarioDto = new SanitarioDto();
         sanitarioDto.setId(sanitario.getId());
         sanitarioDto.setFechaSiembra(sanitario.getFechaSiembra());
@@ -226,6 +241,7 @@ public class MapsDtoEntityService {
         if (sanitarioDto == null) {
             return null;
         }
+
         Sanitario sanitario = new Sanitario();
         sanitario.setId(sanitarioDto.getId());
         sanitario.setFechaSiembra(sanitarioDto.getFechaSiembra());
@@ -246,6 +262,7 @@ public class MapsDtoEntityService {
         if (pms == null) {
             return null;
         }
+
         PMSDto pmsDto = new PMSDto();
         pmsDto.setId(pms.getId());
         pmsDto.setPesoMilSemillas(pms.getPesoMilSemillas());
@@ -278,6 +295,7 @@ public class MapsDtoEntityService {
         if (pureza == null) {
             return null;
         }
+
         PurezaDto dto = new PurezaDto();
         dto.setId(pureza.getId());
         dto.setFecha(pureza.getFecha());
@@ -292,6 +310,7 @@ public class MapsDtoEntityService {
         dto.setFechaEstandar(pureza.getFechaEstandar());
         dto.setEstandar(pureza.isEstandar());
         dto.setActivo(pureza.isActivo());
+
         return dto;
     }
 
@@ -299,10 +318,13 @@ public class MapsDtoEntityService {
         if (dto == null) {
             return null;
         }
+
         Pureza pureza = new Pureza();
+
         if (dto.getId() != null) {
             pureza.setId(dto.getId());
         }
+
         pureza.setFecha(dto.getFecha());
         pureza.setPesoInicial(dto.getPesoInicial());
         pureza.setSemillaPura(dto.getSemillaPura());
@@ -315,6 +337,7 @@ public class MapsDtoEntityService {
         pureza.setFechaEstandar(dto.getFechaEstandar());
         pureza.setEstandar(dto.isEstandar());
         pureza.setActivo(dto.isActivo());
+
         return pureza;
     }
 
@@ -322,18 +345,18 @@ public class MapsDtoEntityService {
         if (lote == null) {
             return null;
         }
+
         LoteDto loteDto = new LoteDto();
         loteDto.setId(lote.getId());
         loteDto.setNombre(lote.getNombre());
         loteDto.setActivo(lote.isActivo());
 
-        
-
         if (lote.getUsuarios() != null) {
-            loteDto.setUsuarios(lote.getUsuarios().stream().map(this::mapToDtoUsuarioBasic).collect(Collectors.toList()));
+            loteDto.setUsuariosId(lote.getUsuarios().stream().map(Usuario::getId).collect(Collectors.toList()));
         } else {
-            loteDto.setUsuarios(null);
+            loteDto.setUsuariosId(null);
         }
+
         return loteDto;
     }
 
@@ -341,18 +364,22 @@ public class MapsDtoEntityService {
         if (loteDto == null) {
             return null;
         }
+
         Lote lote = new Lote();
         lote.setId(loteDto.getId());
         lote.setNombre(loteDto.getNombre());
         lote.setActivo(loteDto.isActivo());
 
-    
-
-        if (loteDto.getUsuarios() != null) {
-            lote.setUsuarios(loteDto.getUsuarios().stream().map(this::mapToEntityUsuarioBasic).collect(Collectors.toList()));
+        if (loteDto.getUsuariosId() != null) {
+            lote.setUsuarios(loteDto.getUsuariosId().stream().map(id -> {
+                Usuario usuario = new Usuario();
+                usuario.setId(id);
+                return usuario;
+            }).collect(Collectors.toList()));
         } else {
             lote.setUsuarios(null);
         }
+
         return lote;
     }
 
@@ -360,6 +387,7 @@ public class MapsDtoEntityService {
         if (usuario == null) {
             return null;
         }
+
         UsuarioDto usuarioDto = new UsuarioDto();
         usuarioDto.setId(usuario.getId());
         usuarioDto.setEmail(usuario.getEmail());
@@ -367,11 +395,13 @@ public class MapsDtoEntityService {
         usuarioDto.setPassword(usuario.getPassword());
         usuarioDto.setRol(usuario.getRol());
         usuarioDto.setActivo(usuario.isActivo());
+
         if (usuario.getLotes() != null) {
-            usuarioDto.setLotes(usuario.getLotes().stream().map(this::mapToDtoLoteBasic).collect(Collectors.toList()));
+            usuarioDto.setLotesId(usuario.getLotes().stream().map(Lote::getId).collect(Collectors.toList()));
         } else {
-            usuarioDto.setLotes(null);
+            usuarioDto.setLotesId(null);
         }
+
         return usuarioDto;
     }
 
@@ -379,6 +409,7 @@ public class MapsDtoEntityService {
         if (usuarioDto == null) {
             return null;
         }
+
         Usuario usuario = new Usuario();
         usuario.setId(usuarioDto.getId());
         usuario.setEmail(usuarioDto.getEmail());
@@ -386,43 +417,59 @@ public class MapsDtoEntityService {
         usuario.setPassword(usuarioDto.getPassword());
         usuario.setRol(usuarioDto.getRol());
         usuario.setActivo(usuarioDto.isActivo());
-        if (usuarioDto.getLotes() != null) {
-            usuario.setLotes(usuarioDto.getLotes().stream().map(this::mapToEntityLoteBasic).collect(Collectors.toList()));
+
+        if (usuarioDto.getLotesId() != null) {
+            usuario.setLotes(usuarioDto.getLotesId().stream().map(id -> {
+                Lote lote = new Lote();
+                lote.setId(id);
+                return lote;
+            }).collect(Collectors.toList()));
         } else {
             usuario.setLotes(null);
         }
+
         return usuario;
     }
 
 
     private UsuarioDto mapToDtoUsuarioBasic(Usuario usuario) {
         if (usuario == null) return null;
+
         UsuarioDto dto = new UsuarioDto();
         dto.setId(usuario.getId());
         dto.setNombre(usuario.getNombre());
         dto.setEmail(usuario.getEmail());
+
         return dto;
     }
+
     private Usuario mapToEntityUsuarioBasic(UsuarioDto usuarioDto) {
         if (usuarioDto == null) return null;
+
         Usuario usuario = new Usuario();
         usuario.setId(usuarioDto.getId());
         usuario.setNombre(usuarioDto.getNombre());
         usuario.setEmail(usuarioDto.getEmail());
+
         return usuario;
     }
+
     private LoteDto mapToDtoLoteBasic(Lote lote) {
         if (lote == null) return null;
+
         LoteDto dto = new LoteDto();
         dto.setId(lote.getId());
         dto.setNombre(lote.getNombre());
+
         return dto;
     }
     private Lote mapToEntityLoteBasic(LoteDto loteDto) {
         if (loteDto == null) return null;
+
         Lote lote = new Lote();
         lote.setId(loteDto.getId());
         lote.setNombre(loteDto.getNombre());
+
         return lote;
     }
 
@@ -430,6 +477,7 @@ public class MapsDtoEntityService {
         if (dosn == null) {
             return null;
         }
+
         DOSNDto dto = new DOSNDto();
         dto.setId(dosn.getId());
         dto.setFecha(dosn.getFecha());
