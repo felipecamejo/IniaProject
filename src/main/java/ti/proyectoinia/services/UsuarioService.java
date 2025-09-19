@@ -18,9 +18,17 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public String crearUsuario(UsuarioDto usuarioDto) {
-        this.usuarioRepository.save(mapsDtoEntityService.mapToEntityUsuario(usuarioDto));
-        return "Usuario creado correctamente";
+    public UsuarioDto crearUsuario(UsuarioDto usuarioDto) {
+ 
+        Usuario usuarioExistente = this.usuarioRepository.findByEmailAndActivoTrue(usuarioDto.getEmail());
+        if (usuarioExistente != null) {
+            throw new IllegalArgumentException("Ya existe un usuario activo con el email: " + usuarioDto.getEmail());
+        }
+        
+        usuarioDto.setActivo(true);
+        usuarioDto.setLotesId(null);
+        Usuario usuarioGuardado = this.usuarioRepository.save(mapsDtoEntityService.mapToEntityUsuario(usuarioDto));
+        return mapsDtoEntityService.mapToDtoUsuario(usuarioGuardado);
     }
 
     public UsuarioDto obtenerUsuarioPorId(Long id) {
@@ -42,6 +50,12 @@ public class UsuarioService {
     }
 
     public String editarUsuario(UsuarioDto usuarioDto) {
+        // Validar que no exista otro usuario activo con el mismo email
+        Usuario usuarioExistente = this.usuarioRepository.findByEmailAndActivoTrue(usuarioDto.getEmail());
+        if (usuarioExistente != null && !usuarioExistente.getId().equals(usuarioDto.getId())) {
+            throw new IllegalArgumentException("Ya existe un usuario activo con el email: " + usuarioDto.getEmail());
+        }
+        
         this.usuarioRepository.save(mapsDtoEntityService.mapToEntityUsuario(usuarioDto));
         return "Usuario actualizado correctamente";
     }

@@ -34,8 +34,7 @@ public class ReciboController {
 
     @GetMapping({"/listar"})
     public ResponseEntity<ResponseListadoRecibos> getRecibos() {
-        ResponseListadoRecibos response = this.reciboService.listadoRecibos().getBody();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return this.reciboService.listadoRecibos();
     }
 
     @GetMapping({"/{id}"})

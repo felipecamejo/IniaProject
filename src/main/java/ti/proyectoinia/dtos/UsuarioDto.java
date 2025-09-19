@@ -2,6 +2,7 @@ package ti.proyectoinia.dtos;
 
 import lombok.Data;
 import lombok.Generated;
+import ti.proyectoinia.business.entities.RolUsuario;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class UsuarioDto {
 
     private String password;
 
-    private String rol;
+    private RolUsuario rol;
 
     private boolean activo;
 

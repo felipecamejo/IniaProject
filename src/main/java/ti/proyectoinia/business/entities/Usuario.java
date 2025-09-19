@@ -23,8 +23,9 @@ public class Usuario {
     @Column(name = "PASSWORD")
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "ROL")
-    private String rol;
+    private RolUsuario rol;
 
     @Column(name = "USUARIO_ACTIVO")
     private boolean activo;

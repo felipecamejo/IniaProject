@@ -33,8 +33,7 @@ public class PMSController {
 
     @GetMapping({"/listar"})
     public ResponseEntity<ResponseListadoPMS> getPMS() {
-        ResponseListadoPMS response = this.pmsService.listadoPMS().getBody();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return this.pmsService.listadoPMS();
     }
 
     @GetMapping({"/{id}"})

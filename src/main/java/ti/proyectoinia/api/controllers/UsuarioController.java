@@ -26,46 +26,43 @@ public class UsuarioController {
     @Operation(
             description = "Esta Funcion crea un nuevo Usuario"
     )
-    public ResponseEntity<String> crearUsuario(@RequestBody UsuarioDto usuarioDto) {
+    public ResponseEntity<?> crearUsuario(@RequestBody UsuarioDto usuarioDto) {
         if (usuarioDto.getEmail() == null || usuarioDto.getEmail().trim().isEmpty()) {
             return new ResponseEntity<>("El email del Usuario es obligatorio", HttpStatus.BAD_REQUEST);
         }
-        usuarioDto.setId((Long) null);
-        String response = this.usuarioService.crearUsuario(usuarioDto);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        if (usuarioDto.getRol() == null) {
+            return new ResponseEntity<>("El rol del Usuario es obligatorio", HttpStatus.BAD_REQUEST);
+        }
+        usuarioDto.setId(null); // ID será generado automáticamente
+        UsuarioDto usuarioCreado = this.usuarioService.crearUsuario(usuarioDto);
+        return new ResponseEntity<>(usuarioCreado, HttpStatus.CREATED);
     }
 
     @GetMapping({"/listar"})
     public ResponseEntity<ResponseListadoUsuarios> getUsuarios() {
-        ResponseListadoUsuarios response = this.usuarioService.listadoUsuarios().getBody();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return this.usuarioService.listadoUsuarios();
     }
 
-    @GetMapping({"/{id}"})
-    public ResponseEntity<?> getUsuarioById(@PathVariable Long id) {
-        UsuarioDto usuarioDto = this.usuarioService.obtenerUsuarioPorId(id);
-        if (usuarioDto != null) {
-            return new ResponseEntity<>(usuarioDto, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("Usuario no encontrado", HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @PutMapping({"/editar"})
+    
     @Secured({"ADMIN"})
+    @PutMapping({"/editar"})
+    
     public ResponseEntity<String> editarUsuario(@RequestBody UsuarioDto usuarioDto) {
+        if (usuarioDto.getRol() == null) {
+            return new ResponseEntity<>("El rol del Usuario es obligatorio", HttpStatus.BAD_REQUEST);
+        }
         String result = this.usuarioService.editarUsuario(usuarioDto);
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping({"/eliminar/{id}"})
-    @Secured({"ADMIN"})
+    //@Secured({"ADMIN"})
+    @DeleteMapping({"/eliminar/{id}"})
     @Operation(
             description = "Esta Funcion elimina un usuario"
     )
     public ResponseEntity<String> eliminarUsuario(@PathVariable Long id) {
         try {
-            String mensaje = this.usuarioService.eliminarUsuario(id)+ ". ID:" + id.toString();
+            String mensaje = this.usuarioService.eliminarUsuario(id) + ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Usuario: " + e.getMessage());

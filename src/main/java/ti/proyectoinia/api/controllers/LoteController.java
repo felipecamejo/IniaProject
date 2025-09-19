@@ -42,8 +42,7 @@ public class LoteController {
 
     @GetMapping({"/listar"})
     public ResponseEntity<ResponseListadoLotes> getLotes() {
-        ResponseListadoLotes response = this.loteService.listadoLotes().getBody();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return this.loteService.listadoLotes();
     }
 
     @GetMapping({"/{id}"})
