@@ -17,19 +17,23 @@ import java.util.stream.Collectors;
 public class FiltroJWTAutorizacion extends OncePerRequestFilter {
 
     private static final List<String> rutasPublicas = List.of(
-            "/api/usuarios",
-            "/api/login",
-            "/api/mercado-pago/webhook",
-            "/api/articulos"
+            "/api/seguridad/login",
+            "/api/seguridad/register",
+            "/v3/api-docs",
+            "/swagger-ui",
+            "/swagger-resources",
+            "/configuration",
+            "/webjars",
+            "/error"
     );
 
     private boolean esRutaPublica(HttpServletRequest request) {
-        return true;
-
-        //return rutasPublicas.contains(request.getRequestURI());
+        String requestURI = request.getRequestURI();
+        return rutasPublicas.stream().anyMatch(requestURI::startsWith);
     }
 
-    private final String CLAVE =  System.getenv("SECRET_KEY");
+    private final String CLAVE =  System.getenv("SECRET_KEY") != null ? 
+            System.getenv("SECRET_KEY") : "miClaveSecretaSuperSeguraParaJWT2024IniaProject";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -61,6 +65,7 @@ public class FiltroJWTAutorizacion extends OncePerRequestFilter {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void crearAutenticacion(Claims claims){
         List<String> autorizaciones = (List<String>)claims.get("authorities");
         UsernamePasswordAuthenticationToken authenticationToken

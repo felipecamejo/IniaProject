@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import ti.proyectoinia.business.entities.*;
 import ti.proyectoinia.dtos.*;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -393,7 +394,9 @@ public class MapsDtoEntityService {
         usuarioDto.setEmail(usuario.getEmail());
         usuarioDto.setNombre(usuario.getNombre());
         usuarioDto.setPassword(usuario.getPassword());
-        usuarioDto.setRol(usuario.getRol());
+        // Tomar el primer rol de la lista para mantener compatibilidad con DTO
+        usuarioDto.setRol(usuario.getRoles() != null && !usuario.getRoles().isEmpty() 
+                ? usuario.getRoles().get(0) : null);
         usuarioDto.setActivo(usuario.isActivo());
 
         if (usuario.getLotes() != null) {
@@ -415,7 +418,12 @@ public class MapsDtoEntityService {
         usuario.setEmail(usuarioDto.getEmail());
         usuario.setNombre(usuarioDto.getNombre());
         usuario.setPassword(usuarioDto.getPassword());
-        usuario.setRol(usuarioDto.getRol());
+        // Convertir el rol único del DTO a una lista para la entidad
+        if (usuarioDto.getRol() != null) {
+            usuario.setRoles(List.of(usuarioDto.getRol()));
+        } else {
+            usuario.setRoles(List.of());
+        }
         usuario.setActivo(usuarioDto.isActivo());
 
         if (usuarioDto.getLotesId() != null) {

@@ -20,4 +20,21 @@ public class OpenApiConfig {
                 .build();
     }
 
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("Proyecto INIA API")
+                        .version("1.0")
+                        .description("API para el sistema de análisis de semillas del INIA"))
+                .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
+                .components(new Components()
+                        .addSecuritySchemes("Bearer Authentication", 
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                                        .description("Ingresa tu token JWT obtenido del endpoint /api/seguridad/login")));
+    }
+
 }
