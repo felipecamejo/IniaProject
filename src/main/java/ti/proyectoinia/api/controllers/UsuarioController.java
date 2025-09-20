@@ -34,8 +34,8 @@ public class UsuarioController {
             return new ResponseEntity<>("El rol del Usuario es obligatorio", HttpStatus.BAD_REQUEST);
         }
         usuarioDto.setId(null); // ID será generado automáticamente
-        UsuarioDto usuarioCreado = this.usuarioService.crearUsuario(usuarioDto);
-        return new ResponseEntity<>(usuarioCreado, HttpStatus.CREATED);
+        String mensaje = this.usuarioService.crearUsuario(usuarioDto);
+        return new ResponseEntity<>(mensaje, HttpStatus.CREATED);
     }
 
     @GetMapping({"/listar"})
