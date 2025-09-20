@@ -69,21 +69,25 @@ public class Germinacion {
     @Column(name = "GERMINACION_PROMEDIOREPETICIONES")
     private float promedioRepeticiones;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "GERMINACION_TRATAMIENTO")
     private Tratamiento tratamiento;
 
     @Column(name = "GERMINACION_NROSEMILLAPORREPETICION")
     private int nroSemillaPorRepeticion;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "GERMINACION_METODO")
     private Metodo metodo;
 
     @Column(name = "GERMINACION_TEMPERATURA")
-    private float tempertatura;
+    private float temperatura;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "GERMINACION_PREFRIO")
     private PreFrio preFrio;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "GERMINACION_PRETRATAMIENTO")
     private PreTratamiento preTratamiento;
 
@@ -120,5 +124,4 @@ public class Germinacion {
 
     @Column(name = "GERMINACION_ACTIVO")
     private boolean activo;
-
 }

@@ -17,6 +17,7 @@ public class MapsDtoEntityService {
         HongoDto hongoDto = new HongoDto();
         hongoDto.setId(hongo.getId());
         hongoDto.setNombre(hongo.getNombre());
+        hongoDto.setActivo(hongo.isActivo());
 
         return hongoDto;
     }
@@ -29,6 +30,7 @@ public class MapsDtoEntityService {
         Hongo hongo = new Hongo();
         hongo.setId(hongoDto.getId());
         hongo.setNombre(hongoDto.getNombre());
+        hongo.setActivo(hongoDto.isActivo());
 
         return hongo;
     }
@@ -61,7 +63,7 @@ public class MapsDtoEntityService {
         germinacionDto.setTratamiento(germinacion.getTratamiento());
         germinacionDto.setNroSemillaPorRepeticion(germinacion.getNroSemillaPorRepeticion());
         germinacionDto.setMetodo(germinacion.getMetodo());
-        germinacionDto.setTempertatura(germinacion.getTempertatura());
+        germinacionDto.setTemperatura(germinacion.getTemperatura());
         germinacionDto.setPreFrio(germinacion.getPreFrio());
         germinacionDto.setPreTratamiento(germinacion.getPreTratamiento());
         germinacionDto.setNroDias(germinacion.getNroDias());
@@ -76,9 +78,9 @@ public class MapsDtoEntityService {
 
 
         if (germinacion.getRecibo() != null) {
-            germinacionDto.setRecibo(mapToDtoRecibo(germinacion.getRecibo()));
+            germinacionDto.setReciboId(germinacion.getRecibo().getId());
         } else {
-            germinacionDto.setRecibo(null);
+            germinacionDto.setReciboId(null);
         }
         germinacionDto.setActivo(germinacion.isActivo());
 
@@ -113,7 +115,7 @@ public class MapsDtoEntityService {
         germinacion.setTratamiento(germinacionDto.getTratamiento());
         germinacion.setNroSemillaPorRepeticion(germinacionDto.getNroSemillaPorRepeticion());
         germinacion.setMetodo(germinacionDto.getMetodo());
-        germinacion.setTempertatura(germinacionDto.getTempertatura());
+        germinacion.setTemperatura(germinacionDto.getTemperatura());
         germinacion.setPreFrio(germinacionDto.getPreFrio());
         germinacion.setPreTratamiento(germinacionDto.getPreTratamiento());
         germinacion.setNroDias(germinacionDto.getNroDias());
@@ -127,8 +129,10 @@ public class MapsDtoEntityService {
         germinacion.setComentarios(germinacionDto.getComentarios());
 
 
-        if (germinacionDto.getRecibo() != null) {
-            germinacion.setRecibo(mapToEntityRecibo(germinacionDto.getRecibo()));
+        if (germinacionDto.getReciboId() != null) {
+            Recibo recibo = new Recibo();
+            recibo.setId(germinacionDto.getReciboId());
+            germinacion.setRecibo(recibo);
         } else {
             germinacion.setRecibo(null);
         }
@@ -610,6 +614,7 @@ public class MapsDtoEntityService {
         }
         dto.setPorcentajeFinal(tetrazolio.getPorcentajeFinal());
         dto.setDaniosPorPorcentajes(tetrazolio.getDaniosPorPorcentajes());
+        dto.setActivo(tetrazolio.isActivo());
         return dto;
     }
 
@@ -646,6 +651,7 @@ public class MapsDtoEntityService {
         tetrazolio.setDaniosDuras(dto.getDaniosDuras());
         tetrazolio.setPorcentajeFinal(dto.getPorcentajeFinal());
         tetrazolio.setDaniosPorPorcentajes(dto.getDaniosPorPorcentajes());
+        tetrazolio.setActivo(dto.isActivo());
         return tetrazolio;
     }
 }

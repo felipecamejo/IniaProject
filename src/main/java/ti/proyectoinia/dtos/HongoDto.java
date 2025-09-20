@@ -17,6 +17,8 @@ public class HongoDto {
 
     private tipoHongo tipo;
 
+    private boolean activo;
+
     @Generated
     public boolean equals(final Object o) {
         if (this == o) return true;
