@@ -18,7 +18,7 @@ public class SanitarioService {
 
     public String crearSanitario(SanitarioDto sanitarioDto) {
         this.sanitarioRepository.save(mapsDtoEntityService.mapToEntitySanitario(sanitarioDto));
-        return "Sanitario creado correctamente";
+        return "Sanitario creado correctamente ID:" + sanitarioDto.getId();
     }
 
     public SanitarioDto obtenerSanitarioPorId(Long id) {
@@ -31,7 +31,7 @@ public class SanitarioService {
 
     public String editarSanitario(SanitarioDto sanitarioDto) {
         this.sanitarioRepository.save(mapsDtoEntityService.mapToEntitySanitario(sanitarioDto));
-        return "Sanitario actualizado correctamente";
+        return "Sanitario actualizado correctamente ID:" + sanitarioDto.getId();
     }
 
     public String eliminarSanitario(Long id) {
@@ -41,7 +41,7 @@ public class SanitarioService {
                 this.sanitarioRepository.save(sanitario);
             });
         }
-        return "Sanitario eliminado correctamente";
+        return "Sanitario eliminado correctamente ID:" + id;
     }
 
 }

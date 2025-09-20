@@ -238,6 +238,12 @@ public class MapsDtoEntityService {
         sanitarioDto.setNroSemillasRepeticion(sanitario.getNroSemillasRepeticion());
         sanitarioDto.setActivo(sanitario.isActivo());
 
+        if (sanitario.getRecibo() != null) {
+            sanitarioDto.setReciboId(sanitario.getRecibo().getId());
+        } else {
+            sanitarioDto.setReciboId(null);
+        }
+
         return sanitarioDto;
     }
 
@@ -258,6 +264,14 @@ public class MapsDtoEntityService {
         sanitario.setObservaciones(sanitarioDto.getObservaciones());
         sanitario.setNroSemillasRepeticion(sanitarioDto.getNroSemillasRepeticion());
         sanitario.setActivo(sanitarioDto.isActivo());
+
+        if (sanitarioDto.getReciboId() != null) {
+            Recibo recibo = new Recibo();
+            recibo.setId(sanitarioDto.getReciboId());
+            sanitario.setRecibo(recibo);
+        } else {
+            sanitario.setRecibo(null);
+        }
 
         return sanitario;
     }
@@ -494,6 +508,7 @@ public class MapsDtoEntityService {
         dto.setDeterminacionCuscuta(dosn.getDeterminacionCuscuta());
         dto.setEstandar(dosn.isEstandar());
         dto.setFechaAnalisis(dosn.getFechaAnalisis());
+        dto.setActivo(dosn.isActivo());
 
         if (dosn.getCultivos() != null) {
             dto.setCultivos(dosn.getCultivos().stream().map(this::mapToDtoCultivo).collect(Collectors.toList()));
@@ -518,6 +533,7 @@ public class MapsDtoEntityService {
         dosn.setDeterminacionBrassica(dto.getDeterminacionBrassica());
         dosn.setDeterminacionCuscuta(dto.getDeterminacionCuscuta());
         dosn.setEstandar(dto.isEstandar());
+        dosn.setActivo(dto.isActivo());
         dosn.setFechaAnalisis(dto.getFechaAnalisis());
 
         if (dto.getCultivos() != null) {
@@ -547,6 +563,7 @@ public class MapsDtoEntityService {
         if (pureza == null) {
             return null;
         }
+
         PurezaPNotatumDto dto = new PurezaPNotatumDto();
         dto.setId(pureza.getId());
         dto.setPorcentaje(pureza.getPorcentaje());
@@ -557,6 +574,8 @@ public class MapsDtoEntityService {
         dto.setPorcentajeA(pureza.getPorcentajeA());
         dto.setTotalA(pureza.getTotalA());
         dto.setSemillasLS(pureza.getSemillasLS());
+        dto.setActivo(pureza.isActivo());
+
         return dto;
     }
 
@@ -564,6 +583,7 @@ public class MapsDtoEntityService {
         if (dto == null) {
             return null;
         }
+
         PurezaPNotatum pureza = new PurezaPNotatum();
         pureza.setId(dto.getId());
         pureza.setPorcentaje(dto.getPorcentaje());
@@ -574,6 +594,8 @@ public class MapsDtoEntityService {
         pureza.setPorcentajeA(dto.getPorcentajeA());
         pureza.setTotalA(dto.getTotalA());
         pureza.setSemillasLS(dto.getSemillasLS());
+        pureza.setActivo(dto.isActivo());
+
         return pureza;
     }
 

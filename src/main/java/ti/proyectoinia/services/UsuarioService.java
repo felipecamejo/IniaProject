@@ -20,7 +20,7 @@ public class UsuarioService {
 
     public String crearUsuario(UsuarioDto usuarioDto) {
         this.usuarioRepository.save(mapsDtoEntityService.mapToEntityUsuario(usuarioDto));
-        return "Usuario creado correctamente";
+        return "Usuario creado correctamente ID:" + usuarioDto.getId();
     }
 
     public UsuarioDto obtenerUsuarioPorId(Long id) {
@@ -38,12 +38,12 @@ public class UsuarioService {
                 this.usuarioRepository.save(usuario);
             });
         }
-        return "Usuario eliminado correctamente";
+        return "Usuario eliminado correctamente ID:" + id;
     }
 
     public String editarUsuario(UsuarioDto usuarioDto) {
         this.usuarioRepository.save(mapsDtoEntityService.mapToEntityUsuario(usuarioDto));
-        return "Usuario actualizado correctamente";
+        return "Usuario actualizado correctamente ID:" + usuarioDto.getId();
     }
 
     public ResponseEntity<ResponseListadoUsuarios> listadoUsuarios() {

@@ -26,7 +26,7 @@ public class HongoService {
     public String crearHongo(HongoDto hongoDto) {
 
         this.hongoRepository.save(mapsDtoEntityService.mapToEntityHongo(hongoDto));
-        return "Hongo creado correctamente";
+        return "Hongo creado correctamente ID:" + hongoDto.getId();
     }
 
     public HongoDto obtenerHongoPorId(Long id) {
@@ -44,12 +44,12 @@ public class HongoService {
                 this.hongoRepository.save(hongo);
             });
         }
-        return "Hongo eliminado correctamente";
+        return "Hongo eliminado correctamente ID:" + id;
     }
 
     public String editarHongo(HongoDto hongoDto) {
         this.hongoRepository.save(mapsDtoEntityService.mapToEntityHongo(hongoDto));
-        return "Hongo actualizado correctamente";
+        return "Hongo actualizado correctamente ID:" + hongoDto.getId();
     }
 
     public ResponseEntity<ResponseListadoHongos> listadoHongos() {

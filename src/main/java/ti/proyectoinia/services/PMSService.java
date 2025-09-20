@@ -21,7 +21,7 @@ public class PMSService {
 
     public String crearPMS(PMSDto pmsDto) {
         this.pmsRepository.save(mapsDtoEntityService.mapToEntityPMS(pmsDto));
-        return "PMS creado correctamente";
+        return "PMS creado correctamente ID:" + pmsDto.getId();
     }
 
     public PMSDto obtenerPMSPorId(Long id) {
@@ -39,12 +39,12 @@ public class PMSService {
                 this.pmsRepository.save(pms);
             });
         }
-        return "PMS eliminado correctamente";
+        return "PMS eliminado correctamente ID:" + id;
     }
 
     public String editarPMS(PMSDto pmsDto) {
         this.pmsRepository.save(mapsDtoEntityService.mapToEntityPMS(pmsDto));
-        return "PMS actualizado correctamente";
+        return "PMS actualizado correctamente ID:" + pmsDto.getId();
     }
 
     public ResponseEntity<ResponseListadoPMS> listadoPMS() {

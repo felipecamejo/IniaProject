@@ -24,6 +24,8 @@ public class PurezaPNotatumDto {
     
     private float semillasLS;
 
+    private boolean activo;
+
     @Generated
     public boolean equals(final Object o) {
         if (o == this) return true;

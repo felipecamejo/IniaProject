@@ -21,7 +21,7 @@ public class PurezaService {
 
     public String crearPureza(PurezaDto dto) {
         this.purezaRepository.save(mapsDtoEntityService.mapToEntityPureza(dto));
-        return "Pureza creada correctamente";
+        return "Pureza creada correctamente ID:" + dto.getId();
     }
 
     public PurezaDto obtenerPurezaPorId(Long id) {
@@ -39,12 +39,12 @@ public class PurezaService {
                 this.purezaRepository.save(pureza);
             });
         }
-        return "Pureza eliminada correctamente";
+        return "Pureza eliminada correctamente ID:" + id;
     }
 
     public String editarPureza(PurezaDto dto) {
         this.purezaRepository.save(mapsDtoEntityService.mapToEntityPureza(dto));
-        return "Pureza actualizada correctamente";
+        return "Pureza actualizada correctamente ID:" + dto.getId();
     }
 
     public ResponseEntity<ResponseListadoPurezas> listadoPurezas() {

@@ -19,7 +19,7 @@ public class TetrazolioService {
 
     public String crearTetrazolio(TetrazolioDto tetrazolioDto) {
         this.tetrazolioRepository.save(mapsDtoEntityService.mapToEntityTetrazolio(tetrazolioDto));
-        return "Tetrazolio creada correctamente";
+        return "Tetrazolio creada correctamente ID:" + tetrazolioDto.getId();
     }
 
     public TetrazolioDto obtenerTetrazolioPorId(Long id) {
@@ -37,12 +37,12 @@ public class TetrazolioService {
                 this.tetrazolioRepository.save(tetrazolio);
             });
         }
-        return "Tetrazolio eliminada correctamente";
+        return "Tetrazolio eliminada correctamente ID:" + id;
     }
 
     public String editarTetrazolio(TetrazolioDto tetrazolioDto) {
         this.tetrazolioRepository.save(mapsDtoEntityService.mapToEntityTetrazolio(tetrazolioDto));
-        return "Tetrazolio actualizada correctamente";
+        return "Tetrazolio actualizada correctamente ID:" + tetrazolioDto.getId();
     }
 
 }
