@@ -1,7 +1,12 @@
 package ti.proyectoinia.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import ti.proyectoinia.business.entities.Cultivo;
 import ti.proyectoinia.business.entities.DOSN;
+import ti.proyectoinia.business.repositories.CultivoRepository;
 import ti.proyectoinia.business.repositories.DOSNRepository;
 import ti.proyectoinia.dtos.DOSNDto;
 
@@ -12,14 +17,24 @@ public class DOSNService {
     private final DOSNRepository dosnRepository;
     private final MapsDtoEntityService mapsDtoEntityService;
 
+    @Autowired
+    private CultivoRepository cultivoRepository;
+
     public DOSNService(DOSNRepository dosnRepository, MapsDtoEntityService mapsDtoEntityService) {
         this.mapsDtoEntityService = mapsDtoEntityService;
         this.dosnRepository = dosnRepository;
     }
 
     public String crearDOSN(DOSNDto dosnDto) {
+        if (dosnDto.getCultivos() != null) {
+            for (var cultivoDto : dosnDto.getCultivos()) {
+                if (cultivoDto.getId() == null || !cultivoRepository.existsById(cultivoDto.getId())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cultivo con id " + cultivoDto.getId() + " no existe");
+                }
+            }
+        }
         this.dosnRepository.save(mapsDtoEntityService.mapToEntityDOSN(dosnDto));
-        return "DOSN creada correctamente";
+        return "DOSN creada correctamente ID:" + dosnDto.getId();
     }
 
     public DOSNDto obtenerDOSNPorId(Long id) {
@@ -37,12 +52,20 @@ public class DOSNService {
                 this.dosnRepository.save(dosn);
             });
         }
-        return "DOSN eliminada correctamente";
+        return "DOSN eliminada correctamente ID:" + id;
     }
 
     public String editarDOSN(DOSNDto dosnDto) {
-        this.dosnRepository.save(mapsDtoEntityService.mapToEntityDOSN(dosnDto));
-        return "DOSN actualizada correctamente";
+        DOSN dosn = mapsDtoEntityService.mapToEntityDOSN(dosnDto);
+        if (dosn.getCultivos() != null) {
+            for (Cultivo cultivo : dosn.getCultivos()) {
+                if (cultivo.getId() == null || cultivo.getId() == 0 || !cultivoRepository.existsById(cultivo.getId())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cultivo con id " + cultivo.getId() + " no existe.");
+                }
+            }
+        }
+        this.dosnRepository.save(dosn);
+        return "DOSN actualizada correctamente ID:" + dosn.getId();
     }
 
 }

@@ -62,6 +62,8 @@ public class TetrazolioDto {
     
     private Integer daniosPorPorcentajes;
 
+    private boolean activo;
+
     @Generated
     public boolean equals(final Object o) {
         if (o == this) return true;

@@ -7,8 +7,6 @@ import java.util.List;
 public class ResponseListadoPurezas {
     private List<PurezaDto> purezas;
 
-    public ResponseListadoPurezas() {}
-
     public ResponseListadoPurezas(List<PurezaDto> purezas) {
         this.purezas = purezas;
     }

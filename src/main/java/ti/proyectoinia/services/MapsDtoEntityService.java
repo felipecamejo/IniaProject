@@ -17,6 +17,7 @@ public class MapsDtoEntityService {
         HongoDto hongoDto = new HongoDto();
         hongoDto.setId(hongo.getId());
         hongoDto.setNombre(hongo.getNombre());
+        hongoDto.setActivo(hongo.isActivo());
 
         return hongoDto;
     }
@@ -29,6 +30,7 @@ public class MapsDtoEntityService {
         Hongo hongo = new Hongo();
         hongo.setId(hongoDto.getId());
         hongo.setNombre(hongoDto.getNombre());
+        hongo.setActivo(hongoDto.isActivo());
 
         return hongo;
     }
@@ -61,7 +63,7 @@ public class MapsDtoEntityService {
         germinacionDto.setTratamiento(germinacion.getTratamiento());
         germinacionDto.setNroSemillaPorRepeticion(germinacion.getNroSemillaPorRepeticion());
         germinacionDto.setMetodo(germinacion.getMetodo());
-        germinacionDto.setTempertatura(germinacion.getTempertatura());
+        germinacionDto.setTemperatura(germinacion.getTemperatura());
         germinacionDto.setPreFrio(germinacion.getPreFrio());
         germinacionDto.setPreTratamiento(germinacion.getPreTratamiento());
         germinacionDto.setNroDias(germinacion.getNroDias());
@@ -76,9 +78,9 @@ public class MapsDtoEntityService {
 
 
         if (germinacion.getRecibo() != null) {
-            germinacionDto.setRecibo(mapToDtoRecibo(germinacion.getRecibo()));
+            germinacionDto.setReciboId(germinacion.getRecibo().getId());
         } else {
-            germinacionDto.setRecibo(null);
+            germinacionDto.setReciboId(null);
         }
         germinacionDto.setActivo(germinacion.isActivo());
 
@@ -113,7 +115,7 @@ public class MapsDtoEntityService {
         germinacion.setTratamiento(germinacionDto.getTratamiento());
         germinacion.setNroSemillaPorRepeticion(germinacionDto.getNroSemillaPorRepeticion());
         germinacion.setMetodo(germinacionDto.getMetodo());
-        germinacion.setTempertatura(germinacionDto.getTempertatura());
+        germinacion.setTemperatura(germinacionDto.getTemperatura());
         germinacion.setPreFrio(germinacionDto.getPreFrio());
         germinacion.setPreTratamiento(germinacionDto.getPreTratamiento());
         germinacion.setNroDias(germinacionDto.getNroDias());
@@ -127,8 +129,10 @@ public class MapsDtoEntityService {
         germinacion.setComentarios(germinacionDto.getComentarios());
 
 
-        if (germinacionDto.getRecibo() != null) {
-            germinacion.setRecibo(mapToEntityRecibo(germinacionDto.getRecibo()));
+        if (germinacionDto.getReciboId() != null) {
+            Recibo recibo = new Recibo();
+            recibo.setId(germinacionDto.getReciboId());
+            germinacion.setRecibo(recibo);
         } else {
             germinacion.setRecibo(null);
         }
@@ -234,6 +238,12 @@ public class MapsDtoEntityService {
         sanitarioDto.setNroSemillasRepeticion(sanitario.getNroSemillasRepeticion());
         sanitarioDto.setActivo(sanitario.isActivo());
 
+        if (sanitario.getRecibo() != null) {
+            sanitarioDto.setReciboId(sanitario.getRecibo().getId());
+        } else {
+            sanitarioDto.setReciboId(null);
+        }
+
         return sanitarioDto;
     }
 
@@ -254,6 +264,14 @@ public class MapsDtoEntityService {
         sanitario.setObservaciones(sanitarioDto.getObservaciones());
         sanitario.setNroSemillasRepeticion(sanitarioDto.getNroSemillasRepeticion());
         sanitario.setActivo(sanitarioDto.isActivo());
+
+        if (sanitarioDto.getReciboId() != null) {
+            Recibo recibo = new Recibo();
+            recibo.setId(sanitarioDto.getReciboId());
+            sanitario.setRecibo(recibo);
+        } else {
+            sanitario.setRecibo(null);
+        }
 
         return sanitario;
     }
@@ -490,6 +508,7 @@ public class MapsDtoEntityService {
         dto.setDeterminacionCuscuta(dosn.getDeterminacionCuscuta());
         dto.setEstandar(dosn.isEstandar());
         dto.setFechaAnalisis(dosn.getFechaAnalisis());
+        dto.setActivo(dosn.isActivo());
 
         if (dosn.getCultivos() != null) {
             dto.setCultivos(dosn.getCultivos().stream().map(this::mapToDtoCultivo).collect(Collectors.toList()));
@@ -514,6 +533,7 @@ public class MapsDtoEntityService {
         dosn.setDeterminacionBrassica(dto.getDeterminacionBrassica());
         dosn.setDeterminacionCuscuta(dto.getDeterminacionCuscuta());
         dosn.setEstandar(dto.isEstandar());
+        dosn.setActivo(dto.isActivo());
         dosn.setFechaAnalisis(dto.getFechaAnalisis());
 
         if (dto.getCultivos() != null) {
@@ -543,6 +563,7 @@ public class MapsDtoEntityService {
         if (pureza == null) {
             return null;
         }
+
         PurezaPNotatumDto dto = new PurezaPNotatumDto();
         dto.setId(pureza.getId());
         dto.setPorcentaje(pureza.getPorcentaje());
@@ -553,6 +574,8 @@ public class MapsDtoEntityService {
         dto.setPorcentajeA(pureza.getPorcentajeA());
         dto.setTotalA(pureza.getTotalA());
         dto.setSemillasLS(pureza.getSemillasLS());
+        dto.setActivo(pureza.isActivo());
+
         return dto;
     }
 
@@ -560,6 +583,7 @@ public class MapsDtoEntityService {
         if (dto == null) {
             return null;
         }
+
         PurezaPNotatum pureza = new PurezaPNotatum();
         pureza.setId(dto.getId());
         pureza.setPorcentaje(dto.getPorcentaje());
@@ -570,6 +594,8 @@ public class MapsDtoEntityService {
         pureza.setPorcentajeA(dto.getPorcentajeA());
         pureza.setTotalA(dto.getTotalA());
         pureza.setSemillasLS(dto.getSemillasLS());
+        pureza.setActivo(dto.isActivo());
+
         return pureza;
     }
 
@@ -610,6 +636,7 @@ public class MapsDtoEntityService {
         }
         dto.setPorcentajeFinal(tetrazolio.getPorcentajeFinal());
         dto.setDaniosPorPorcentajes(tetrazolio.getDaniosPorPorcentajes());
+        dto.setActivo(tetrazolio.isActivo());
         return dto;
     }
 
@@ -646,6 +673,7 @@ public class MapsDtoEntityService {
         tetrazolio.setDaniosDuras(dto.getDaniosDuras());
         tetrazolio.setPorcentajeFinal(dto.getPorcentajeFinal());
         tetrazolio.setDaniosPorPorcentajes(dto.getDaniosPorPorcentajes());
+        tetrazolio.setActivo(dto.isActivo());
         return tetrazolio;
     }
 }
