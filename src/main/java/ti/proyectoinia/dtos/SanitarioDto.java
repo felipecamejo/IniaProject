@@ -27,7 +27,7 @@ public class SanitarioDto {
 
     private int nroSemillasRepeticion;
 
-    private ReciboDto recibo;
+    private Long reciboId;
 
     private boolean activo;
 }

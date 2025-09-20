@@ -33,6 +33,8 @@ public class DOSNDto {
 
     private List<CultivoDto> cultivos;
 
+    private boolean activo;
+
     @Generated
     public boolean equals(final Object o) {
         if (o == this) return true;

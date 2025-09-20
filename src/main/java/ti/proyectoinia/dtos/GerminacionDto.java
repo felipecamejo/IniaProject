@@ -56,7 +56,7 @@ public class GerminacionDto {
 
     private Metodo metodo;
 
-    private float tempertatura;
+    private float temperatura;
 
     private PreFrio preFrio;
 
@@ -80,7 +80,7 @@ public class GerminacionDto {
 
     private String comentarios;
 
-    private ReciboDto recibo;
+    private Long reciboId;
 
     private boolean activo;
 }

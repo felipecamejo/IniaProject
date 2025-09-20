@@ -21,7 +21,7 @@ public class ReciboService {
 
     public String crearRecibo(ReciboDto reciboDto) {
         this.reciboRepository.save(mapsDtoEntityService.mapToEntityRecibo(reciboDto));
-        return "Recibo creado correctamente";
+        return "Recibo creado correctamente ID:" + reciboDto.getId();
     }
 
     public ReciboDto obtenerReciboPorId(Long id) {
@@ -39,12 +39,12 @@ public class ReciboService {
                 this.reciboRepository.save(recibo);
             });
         }
-        return "Recibo eliminado correctamente";
+        return "Recibo eliminado correctamente ID:" + id;
     }
 
     public String editarRecibo(ReciboDto reciboDto) {
         this.reciboRepository.save(mapsDtoEntityService.mapToEntityRecibo(reciboDto));
-        return "Recibo actualizado correctamente";
+        return "Recibo actualizado correctamente ID:" + reciboDto.getId();
     }
 
     public ResponseEntity<ResponseListadoRecibos> listadoRecibos() {

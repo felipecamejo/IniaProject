@@ -21,7 +21,7 @@ public class MalezaService {
 
         public String crearMaleza(MalezaDto malezaDto) {
             this.malezaRepository.save(mapsDtoEntityService.mapToEntityMaleza(malezaDto));
-            return "Maleza creada correctamente";
+            return "Maleza creada correctamente ID:" + malezaDto.getId();
         }
 
         public ResponseEntity<ResponseListadoMalezas> listadoMalezas() {
@@ -43,7 +43,7 @@ public class MalezaService {
 
         public String editarMaleza(MalezaDto malezaDto) {
             this.malezaRepository.save(mapsDtoEntityService.mapToEntityMaleza(malezaDto));
-            return "maleza actualizada correctamente";
+            return "maleza actualizada correctamente ID:" + malezaDto.getId();
         }
 
         public String eliminarMaleza(Long id) {
@@ -53,7 +53,7 @@ public class MalezaService {
                     this.malezaRepository.save(maleza);
                 });
             }
-            return "maleza eliminada correctamente";
+            return "maleza eliminada correctamente ID:" + id;
         }
 
 

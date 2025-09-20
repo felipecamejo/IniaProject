@@ -19,7 +19,7 @@ public class PurezaPNotatumService {
 
     public String crearPurezaPNotatum(PurezaPNotatumDto purezaPNotatumDto) {
         this.purezaPNotatumRepository.save(mapsDtoEntityService.mapToEntityPurezaPNotatum(purezaPNotatumDto));
-        return "PurezaPNotatum creada correctamente";
+        return "PurezaPNotatum creada correctamente ID:" + purezaPNotatumDto.getId();
     }
 
     public PurezaPNotatumDto obtenerPurezaPNotatumPorId(Long id) {
@@ -37,12 +37,12 @@ public class PurezaPNotatumService {
                 this.purezaPNotatumRepository.save(purezaPNotatum);
             });
         }
-        return "PurezaPNotatum eliminada correctamente";
+        return "PurezaPNotatum eliminada correctamente ID:" + id;
     }
 
     public String editarPurezaPNotatum(PurezaPNotatumDto purezaPNotatumDto) {
         this.purezaPNotatumRepository.save(mapsDtoEntityService.mapToEntityPurezaPNotatum(purezaPNotatumDto));
-        return "PurezaPNotatum actualizada correctamente";
+        return "PurezaPNotatum actualizada correctamente ID:" + purezaPNotatumDto.getId();
     }
 
 }

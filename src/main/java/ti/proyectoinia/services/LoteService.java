@@ -21,7 +21,7 @@ public class LoteService {
 
     public String crearLote(LoteDto loteDto) {
         this.loteRepository.save(mapsDtoEntityService.mapToEntityLote(loteDto));
-        return "Lote creado correctamente";
+        return "Lote creado correctamente ID:" + loteDto.getId();
     }
 
     public LoteDto obtenerLotePorId(Long id) {
@@ -39,12 +39,12 @@ public class LoteService {
                 this.loteRepository.save(lote);
             });
         }
-        return "Lote eliminado correctamente";
+        return "Lote eliminado correctamente ID:" + id;
     }
 
     public String editarLote(LoteDto loteDto) {
         this.loteRepository.save(mapsDtoEntityService.mapToEntityLote(loteDto));
-        return "Lote actualizado correctamente";
+        return "Lote actualizado correctamente ID:" + loteDto.getId();
     }
 
     public ResponseEntity<ResponseListadoLotes> listadoLotes() {
