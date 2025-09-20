@@ -54,10 +54,9 @@ public class SeguridadService {
     }
 
     public String[] listarRolesPorUsuario(Usuario usuario) {
-        String[] lisRoles = new String[usuario.getRoles().size()];
-        for (int i = 0; i < usuario.getRoles().size(); i++) {
-            lisRoles[i] = usuario.getRoles().get(i).name();
+        if (usuario.getRol() != null) {
+            return new String[]{usuario.getRol().name()};
         }
-        return lisRoles;
+        return new String[0];
     }
 }

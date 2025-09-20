@@ -97,7 +97,7 @@ public class SeguridadController {
             usuario.setNombre("Administrador");
             usuario.setPassword(passwordEncoder.encode("password123"));
             usuario.setActivo(true);
-            usuario.setRoles(List.of(RolUsuario.ADMIN));
+            usuario.setRol(RolUsuario.ADMIN);
             
             usuarioRepository.save(usuario);
             

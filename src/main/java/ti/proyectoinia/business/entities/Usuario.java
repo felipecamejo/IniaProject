@@ -23,11 +23,9 @@ public class Usuario {
     @Column(name = "PASSWORD")
     private String password;
 
-    @ElementCollection(targetClass = RolUsuario.class, fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
-    @CollectionTable(name = "USUARIO_ROLES", joinColumns = @JoinColumn(name = "USUARIO_ID"))
     @Column(name = "ROL")
-    private List<RolUsuario> roles;
+    private RolUsuario rol;
 
     @Column(name = "USUARIO_ACTIVO")
     private boolean activo;
