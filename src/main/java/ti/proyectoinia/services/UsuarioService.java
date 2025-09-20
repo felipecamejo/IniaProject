@@ -48,6 +48,15 @@ public class UsuarioService {
             throw new IllegalArgumentException("Ya existe un usuario activo con el email: " + usuarioDto.getEmail());
         }
         
+        // Obtener el usuario existente para preservar la contraseña si no se proporciona una nueva
+        Usuario usuarioActual = this.usuarioRepository.findById(usuarioDto.getId()).orElse(null);
+        if (usuarioActual != null) {
+            // Si no se proporciona contraseña o está vacía, mantener la contraseña actual
+            if (usuarioDto.getPassword() == null || usuarioDto.getPassword().trim().isEmpty()) {
+                usuarioDto.setPassword(usuarioActual.getPassword());
+            }
+        }
+        
         this.usuarioRepository.save(mapsDtoEntityService.mapToEntityUsuario(usuarioDto));
         return "Usuario actualizado correctamente ID:" + usuarioDto.getId();
     }

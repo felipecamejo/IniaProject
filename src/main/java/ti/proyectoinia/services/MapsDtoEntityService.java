@@ -1,5 +1,7 @@
 package ti.proyectoinia.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ti.proyectoinia.business.entities.*;
 import ti.proyectoinia.dtos.*;
@@ -8,6 +10,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class MapsDtoEntityService {
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public HongoDto mapToDtoHongo(Hongo hongo) {
         if (hongo == null) {
@@ -432,7 +437,14 @@ public class MapsDtoEntityService {
         usuario.setId(usuarioDto.getId());
         usuario.setEmail(usuarioDto.getEmail());
         usuario.setNombre(usuarioDto.getNombre());
-        usuario.setPassword(usuarioDto.getPassword());
+        
+        // Encriptar la contraseña si no está vacía
+        if (usuarioDto.getPassword() != null && !usuarioDto.getPassword().trim().isEmpty()) {
+            usuario.setPassword(passwordEncoder.encode(usuarioDto.getPassword()));
+        } else {
+            usuario.setPassword(usuarioDto.getPassword());
+        }
+        
         usuario.setRol(usuarioDto.getRol());
         usuario.setActivo(usuarioDto.isActivo());
 
