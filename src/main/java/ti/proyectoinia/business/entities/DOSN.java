@@ -56,4 +56,7 @@ public class DOSN {
 
     @Column(name = "DOSN_ACTIVO")
     private boolean activo;
+
+    @Column(name = "DOSN_REPETIDO")
+    private boolean repetido;
 }

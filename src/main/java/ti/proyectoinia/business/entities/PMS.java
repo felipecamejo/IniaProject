@@ -35,4 +35,7 @@ public class PMS {
 
     @Column(name = "PMS_ACTIVO")
     private boolean activo;
+
+    @Column(name = "PMS_REPETIDO")
+    private boolean repetido;
 }

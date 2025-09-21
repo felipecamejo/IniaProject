@@ -99,4 +99,7 @@ public class Tetrazolio {
 
     @Column(name = "TETRAZOLIO_ACTIVO")
     private boolean activo;
+
+    @Column(name = "TETRAZOLIO_REPETIDO")
+    private boolean repetido;
 }

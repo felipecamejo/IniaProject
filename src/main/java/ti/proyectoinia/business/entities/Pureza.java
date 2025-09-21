@@ -53,4 +53,7 @@ public class Pureza {
 
     @Column(name = "PUREZA_ACTIVO")
     private boolean activo;
+
+    @Column(name = "PUREZA_REPETIDO")
+    private boolean repetido;
 }
