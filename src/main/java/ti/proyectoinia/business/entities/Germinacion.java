@@ -124,4 +124,7 @@ public class Germinacion {
 
     @Column(name = "GERMINACION_ACTIVO")
     private boolean activo;
+
+    @Column(name = "GERMINACION_REPETIDO")
+    private boolean repetido;
 }

@@ -7,12 +7,20 @@ import java.util.Date;
 @Data
 public class PMSDto {
     private Long id;
+
     private float pesoMilSemillas;
+
     private float humedadPorcentual;
+
     private Date fechaMedicion;
+
     private String metodo;
+
     private String observaciones;
+
     private boolean activo;
+
+    private boolean repetido;
 
     @Generated
     public boolean equals(final Object o) {

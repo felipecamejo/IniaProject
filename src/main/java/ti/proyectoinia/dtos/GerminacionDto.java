@@ -83,4 +83,6 @@ public class GerminacionDto {
     private Long reciboId;
 
     private boolean activo;
+
+    private boolean repetido;
 }

@@ -75,6 +75,7 @@ public class MapsDtoEntityService {
         germinacionDto.setSemillasDuras(germinacion.getSemillasDuras());
         germinacionDto.setGerminacion(germinacion.getGerminacion());
         germinacionDto.setComentarios(germinacion.getComentarios());
+        germinacionDto.setRepetido(germinacion.isRepetido());
 
 
         if (germinacion.getRecibo() != null) {
@@ -127,6 +128,8 @@ public class MapsDtoEntityService {
         germinacion.setSemillasDuras(germinacionDto.getSemillasDuras());
         germinacion.setGerminacion(germinacionDto.getGerminacion());
         germinacion.setComentarios(germinacionDto.getComentarios());
+        germinacion.setRepetido(germinacionDto.isRepetido());
+        germinacion.setActivo(germinacionDto.isActivo());
 
 
         if (germinacionDto.getReciboId() != null) {
@@ -136,7 +139,7 @@ public class MapsDtoEntityService {
         } else {
             germinacion.setRecibo(null);
         }
-        germinacion.setActivo(germinacionDto.isActivo());
+
 
         return germinacion;
     }
@@ -237,6 +240,7 @@ public class MapsDtoEntityService {
         sanitarioDto.setObservaciones(sanitario.getObservaciones());
         sanitarioDto.setNroSemillasRepeticion(sanitario.getNroSemillasRepeticion());
         sanitarioDto.setActivo(sanitario.isActivo());
+        sanitarioDto.setRepetido(sanitarioDto.isRepetido());
 
         if (sanitario.getRecibo() != null) {
             sanitarioDto.setReciboId(sanitario.getRecibo().getId());
@@ -264,6 +268,7 @@ public class MapsDtoEntityService {
         sanitario.setObservaciones(sanitarioDto.getObservaciones());
         sanitario.setNroSemillasRepeticion(sanitarioDto.getNroSemillasRepeticion());
         sanitario.setActivo(sanitarioDto.isActivo());
+        sanitario.setRepetido(sanitarioDto.isRepetido());
 
         if (sanitarioDto.getReciboId() != null) {
             Recibo recibo = new Recibo();
@@ -289,6 +294,7 @@ public class MapsDtoEntityService {
         pmsDto.setMetodo(pms.getMetodo());
         pmsDto.setObservaciones(pms.getObservaciones());
         pmsDto.setActivo(pms.isActivo());
+        pmsDto.setRepetido(pms.isRepetido());
         
         return pmsDto;
     }
@@ -305,6 +311,7 @@ public class MapsDtoEntityService {
         pms.setMetodo(pmsDto.getMetodo());
         pms.setObservaciones(pmsDto.getObservaciones());
         pms.setActivo(pmsDto.isActivo());
+        pms.setRepetido(pmsDto.isRepetido());
        
         return pms;
     }
@@ -328,6 +335,7 @@ public class MapsDtoEntityService {
         dto.setFechaEstandar(pureza.getFechaEstandar());
         dto.setEstandar(pureza.isEstandar());
         dto.setActivo(pureza.isActivo());
+        dto.setRepetido(pureza.isRepetido());
 
         return dto;
     }
@@ -509,6 +517,7 @@ public class MapsDtoEntityService {
         dto.setEstandar(dosn.isEstandar());
         dto.setFechaAnalisis(dosn.getFechaAnalisis());
         dto.setActivo(dosn.isActivo());
+        dto.setRepetido(dosn.isRepetido());
 
         if (dosn.getCultivos() != null) {
             dto.setCultivos(dosn.getCultivos().stream().map(this::mapToDtoCultivo).collect(Collectors.toList()));
@@ -535,6 +544,7 @@ public class MapsDtoEntityService {
         dosn.setEstandar(dto.isEstandar());
         dosn.setActivo(dto.isActivo());
         dosn.setFechaAnalisis(dto.getFechaAnalisis());
+        dosn.setRepetido(dto.isRepetido());
 
         if (dto.getCultivos() != null) {
             dosn.setCultivos(dto.getCultivos().stream().map(this::mapToEntityCultivo).collect(Collectors.toList()));
@@ -546,16 +556,20 @@ public class MapsDtoEntityService {
 
     private CultivoDto mapToDtoCultivo(Cultivo cultivo) {
         if (cultivo == null) return null;
+
         CultivoDto dto = new CultivoDto();
         dto.setId(cultivo.getId());
         dto.setNombre(cultivo.getNombre());
+
         return dto;
     }
     private Cultivo mapToEntityCultivo(CultivoDto dto) {
         if (dto == null) return null;
+
         Cultivo cultivo = new Cultivo();
         cultivo.setId(dto.getId());
         cultivo.setNombre(dto.getNombre());
+
         return cultivo;
     }
 
@@ -575,6 +589,7 @@ public class MapsDtoEntityService {
         dto.setTotalA(pureza.getTotalA());
         dto.setSemillasLS(pureza.getSemillasLS());
         dto.setActivo(pureza.isActivo());
+        dto.setRepetido(pureza.isRepetido());
 
         return dto;
     }
@@ -595,6 +610,7 @@ public class MapsDtoEntityService {
         pureza.setTotalA(dto.getTotalA());
         pureza.setSemillasLS(dto.getSemillasLS());
         pureza.setActivo(dto.isActivo());
+        pureza.setRepetido(dto.isRepetido());
 
         return pureza;
     }
@@ -620,9 +636,11 @@ public class MapsDtoEntityService {
         dto.setTotal(tetrazolio.getTotal());
         dto.setPromedio(tetrazolio.getPromedio());
         dto.setPorcentaje(tetrazolio.getPorcentaje());
+
         if (tetrazolio.getViabilidadPorTetrazolio() != null) {
             dto.setViabilidadPorTetrazolio(tetrazolio.getViabilidadPorTetrazolio());
         }
+
         dto.setNroSemillas(tetrazolio.getNroSemillas());
         dto.setDaniosNroSemillas(tetrazolio.getDaniosNroSemillas());
         dto.setDaniosMecanicos(tetrazolio.getDaniosMecanicos());
@@ -631,12 +649,16 @@ public class MapsDtoEntityService {
         dto.setDaniosFracturas(tetrazolio.getDaniosFracturas());
         dto.setDaniosOtros(tetrazolio.getDaniosOtros());
         dto.setDaniosDuras(tetrazolio.getDaniosDuras());
+
         if (tetrazolio.getViabilidadVigorTz() != null) {
             dto.setViabilidadVigorTz(tetrazolio.getViabilidadVigorTz());
         }
+
         dto.setPorcentajeFinal(tetrazolio.getPorcentajeFinal());
         dto.setDaniosPorPorcentajes(tetrazolio.getDaniosPorPorcentajes());
         dto.setActivo(tetrazolio.isActivo());
+        dto.setRepetido(tetrazolio.isRepetido());
+
         return dto;
     }
 
@@ -648,9 +670,11 @@ public class MapsDtoEntityService {
         tetrazolio.setId(dto.getId());
         tetrazolio.setRepeticion(dto.getRepeticion());
         tetrazolio.setNroSemillasPorRepeticion(dto.getNroSemillasPorRepeticion());
+
         if (dto.getPretratamientoId() != null) {
             tetrazolio.setPretratamiento(PreTratamiento.values()[dto.getPretratamientoId()]);
         }
+
         tetrazolio.setConcentracion(dto.getConcentracion());
         tetrazolio.setTincionHoras(dto.getTincionHoras());
         tetrazolio.setTincionGrados(dto.getTincionGrados());
@@ -674,6 +698,8 @@ public class MapsDtoEntityService {
         tetrazolio.setPorcentajeFinal(dto.getPorcentajeFinal());
         tetrazolio.setDaniosPorPorcentajes(dto.getDaniosPorPorcentajes());
         tetrazolio.setActivo(dto.isActivo());
+        tetrazolio.setRepetido(dto.isRepetido());
+
         return tetrazolio;
     }
 }

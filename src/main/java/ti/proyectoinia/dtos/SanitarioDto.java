@@ -30,4 +30,6 @@ public class SanitarioDto {
     private Long reciboId;
 
     private boolean activo;
+
+    private boolean repetido;
 }

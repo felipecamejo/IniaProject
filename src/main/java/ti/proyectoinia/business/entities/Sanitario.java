@@ -58,4 +58,7 @@ public class Sanitario {
     @Column(name = "SANITARIO_ACTIVO")
     private boolean activo;
 
+    @Column(name = "SANITARIO_REPETIDO")
+    private boolean repetido;
+
 }

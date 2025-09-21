@@ -35,6 +35,8 @@ public class DOSNDto {
 
     private boolean activo;
 
+    private boolean repetido;
+
     @Generated
     public boolean equals(final Object o) {
         if (o == this) return true;
