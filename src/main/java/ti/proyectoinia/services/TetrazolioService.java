@@ -1,6 +1,9 @@
 package ti.proyectoinia.services;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ti.proyectoinia.api.responses.ResponseListadoSanitario;
+import ti.proyectoinia.api.responses.ResponseListadoTetrazolio;
 import ti.proyectoinia.business.entities.Tetrazolio;
 import ti.proyectoinia.business.repositories.TetrazolioRepository;
 import ti.proyectoinia.dtos.TetrazolioDto;
@@ -43,6 +46,15 @@ public class TetrazolioService {
     public String editarTetrazolio(TetrazolioDto tetrazolioDto) {
         this.tetrazolioRepository.save(mapsDtoEntityService.mapToEntityTetrazolio(tetrazolioDto));
         return "Tetrazolio actualizada correctamente ID:" + tetrazolioDto.getId();
+    }
+
+    public ResponseEntity<ResponseListadoTetrazolio> listadoTetrazolio() {
+        var activos = this.tetrazolioRepository.findByActivoTrue();
+        var dtos = activos.stream()
+                .map(mapsDtoEntityService::mapToDtoTetrazolio)
+                .toList();
+        ResponseListadoTetrazolio responseListadoTetrazolio = new ResponseListadoTetrazolio(dtos);
+        return ResponseEntity.ok(responseListadoTetrazolio);
     }
 
 }

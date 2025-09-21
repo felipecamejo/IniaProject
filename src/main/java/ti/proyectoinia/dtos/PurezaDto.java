@@ -7,18 +7,32 @@ import java.util.Date;
 @Data
 public class PurezaDto {
     private Long id;
+
     private Date fecha;
+
     private float pesoInicial;
+
     private float semillaPura;
+
     private float materialInerte;
+
     private float otrosCultivos;
+
     private float malezas;
+
     private float malezasToleradas;
+
     private float pesoTotal;
+
     private float otrosCultivo;
+
     private Date fechaEstandar;
+
     private boolean estandar;
+
     private boolean activo;
+
+    private boolean repetido;
 
     @Generated
     public boolean equals(final Object o) {

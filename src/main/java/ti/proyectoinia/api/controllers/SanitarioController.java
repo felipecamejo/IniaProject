@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import ti.proyectoinia.api.responses.ResponseListadoPurezaPNotatum;
+import ti.proyectoinia.api.responses.ResponseListadoSanitario;
 import ti.proyectoinia.dtos.SanitarioDto;
 import ti.proyectoinia.services.SanitarioService;
 
@@ -61,5 +63,11 @@ public class SanitarioController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Sanitario: " + e.getMessage());
         }
+    }
+
+    @GetMapping({"/listar"})
+    public ResponseEntity<ResponseListadoSanitario> getSanitarios() {
+        ResponseListadoSanitario response = this.sanitarioService.listadoSanitario().getBody();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

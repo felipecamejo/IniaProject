@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import ti.proyectoinia.api.responses.ResponseListadoDOSN;
+import ti.proyectoinia.api.responses.ResponseListadoPurezas;
 import ti.proyectoinia.dtos.DOSNDto;
 import ti.proyectoinia.services.DOSNService;
 
@@ -60,5 +62,11 @@ public class DOSNController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar la DOSN: " + e.getMessage());
         }
+    }
+
+    @GetMapping({"/listar"})
+    public ResponseEntity<ResponseListadoDOSN> getDOSNs() {
+        ResponseListadoDOSN response = this.DOSNService.listadoDOSN().getBody();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
