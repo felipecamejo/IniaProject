@@ -32,8 +32,21 @@ public class FiltroJWTAutorizacion extends OncePerRequestFilter {
         return rutasPublicas.stream().anyMatch(requestURI::startsWith);
     }
 
-    private final String CLAVE =  System.getenv("SECRET_KEY") != null ? 
-            System.getenv("SECRET_KEY") : "miClaveSecretaSuperSeguraParaJWT2024IniaProject";
+    private final String CLAVE = obtenerClaveSecretaSegura();
+
+    private String obtenerClaveSecretaSegura() {
+        String clave = System.getenv("JWT_SECRET");
+        if (clave == null || clave.trim().isEmpty()) {
+            throw new IllegalStateException(
+                "JWT_SECRET environment variable is required for JWT security. " +
+                "Generate one with: openssl rand -base64 32"
+            );
+        }
+        if (clave.length() < 32) {
+            throw new IllegalArgumentException("JWT_SECRET must be at least 32 characters long");
+        }
+        return clave;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
