@@ -1,0 +1,95 @@
+<div class="recibo-container">
+  <p-card class="recibo-card">
+    <ng-template pTemplate="header">
+      <h2 class="title">Recibo</h2>
+    </ng-template>
+
+    <form>
+      <div class="form-grid">
+        <!-- Campos de texto -->
+        <div class="form-field">
+          <label for="nLab">N Lab</label>
+          <input id="nLab" type="text" [(ngModel)]="nLab" name="nLab" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="especie">Especie</label>
+          <input id="especie" type="text" [(ngModel)]="especie" name="especie" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="cultivar">Cultivar</label>
+          <select id="cultivar" [(ngModel)]="selectedCultivar" name="cultivar">
+            <option *ngFor="let c of cultivares" [value]="c.value">{{ c.label }}</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="ficha">Ficha</label>
+          <input id="ficha" type="text" [(ngModel)]="ficha" name="ficha" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="lote">Lote</label>
+          <input id="lote" type="text" [(ngModel)]="lote" name="lote" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="kilos">Kilos</label>
+          <input id="kilos" type="number" [(ngModel)]="kilos" name="kilos" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="fechaRecibo">Fecha Recibo</label>
+          <input id="fechaRecibo" type="date" [(ngModel)]="fechaRecibo" name="fechaRecibo" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="observaciones">Observaciones</label>
+          <input id="observaciones" type="text" [(ngModel)]="observaciones" name="observaciones" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="remite">Remite</label>
+          <input id="remite" type="text" [(ngModel)]="remite" name="remite" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="ingresaFrio">Ingresa Frío</label>
+          <input id="ingresaFrio" type="text" [(ngModel)]="ingresaFrio" name="ingresaFrio" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="saleFrio">Sale Frío</label>
+          <input id="saleFrio" type="text" [(ngModel)]="saleFrio" name="saleFrio" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="rec">REC</label>
+          <textarea
+            id="rec"
+            rows="3"
+            placeholder="Agregar nuevo rec..."
+            [(ngModel)]="rec"
+            name="rec"
+            pInputText
+          ></textarea>
+        </div>
+
+        <div class="form-field">
+          <label for="observacion">Observación</label>
+          <input id="observacion" type="text" [(ngModel)]="observacion" name="observacion" pInputText />
+        </div>
+      </div>
+
+      <div class="submit-btn">
+        <button
+          pButton
+          type="submit"
+          label="Realizar Recibo"
+          class="p-button-success"
+        ></button>
+      </div>
+    </form>
+  </p-card>
+</div>
