@@ -2,8 +2,12 @@ package ti.proyectoinia.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.server.ResponseStatusException;
+import ti.proyectoinia.api.responses.ResponseListadoDOSN;
+import ti.proyectoinia.api.responses.ResponseListadoPurezas;
 import ti.proyectoinia.business.entities.Cultivo;
 import ti.proyectoinia.business.entities.DOSN;
 import ti.proyectoinia.business.repositories.CultivoRepository;
@@ -68,4 +72,12 @@ public class DOSNService {
         return "DOSN actualizada correctamente ID:" + dosn.getId();
     }
 
+    public ResponseEntity<ResponseListadoDOSN> listadoDOSN() {
+        var activos = this.dosnRepository.findByActivoTrue();
+        var dtos = activos.stream()
+                .map(mapsDtoEntityService::mapToDtoDOSN)
+                .toList();
+        ResponseListadoDOSN responseListadoDOSN = new ResponseListadoDOSN(dtos);
+        return ResponseEntity.ok(responseListadoDOSN);
+    }
 }

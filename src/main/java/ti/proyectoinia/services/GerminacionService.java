@@ -1,6 +1,10 @@
 package ti.proyectoinia.services;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.ErrorResponse;
+import ti.proyectoinia.api.responses.ResponseListadoDOSN;
+import ti.proyectoinia.api.responses.ResponseListadoGerminacion;
 import ti.proyectoinia.business.entities.Germinacion;
 import ti.proyectoinia.business.repositories.GerminacionRepository;
 import ti.proyectoinia.dtos.GerminacionDto;
@@ -45,4 +49,12 @@ public class GerminacionService {
         return "Germinacion actualizada correctamente ID:" + germinacionDto.getId();
     }
 
+    public ResponseEntity<ResponseListadoGerminacion> listadoGerminacion() {
+        var activos = this.germinacionRepository.findByActivoTrue();
+        var dtos = activos.stream()
+                .map(mapsDtoEntityService::mapToDtoGerminacion)
+                .toList();
+        ResponseListadoGerminacion responseListadoGerminacion = new ResponseListadoGerminacion(dtos);
+        return ResponseEntity.ok(responseListadoGerminacion);
+    }
 }

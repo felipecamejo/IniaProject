@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import ti.proyectoinia.api.responses.ResponseListadoGerminacion;
+import ti.proyectoinia.api.responses.ResponseListadoPurezas;
 import ti.proyectoinia.dtos.GerminacionDto;
 import ti.proyectoinia.services.GerminacionService;
 
@@ -60,5 +62,11 @@ public class GerminacionController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar la Germinacion: " + e.getMessage());
         }
+    }
+
+    @GetMapping({"/listar"})
+    public ResponseEntity<ResponseListadoGerminacion> getGerminaciones() {
+        ResponseListadoGerminacion response = this.germinacionService.listadoGerminacion().getBody();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

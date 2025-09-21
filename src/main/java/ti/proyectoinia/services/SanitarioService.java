@@ -1,6 +1,10 @@
 package ti.proyectoinia.services;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.ErrorResponse;
+import ti.proyectoinia.api.responses.ResponseListadoPurezaPNotatum;
+import ti.proyectoinia.api.responses.ResponseListadoSanitario;
 import ti.proyectoinia.business.entities.Sanitario;
 import ti.proyectoinia.business.repositories.SanitarioRepository;
 import ti.proyectoinia.dtos.SanitarioDto;
@@ -44,4 +48,12 @@ public class SanitarioService {
         return "Sanitario eliminado correctamente ID:" + id;
     }
 
+    public ResponseEntity<ResponseListadoSanitario> listadoSanitario() {
+        var activos = this.sanitarioRepository.findByActivoTrue();
+        var dtos = activos.stream()
+                .map(mapsDtoEntityService::mapToDtoSanitario)
+                .toList();
+        ResponseListadoSanitario responseListadoSanitario = new ResponseListadoSanitario(dtos);
+        return ResponseEntity.ok(responseListadoSanitario);
+    }
 }

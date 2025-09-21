@@ -1,6 +1,10 @@
 package ti.proyectoinia.services;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.ErrorResponse;
+import ti.proyectoinia.api.responses.ResponseListadoGerminacion;
+import ti.proyectoinia.api.responses.ResponseListadoPurezaPNotatum;
 import ti.proyectoinia.business.entities.PurezaPNotatum;
 import ti.proyectoinia.business.repositories.PurezaPNotatumRepository;
 import ti.proyectoinia.dtos.PurezaPNotatumDto;
@@ -45,4 +49,12 @@ public class PurezaPNotatumService {
         return "PurezaPNotatum actualizada correctamente ID:" + purezaPNotatumDto.getId();
     }
 
+    public ResponseEntity<ResponseListadoPurezaPNotatum> listadoPurezaPnotatum() {
+        var activos = this.purezaPNotatumRepository.findByActivoTrue();
+        var dtos = activos.stream()
+                .map(mapsDtoEntityService::mapToDtoPurezaPNotatum)
+                .toList();
+        ResponseListadoPurezaPNotatum responseListadoPurezaPNotatum = new ResponseListadoPurezaPNotatum(dtos);
+        return ResponseEntity.ok(responseListadoPurezaPNotatum);
+    }
 }
