@@ -5,26 +5,31 @@ $app-text: #333;
 .app-header {
   background-color: $app-bg;
   border-bottom: 4px solid $app-border;
-  padding: 0.5rem 1rem;
+  box-sizing: border-box;
+  width: 100%;
 
-  &__container {
-    max-width: 1200px;
-    margin: 0 auto;
+
+  .app-header__container {
+    width: 100%;
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    height: 4.5rem;
+    padding-right: 1rem;
   }
 
-  &__logo {
+  .app-header__logo {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
 
     img {
       height: 40px;
       margin-right: 0.75rem;
     }
 
-    &__text {
+    .app-header__text {
       display: flex;
       flex-direction: column;
       line-height: 1;
@@ -43,34 +48,42 @@ $app-text: #333;
     }
   }
 
-  &__nav {
+  .app-header__nav {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
+    align-items: center;
+    margin-left: auto; 
+    height: 100%;
+    padding-right: 1rem;
 
     .nav__item {
+      width: 3rem;
+      height: 3rem;
+      font-size: 1.5rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 2.5rem;
-      height: 2.5rem;
-      color: $app-border;
-      text-decoration: none;
+      border-radius: 1.0rem;
+      color: $app-text;
       transition: background 0.2s, color 0.2s;
-      border-radius: 0.25rem;
+      text-decoration: none;
 
-      &:hover,
-      &:focus {
+      i.pi {
+        font-size: 1.5rem;
+      }
+
+      &:hover {
         background-color: $app-border;
-        color: #fff;
+        color: white;
+        box-shadow: 0 0 8px rgba(0, 113, 188, 0.3);
       }
     }
 
     .nav__icon {
-      font-size: 1.25rem;
-      /* Remplaza las clases icon-* por la librería de íconos elegida */
+      font-size: 2.2rem;
     }
   }
-}
+
 
 /* Responsive: en pantallas muy pequeñas */
 @media (max-width: 480px) {
@@ -86,4 +99,5 @@ $app-text: #333;
       }
     }
   }
+}
 }
