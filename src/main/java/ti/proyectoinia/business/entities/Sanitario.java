@@ -42,7 +42,7 @@ public class Sanitario {
     private Estado estadoProductoDosis;
 
     @Column(name = "SANITARIO_OBSERVACIONES")
-    private int observaciones;
+    private String observaciones;
 
     @Column(name = "SANITARIO_NROSEMILLASREPETICION")
     private int nroSemillasRepeticion;
@@ -51,14 +51,13 @@ public class Sanitario {
     @JoinColumn(name = "RECIBO_ID")
     private Recibo recibo;
 
-    @OneToMany
-    @JoinColumn(name = "SANITARIO_ID")
-    private List<Hongo> hongos;
-
     @Column(name = "SANITARIO_ACTIVO")
     private boolean activo;
 
     @Column(name = "SANITARIO_REPETIDO")
     private boolean repetido;
+
+    @OneToMany(mappedBy = "sanitario", cascade = CascadeType.ALL)
+    private List<SanitarioHongo> sanitarioHongos;
 
 }

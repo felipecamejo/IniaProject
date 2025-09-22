@@ -23,7 +23,7 @@ public class SanitarioDto {
 
     private Estado estadoProductoDosis;
 
-    private int observaciones;
+    private String observaciones;
 
     private int nroSemillasRepeticion;
 

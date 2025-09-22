@@ -4,12 +4,13 @@ import { HomeComponent } from './components/home/home.component';
 import { ReciboComponent } from './components/recibo/recibo.component';
 import { LoginComponent } from './components/login/login.component';
 import { PmsComponent } from './components/pms/pms.component';
+import { SanitarioComponent } from './components/sanitario/sanitario.component';
 
 export const routes: Routes = [
     { path : 'home', component: HomeComponent },
     { path : 'recibo', component: ReciboComponent },
     { path : 'login', component: LoginComponent },
     { path : '', redirectTo: '/login', pathMatch: 'full' },
-    { path : 'pms', component: PmsComponent }
-
+    { path : 'pms', component: PmsComponent },
+    { path : 'sanitario', component: SanitarioComponent }
 ];

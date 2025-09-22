@@ -1,0 +1,161 @@
+<div class="container">
+  <p-card class="card">
+    <ng-template pTemplate="header">
+      <h2 class="title">Sanitario</h2>
+    </ng-template>
+
+    <form>
+      <div class="form-grid">
+        <!-- Campos de texto -->
+
+        <div class="form-field">
+          <label for="fechaSiembra">Fecha Siembra</label>
+          <input id="fechaSiembra" type="date" [(ngModel)]="fechaSiembra" name="fechaSiembra" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="fecha">Fecha</label>
+          <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="ficha">Metodo</label>
+          <select id="metodos" [(ngModel)]="selectedMetodo" name="metodo">
+            <option value="" >Seleccionar Método</option>
+            <option *ngFor="let m of metodos" [value]="m.id">{{ m.label }}</option>
+          </select>
+        </div>  
+
+        <div class="form-field">
+          <label for="temperatura">Temperatura</label>
+          <input id="temperatura" type="number" [(ngModel)]="temperatura" name="temperatura" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="horasLuzOscuridad">Horas Luz/Oscuridad</label>
+          <input id="horasLuzOscuridad" type="number" [(ngModel)]="horasLuzOscuridad" name="horasLuzOscuridad" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="numeroDias">Numero de Dias</label>
+          <input id="numeroDias" type="number" [(ngModel)]="numeroDias" name="numeroDias" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="estados">Estado</label>
+          <select id="estados" [(ngModel)]="selectedEstado" name="estado">
+            <option value="" >Seleccionar Estado</option>
+            <option *ngFor="let e of estados" [value]="e.id">{{ e.label }}</option>
+          </select>
+        </div>  
+
+        <div class="form-field">
+          <label for="observaciones">Observaciones</label>
+          <textarea id="observaciones" rows="3" [(ngModel)]="observaciones" name="observaciones" pInputText></textarea>
+        </div>
+
+        <div class="form-field">
+          <label for="numeroSemillasRepeticion">Numero de Semillas por Repeticion</label>
+          <input id="numeroSemillasRepeticion" type="number" [(ngModel)]="numeroSemillasRepeticion" name="numeroSemillasRepeticion" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="hongosSelect">Hongos</label>
+          <div class="custom-multiselect" [class.open]="isHongosDropdownOpen">
+            <div class="multiselect-trigger" (click)="toggleHongosDropdown()">
+              <span class="selected-text">
+                {{ getSelectedHongosText() }}
+              </span>
+              <i class="pi pi-chevron-down" [class.rotated]="isHongosDropdownOpen"></i>
+            </div>
+            <div class="multiselect-dropdown" *ngIf="isHongosDropdownOpen">
+              <div class="multiselect-search">
+                <input type="text" 
+                       placeholder="Buscar hongos..." 
+                       [(ngModel)]="hongosSearchText"
+                       name="hongosSearch"
+                       (click)="$event.stopPropagation()"
+                       class="search-input">
+                <i class="pi pi-search"></i>
+              </div>
+              <div class="multiselect-options-container">
+                <div class="multiselect-option" 
+                     *ngFor="let hongo of getFilteredHongos()" 
+                     (click)="toggleHongoSelection(hongo)"
+                     [class.selected]="isHongoSelected(hongo.id)">
+                  <input type="checkbox" 
+                         [checked]="isHongoSelected(hongo.id)"
+                         (change)="toggleHongoSelection(hongo)"
+                         (click)="$event.stopPropagation()">
+                  <span>{{ hongo.label }}</span>
+                </div>
+                <div class="no-results" *ngIf="getFilteredHongos().length === 0">
+                  No se encontraron hongos
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de hongos seleccionados -->
+        <div class="hongos-table" *ngIf="hongosTable.length > 0">
+          <h3>Hongos</h3>
+          <p-table [value]="hongosTable" [tableStyle]="{'width': 'auto'}">
+            <ng-template pTemplate="header">
+              <tr>
+                <th style="width: auto;">Tipo Hongo</th>
+                <th style="width: 100px;">Repeticion</th>
+                <th style="width: 100px;">Valor</th>
+                <th style="width: 120px;">% Incidencia</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-hongo let-i="rowIndex">
+              <tr>
+                <td>{{ hongo.tipoHongo }}</td>
+                <td>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="hongosTable[i].repeticion" 
+                    name="repeticion_{{i}}"
+                    pInputText 
+                    style="width: 80px;"
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="hongosTable[i].valor" 
+                    name="valor_{{i}}"
+                    pInputText 
+                    style="width: 80px;"
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="hongosTable[i].incidencia" 
+                    name="incidencia_{{i}}"
+                    pInputText 
+                    style="width: 80px;"
+                    min="0" 
+                    max="100"
+                  />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+
+        <div class="submit-btn">
+            <button
+            pButton
+            type="submit"
+            label="Enviar Datos"
+            class="p-button-success"
+            ></button>
+        </div>
+
+      </div>    
+    </form>
+  </p-card>
+</div>
