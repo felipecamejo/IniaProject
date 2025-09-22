@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class FiltroJWTAutorizacion extends OncePerRequestFilter {
 
     private static final List<String> rutasPublicas = List.of(
+            "/api/seguridad",            // Todas las rutas de seguridad son públicas (startsWith)
             "/api/seguridad/login",
             "/api/seguridad/register",
             "/v3/api-docs",

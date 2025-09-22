@@ -39,6 +39,7 @@ public class UsuarioController {
     }
 
     @GetMapping({"/listar"})
+    @Secured({"ADMIN"})
     public ResponseEntity<ResponseListadoUsuarios> getUsuarios() {
         return this.usuarioService.listadoUsuarios();
     }
@@ -55,7 +56,7 @@ public class UsuarioController {
         return ResponseEntity.ok(result);
     }
 
-    //@Secured({"ADMIN"})
+    @Secured({"ADMIN"})
     @DeleteMapping({"/eliminar/{id}"})
     @Operation(
             description = "Esta Funcion elimina un usuario"
