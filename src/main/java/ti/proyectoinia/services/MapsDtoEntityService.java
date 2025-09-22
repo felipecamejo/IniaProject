@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ti.proyectoinia.business.entities.*;
 import ti.proyectoinia.dtos.*;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -245,12 +246,22 @@ public class MapsDtoEntityService {
         sanitarioDto.setObservaciones(sanitario.getObservaciones());
         sanitarioDto.setNroSemillasRepeticion(sanitario.getNroSemillasRepeticion());
         sanitarioDto.setActivo(sanitario.isActivo());
-        sanitarioDto.setRepetido(sanitarioDto.isRepetido());
+        sanitarioDto.setRepetido(sanitario.isRepetido());
 
         if (sanitario.getRecibo() != null) {
             sanitarioDto.setReciboId(sanitario.getRecibo().getId());
         } else {
             sanitarioDto.setReciboId(null);
+        }
+
+        if (sanitario.getSanitarioHongos() != null) {
+            sanitarioDto.setSanitarioHongoids(
+                sanitario.getSanitarioHongos().stream()
+                    .map(SanitarioHongo::getId)
+                    .collect(Collectors.toList())
+            );
+        } else {
+            sanitarioDto.setSanitarioHongoids(null);
         }
 
         return sanitarioDto;
@@ -281,6 +292,21 @@ public class MapsDtoEntityService {
             sanitario.setRecibo(recibo);
         } else {
             sanitario.setRecibo(null);
+        }
+
+        // Traducción de IDs a entidades SanitarioHongo
+        if (sanitarioDto.getSanitarioHongoids() != null) {
+            List<SanitarioHongo> sanitarioHongos = sanitarioDto.getSanitarioHongoids().stream()
+                .map(id -> {
+                    SanitarioHongo sh = new SanitarioHongo();
+                    sh.setId(id);
+                    sh.setSanitario(sanitario);
+                    return sh;
+                })
+                .collect(Collectors.toList());
+            sanitario.setSanitarioHongos(sanitarioHongos);
+        } else {
+            sanitario.setSanitarioHongos(null);
         }
 
         return sanitario;

@@ -4,6 +4,7 @@ import lombok.Data;
 import ti.proyectoinia.business.entities.Estado;
 import ti.proyectoinia.business.entities.Metodo;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class SanitarioDto {
@@ -32,4 +33,6 @@ public class SanitarioDto {
     private boolean activo;
 
     private boolean repetido;
+
+    private List<Long> SanitarioHongoids;
 }
