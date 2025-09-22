@@ -1,0 +1,30 @@
+<div class="container">
+  <p-card class="card">
+    <ng-template pTemplate="header">
+      <h2 class="title">Iniciar Sesión</h2>
+    </ng-template>
+
+    <form>
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="email">Email</label>
+          <input id="email" type="email" [(ngModel)]="email" name="email" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="password">Contraseña</label>
+          <input id="password" type="password" [(ngModel)]="password" name="password" pInputText />
+        </div>
+      </div>
+
+      <div class="submit-btn">
+        <button
+          pButton
+          type="submit"
+          label="Iniciar Sesión"
+          class="p-button-primary"
+        ></button>
+      </div>
+    </form>
+  </p-card>
+</div>
