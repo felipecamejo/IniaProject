@@ -20,6 +20,7 @@
         <div class="form-field">
           <label for="cultivar">Cultivar</label>
           <select id="cultivar" [(ngModel)]="selectedCultivar" name="cultivar">
+            <option value="">Seleccionar cultivar</option>
             <option *ngFor="let c of cultivares" [value]="c.value">{{ c.label }}</option>
           </select>
         </div>
@@ -77,8 +78,14 @@
         </div>
 
         <div class="form-field">
-          <label for="observacion">Observación</label>
-          <input id="observacion" type="text" [(ngModel)]="observacion" name="observacion" pInputText />
+          <label for="observaciones">Observaciones</label>
+          <textarea
+            id="observaciones"
+            rows="3"
+            [(ngModel)]="observaciones"
+            name="observaciones"
+            pInputText
+          ></textarea>
         </div>
       </div>
 

@@ -31,6 +31,13 @@
             </set>
           </value>
         </entry>
+        <entry key="614cc146-4334-48b5-bf6f-9602f9d9a2f7">
+          <value>
+            <set>
+              <option value="fc22df2f-3fc3-4cbd-b46a-e8be8539827e" />
+            </set>
+          </value>
+        </entry>
         <entry key="68ac337b-3963-435e-8ef3-a928633398bf">
           <value>
             <set>
@@ -86,17 +93,17 @@
         <entry key="bd77f7f6-730c-443a-9385-f850aba977a5">
           <value>
             <set>
-              <option value="cad77f42-5103-4318-9b5e-f0a4f5dc8d0b" />
-              <option value="839a38dd-fd62-4b60-916d-e163c93597ca" />
-              <option value="c36c8db5-2af7-40f8-a788-15855aa63c34" />
               <option value="0b702f62-d0a2-4b7f-824b-941091c02023" />
+              <option value="12a1b854-74d3-4815-b74b-560686f49ec8" />
               <option value="18ed4abc-1e8d-452a-ab1a-7b062b4787b2" />
+              <option value="839a38dd-fd62-4b60-916d-e163c93597ca" />
+              <option value="ac26853a-203a-49de-9bb8-251b0266a4eb" />
+              <option value="b236ddd6-1602-44cd-85ca-bafb90229db7" />
+              <option value="c36c8db5-2af7-40f8-a788-15855aa63c34" />
+              <option value="cad77f42-5103-4318-9b5e-f0a4f5dc8d0b" />
+              <option value="d335bcd1-459d-4635-82c9-f018bd8d4219" />
               <option value="eb13f8e6-db19-4e3d-8369-cc0f590cdc8e" />
               <option value="ff2fde32-d0a9-4aca-a6c8-4e2fdb68fa2a" />
-              <option value="ac26853a-203a-49de-9bb8-251b0266a4eb" />
-              <option value="12a1b854-74d3-4815-b74b-560686f49ec8" />
-              <option value="d335bcd1-459d-4635-82c9-f018bd8d4219" />
-              <option value="b236ddd6-1602-44cd-85ca-bafb90229db7" />
             </set>
           </value>
         </entry>
@@ -126,30 +133,19 @@
     </option>
     <pendingWorkingSetItems>
       <entry key="5ffb51d2-587b-4ad8-912b-7f75f42df6ef" />
+      <entry key="614cc146-4334-48b5-bf6f-9602f9d9a2f7">
+        <set>
+          <option value="file://$PROJECT_DIR$/frontend/src/app/app.routes.ts" />
+          <option value="file://$PROJECT_DIR$/frontend/src/app/components/login/login.ts" />
+        </set>
+      </entry>
       <entry key="68ac337b-3963-435e-8ef3-a928633398bf" />
       <entry key="6cd85a5f-748e-46f8-b8bf-dcc8848024ec" />
       <entry key="a2109dd4-0bf9-4d51-9ad9-95e9c93ed20d" />
       <entry key="b0b00b00-7023-4d65-9aae-7c67b9598c98" />
-      <entry key="bd77f7f6-730c-443a-9385-f850aba977a5">
-        <set>
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/Germinacion.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/dtos/GerminacionDto.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/services/MapsDtoEntityService.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/Tratamiento.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/Metodo.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/PreFrio.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/PreTratamiento.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/api/responses/ResponseListadoPurezas.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/dtos/SanitarioDto.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/services/DOSNService.java" />
-        </set>
-      </entry>
+      <entry key="bd77f7f6-730c-443a-9385-f850aba977a5" />
       <entry key="c31684c1-2dc2-41da-82e2-5042b4c7a33e" />
-      <entry key="f0d649d2-85bc-4ef0-92fa-d2bef3282706">
-        <set>
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/services/DOSNService.java" />
-        </set>
-      </entry>
+      <entry key="f0d649d2-85bc-4ef0-92fa-d2bef3282706" />
     </pendingWorkingSetItems>
   </component>
 </project>

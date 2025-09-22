@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -13,6 +14,7 @@ import { ButtonModule } from 'primeng/button';
   templateUrl: './recibo.component.html',
   styleUrls: ['./recibo.component.scss'],
   imports: [
+    CommonModule,
     FormsModule,
     CardModule,
     InputTextModule,
@@ -23,13 +25,14 @@ import { ButtonModule } from 'primeng/button';
 export class ReciboComponent {
   // Dropdown options
   cultivares = [
-    { label: 'Cultivar A', value: 'A' },
-    { label: 'Cultivar B', value: 'B' },
-    { label: 'Cultivar C', value: 'C' }
+    { label: 'Cultivar A', value: '1' },
+    { label: 'Cultivar B', value: '2' },
+    { label: 'Cultivar C', value: '3' }
   ];
 
   // Propiedades enlazadas con ngModel
   selectedCultivar: string = '';
+
   kilos: number = 0;
   fechaRecibo: string = '';
   rec: string = '';

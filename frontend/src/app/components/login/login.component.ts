@@ -7,11 +7,16 @@ import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule],
-  templateUrl: './login.html',
-  styleUrl: './login.scss',
+  imports: [
+    FormsModule,
+    CardModule,
+    InputTextModule,
+    ButtonModule
+  ],
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss'],
 })
-export class Login {
+export class LoginComponent {
 
     // Campos de texto simples
     email: string = '';

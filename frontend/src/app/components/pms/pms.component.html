@@ -1,0 +1,56 @@
+<div class="container">
+  <p-card class="card">
+    <ng-template pTemplate="header">
+      <h2 class="title">PMS</h2>
+    </ng-template>
+
+    <form>
+      <div class="form-grid">
+        <!-- Campos de texto -->
+        <div class="form-field">
+          <label for="nLab">Peso Mil Semillas</label>
+          <input id="nLab" type="number" [(ngModel)]="nLab" name="nLab" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="especie">% Humedad</label>
+          <input id="especie" type="number" [(ngModel)]="especie" name="especie" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="fechaMedicion">Fecha Medicion</label>
+          <input id="fechaMedicion" type="date" [(ngModel)]="fechaMedicion" name="fechaMedicion" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="ficha">Metodo</label>
+          <select id="metodos" [(ngModel)]="selectedMetodo" name="metodo">
+            <option value="" >Seleccionar Método</option>
+            <option *ngFor="let m of metodos" [value]="m.id">{{ m.label }}</option>
+          </select>
+        </div>   
+
+        <div class="form-field">
+          <label for="observaciones">Observaciones</label>
+          <textarea
+            id="observaciones"
+            rows="3"
+            [(ngModel)]="observaciones"
+            name="observaciones"
+            pInputText
+          ></textarea>
+        </div>
+
+      </div>
+
+      <div class="submit-btn">
+        <button
+          pButton
+          type="submit"
+          label="Realizar PMS"
+          class="p-button-success"
+        ></button>
+      </div>
+    </form>
+  </p-card>
+</div>
