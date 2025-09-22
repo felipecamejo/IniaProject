@@ -107,4 +107,54 @@ public class SeguridadController {
                     .body("Error creando usuario: " + e.getMessage());
         }
     }
+
+    @PostMapping("/create-test-analista")
+    @Operation(summary = "Crear usuario ANALISTA de prueba", description = "Crea un usuario con rol ANALISTA para testing")
+    public ResponseEntity<String> crearUsuarioAnalistaPrueba() {
+        try {
+            String email = "analista@inia.com";
+            if (usuarioRepository.findByEmail(email).isPresent()) {
+                return ResponseEntity.ok("Usuario de prueba ya existe: " + email + " / password123");
+            }
+
+            Usuario usuario = new Usuario();
+            usuario.setEmail(email);
+            usuario.setNombre("Analista");
+            usuario.setPassword(passwordEncoder.encode("password123"));
+            usuario.setActivo(true);
+            usuario.setRol(RolUsuario.ANALISTA);
+
+            usuarioRepository.save(usuario);
+
+            return ResponseEntity.ok("Usuario de prueba creado: " + email + " / password123");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error creando usuario: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/create-test-observador")
+    @Operation(summary = "Crear usuario OBSERVADOR de prueba", description = "Crea un usuario con rol OBSERVADOR para testing")
+    public ResponseEntity<String> crearUsuarioObservadorPrueba() {
+        try {
+            String email = "observador@inia.com";
+            if (usuarioRepository.findByEmail(email).isPresent()) {
+                return ResponseEntity.ok("Usuario de prueba ya existe: " + email + " / password123");
+            }
+
+            Usuario usuario = new Usuario();
+            usuario.setEmail(email);
+            usuario.setNombre("Observador");
+            usuario.setPassword(passwordEncoder.encode("password123"));
+            usuario.setActivo(true);
+            usuario.setRol(RolUsuario.OBSERVADOR);
+
+            usuarioRepository.save(usuario);
+
+            return ResponseEntity.ok("Usuario de prueba creado: " + email + " / password123");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error creando usuario: " + e.getMessage());
+        }
+    }
 }
