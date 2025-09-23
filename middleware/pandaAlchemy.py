@@ -1,36 +1,42 @@
-import pandas as pd
-from sqlalchemy import create_engine, Column, Integer, String, Date, Float, Text
-from sqlalchemy.orm import declarative_base, sessionmaker
 import logging
-import os
-from dotenv import load_dotenv, find_dotenv
 from urllib.parse import quote_plus
+import sys
 
-"""
-Carga robusta de variables .env con codificación por defecto UTF-8 y
-retroceso a Latin-1 (Windows-1252) para evitar UnicodeDecodeError típicos
-cuando el archivo fue guardado en ANSI.
-"""
-dotenv_path = find_dotenv()
-if dotenv_path:
-    try:
-        load_dotenv(dotenv_path=dotenv_path, override=True, encoding='utf-8')
-    except UnicodeDecodeError:
-        load_dotenv(dotenv_path=dotenv_path, override=True, encoding='latin-1')
-else:
-    # Si no hay .env, intentar variables de entorno del sistema
-    load_dotenv()
+# Importaciones con manejo explícito de dependencias faltantes
+
+try:
+    from sqlalchemy import create_engine, Column, Integer, String, Date, Float, Text
+    from sqlalchemy.orm import declarative_base, sessionmaker
+except ModuleNotFoundError:
+    print("Falta el paquete 'sqlalchemy'. Instálalo con: pip install SQLAlchemy")
+    raise
+
+# No se usan variables de entorno ni .env: se emplea configuración inline
+
+# Configuración se define más abajo en DEFAULT_CONFIG
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Obtener variables de entorno
-DB_USER = os.getenv('DB_USER')
-DB_PASSWORD = os.getenv('DB_PASS')
-DB_HOST = os.getenv('DB_HOST')
-DB_PORT = os.getenv('DB_PORT')
-DB_NAME = os.getenv('DB_NAME')
+# ================================
+# Configuración inline por defecto
+# ================================
+# Ajusta estos valores según tu entorno.
+DEFAULT_CONFIG = {
+    'DB_USER': 'postgres',
+    'DB_PASSWORD': '897888fg2',
+    'DB_HOST': 'localhost',
+    'DB_PORT': '5432',
+    'DB_NAME': 'Inia',
+}
+
+# Usar EXCLUSIVAMENTE la configuración por defecto definida arriba
+DB_USER = DEFAULT_CONFIG['DB_USER']
+DB_PASSWORD = DEFAULT_CONFIG['DB_PASSWORD']
+DB_HOST = DEFAULT_CONFIG['DB_HOST']
+DB_PORT = DEFAULT_CONFIG['DB_PORT']
+DB_NAME = DEFAULT_CONFIG['DB_NAME']
 
 def build_connection_string():
     """Construye la cadena de conexión escapando credenciales.
@@ -43,7 +49,8 @@ def build_connection_string():
     host = DB_HOST or 'localhost'
     port = DB_PORT or '5432'
     db = DB_NAME or ''
-    return f'postgresql://{user_esc}:{pass_esc}@{host}:{port}/{db}'
+    # Forzar driver psycopg2 explícitamente para mensajes de error más claros si falta
+    return f'postgresql+psycopg2://{user_esc}:{pass_esc}@{host}:{port}/{db}'
 
 # Crear la base declarativa (SQLAlchemy 2.0)
 Base = declarative_base()
@@ -63,11 +70,31 @@ class MiTabla(Base):
 def crear_tabla():
     """Crear la tabla en la base de datos"""
     try:
+        # Validaciones mínimas de variables de entorno
+        missing = []
+        for k, v in {
+            'DB_USER': DB_USER,
+            'DB_PASSWORD/DB_PASS': DB_PASSWORD,
+            'DB_HOST': DB_HOST,
+            'DB_PORT': DB_PORT,
+            'DB_NAME': DB_NAME,
+        }.items():
+            if not v:
+                missing.append(k)
+        if missing:
+            logger.error(f"Faltan variables de entorno requeridas: {', '.join(missing)}")
+            return None
+
         # Verificar que las variables estén cargadas
         print(f"Conectando a: {DB_HOST}:{DB_PORT}/{DB_NAME} como {DB_USER}")
         
         connection_string = build_connection_string()
-        engine = create_engine(connection_string)
+        try:
+            engine = create_engine(connection_string)
+        except ModuleNotFoundError as e:
+            # Típicamente falta psycopg2
+            logger.error("Driver de PostgreSQL no encontrado. Instala: pip install psycopg2-binary")
+            raise
         
         # Crear todas las tablas definidas
         Base.metadata.create_all(engine)
@@ -82,6 +109,13 @@ def crear_tabla():
 def insertar_datos_desde_excel(archivo_excel):
     """Leer Excel e insertar datos en la tabla creada"""
     try:
+        # Importar pandas solo si se va a usar esta función
+        try:
+            import pandas as pd  # type: ignore
+        except ModuleNotFoundError:
+            logger.error("Falta el paquete 'pandas'. Instálalo con: pip install pandas")
+            return False
+
         # Crear tabla primero
         engine = crear_tabla()
         if not engine:
@@ -135,5 +169,8 @@ if __name__ == "__main__":
   
     print("\n1. Creando tabla...")
     engine = crear_tabla()
-    
+    if engine is None:
+        print("\nFalló la creación de la tabla.")
+        sys.exit(1)
     print("\n¡Script completado!")
+    sys.exit(0)
