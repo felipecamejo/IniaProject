@@ -1,0 +1,211 @@
+<div class="container">
+  <p-card class="card">
+    <ng-template pTemplate="header">
+      <h2 class="title">Pureza</h2>
+    </ng-template>
+
+    <form>
+
+      <div class="form-grid">
+        <!-- Fecha -->
+        <div class="form-field">
+          <label for="fecha">Fecha</label>
+          <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" pInputText />
+        </div>
+
+        <!-- Peso inicial -->
+        <div class="form-field">
+          <label>Peso inicial</label>
+          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="pesoInicialGr" name="pesoInicialGr" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
+            </div>
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="pesoInicialPct" name="pesoInicialPct" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Semilla pura -->
+        <div class="form-field">
+          <label>Semilla pura</label>
+          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="semillaPuraGr" name="semillaPuraGr" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
+            </div>
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="semillaPuraPct" name="semillaPuraPct" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Materia inerte -->
+        <div class="form-field">
+          <label>Materia inerte</label>
+          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="materiaInerteGr" name="materiaInerteGr" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
+            </div>
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="materiaInertePct" name="materiaInertePct" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Otros cultivos (g y %) -->
+        <div class="form-field">
+          <label>Otros cultivos</label>
+          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="otrosCultivosGr" name="otrosCultivosGr" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
+            </div>
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="otrosCultivosPct" name="otrosCultivosPct" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Malezas (g y %) -->
+        <div class="form-field">
+          <label>Malezas</label>
+          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="malezasGr" name="malezasGr" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
+            </div>
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="malezasPct" name="malezasPct" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Malezas toleradas (g y %) -->
+        <div class="form-field">
+          <label>Malezas toleradas</label>
+          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="malezasToleradasGr" name="malezasToleradasGr" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
+            </div>
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="malezasToleradasPct" name="malezasToleradasPct" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Peso total (g y %) -->
+        <div class="form-field">
+          <label>Peso total</label>
+          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="pesoTotalGr" name="pesoTotalGr" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
+            </div>
+            <div style="flex:1; display: flex; align-items: center;">
+              <input type="number" [(ngModel)]="pesoTotalPct" name="pesoTotalPct" pInputText style="width: 100%;" />
+              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fecha estándar -->
+        <div class="form-field">
+          <label for="fechaEstandar">Fecha estándar</label>
+          <input id="fechaEstandar" type="date" [(ngModel)]="fechaEstandar" name="fechaEstandar" pInputText />
+        </div>
+
+
+        <!-- Listados dinámicos personalizados -->
+        <div class="form-field">
+          <label for="malezasCero">Malezas tolerancia cero</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <select [(ngModel)]="malezaCeroSeleccionada" name="malezaCeroSeleccionada">
+              <option [ngValue]="null">Seleccionar...</option>
+              <option *ngFor="let m of malezasCeroList" [ngValue]="m">{{ m.label }}</option>
+            </select>
+            <button type="button" (click)="agregarMalezaCero()">Agregar</button>
+          </div>
+          <div class="chips-list">
+            <span *ngFor="let m of malezasCero; let i = index" class="chip">
+              {{ obtenerLabel(m, malezasCeroList) }}
+              <button type="button" (click)="eliminarMalezaCero(i)">x</button>
+            </span>
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="malezasComunes">Malezas comunes</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <select [(ngModel)]="malezaComunSeleccionada" name="malezaComunSeleccionada">
+              <option [ngValue]="null">Seleccionar...</option>
+              <option *ngFor="let m of malezasComunesList" [ngValue]="m">{{ m.label }}</option>
+            </select>
+            <button type="button" (click)="agregarMalezaComun()">Agregar</button>
+          </div>
+          <div class="chips-list">
+            <span *ngFor="let m of malezasComunes; let i = index" class="chip">
+              {{ obtenerLabel(m, malezasComunesList) }}
+              <button type="button" (click)="eliminarMalezaComun(i)">x</button>
+            </span>
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="malezasTol">Malezas toleradas</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <select [(ngModel)]="malezaTolSeleccionada" name="malezaTolSeleccionada">
+              <option [ngValue]="null">Seleccionar...</option>
+              <option *ngFor="let m of malezasTolList" [ngValue]="m">{{ m.label }}</option>
+            </select>
+            <button type="button" (click)="agregarMalezaTol()">Agregar</button>
+          </div>
+          <div class="chips-list">
+            <span *ngFor="let m of malezasTol; let i = index" class="chip">
+              {{ obtenerLabel(m, malezasTolList) }}
+              <button type="button" (click)="eliminarMalezaTol(i)">x</button>
+            </span>
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="otrosCultivosListado">Otros cultivos</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <select [(ngModel)]="cultivoSeleccionado" name="cultivoSeleccionado">
+              <option [ngValue]="null">Seleccionar...</option>
+              <option *ngFor="let c of otrosCultivosList" [ngValue]="c">{{ c.label }}</option>
+            </select>
+            <button type="button" (click)="agregarCultivo()">Agregar</button>
+          </div>
+          <div class="chips-list">
+            <span *ngFor="let c of otrosCultivosListado; let i = index" class="chip">
+              {{ obtenerLabel(c, otrosCultivosList) }}
+              <button type="button" (click)="eliminarCultivo(i)">x</button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estándar booleano (al final) -->
+      <div class="form-field">
+        <label for="estandar">¿Cumple estándar?</label>
+        <input id="estandar" type="checkbox" [(ngModel)]="estandar" name="estandar" />
+      </div>
+      <div class="submit-btn">
+        <button
+          pButton
+          type="submit"
+          label="Guardar Pureza"
+          class="p-button-success"
+        ></button>
+      </div>
+    </form>
+  </p-card>
+</div>
+

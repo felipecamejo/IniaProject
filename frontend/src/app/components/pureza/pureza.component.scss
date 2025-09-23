@@ -1,0 +1,111 @@
+// Los estilos de .form-grid y .submit-btn se importan desde styles.scss
+
+.submit-btn {
+  ::ng-deep .p-button {
+    background: var(--verde) !important;
+    background-color: var(--verde) !important;
+    border: 1px solid var(--verde) !important;
+    border-radius: 25px !important;
+    font-weight: 600 !important;
+    width: 100% !important;
+    padding: 0.75rem 1.5rem !important;
+    color: white !important;
+    font-family: var(--font-main) !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      filter: brightness(0.85) !important;
+    }
+
+    &:focus {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--verde) 25%, transparent) !important;
+    }
+
+    &:active {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      filter: brightness(0.8) !important;
+    }
+  }
+
+  ::ng-deep .p-button-primary {
+    background: var(--verde) !important;
+    background-color: var(--verde) !important;
+    border-color: var(--verde) !important;
+
+    &:hover {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      filter: brightness(0.85) !important;
+    }
+  }
+}
+
+.chips-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  background: var(--gris, #e0e7ef);
+  color: var(--azul, #002855);
+  border-radius: 16px;
+  padding: 0.25rem 0.75rem 0.25rem 0.75rem;
+  font-size: 0.95em;
+  font-family: var(--font-main, 'Roboto', sans-serif);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  border: 1px solid var(--celeste, #2563eb);
+  transition: background 0.2s;
+
+  button {
+    background: none;
+    border: none;
+    color: var(--rojo, #DA696A);
+    font-size: 1.1em;
+    margin-left: 0.5em;
+    cursor: pointer;
+    padding: 0 0.2em;
+    border-radius: 50%;
+    transition: background 0.2s;
+    line-height: 1;
+
+    &:hover {
+      background: var(--rojo, #DA696A);
+      color: #fff;
+    }
+  }
+}
+
+.form-field button[type="button"] {
+  background: var(--gris, #e0e7ef);
+  color: var(--azul, #2563eb);
+  border: 1px solid var(--celeste, #2563eb);
+  border-radius: 16px;
+  font-weight: 500;
+  font-family: var(--font-main, 'Roboto', sans-serif);
+  padding: 0.3rem 0.9rem;
+  font-size: 0.97em;
+  margin-left: 0.2rem;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  outline: none;
+
+  &:hover, &:focus {
+    background: var(--celeste, #2563eb);
+    color: #fff;
+    border-color: var(--celeste, #2563eb);
+  }
+}
