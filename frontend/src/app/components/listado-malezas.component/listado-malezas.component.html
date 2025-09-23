@@ -37,6 +37,14 @@
                 <div class="item-info">
                     <h3 class="item-title">{{ item.nombre }}</h3>
                 </div>
+                <div class="item-actions">
+                    <button class="action-button edit-button" (click)="editarItem(item)" title="Editar">
+                        <i class="pi pi-pencil"></i>
+                    </button>
+                    <button class="action-button delete-button" (click)="eliminarItem(item)" title="Eliminar">
+                        <i class="pi pi-trash"></i>
+                    </button>
+                </div>
             </div>
             <div class="divider-line"></div>
             <div class="item-content">
@@ -50,7 +58,7 @@
 
     <!-- Modal de Autenticación -->
     <p-dialog 
-        header="Crear Maleza" 
+        header="Crear/Editar Maleza" 
         [(visible)]="mostrarModal" 
         [modal]="true" 
         [draggable]="false" 
@@ -73,7 +81,7 @@
 
             <div class="modal-submit-btn">
                 <button pButton type="submit" [disabled]="modalLoading || modalForm.invalid" 
-                        label="{{ modalLoading ? 'Ingresando...' : 'Crear Maleza' }}" 
+                        label="{{ modalLoading ? 'Ingresando...' : 'Listo' }}" 
                         class="p-button-primary"></button>
             </div>
 

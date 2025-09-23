@@ -309,3 +309,89 @@
   border-radius: 8px;
   border: 1px solid rgba(218, 105, 106, 0.3);
 }
+
+// Estilos para los botones de acción en el rectángulo azul
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-button {
+  background-color: var(--naranja);
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+
+  i {
+    color: white;
+    font-size: 1rem;
+  }
+
+  &:hover {
+    filter: brightness(0.85);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.edit-button {
+    background-color: var(--naranja);
+    
+    &:hover {
+      background-color: var(--naranja);
+      box-shadow: 0 2px 8px rgba(237, 168, 70, 0.4);
+    }
+  }
+
+  &.delete-button {
+    background-color: var(--rojo);
+    
+    &:hover {
+      background-color: var(--rojo);
+      box-shadow: 0 2px 8px rgba(218, 105, 106, 0.4);
+    }
+  }
+}
+
+// Responsive para botones
+@media (max-width: 768px) {
+  .action-button {
+    width: 35px;
+    height: 35px;
+    
+    i {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .item-actions {
+    gap: 0.3rem;
+  }
+  
+  .action-button {
+    width: 30px;
+    height: 30px;
+    
+    i {
+      font-size: 0.8rem;
+    }
+  }
+}

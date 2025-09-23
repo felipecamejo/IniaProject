@@ -33,6 +33,10 @@ export class ListadoMalezasComponent {
     modalDescripcion: string = '';
     modalLoading: boolean = false;
     modalError: string = '';
+    modalTitulo: string = 'Crear Maleza';
+    modalBotonTexto: string = 'Crear Maleza';
+    malezaEditando: any = null;
+    malezaEditandoId: number | null = null;
 
     meses = [
       { label: 'Enero', id: 1 },
@@ -58,9 +62,9 @@ export class ListadoMalezasComponent {
     ];
 
     items = [
-      { nombre: 'Maleza 1', descripcion: 'Descripcion de maleza 1'},
-      { nombre: 'Maleza 2', descripcion: 'Descripcion de maleza 2'},
-      { nombre: 'Maleza 3', descripcion: 'Descripcion de maleza 3'}
+      { id: 1, nombre: 'Maleza 1', descripcion: 'Descripcion de maleza 1'},
+      { id: 2, nombre: 'Maleza 2', descripcion: 'Descripcion de maleza 2'},
+      { id: 3, nombre: 'Maleza 3', descripcion: 'Descripcion de maleza 3'}
     ];
 
     get itemsFiltrados() {
@@ -86,6 +90,21 @@ export class ListadoMalezasComponent {
       this.modalNombre = '';
       this.modalDescripcion = '';
       this.modalError = '';
+      this.modalTitulo = 'Crear Maleza';
+      this.modalBotonTexto = 'Crear Maleza';
+      this.malezaEditando = null;
+      this.malezaEditandoId = null;
+    }
+
+    abrirModalEdicion(maleza: any) {
+      this.mostrarModal = true;
+      this.modalNombre = maleza.nombre;
+      this.modalDescripcion = maleza.descripcion || '';
+      this.modalError = '';
+      this.modalTitulo = 'Editar Maleza';
+      this.modalBotonTexto = 'Actualizar Maleza';
+      this.malezaEditando = maleza;
+      this.malezaEditandoId = maleza.id;
     }
 
     cerrarModal() {
@@ -94,6 +113,10 @@ export class ListadoMalezasComponent {
       this.modalDescripcion = '';
       this.modalError = '';
       this.modalLoading = false;
+      this.modalTitulo = 'Crear Maleza';
+      this.modalBotonTexto = 'Crear Maleza';
+      this.malezaEditando = null;
+      this.malezaEditandoId = null;
     }
 
     onSubmitModal(form: any) {
@@ -102,21 +125,35 @@ export class ListadoMalezasComponent {
       this.modalLoading = true;
       this.modalError = '';
 
-      this.authService.login({ email: this.modalNombre, password: this.modalDescripcion }).subscribe({
-        next: () => {
-          this.modalLoading = false;
-          this.cerrarModal();
-          // Aquí puedes agregar la lógica para crear la maleza después del login exitoso
-          console.log('Login exitoso, procediendo a crear maleza');
-        },
-        error: () => {
-          this.modalLoading = false;
-          this.modalError = 'Credenciales inválidas. Intenta nuevamente.';
-        }
-      });
+      //(reemplaza esto con tu lógica real)
+      
+        
+        
+      this.modalLoading = false;
+      this.cerrarModal();
+    
     }
 
     goToHome() {
       this.router.navigate(['/home']);
+    }
+
+    editarItem(maleza: any) {
+      // Abrir modal con datos precargados para editar
+      this.abrirModalEdicion(maleza);
+    }
+
+    eliminarItem(maleza: any) {
+      // Función para eliminar maleza
+      console.log('Eliminar maleza:', maleza);
+      // Aquí puedes agregar la lógica para eliminar la maleza
+      // Por ejemplo, mostrar un diálogo de confirmación
+      if (confirm(`¿Estás seguro de que deseas eliminar la maleza "${maleza.nombre}"?`)) {
+        const index = this.items.indexOf(maleza);
+        if (index > -1) {
+          this.items.splice(index, 1);
+          console.log('Maleza eliminada correctamente');
+        }
+      }
     }
 }
