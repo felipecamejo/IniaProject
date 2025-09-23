@@ -3,8 +3,6 @@ package ti.proyectoinia.dtos;
 import lombok.Data;
 import lombok.Generated;
 
-import ti.proyectoinia.business.entities.tipoHongo;
-
 import java.util.Objects;
 
 @Data
@@ -15,7 +13,7 @@ public class HongoDto {
 
     private String nombre;
 
-    private tipoHongo tipo;
+    private String descripcion;
 
     private boolean activo;
 

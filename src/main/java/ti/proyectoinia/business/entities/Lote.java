@@ -4,6 +4,7 @@ package ti.proyectoinia.business.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -17,6 +18,15 @@ public class Lote {
 
     @Column(name = "LOTE_NOMBRE")
     private String nombre;
+
+    @Column(name = "LOTE_DESCRIPCION")
+    private String descripcion;
+
+    @Column(name = "LOTE_FECHA_CREACION")
+    private Date fechaCreacion;
+
+    @Column(name = "LOTE_FECHA_FINALIZACION")
+    private Date fechaFinalizacion;
 
     @Column(name = "LOTE_ACTIVO")
     private boolean activo;

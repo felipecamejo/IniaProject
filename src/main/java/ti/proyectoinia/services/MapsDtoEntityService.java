@@ -23,6 +23,7 @@ public class MapsDtoEntityService {
         HongoDto hongoDto = new HongoDto();
         hongoDto.setId(hongo.getId());
         hongoDto.setNombre(hongo.getNombre());
+        hongoDto.setDescripcion(hongo.getDescripcion());
         hongoDto.setActivo(hongo.isActivo());
 
         return hongoDto;
@@ -36,6 +37,7 @@ public class MapsDtoEntityService {
         Hongo hongo = new Hongo();
         hongo.setId(hongoDto.getId());
         hongo.setNombre(hongoDto.getNombre());
+        hongo.setDescripcion(hongo.getDescripcion());
         hongo.setActivo(hongoDto.isActivo());
 
         return hongo;
@@ -211,6 +213,7 @@ public class MapsDtoEntityService {
         MalezaDto malezaDto = new MalezaDto();
         malezaDto.setId(maleza.getId());
         malezaDto.setNombre(maleza.getNombre());
+        malezaDto.setDescripcion(malezaDto.getDescripcion());
         malezaDto.setActivo(maleza.isActivo());
         return malezaDto;
 
@@ -224,6 +227,7 @@ public class MapsDtoEntityService {
         Maleza maleza = new Maleza();
         maleza.setId(malezaDto.getId());
         maleza.setNombre(malezaDto.getNombre());
+        maleza.setDescripcion(malezaDto.getDescripcion());
         maleza.setActivo(malezaDto.isActivo());
 
         return maleza;
@@ -407,6 +411,9 @@ public class MapsDtoEntityService {
         loteDto.setId(lote.getId());
         loteDto.setNombre(lote.getNombre());
         loteDto.setActivo(lote.isActivo());
+        loteDto.setDescripcion(lote.getDescripcion());
+        loteDto.setFechaCreacion(lote.getFechaCreacion());
+        loteDto.setFechaFinalizacion(lote.getFechaFinalizacion());
 
         if (lote.getUsuarios() != null) {
             loteDto.setUsuariosId(lote.getUsuarios().stream().map(Usuario::getId).collect(Collectors.toList()));
@@ -426,6 +433,9 @@ public class MapsDtoEntityService {
         lote.setId(loteDto.getId());
         lote.setNombre(loteDto.getNombre());
         lote.setActivo(loteDto.isActivo());
+        lote.setDescripcion(loteDto.getDescripcion());
+        lote.setFechaCreacion(loteDto.getFechaCreacion());
+        lote.setFechaFinalizacion(loteDto.getFechaFinalizacion());
 
         if (loteDto.getUsuariosId() != null) {
             lote.setUsuarios(loteDto.getUsuariosId().stream().map(id -> {
@@ -598,6 +608,8 @@ public class MapsDtoEntityService {
         CultivoDto dto = new CultivoDto();
         dto.setId(cultivo.getId());
         dto.setNombre(cultivo.getNombre());
+        dto.setDescripcion(cultivo.getDescripcion());
+        dto.setActivo(cultivo.isActivo());
 
         return dto;
     }
@@ -607,6 +619,8 @@ public class MapsDtoEntityService {
         Cultivo cultivo = new Cultivo();
         cultivo.setId(dto.getId());
         cultivo.setNombre(dto.getNombre());
+        cultivo.setDescripcion(dto.getDescripcion());
+        cultivo.setActivo(dto.isActivo());
 
         return cultivo;
     }

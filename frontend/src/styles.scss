@@ -390,11 +390,11 @@ html, body {
   }
   
   .search-bar {
-    width: 320px;
+    width: 250px;
     
     // Responsive
     @media (max-width: 1024px) {
-      width: 280px;
+      width: 220px;
     }
     
     @media (max-width: 768px) {

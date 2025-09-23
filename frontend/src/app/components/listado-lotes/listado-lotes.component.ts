@@ -51,23 +51,23 @@ export class ListadoLotesComponent {
       { label: '2024', id: 2024 }
     ];
 
-    Lotes = [
+    items = [
       { nombre: 'Lote 1', estado: 'Pendiente', fecha: '15-01-2023', descripcion: '', autor: 'Juan Perez' },
       { nombre: 'Lote 2', estado: 'Finalizado', fecha: '20-02-2022', descripcion: 'Lote especial', autor: 'Maria Gomez' },
       { nombre: 'Lote 3', estado: 'Finalizado', fecha: '10-03-2023', descripcion: '', autor: 'Carlos Ruiz' }
     ];
 
-    get lotesFiltrados() {
-      return this.Lotes.filter(lote => {
+    get itemsFiltrados() {
+      return this.items.filter(item => {
 
         const cumpleNombre = !this.searchText || 
-          lote.nombre.toLowerCase().includes(this.searchText.toLowerCase());
+          item.nombre.toLowerCase().includes(this.searchText.toLowerCase());
         
-        const cumpleEstado = !this.selectedMetodo || lote.estado === this.getEstadoLabel(this.selectedMetodo);
+        const cumpleEstado = !this.selectedMetodo || item.estado === this.getEstadoLabel(this.selectedMetodo);
         
-        const cumpleMes = !this.selectedMes || this.getMesFromFecha(lote.fecha) === parseInt(this.selectedMes);
+        const cumpleMes = !this.selectedMes || this.getMesFromFecha(item.fecha) === parseInt(this.selectedMes);
         
-        const cumpleAnio = !this.selectedAnio || this.getAnioFromFecha(lote.fecha) === parseInt(this.selectedAnio);
+        const cumpleAnio = !this.selectedAnio || this.getAnioFromFecha(item.fecha) === parseInt(this.selectedAnio);
         
         return cumpleNombre && cumpleEstado && cumpleMes && cumpleAnio;
       });

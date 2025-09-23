@@ -1,43 +1,55 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>INIA Uruguay</title>
-  <!-- Librería de íconos PrimeIcons -->
-  <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css">
-</head>
-<body>
-  <header class="app-header">
-    <div class="app-header__container">
-      <!-- Logo -->
-      <div class="app-header__logo">
-        <img src="assets/logo-inia.svg" alt="INIA Uruguay logo" />
-        <div class="app-header__logo__text">
-          <span class="header__title">INIA</span>
-          <span class="header__subtitle">URUGUAY</span>
-        </div>
-      </div>
-
-      <!-- Navegación -->
-      <nav class="app-header__nav" role="navigation" aria-label="Menú principal">
-        <a href="#" class="nav__item" aria-label="Inicio">
-          <i class="pi pi-home"></i>
-        </a>
-
-        <a href="#" class="nav__item" aria-label="Perfil">
-          <i class="pi pi-user"></i>
-        </a>
-
-        <a href="#" class="nav__item" aria-label="Documentación">
-          <i class="pi pi-file"></i>
-        </a>
-
-        <a href="#" class="nav__item" aria-label="Cerrar sesión">
-          <i class="pi pi-sign-out"></i>
-        </a>
-      </nav>
+<header class="app-header">
+  <div class="app-header__container">
+    <!-- Logo -->
+    <div class="app-header__logo">
+      <img src="assets/LogoInia.png" alt="INIA Uruguay logo" />
     </div>
-  </header>
-</body>
-</html>
+
+    <!-- Botón hamburguesa para móviles -->
+    <button 
+      class="app-header__hamburger" 
+      (click)="toggleMobileMenu()"
+      [class.active]="isMobileMenuOpen"
+      aria-label="Abrir menú de navegación"
+      aria-expanded="{{isMobileMenuOpen}}"
+      type="button">
+      <span class="hamburger__line"></span>
+      <span class="hamburger__line"></span>
+      <span class="hamburger__line"></span>
+    </button>
+
+    <!-- Navegación -->
+    <nav 
+      class="app-header__nav" 
+      [class.nav--mobile-open]="isMobileMenuOpen"
+      role="navigation" 
+      aria-label="Menú principal">
+      <a href="#" class="nav__item" aria-label="Inicio" (click)="closeMobileMenu()">
+        <i class="pi pi-home"></i>
+        <span class="nav__label">Inicio</span>
+      </a>
+
+      <a href="#" class="nav__item" aria-label="Perfil" (click)="closeMobileMenu()">
+        <i class="pi pi-user"></i>
+        <span class="nav__label">Perfil</span>
+      </a>
+
+      <a href="#" class="nav__item" aria-label="Documentación" (click)="closeMobileMenu()">
+        <i class="pi pi-file"></i>
+        <span class="nav__label">Documentos</span>
+      </a>
+
+      <a href="#" class="nav__item" aria-label="Cerrar sesión" (click)="closeMobileMenu()">
+        <i class="pi pi-sign-out"></i>
+        <span class="nav__label">Salir</span>
+      </a>
+    </nav>
+
+    <!-- Overlay para móviles -->
+    <div 
+      class="app-header__overlay" 
+      [class.overlay--visible]="isMobileMenuOpen"
+      (click)="closeMobileMenu()">
+    </div>
+  </div>
+</header>

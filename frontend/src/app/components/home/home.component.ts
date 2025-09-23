@@ -13,4 +13,8 @@ export class HomeComponent {
   goToListadoLotes() {
     this.router.navigate(['/listado-lotes']);
   }
+
+  goToCrearLote() {
+    this.router.navigate(['/lote']);
+  }
 }

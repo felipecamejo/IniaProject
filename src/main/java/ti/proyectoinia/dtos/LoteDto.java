@@ -1,5 +1,6 @@
 package ti.proyectoinia.dtos;
 
+import java.util.Date;
 import java.util.List;
 
 import lombok.Data;
@@ -10,6 +11,12 @@ public class LoteDto {
     private Long id;
 
     private String nombre;
+
+    private String descripcion;
+
+    private Date fechaCreacion;
+
+    private Date fechaFinalizacion;
 
     private boolean activo;
 
