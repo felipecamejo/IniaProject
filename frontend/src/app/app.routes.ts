@@ -5,6 +5,7 @@ import { ReciboComponent } from './components/recibo/recibo.component';
 import { LoginComponent } from './components/login/login.component';
 import { PmsComponent } from './components/pms/pms.component';
 import { SanitarioComponent } from './components/sanitario/sanitario.component';
+import { ListadoLotesComponent } from './components/listado-lotes/listado-lotes.component';
 
 export const routes: Routes = [
     { path : 'home', component: HomeComponent },
@@ -12,5 +13,6 @@ export const routes: Routes = [
     { path : 'login', component: LoginComponent },
     { path : '', redirectTo: '/login', pathMatch: 'full' },
     { path : 'pms', component: PmsComponent },
-    { path : 'sanitario', component: SanitarioComponent }
+    { path : 'sanitario', component: SanitarioComponent },
+    { path : 'listado-lotes', component: ListadoLotesComponent }
 ];
