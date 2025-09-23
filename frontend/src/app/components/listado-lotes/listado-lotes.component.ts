@@ -16,6 +16,8 @@ import { AuthService } from '../../../services/AuthService';
   styleUrl: './listado-lotes.component.scss'
 })
 export class ListadoLotesComponent {
+    constructor(private router: Router, private authService: AuthService) {}
+
     metodos = [
       { label: 'Pendiente', id: 1 },
       { label: 'Finalizado', id: 2 },
@@ -55,39 +57,32 @@ export class ListadoLotesComponent {
       { nombre: 'Lote 3', estado: 'Finalizado', fecha: '10-03-2023', descripcion: '', autor: 'Carlos Ruiz' }
     ];
 
-    // Propiedad computada para obtener lotes filtrados
     get lotesFiltrados() {
       return this.Lotes.filter(lote => {
-        // Filtro por nombre (búsqueda de texto)
+
         const cumpleNombre = !this.searchText || 
           lote.nombre.toLowerCase().includes(this.searchText.toLowerCase());
         
-        // Filtro por estado
         const cumpleEstado = !this.selectedMetodo || lote.estado === this.getEstadoLabel(this.selectedMetodo);
         
-        // Filtro por mes
         const cumpleMes = !this.selectedMes || this.getMesFromFecha(lote.fecha) === parseInt(this.selectedMes);
         
-        // Filtro por año
         const cumpleAnio = !this.selectedAnio || this.getAnioFromFecha(lote.fecha) === parseInt(this.selectedAnio);
         
         return cumpleNombre && cumpleEstado && cumpleMes && cumpleAnio;
       });
     }
 
-    // Función para obtener el label del estado por ID
     getEstadoLabel(estadoId: string): string {
       const estado = this.metodos.find(m => m.id === parseInt(estadoId));
       return estado ? estado.label : '';
     }
 
-    // Función para extraer el mes de la fecha (formato DD-MM-YYYY)
     getMesFromFecha(fecha: string): number {
       const partes = fecha.split('-');
       return parseInt(partes[1]); // El mes está en la posición 1
     }
 
-    // Función para extraer el año de la fecha (formato DD-MM-YYYY)
     getAnioFromFecha(fecha: string): number {
       const partes = fecha.split('-');
       return parseInt(partes[2]); // El año está en la posición 2
@@ -95,5 +90,9 @@ export class ListadoLotesComponent {
 
     onAnioChange() {
       this.selectedMes = '';
+    }
+
+    goToHome() {
+      this.router.navigate(['/home']);
     }
 }

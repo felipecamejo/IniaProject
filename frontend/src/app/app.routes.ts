@@ -15,6 +15,6 @@ export const routes: Routes = [
     { path : '', redirectTo: '/login', pathMatch: 'full' },
     { path : 'pms', component: PmsComponent },
     { path : 'sanitario', component: SanitarioComponent },
-    { path : 'listado-lotes', component: ListadoLotesComponent },}
+    { path : 'listado-lotes', component: ListadoLotesComponent },
     { path : 'pureza', component: PurezaComponent }
 ];

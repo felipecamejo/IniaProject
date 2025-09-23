@@ -9,9 +9,11 @@
       <option value="6cd85a5f-748e-46f8-b8bf-dcc8848024ec" />
       <option value="9975886c-2285-4e37-89f8-b5798ada4767" />
       <option value="a2109dd4-0bf9-4d51-9ad9-95e9c93ed20d" />
+      <option value="a9a7b44f-7ad4-4f16-8487-c7d1c2d14fed" />
       <option value="b0b00b00-7023-4d65-9aae-7c67b9598c98" />
       <option value="bd77f7f6-730c-443a-9385-f850aba977a5" />
       <option value="c31684c1-2dc2-41da-82e2-5042b4c7a33e" />
+      <option value="c4c9fc6f-c3ad-4306-8e86-674a4422301a" />
       <option value="f0d649d2-85bc-4ef0-92fa-d2bef3282706" />
     </option>
     <option name="pendingTurns">
@@ -72,6 +74,13 @@
             </set>
           </value>
         </entry>
+        <entry key="a9a7b44f-7ad4-4f16-8487-c7d1c2d14fed">
+          <value>
+            <set>
+              <option value="403eade8-6a04-4d8e-a52c-f0272fa832ef" />
+            </set>
+          </value>
+        </entry>
         <entry key="b0b00b00-7023-4d65-9aae-7c67b9598c98">
           <value>
             <set>
@@ -122,6 +131,15 @@
             </set>
           </value>
         </entry>
+        <entry key="c4c9fc6f-c3ad-4306-8e86-674a4422301a">
+          <value>
+            <set>
+              <option value="8b2f9c07-4918-445b-b310-d0a25cf6b76b" />
+              <option value="ed119a11-0fb9-424d-85ba-4fec376a67a1" />
+              <option value="dc4b2bf6-5058-4a8b-99b8-8372fed1754f" />
+            </set>
+          </value>
+        </entry>
         <entry key="f0d649d2-85bc-4ef0-92fa-d2bef3282706">
           <value>
             <set>
@@ -133,15 +151,15 @@
     </option>
     <pendingWorkingSetItems>
       <entry key="5ffb51d2-587b-4ad8-912b-7f75f42df6ef" />
-      <entry key="614cc146-4334-48b5-bf6f-9602f9d9a2f7">
-        <set>
-          <option value="file://$PROJECT_DIR$/frontend/src/app/app.routes.ts" />
-          <option value="file://$PROJECT_DIR$/frontend/src/app/components/login/login.ts" />
-        </set>
-      </entry>
+      <entry key="614cc146-4334-48b5-bf6f-9602f9d9a2f7" />
       <entry key="68ac337b-3963-435e-8ef3-a928633398bf" />
       <entry key="6cd85a5f-748e-46f8-b8bf-dcc8848024ec" />
       <entry key="a2109dd4-0bf9-4d51-9ad9-95e9c93ed20d" />
+      <entry key="a9a7b44f-7ad4-4f16-8487-c7d1c2d14fed">
+        <set>
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/services/MapsDtoEntityService.java" />
+        </set>
+      </entry>
       <entry key="b0b00b00-7023-4d65-9aae-7c67b9598c98" />
       <entry key="bd77f7f6-730c-443a-9385-f850aba977a5" />
       <entry key="c31684c1-2dc2-41da-82e2-5042b4c7a33e" />
