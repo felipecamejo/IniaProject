@@ -211,6 +211,7 @@ public class MapsDtoEntityService {
         MalezaDto malezaDto = new MalezaDto();
         malezaDto.setId(maleza.getId());
         malezaDto.setNombre(maleza.getNombre());
+        malezaDto.setDescripcion(malezaDto.getDescripcion());
         malezaDto.setActivo(maleza.isActivo());
         return malezaDto;
 
@@ -224,6 +225,7 @@ public class MapsDtoEntityService {
         Maleza maleza = new Maleza();
         maleza.setId(malezaDto.getId());
         maleza.setNombre(malezaDto.getNombre());
+        maleza.setDescripcion(malezaDto.getDescripcion());
         maleza.setActivo(malezaDto.isActivo());
 
         return maleza;

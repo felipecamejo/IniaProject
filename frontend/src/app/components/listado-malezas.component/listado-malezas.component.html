@@ -1,0 +1,91 @@
+<div class="container">
+    <!-- Botón de navegación hacia atrás -->
+    <button class="back-button" (click)="goToHome()">
+        <i class="pi pi-arrow-left"></i>
+    </button>
+    
+    <p-card class="card">
+        <ng-template pTemplate="header">
+            <h2 class="title">Listado de Malezas</h2>
+        </ng-template>
+
+        <div class="search-section">
+            <div class="search-bar">
+                <input type="text" placeholder="Buscar malezas..." class="search-input" [(ngModel)]="searchText" name="search" />
+            </div>
+            <div class="filter-dropdown">
+                 <div class="submit-btn">
+                    <button pButton type="button" (click)="abrirModal()" label="Crear Maleza" class="p-button-primary"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensaje cuando no hay elementos -->
+        <div class="no-results-message" *ngIf="itemsFiltrados.length === 0">
+            <div class="no-results-content">
+                <h3>No se encontraron Malezas</h3>
+                <p>No hay malezas que coincidan con los filtros seleccionados.</p>
+                <p>Intenta ajustar los criterios de búsqueda.</p>
+            </div>
+        </div>
+
+        <!-- Lista de elementos filtrados -->
+        <div class="blue-rectangle" 
+             *ngFor="let item of itemsFiltrados"
+             >
+            <div class="item-header">
+                <div class="item-info">
+                    <h3 class="item-title">{{ item.nombre }}</h3>
+                </div>
+                <div class="item-actions">
+                    <button class="action-button edit-button" (click)="editarItem(item)" title="Editar">
+                        <i class="pi pi-pencil"></i>
+                    </button>
+                    <button class="action-button delete-button" (click)="eliminarItem(item)" title="Eliminar">
+                        <i class="pi pi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="divider-line"></div>
+            <div class="item-content">
+                <div class="item-description">
+                    <p>{{ item.descripcion || 'Sin descripción disponible' }}</p>
+                </div>
+            </div>
+        </div>
+    
+    </p-card>
+
+    <!-- Modal de Autenticación -->
+    <p-dialog 
+        header="Crear/Editar Maleza" 
+        [(visible)]="mostrarModal" 
+        [modal]="true" 
+        [draggable]="false" 
+        [resizable]="false"
+        [style]="{width: '90vw', maxWidth: '450px'}"
+        styleClass="auth-modal">
+        
+        <form #modalForm="ngForm" (ngSubmit)="onSubmitModal(modalForm)">
+            <div class="modal-form-grid">
+                <div class="modal-form-field">
+                    <label for="modalNombre">Nombre</label>
+                    <input id="modalNombre" type="text" [(ngModel)]="modalNombre" name="modalNombre" pInputText required />
+                </div>
+
+                <div class="modal-form-field">
+                    <label for="modalDescripcion">Descripción (opcional)</label>
+                    <input id="modalDescripcion" type="text" [(ngModel)]="modalDescripcion" name="modalDescripcion" pInputText />
+                </div>
+            </div>
+
+            <div class="modal-submit-btn">
+                <button pButton type="submit" [disabled]="modalLoading || modalForm.invalid" 
+                        label="{{ modalLoading ? 'Ingresando...' : 'Listo' }}" 
+                        class="p-button-primary"></button>
+            </div>
+
+            <div *ngIf="modalError" class="error">{{ modalError }}</div>
+        </form>
+    </p-dialog>
+</div>

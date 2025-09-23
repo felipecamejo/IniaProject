@@ -7,6 +7,7 @@ import { PmsComponent } from './components/pms/pms.component';
 import { SanitarioComponent } from './components/sanitario/sanitario.component';
 import { PurezaComponent } from './components/pureza/pureza.component';
 import { ListadoLotesComponent } from './components/listado-lotes/listado-lotes.component';
+import { ListadoMalezasComponent } from './components/listado-malezas.component/listado-malezas.component';
 
 export const routes: Routes = [
     { path : 'home', component: HomeComponent },
@@ -16,5 +17,6 @@ export const routes: Routes = [
     { path : 'pms', component: PmsComponent },
     { path : 'sanitario', component: SanitarioComponent },
     { path : 'listado-lotes', component: ListadoLotesComponent },
-    { path : 'pureza', component: PurezaComponent }
+    { path : 'pureza', component: PurezaComponent },
+    { path : 'listado-malezas', component: ListadoMalezasComponent }
 ];

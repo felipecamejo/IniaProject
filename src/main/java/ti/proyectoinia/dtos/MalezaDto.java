@@ -8,6 +8,8 @@ public class MalezaDto {
 
     private String nombre;
 
+    private String descripcion;
+
     private boolean activo;
 }
 
