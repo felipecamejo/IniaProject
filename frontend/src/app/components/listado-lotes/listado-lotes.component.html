@@ -1,0 +1,74 @@
+<div class="container">
+    <!-- Botón de navegación hacia atrás -->
+    <button class="back-button" (click)="goToHome()">
+        <i class="pi pi-arrow-left"></i>
+    </button>
+    
+    <p-card class="card">
+        <ng-template pTemplate="header">
+            <h2 class="title">Listado de Lotes</h2>
+        </ng-template>
+
+        <div class="search-section">
+            <div class="search-bar">
+                <input type="text" placeholder="Buscar lotes..." class="search-input" [(ngModel)]="searchText" name="search" />
+            </div>
+            <div class="filter-dropdown">
+                <select class="estado-select" [(ngModel)]="selectedMetodo" name="estado">
+                    <option value="">Todos los estados</option>
+                    <option *ngFor="let metodo of metodos" [value]="metodo.id">{{ metodo.label }}</option>
+                </select>
+            </div>
+            <div class="filter-dropdown">
+                <select class="mes-select" [(ngModel)]="selectedMes" name="mes">
+                    <option value="">Todos los meses</option>
+                    <option *ngFor="let mes of meses" [value]="mes.id">{{ mes.label }}</option>
+                </select>
+            </div>
+            <div class="filter-dropdown">
+                <select class="anio-select" [(ngModel)]="selectedAnio" name="anio" (change)="onAnioChange()">
+                    <option value="">Todos los años</option>
+                    <option *ngFor="let anio of anios" [value]="anio.id">{{ anio.label }}</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Mensaje cuando no hay lotes -->
+        <div class="no-results-message" *ngIf="lotesFiltrados.length === 0">
+            <div class="no-results-content">
+                <h3>No se encontraron lotes</h3>
+                <p>No hay lotes que coincidan con los filtros seleccionados.</p>
+                <p>Intenta ajustar los criterios de búsqueda.</p>
+            </div>
+        </div>
+
+        <!-- Lista de lotes filtrados -->
+        <div class="blue-rectangle" 
+             *ngFor="let lote of lotesFiltrados"
+             [ngClass]="{
+               'pendiente': lote.estado === 'Pendiente',
+               'finalizado': lote.estado === 'Finalizado'
+             }">
+            <div class="item-header">
+                <div class="item-info">
+                    <h3 class="item-title">{{ lote.nombre }}</h3>
+                    <p class="item-author">{{ lote.autor }}</p>
+                </div>
+                <div class="item-status">
+                    <span class="status-badge">{{ lote.estado }}</span>
+                </div>
+            </div>
+            <div class="divider-line"></div>
+            <div class="item-content">
+                <div class="item-description">
+                    <p>{{ lote.descripcion || 'Sin descripción disponible' }}</p>
+                </div>
+                <div class="item-date">
+                    <span>{{ lote.fecha }}</span>
+                </div>
+            </div>
+        </div>
+
+       
+    </p-card>
+</div>
