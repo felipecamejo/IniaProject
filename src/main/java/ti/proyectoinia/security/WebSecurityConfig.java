@@ -6,8 +6,6 @@ package ti.proyectoinia.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -15,8 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -26,7 +22,6 @@ import java.util.List;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @EnableMethodSecurity(prePostEnabled = true)
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
 @Configuration
 public class WebSecurityConfig {
@@ -50,6 +45,9 @@ public class WebSecurityConfig {
                         .requestMatchers(antMatcher("/configuration/**")).permitAll()
                         .requestMatchers(antMatcher("/webjars/**")).permitAll() // Recursos de Swagger
                         .requestMatchers(antMatcher("/error")).permitAll() // Páginas de error
+
+                        // Gestión de usuarios: solo ADMIN puede acceder
+                        .requestMatchers(antMatcher("/api/v1/usuario/**")).hasAuthority("ADMIN")
 
                         // Cualquier otra petición requiere autenticación
                         .anyRequest()
@@ -86,9 +84,8 @@ public class WebSecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOriginPattern("http://localhost:*");
         configuration.addAllowedOrigin("https://localhost:8080");
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        // configuration.setAllowCredentials(true); // solo si usás cookies o Authorization
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

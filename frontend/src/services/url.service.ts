@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class UrlService {
   readonly baseUrl: string = 'http://localhost:8080/Inia/api/v1';
+  readonly authBaseUrl: string = 'http://localhost:8080/Inia/api/seguridad';
 
   constructor(private http: HttpClient) {}
 
