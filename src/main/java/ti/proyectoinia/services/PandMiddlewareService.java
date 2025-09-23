@@ -32,6 +32,24 @@ public class PandMiddlewareService {
         return runProcess(command, scriptPath.getParent().toFile());
     }
 
+    /**
+     * Ejecuta el script para insertar datos desde un archivo Excel en la tabla mi_talbla.
+     */
+    public String ejecutarInsertarDesdeExcel(String rutaExcel) {
+        List<String> command = buildPythonCommand();
+
+        Path scriptPath = Paths.get(System.getProperty("user.dir"), "Middleware", "pandaAlchemy.py");
+        if (!scriptPath.toFile().exists()) {
+            return "No se encontró el script: " + scriptPath;
+        }
+
+        command.add(scriptPath.toString());
+        command.add("--insert");
+        command.add(rutaExcel);
+
+        return runProcess(command, scriptPath.getParent().toFile());
+    }
+
     private List<String> buildPythonCommand() {
         List<String> command = new ArrayList<>();
         String pythonExecutable = System.getenv("PYTHON_EXECUTABLE");

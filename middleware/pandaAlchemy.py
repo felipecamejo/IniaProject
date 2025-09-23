@@ -142,7 +142,8 @@ def insertar_datos_desde_excel(archivo_excel):
         print("\nPrimeras 5 filas:")
         print(df.head())
         
-        # Renombrar columnas del Excel a los nombres de la tabla
+        # Normalizar encabezados: quitar espacios y mapear case-insensitive
+        df.columns = [str(c).strip() for c in df.columns]
         rename_map = {
             'Segment': 'segment',
             'Country': 'country',
@@ -161,7 +162,8 @@ def insertar_datos_desde_excel(archivo_excel):
             'Month Name': 'month_name',
             'Year': 'year',
         }
-        df = df.rename(columns=rename_map)
+        norm_map = {k.strip().casefold(): v for k, v in rename_map.items()}
+        df = df.rename(columns=lambda c: norm_map.get(str(c).strip().casefold(), c))
 
         # Asegurar columnas requeridas aun si el Excel trae formatos distintos
         for col in ['segment','country','product','discount_band','units_sold','manufacturing_price','sale_price','gross_sales','discounts','sales','cogs','profit','date','month_number','month_name','year']:
@@ -207,10 +209,14 @@ def consultar_datos():
         return None
 
 if __name__ == "__main__":
-    
     print("=== Script de importación Excel a PostgreSQL ===")
+    args = sys.argv[1:]
     
-  
+    if len(args) >= 2 and args[0] in ("--insert", "-i"):
+        excel_path = args[1]
+        ok = insertar_datos_desde_excel(excel_path)
+        sys.exit(0 if ok else 1)
+
     print("\n1. Creando tabla...")
     engine = crear_tabla()
     if engine is None:
