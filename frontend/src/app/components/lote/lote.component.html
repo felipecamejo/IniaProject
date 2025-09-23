@@ -1,0 +1,33 @@
+<div class="container">
+  <p-card class="card">
+    <ng-template pTemplate="header">
+      <h2 class="title">Lote</h2>
+    </ng-template>
+
+    <form>
+      <div class="form-grid">
+        <!-- Campos de texto -->
+        <div class="form-field">
+          <label for="nombre">Nombre</label>
+          <input id="nombre" type="text" [(ngModel)]="nombre" name="nombre" pInputText />
+        </div>
+
+        <div class="form-field">
+          <label for="descripcion">Descripcion</label>
+          <input id="descripcion" type="number" [(ngModel)]="descripcion" name="descripcion" pInputText />
+        </div>
+
+      </div>
+
+      <div class="submit-btn">
+        <button
+          pButton
+          type="submit"
+          label="Realizar Lote"
+          class="p-button-success"
+          (click)="crearLote()"
+        ></button>
+      </div>
+    </form>
+  </p-card>
+</div>
