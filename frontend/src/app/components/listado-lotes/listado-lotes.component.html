@@ -33,8 +33,8 @@
             </div>
         </div>
 
-        <!-- Mensaje cuando no hay lotes -->
-        <div class="no-results-message" *ngIf="lotesFiltrados.length === 0">
+        <!-- Mensaje cuando no hay elementos -->
+        <div class="no-results-message" *ngIf="itemsFiltrados.length === 0">
             <div class="no-results-content">
                 <h3>No se encontraron lotes</h3>
                 <p>No hay lotes que coincidan con los filtros seleccionados.</p>
@@ -44,27 +44,27 @@
 
         <!-- Lista de lotes filtrados -->
         <div class="blue-rectangle" 
-             *ngFor="let lote of lotesFiltrados"
+             *ngFor="let item of itemsFiltrados"
              [ngClass]="{
-               'pendiente': lote.estado === 'Pendiente',
-               'finalizado': lote.estado === 'Finalizado'
+               'pendiente': item.estado === 'Pendiente',
+               'finalizado': item.estado === 'Finalizado'
              }">
             <div class="item-header">
                 <div class="item-info">
-                    <h3 class="item-title">{{ lote.nombre }}</h3>
-                    <p class="item-author">{{ lote.autor }}</p>
+                    <h3 class="item-title">{{ item.nombre }}</h3>
+                    <p class="item-author">{{ item.autor }}</p>
                 </div>
                 <div class="item-status">
-                    <span class="status-badge">{{ lote.estado }}</span>
+                    <span class="status-badge">{{ item.estado }}</span>
                 </div>
             </div>
             <div class="divider-line"></div>
             <div class="item-content">
                 <div class="item-description">
-                    <p>{{ lote.descripcion || 'Sin descripción disponible' }}</p>
+                    <p>{{ item.descripcion || 'Sin descripción disponible' }}</p>
                 </div>
                 <div class="item-date">
-                    <span>{{ lote.fecha }}</span>
+                    <span>{{ item.fecha }}</span>
                 </div>
             </div>
         </div>
