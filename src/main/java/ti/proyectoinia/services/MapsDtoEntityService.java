@@ -407,6 +407,9 @@ public class MapsDtoEntityService {
         loteDto.setId(lote.getId());
         loteDto.setNombre(lote.getNombre());
         loteDto.setActivo(lote.isActivo());
+        loteDto.setDescripcion(lote.getDescripcion());
+        loteDto.setFechaCreacion(lote.getFechaCreacion());
+        loteDto.setFechaFinalizacion(lote.getFechaFinalizacion());
 
         if (lote.getUsuarios() != null) {
             loteDto.setUsuariosId(lote.getUsuarios().stream().map(Usuario::getId).collect(Collectors.toList()));
@@ -426,6 +429,9 @@ public class MapsDtoEntityService {
         lote.setId(loteDto.getId());
         lote.setNombre(loteDto.getNombre());
         lote.setActivo(loteDto.isActivo());
+        lote.setDescripcion(loteDto.getDescripcion());
+        lote.setFechaCreacion(loteDto.getFechaCreacion());
+        lote.setFechaFinalizacion(loteDto.getFechaFinalizacion());
 
         if (loteDto.getUsuariosId() != null) {
             lote.setUsuarios(loteDto.getUsuariosId().stream().map(id -> {
