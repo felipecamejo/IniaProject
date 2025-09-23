@@ -6,16 +6,16 @@
     
     <p-card class="card">
         <ng-template pTemplate="header">
-            <h2 class="title">Listado de Malezas</h2>
+            <h2 class="title">Listado de Cultivos</h2>
         </ng-template>
 
         <div class="search-section">
             <div class="search-bar">
-                <input type="text" placeholder="Buscar malezas..." class="search-input" [(ngModel)]="searchText" name="search" />
+                <input type="text" placeholder="Buscar Cultivos..." class="search-input" [(ngModel)]="searchText" name="search" />
             </div>
             <div class="filter-dropdown">
                  <div class="submit-btn">
-                    <button pButton type="button" (click)="abrirModal()" label="Crear Maleza" class="p-button-primary"></button>
+                    <button pButton type="button" (click)="abrirModal()" label="Crear Cultivo" class="p-button-primary"></button>
                 </div>
             </div>
         </div>
@@ -58,7 +58,7 @@
 
     <!-- Modal de Autenticación -->
     <p-dialog 
-        header="Crear/Editar Maleza" 
+        header="{{ modalTitulo }}" 
         [(visible)]="mostrarModal" 
         [modal]="true" 
         [draggable]="false" 
@@ -75,7 +75,7 @@
 
                 <div class="modal-form-field">
                     <label for="modalDescripcion">Descripción (opcional)</label>
-                    <input id="modalDescripcion" type="text" [(ngModel)]="modalDescripcion" name="modalDescripcion" pInputText />
+                    <textarea id="modalDescripcion" [(ngModel)]="modalDescripcion" name="modalDescripcion" pInputTextarea></textarea>
                 </div>
             </div>
 
