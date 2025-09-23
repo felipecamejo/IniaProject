@@ -3,10 +3,23 @@ from sqlalchemy import create_engine, Column, Integer, String, Date, Float, Text
 from sqlalchemy.orm import declarative_base, sessionmaker
 import logging
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
+from urllib.parse import quote_plus
 
-# Cargar variables de entorno desde el archivo .env
-load_dotenv()
+"""
+Carga robusta de variables .env con codificación por defecto UTF-8 y
+retroceso a Latin-1 (Windows-1252) para evitar UnicodeDecodeError típicos
+cuando el archivo fue guardado en ANSI.
+"""
+dotenv_path = find_dotenv()
+if dotenv_path:
+    try:
+        load_dotenv(dotenv_path=dotenv_path, override=True, encoding='utf-8')
+    except UnicodeDecodeError:
+        load_dotenv(dotenv_path=dotenv_path, override=True, encoding='latin-1')
+else:
+    # Si no hay .env, intentar variables de entorno del sistema
+    load_dotenv()
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -14,10 +27,23 @@ logger = logging.getLogger(__name__)
 
 # Obtener variables de entorno
 DB_USER = os.getenv('DB_USER')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_PASSWORD = os.getenv('DB_PASS')
 DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
 DB_NAME = os.getenv('DB_NAME')
+
+def build_connection_string():
+    """Construye la cadena de conexión escapando credenciales.
+
+    Escapar evita errores cuando la contraseña/usuario contienen caracteres no ASCII
+    o reservados en URLs.
+    """
+    user_esc = quote_plus(DB_USER or '')
+    pass_esc = quote_plus(DB_PASSWORD or '')
+    host = DB_HOST or 'localhost'
+    port = DB_PORT or '5432'
+    db = DB_NAME or ''
+    return f'postgresql://{user_esc}:{pass_esc}@{host}:{port}/{db}'
 
 # Crear la base declarativa (SQLAlchemy 2.0)
 Base = declarative_base()
@@ -40,7 +66,7 @@ def crear_tabla():
         # Verificar que las variables estén cargadas
         print(f"Conectando a: {DB_HOST}:{DB_PORT}/{DB_NAME} como {DB_USER}")
         
-        connection_string = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+        connection_string = build_connection_string()
         engine = create_engine(connection_string)
         
         # Crear todas las tablas definidas
@@ -88,7 +114,7 @@ def insertar_datos_desde_excel(archivo_excel):
 def consultar_datos():
     """Consultar datos de la tabla"""
     try:
-        connection_string = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+        connection_string = build_connection_string()
         engine = create_engine(connection_string)
         
         # Consultar usando pandas
