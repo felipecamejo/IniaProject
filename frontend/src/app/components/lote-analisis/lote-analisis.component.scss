@@ -1,0 +1,267 @@
+.home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.banner {
+  width: 100%;
+  margin-bottom: 40px;
+  
+  img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+  }
+}
+
+// Estilos para los botones de análisis - Mobile First
+.analisis-buttons-container {
+  padding: 20px 15px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+
+  &.responsive-container {
+    padding: 20px 10px;
+  }
+}
+
+.buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  justify-items: center;
+  align-items: start;
+}
+
+.analisis-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.button-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  margin-bottom: 12px;
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .button-icon {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+  }
+
+  // Colores específicos para cada botón
+  &.naranja {
+    background: linear-gradient(135deg, var(--naranja), #d99538);
+  }
+
+  &.azul {
+    background: linear-gradient(135deg, var(--azul-menu), #4fa8c2);
+  }
+
+  &.rojo {
+    background: linear-gradient(135deg, var(--rojo), #c55859);
+  }
+
+  &.color-marino {
+    background: linear-gradient(135deg, var(--color-marino), #17938c);
+  }
+}
+
+.button-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  max-width: 100px;
+  line-height: 1.2;
+  word-wrap: break-word;
+}
+
+.footer {
+  margin-top: auto;
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+// Responsive design - Mobile First approach
+.banner {
+  &.responsive-banner {
+    margin-bottom: 20px;
+  }
+  
+  .banner-img {
+    height: 180px;
+    object-fit: cover;
+  }
+}
+
+// Tablet (768px and up)
+@media (min-width: 768px) {
+  .analisis-buttons-container {
+    padding: 30px 20px;
+  }
+  
+  .buttons-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  
+  .button-circle {
+    width: 130px;
+    height: 130px;
+    margin-bottom: 15px;
+    
+    .button-icon {
+      width: 65px;
+      height: 65px;
+    }
+  }
+  
+  .button-text {
+    font-size: 15px;
+    max-width: 110px;
+  }
+  
+  .banner {
+    margin-bottom: 30px;
+    
+    .banner-img {
+      height: 220px;
+    }
+  }
+}
+
+// Desktop (1024px and up)
+@media (min-width: 1024px) {
+  .analisis-buttons-container {
+    padding: 40px 20px;
+  }
+  
+  .buttons-grid {
+    gap: 25px;
+  }
+  
+  .button-circle {
+    width: 150px;
+    height: 150px;
+    
+    .button-icon {
+      width: 80px;
+      height: 80px;
+    }
+  }
+  
+  .button-text {
+    font-size: 16px;
+    max-width: 120px;
+  }
+  
+  .banner {
+    margin-bottom: 40px;
+    
+    .banner-img {
+      height: 250px;
+    }
+  }
+}
+
+// Large Desktop (1440px and up)
+@media (min-width: 1440px) {
+  .buttons-grid {
+    gap: 30px;
+  }
+  
+  .button-circle {
+    width: 160px;
+    height: 160px;
+    
+    .button-icon {
+      width: 85px;
+      height: 85px;
+    }
+  }
+}
+
+.hero-image {
+  width:a 100%;
+  height: 250px;
+  background: url('/assets/images/home-header.jpg') center/cover no-repeat;
+  border-bottom: 3px solid #007ad9;
+}
+
+.section {
+  margin: 2rem 0;
+  text-align: center;
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #003366;
+    margin-bottom: 1.5rem;
+  }
+}
+
+
+
+
+.banner {
+  position: relative;
+  width: 100%;
+  max-height: 300px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    filter: blur(3px) brightness(1.0);
+    /* blur desenfoca, brightness oscurece un poco */
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35));
+    /* Sombra oscura encima */
+  }
+}
+
+.footer {
+  margin-top: auto;
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: #333333;
+  text-align: center;
+  border-top: 1px solid #ccc;
+}

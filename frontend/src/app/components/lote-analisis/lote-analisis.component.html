@@ -1,0 +1,75 @@
+<div class="home-container">
+  <!-- Imagen principal -->
+  <div class="banner responsive-banner">
+    <img src="assets/banner_home.jpg" alt="Banner principal" class="banner-img" />
+  </div>
+
+  <!-- Botones de análisis -->
+  <div class="analisis-buttons-container responsive-container">
+    <!-- Grid de botones responsive -->
+    <div class="buttons-grid">
+      <!-- Fila 1 -->
+      <div class="analisis-button" (click)="navigateToComponent('recibo')">
+        <div class="button-circle naranja">
+          <img src="assets/Recibo.svg" alt="Recibo" class="button-icon" />
+        </div>
+        <span class="button-text">Recibo</span>
+      </div>
+      
+      <div class="analisis-button" (click)="navigateToComponent('pureza')">
+        <div class="button-circle azul">
+          <img src="assets/Pureza.svg" alt="Pureza" class="button-icon" />
+        </div>
+        <span class="button-text">Pureza</span>
+      </div>
+      
+      <div class="analisis-button">
+        <div class="button-circle rojo">
+          <img src="assets/PurezaPN.svg" alt="Pureza P notatum" class="button-icon" />
+        </div>
+        <span class="button-text">Pureza P notatum</span>
+      </div>
+      
+      <div class="analisis-button" (click)="navigateToComponent('pms')">
+        <div class="button-circle color-marino">
+          <img src="assets/Pms.svg" alt="PMS" class="button-icon" />
+        </div>
+        <span class="button-text">PMS</span>
+      </div>
+
+      <!-- Fila 2 -->
+      <div class="analisis-button">
+        <div class="button-circle naranja">
+          <img src="assets/Dosn.svg" alt="DOSN" class="button-icon" />
+        </div>
+        <span class="button-text">DOSN</span>
+      </div>
+      
+      <div class="analisis-button">
+        <div class="button-circle azul">
+          <img src="assets/Germinacion.svg" alt="Germinación" class="button-icon" />
+        </div>
+        <span class="button-text">Germinación</span>
+      </div>
+      
+      <div class="analisis-button">
+        <div class="button-circle rojo">
+          <img src="assets/Tetrazolio.svg" alt="Tetrazolio" class="button-icon" />
+        </div>
+        <span class="button-text">Tetrazolio</span>
+      </div>
+      
+      <div class="analisis-button" (click)="navigateToComponent('sanitario')">
+        <div class="button-circle color-marino">
+          <img src="assets/Sanitario.svg" alt="Sanitario" class="button-icon" />
+        </div>
+        <span class="button-text">Sanitario</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© Inia 2025</p>
+  </footer>
+</div>

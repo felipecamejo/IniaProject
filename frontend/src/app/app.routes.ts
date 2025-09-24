@@ -7,6 +7,7 @@ import { PmsComponent } from './components/pms/pms.component';
 import { SanitarioComponent } from './components/sanitario/sanitario.component';
 import { PurezaComponent } from './components/pureza/pureza.component';
 import { LoteComponent } from './components/lote/lote.component';
+import { LoteAnalisisComponent } from './components/lote-analisis/lote-analisis.component';
 import { ListadoLotesComponent } from './components/listado-lotes/listado-lotes.component';
 import { ListadoMalezasComponent } from './components/listado-malezas/listado-malezas.component';
 import { ListadoHongosComponent } from './components/listado-hongos/listado-hongos.component';
@@ -21,6 +22,7 @@ export const routes: Routes = [
     { path : 'sanitario', component: SanitarioComponent },
     { path : 'pureza', component: PurezaComponent },
     { path : 'lote', component: LoteComponent },
+    { path : 'lote-analisis', component: LoteAnalisisComponent },
     
     //listados
     { path : 'listado-lotes', component: ListadoLotesComponent },
