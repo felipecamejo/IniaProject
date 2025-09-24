@@ -125,69 +125,104 @@
         </div>
 
 
-        <!-- Listados dinámicos personalizados -->
+        <!-- Multiselect Malezas tolerancia cero -->
         <div class="form-field">
-          <label for="malezasCero">Malezas tolerancia cero</label>
-          <div style="display: flex; gap: 0.5rem; align-items: center;">
-            <select [(ngModel)]="malezaCeroSeleccionada" name="malezaCeroSeleccionada">
-              <option [ngValue]="null">Seleccionar...</option>
-              <option *ngFor="let m of malezasCeroList" [ngValue]="m">{{ m.label }}</option>
-            </select>
-            <button type="button" (click)="agregarMalezaCero()">Agregar</button>
-          </div>
-          <div class="chips-list">
-            <span *ngFor="let m of malezasCero; let i = index" class="chip">
-              {{ obtenerLabel(m, malezasCeroList) }}
-              <button type="button" (click)="eliminarMalezaCero(i)">x</button>
-            </span>
+          <label>Malezas tolerancia cero</label>
+          <div class="custom-multiselect" [class.open]="isMalezasCeroDropdownOpen">
+            <div class="multiselect-trigger" (click)="toggleMalezasCeroDropdown()">
+              <span class="selected-text">
+                {{ getSelectedMalezasCeroText() }}
+              </span>
+              <i class="pi pi-chevron-down" [class.rotated]="isMalezasCeroDropdownOpen"></i>
+            </div>
+            <div class="multiselect-dropdown" *ngIf="isMalezasCeroDropdownOpen">
+              <div class="multiselect-search">
+                <input type="text" placeholder="Buscar..." [(ngModel)]="malezasCeroSearchText" name="malezasCeroSearch" (click)="$event.stopPropagation()" class="search-input">
+                <i class="pi pi-search"></i>
+              </div>
+              <div class="multiselect-options-container">
+                <div class="multiselect-option" *ngFor="let mc of getFilteredMalezasCero()" (click)="toggleMalezaCeroSelection(mc)" [class.selected]="isMalezaCeroSelected(mc.id)">
+                  <input type="checkbox" [checked]="isMalezaCeroSelected(mc.id)" (change)="toggleMalezaCeroSelection(mc)" (click)="$event.stopPropagation()">
+                  <span>{{ mc.label }}</span>
+                </div>
+                <div class="no-results" *ngIf="getFilteredMalezasCero().length === 0">No se encontraron opciones</div>
+              </div>
+            </div>
           </div>
         </div>
+        <!-- Multiselect Malezas comunes -->
         <div class="form-field">
-          <label for="malezasComunes">Malezas comunes</label>
-          <div style="display: flex; gap: 0.5rem; align-items: center;">
-            <select [(ngModel)]="malezaComunSeleccionada" name="malezaComunSeleccionada">
-              <option [ngValue]="null">Seleccionar...</option>
-              <option *ngFor="let m of malezasComunesList" [ngValue]="m">{{ m.label }}</option>
-            </select>
-            <button type="button" (click)="agregarMalezaComun()">Agregar</button>
-          </div>
-          <div class="chips-list">
-            <span *ngFor="let m of malezasComunes; let i = index" class="chip">
-              {{ obtenerLabel(m, malezasComunesList) }}
-              <button type="button" (click)="eliminarMalezaComun(i)">x</button>
-            </span>
+          <label>Malezas comunes</label>
+          <div class="custom-multiselect" [class.open]="isMalezasComunesDropdownOpen">
+            <div class="multiselect-trigger" (click)="toggleMalezasComunesDropdown()">
+              <span class="selected-text">
+                {{ getSelectedMalezasComunesText() }}
+              </span>
+              <i class="pi pi-chevron-down" [class.rotated]="isMalezasComunesDropdownOpen"></i>
+            </div>
+            <div class="multiselect-dropdown" *ngIf="isMalezasComunesDropdownOpen">
+              <div class="multiselect-search">
+                <input type="text" placeholder="Buscar..." [(ngModel)]="malezasComunesSearchText" name="malezasComunesSearch" (click)="$event.stopPropagation()" class="search-input">
+                <i class="pi pi-search"></i>
+              </div>
+              <div class="multiselect-options-container">
+                <div class="multiselect-option" *ngFor="let m of getFilteredMalezasComunes()" (click)="toggleMalezaComunSelection(m)" [class.selected]="isMalezaComunSelected(m.id)">
+                  <input type="checkbox" [checked]="isMalezaComunSelected(m.id)" (change)="toggleMalezaComunSelection(m)" (click)="$event.stopPropagation()">
+                  <span>{{ m.label }}</span>
+                </div>
+                <div class="no-results" *ngIf="getFilteredMalezasComunes().length === 0">No se encontraron opciones</div>
+              </div>
+            </div>
           </div>
         </div>
+        <!-- Multiselect Malezas toleradas -->
         <div class="form-field">
-          <label for="malezasTol">Malezas toleradas</label>
-          <div style="display: flex; gap: 0.5rem; align-items: center;">
-            <select [(ngModel)]="malezaTolSeleccionada" name="malezaTolSeleccionada">
-              <option [ngValue]="null">Seleccionar...</option>
-              <option *ngFor="let m of malezasTolList" [ngValue]="m">{{ m.label }}</option>
-            </select>
-            <button type="button" (click)="agregarMalezaTol()">Agregar</button>
-          </div>
-          <div class="chips-list">
-            <span *ngFor="let m of malezasTol; let i = index" class="chip">
-              {{ obtenerLabel(m, malezasTolList) }}
-              <button type="button" (click)="eliminarMalezaTol(i)">x</button>
-            </span>
+          <label>Malezas toleradas</label>
+          <div class="custom-multiselect" [class.open]="isMalezasToleradasDropdownOpen">
+            <div class="multiselect-trigger" (click)="toggleMalezasToleradasDropdown()">
+              <span class="selected-text">
+                {{ getSelectedMalezasToleradasText() }}
+              </span>
+              <i class="pi pi-chevron-down" [class.rotated]="isMalezasToleradasDropdownOpen"></i>
+            </div>
+            <div class="multiselect-dropdown" *ngIf="isMalezasToleradasDropdownOpen">
+              <div class="multiselect-search">
+                <input type="text" placeholder="Buscar..." [(ngModel)]="malezasToleradasSearchText" name="malezasToleradasSearch" (click)="$event.stopPropagation()" class="search-input">
+                <i class="pi pi-search"></i>
+              </div>
+              <div class="multiselect-options-container">
+                <div class="multiselect-option" *ngFor="let mt of getFilteredMalezasToleradas()" (click)="toggleMalezaToleradaSelection(mt)" [class.selected]="isMalezaToleradaSelected(mt.id)">
+                  <input type="checkbox" [checked]="isMalezaToleradaSelected(mt.id)" (change)="toggleMalezaToleradaSelection(mt)" (click)="$event.stopPropagation()">
+                  <span>{{ mt.label }}</span>
+                </div>
+                <div class="no-results" *ngIf="getFilteredMalezasToleradas().length === 0">No se encontraron opciones</div>
+              </div>
+            </div>
           </div>
         </div>
+        <!-- Multiselect Otros cultivos -->
         <div class="form-field">
-          <label for="otrosCultivosListado">Otros cultivos</label>
-          <div style="display: flex; gap: 0.5rem; align-items: center;">
-            <select [(ngModel)]="cultivoSeleccionado" name="cultivoSeleccionado">
-              <option [ngValue]="null">Seleccionar...</option>
-              <option *ngFor="let c of otrosCultivosList" [ngValue]="c">{{ c.label }}</option>
-            </select>
-            <button type="button" (click)="agregarCultivo()">Agregar</button>
-          </div>
-          <div class="chips-list">
-            <span *ngFor="let c of otrosCultivosListado; let i = index" class="chip">
-              {{ obtenerLabel(c, otrosCultivosList) }}
-              <button type="button" (click)="eliminarCultivo(i)">x</button>
-            </span>
+          <label>Otros cultivos</label>
+          <div class="custom-multiselect" [class.open]="isCultivosDropdownOpen">
+            <div class="multiselect-trigger" (click)="toggleCultivosDropdown()">
+              <span class="selected-text">
+                {{ getSelectedCultivosText() }}
+              </span>
+              <i class="pi pi-chevron-down" [class.rotated]="isCultivosDropdownOpen"></i>
+            </div>
+            <div class="multiselect-dropdown" *ngIf="isCultivosDropdownOpen">
+              <div class="multiselect-search">
+                <input type="text" placeholder="Buscar..." [(ngModel)]="cultivosSearchText" name="cultivosSearch" (click)="$event.stopPropagation()" class="search-input">
+                <i class="pi pi-search"></i>
+              </div>
+              <div class="multiselect-options-container">
+                <div class="multiselect-option" *ngFor="let c of getFilteredCultivos()" (click)="toggleCultivoSelection(c)" [class.selected]="isCultivoSelected(c.id)">
+                  <input type="checkbox" [checked]="isCultivoSelected(c.id)" (change)="toggleCultivoSelection(c)" (click)="$event.stopPropagation()">
+                  <span>{{ c.label }}</span>
+                </div>
+                <div class="no-results" *ngIf="getFilteredCultivos().length === 0">No se encontraron opciones</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -1,0 +1,198 @@
+<div class="container">
+  <p-card class="card">
+    <ng-template pTemplate="header">
+      <h2 class="title">DOSN</h2>
+    </ng-template>
+
+    <form>
+      <!-- INASE Section -->
+      <div class="section-title">INASE</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="fechaInase">Fecha</label>
+          <input id="fechaInase" type="date" [(ngModel)]="fechaInase" name="fechaInase" pInputText />
+        </div>
+        <div class="form-field">
+          <label for="gramosInase">Gramos analizados</label>
+          <input id="gramosInase" type="number" [(ngModel)]="gramosInase" name="gramosInase" pInputText />
+        </div>
+        <div class="form-field">
+          <label for="tipoAnalisisInase">Tipo de análisis</label>
+          <select id="tipoAnalisisInase" [(ngModel)]="tipoAnalisisInase" name="tipoAnalisisInase" pInputText>
+            <option value="Completo">Completo</option>
+            <option value="Reducido">Reducido</option>
+            <option value="Limitado">Limitado</option>
+            <option value="Reducido - limitado">Reducido - limitado</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- INIA Section -->
+      <div class="section-title">INIA</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="fechaInia">Fecha</label>
+          <input id="fechaInia" type="date" [(ngModel)]="fechaInia" name="fechaInia" pInputText />
+        </div>
+        <div class="form-field">
+          <label for="gramosInia">Gramos analizados</label>
+          <input id="gramosInia" type="number" [(ngModel)]="gramosInia" name="gramosInia" pInputText />
+        </div>
+        <div class="form-field">
+          <label for="tipoAnalisisInia">Tipo de análisis</label>
+          <select id="tipoAnalisisInia" [(ngModel)]="tipoAnalisisInia" name="tipoAnalisisInia" pInputText>
+            <option value="Completo">Completo</option>
+            <option value="Reducido">Reducido</option>
+            <option value="Limitado">Limitado</option>
+            <option value="Reducido - limitado">Reducido - limitado</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Listados dinámicos -->
+      <div class="section-title">Listados</div>
+      <!-- Malezas multiselect -->
+      <div class="form-field">
+        <label>Malezas</label>
+        <div class="custom-multiselect" [class.open]="isMalezasDropdownOpen">
+          <div class="multiselect-trigger" (click)="toggleMalezasDropdown()">
+            <span class="selected-text">
+              {{ getSelectedMalezasText() }}
+            </span>
+            <i class="pi pi-chevron-down" [class.rotated]="isMalezasDropdownOpen"></i>
+          </div>
+          <div class="multiselect-dropdown" *ngIf="isMalezasDropdownOpen">
+            <div class="multiselect-search">
+              <input type="text" placeholder="Buscar..." [(ngModel)]="malezasSearchText" name="malezasSearch" (click)="$event.stopPropagation()" class="search-input">
+              <i class="pi pi-search"></i>
+            </div>
+            <div class="multiselect-options-container">
+              <div class="multiselect-option" *ngFor="let m of getFilteredMalezas()" (click)="toggleMalezaSelection(m)" [class.selected]="isMalezaSelected(m.id)">
+                <input type="checkbox" [checked]="isMalezaSelected(m.id)" (change)="toggleMalezaSelection(m)" (click)="$event.stopPropagation()">
+                <span>{{ m.label }}</span>
+              </div>
+              <div class="no-results" *ngIf="getFilteredMalezas().length === 0">No se encontraron opciones</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Cultivos multiselect -->
+      <div class="form-field">
+        <label>Otros cultivos</label>
+        <div class="custom-multiselect" [class.open]="isCultivosDropdownOpen">
+          <div class="multiselect-trigger" (click)="toggleCultivosDropdown()">
+            <span class="selected-text">
+              {{ getSelectedCultivosText() }}
+            </span>
+            <i class="pi pi-chevron-down" [class.rotated]="isCultivosDropdownOpen"></i>
+          </div>
+          <div class="multiselect-dropdown" *ngIf="isCultivosDropdownOpen">
+            <div class="multiselect-search">
+              <input type="text" placeholder="Buscar..." [(ngModel)]="cultivosSearchText" name="cultivosSearch" (click)="$event.stopPropagation()" class="search-input">
+              <i class="pi pi-search"></i>
+            </div>
+            <div class="multiselect-options-container">
+              <div class="multiselect-option" *ngFor="let c of getFilteredCultivos()" (click)="toggleCultivoSelection(c)" [class.selected]="isCultivoSelected(c.id)">
+                <input type="checkbox" [checked]="isCultivoSelected(c.id)" (change)="toggleCultivoSelection(c)" (click)="$event.stopPropagation()">
+                <span>{{ c.label }}</span>
+              </div>
+              <div class="no-results" *ngIf="getFilteredCultivos().length === 0">No se encontraron opciones</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Malezas toleradas multiselect -->
+      <div class="form-field">
+        <label>Malezas toleradas</label>
+        <div class="custom-multiselect" [class.open]="isMalezasToleradasDropdownOpen">
+          <div class="multiselect-trigger" (click)="toggleMalezasToleradasDropdown()">
+            <span class="selected-text">
+              {{ getSelectedMalezasToleradasText() }}
+            </span>
+            <i class="pi pi-chevron-down" [class.rotated]="isMalezasToleradasDropdownOpen"></i>
+          </div>
+          <div class="multiselect-dropdown" *ngIf="isMalezasToleradasDropdownOpen">
+            <div class="multiselect-search">
+              <input type="text" placeholder="Buscar..." [(ngModel)]="malezasToleradasSearchText" name="malezasToleradasSearch" (click)="$event.stopPropagation()" class="search-input">
+              <i class="pi pi-search"></i>
+            </div>
+            <div class="multiselect-options-container">
+              <div class="multiselect-option" *ngFor="let mt of getFilteredMalezasToleradas()" (click)="toggleMalezaToleradaSelection(mt)" [class.selected]="isMalezaToleradaSelected(mt.id)">
+                <input type="checkbox" [checked]="isMalezaToleradaSelected(mt.id)" (change)="toggleMalezaToleradaSelection(mt)" (click)="$event.stopPropagation()">
+                <span>{{ mt.label }}</span>
+              </div>
+              <div class="no-results" *ngIf="getFilteredMalezasToleradas().length === 0">No se encontraron opciones</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Malezas tolerancia cero multiselect -->
+      <div class="form-field">
+        <label>Malezas tolerancia cero</label>
+        <div class="custom-multiselect" [class.open]="isMalezasCeroDropdownOpen">
+          <div class="multiselect-trigger" (click)="toggleMalezasCeroDropdown()">
+            <span class="selected-text">
+              {{ getSelectedMalezasCeroText() }}
+            </span>
+            <i class="pi pi-chevron-down" [class.rotated]="isMalezasCeroDropdownOpen"></i>
+          </div>
+          <div class="multiselect-dropdown" *ngIf="isMalezasCeroDropdownOpen">
+            <div class="multiselect-search">
+              <input type="text" placeholder="Buscar..." [(ngModel)]="malezasCeroSearchText" name="malezasCeroSearch" (click)="$event.stopPropagation()" class="search-input">
+              <i class="pi pi-search"></i>
+            </div>
+            <div class="multiselect-options-container">
+              <div class="multiselect-option" *ngFor="let mc of getFilteredMalezasCero()" (click)="toggleMalezaCeroSelection(mc)" [class.selected]="isMalezaCeroSelected(mc.id)">
+                <input type="checkbox" [checked]="isMalezaCeroSelected(mc.id)" (change)="toggleMalezaCeroSelection(mc)" (click)="$event.stopPropagation()">
+                <span>{{ mc.label }}</span>
+              </div>
+              <div class="no-results" *ngIf="getFilteredMalezasCero().length === 0">No se encontraron opciones</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Determinación de brassica spp. -->
+      <div class="form-field">
+        <label>Determinación de brassica spp.</label>
+        <div class="chips-list">
+          <select [(ngModel)]="selectedBrassicaSimple" name="selectedBrassicaSimple">
+            <option [ngValue]="null">Seleccionar...</option>
+            <option *ngFor="let b of brassicaOptions" [ngValue]="b.id">{{ b.label }}</option>
+          </select>
+          <button type="button" (click)="addBrassica()">Agregar</button>
+        </div>
+        <div class="chips-list">
+          <span *ngFor="let b of brassica" class="chip">
+            {{ getBrassicaLabel(b) }}
+            <button type="button" (click)="removeBrassica(b)">&times;</button>
+          </span>
+        </div>
+      </div>
+      <!-- Determinación de cuscuta spp. -->
+      <div class="form-field">
+        <label>Determinación de cuscuta spp.</label>
+        <div class="chips-list">
+          <select [(ngModel)]="selectedCuscutaSimple" name="selectedCuscutaSimple">
+            <option [ngValue]="null">Seleccionar...</option>
+            <option *ngFor="let cu of cuscutaOptions" [ngValue]="cu.id">{{ cu.label }}</option>
+          </select>
+          <button type="button" (click)="addCuscuta()">Agregar</button>
+        </div>
+        <div class="chips-list">
+          <span *ngFor="let cu of cuscuta" class="chip">
+            {{ getCuscutaLabel(cu) }}
+            <button type="button" (click)="removeCuscuta(cu)">&times;</button>
+          </span>
+        </div>
+      </div>
+      <div class="submit-btn">
+        <button
+          pButton
+          type="submit"
+          label="Crear DOSN"
+          class="p-button-success"
+        ></button>
+      </div>
+    </form>
+  </p-card>
+</div>
