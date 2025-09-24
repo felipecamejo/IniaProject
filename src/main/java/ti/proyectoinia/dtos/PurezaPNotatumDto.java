@@ -28,6 +28,8 @@ public class PurezaPNotatumDto {
 
     private boolean repetido;
 
+    private Long reciboId;
+
     @Generated
     public boolean equals(final Object o) {
         if (o == this) return true;

@@ -32,11 +32,6 @@ public class ReciboController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @GetMapping({"/listar"})
-    public ResponseEntity<ResponseListadoRecibos> getRecibos() {
-        return this.reciboService.listadoRecibos();
-    }
-
     @GetMapping({"/{id}"})
     public ResponseEntity<?> getReciboById(@PathVariable Long id) {
         ReciboDto reciboDto = this.reciboService.obtenerReciboPorId(id);

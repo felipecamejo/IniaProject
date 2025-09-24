@@ -48,13 +48,13 @@ public class TetrazolioService {
         return "Tetrazolio actualizada correctamente ID:" + tetrazolioDto.getId();
     }
 
-    public ResponseEntity<ResponseListadoTetrazolio> listadoTetrazolio() {
-        var activos = this.tetrazolioRepository.findByActivoTrue();
+    public ResponseEntity<ResponseListadoTetrazolio> listadoTetrazolioPorReciboId(Long id) {
+        var activos = this.tetrazolioRepository.findByActivoTrueAndReciboIdAndReciboActivoTrue(id);
         var dtos = activos.stream()
                 .map(mapsDtoEntityService::mapToDtoTetrazolio)
                 .toList();
         ResponseListadoTetrazolio responseListadoTetrazolio = new ResponseListadoTetrazolio(dtos);
         return ResponseEntity.ok(responseListadoTetrazolio);
-    }
 
+    }
 }

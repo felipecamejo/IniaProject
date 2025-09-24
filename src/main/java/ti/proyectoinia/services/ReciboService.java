@@ -47,14 +47,6 @@ public class ReciboService {
         return "Recibo actualizado correctamente ID:" + reciboDto.getId();
     }
 
-    public ResponseEntity<ResponseListadoRecibos> listadoRecibos() {
-        var recibosActivos = this.reciboRepository.findByActivoTrue();
-        var recibosDto = recibosActivos.stream()
-                .map(mapsDtoEntityService::mapToDtoRecibo)
-                .toList();
-        ResponseListadoRecibos responseListadoRecibos = new ResponseListadoRecibos(recibosDto);
-        return ResponseEntity.ok(responseListadoRecibos);
-    }
 }
 
 

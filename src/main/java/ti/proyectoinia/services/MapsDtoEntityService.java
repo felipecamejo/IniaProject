@@ -330,7 +330,12 @@ public class MapsDtoEntityService {
         pmsDto.setObservaciones(pms.getObservaciones());
         pmsDto.setActivo(pms.isActivo());
         pmsDto.setRepetido(pms.isRepetido());
-        
+
+        if (pms.getRecibo() != null) {
+            pmsDto.setReciboId(pms.getRecibo().getId());
+        } else {
+            pmsDto.setReciboId(null);
+        }
         return pmsDto;
     }
 
@@ -347,7 +352,13 @@ public class MapsDtoEntityService {
         pms.setObservaciones(pmsDto.getObservaciones());
         pms.setActivo(pmsDto.isActivo());
         pms.setRepetido(pmsDto.isRepetido());
-       
+        if (pmsDto.getReciboId() != null) {
+            Recibo recibo = new Recibo();
+            recibo.setId(pmsDto.getReciboId());
+            pms.setRecibo(recibo);
+        } else {
+            pms.setRecibo(null);
+        }
         return pms;
     }
 
@@ -368,10 +379,15 @@ public class MapsDtoEntityService {
         dto.setPesoTotal(pureza.getPesoTotal());
         dto.setOtrosCultivo(pureza.getOtrosCultivo());
         dto.setFechaEstandar(pureza.getFechaEstandar());
-        dto.setEstandar(pureza.isEstandar());
+        dto.setEstandar(pureza.getEstandar());
         dto.setActivo(pureza.isActivo());
         dto.setRepetido(pureza.isRepetido());
 
+        if (pureza.getRecibo() != null) {
+            dto.setReciboId(pureza.getRecibo().getId());
+        } else {
+            dto.setReciboId(null);
+        }
         return dto;
     }
 
@@ -398,6 +414,15 @@ public class MapsDtoEntityService {
         pureza.setFechaEstandar(dto.getFechaEstandar());
         pureza.setEstandar(dto.isEstandar());
         pureza.setActivo(dto.isActivo());
+        pureza.setRepetido(dto.isRepetido());
+
+        if (dto.getReciboId() != null) {
+            Recibo recibo = new Recibo();
+            recibo.setId(dto.getReciboId());
+            pureza.setRecibo(recibo);
+        } else {
+            pureza.setRecibo(null);
+        }
 
         return pureza;
     }
@@ -557,12 +582,12 @@ public class MapsDtoEntityService {
         dto.setFecha(dosn.getFecha());
         dto.setGramosAnalizados(dosn.getGramosAnalizados());
         dto.setTiposDeanalisis(dosn.getTiposDeanalisis());
-        dto.setCompletoReducido(dosn.isCompletoReducido());
+        dto.setCompletoReducido(dosn.getCompletoReducido());
         dto.setMalezasToleranciaCero(dosn.getMalezasToleranciaCero());
         dto.setOtrosCultivos(dosn.getOtrosCultivos());
         dto.setDeterminacionBrassica(dosn.getDeterminacionBrassica());
         dto.setDeterminacionCuscuta(dosn.getDeterminacionCuscuta());
-        dto.setEstandar(dosn.isEstandar());
+        dto.setEstandar(dosn.getEstandar());
         dto.setFechaAnalisis(dosn.getFechaAnalisis());
         dto.setActivo(dosn.isActivo());
         dto.setRepetido(dosn.isRepetido());
@@ -629,7 +654,6 @@ public class MapsDtoEntityService {
         if (pureza == null) {
             return null;
         }
-
         PurezaPNotatumDto dto = new PurezaPNotatumDto();
         dto.setId(pureza.getId());
         dto.setPorcentaje(pureza.getPorcentaje());
@@ -642,7 +666,11 @@ public class MapsDtoEntityService {
         dto.setSemillasLS(pureza.getSemillasLS());
         dto.setActivo(pureza.isActivo());
         dto.setRepetido(pureza.isRepetido());
-
+        if (pureza.getRecibo() != null) {
+            dto.setReciboId(pureza.getRecibo().getId());
+        } else {
+            dto.setReciboId(null);
+        }
         return dto;
     }
 
@@ -650,7 +678,6 @@ public class MapsDtoEntityService {
         if (dto == null) {
             return null;
         }
-
         PurezaPNotatum pureza = new PurezaPNotatum();
         pureza.setId(dto.getId());
         pureza.setPorcentaje(dto.getPorcentaje());
@@ -663,7 +690,13 @@ public class MapsDtoEntityService {
         pureza.setSemillasLS(dto.getSemillasLS());
         pureza.setActivo(dto.isActivo());
         pureza.setRepetido(dto.isRepetido());
-
+        if (dto.getReciboId() != null) {
+            Recibo recibo = new Recibo();
+            recibo.setId(dto.getReciboId());
+            pureza.setRecibo(recibo);
+        } else {
+            pureza.setRecibo(null);
+        }
         return pureza;
     }
 
@@ -753,5 +786,65 @@ public class MapsDtoEntityService {
         tetrazolio.setRepetido(dto.isRepetido());
 
         return tetrazolio;
+    }
+
+    public SanitarioHongoDto mapToDtoSanitarioHongo(SanitarioHongo entity) {
+        if (entity == null) return null;
+        SanitarioHongoDto dto = new SanitarioHongoDto();
+        dto.setId(entity.getId());
+        dto.setSanitarioId(entity.getSanitario() != null ? entity.getSanitario().getId() : null);
+        dto.setHongoId(entity.getHongo() != null ? entity.getHongo().getId() : null);
+        dto.setRepeticion(entity.getRepeticion());
+        dto.setValor(entity.getValor());
+        dto.setIncidencia(entity.getIncidencia());
+        return dto;
+    }
+
+    public SanitarioHongo mapToEntitySanitarioHongo(SanitarioHongoDto dto) {
+        if (dto == null) return null;
+        SanitarioHongo entity = new SanitarioHongo();
+        entity.setId(dto.getId());
+        if (dto.getSanitarioId() != null) {
+            Sanitario sanitario = new Sanitario();
+            sanitario.setId(dto.getSanitarioId());
+            entity.setSanitario(sanitario);
+        } else {
+            entity.setSanitario(null);
+        }
+        if (dto.getHongoId() != null) {
+            Hongo hongo = new Hongo();
+            hongo.setId(dto.getHongoId());
+            entity.setHongo(hongo);
+        } else {
+            entity.setHongo(null);
+        }
+        entity.setRepeticion(dto.getRepeticion());
+        entity.setValor(dto.getValor());
+        entity.setIncidencia(dto.getIncidencia());
+        return entity;
+    }
+
+    public SemillaDto mapToDtoSemilla(Semilla entity) {
+        if (entity == null) return null;
+
+        SemillaDto dto = new SemillaDto();
+        dto.setId(entity.getId());
+        dto.setNroSemillasPura(entity.getNroSemillasPura());
+        dto.setActivo(entity.isActivo());
+        dto.setDescripcion(entity.getDescripcion());
+
+        return dto;
+    }
+
+    public Semilla mapToEntitySemilla(SemillaDto dto) {
+        if (dto == null) return null;
+
+        Semilla entity = new Semilla();
+        entity.setId(dto.getId());
+        entity.setNroSemillasPura(dto.getNroSemillasPura());
+        entity.setActivo(dto.isActivo());
+        entity.setDescripcion(dto.getDescripcion());
+
+        return entity;
     }
 }

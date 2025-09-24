@@ -18,10 +18,10 @@ public class PMS {
     private Recibo recibo;
 
     @Column(name = "PESO_MIL_SEMILLAS")
-    private float pesoMilSemillas; // en gramos
+    private Float pesoMilSemillas; // en gramos
 
     @Column(name = "HUMEDAD_PORCENTUAL")
-    private float humedadPorcentual; // 0-100
+    private Float humedadPorcentual; // 0-100
 
     @Column(name = "FECHA_MEDICION")
     private Date fechaMedicion;

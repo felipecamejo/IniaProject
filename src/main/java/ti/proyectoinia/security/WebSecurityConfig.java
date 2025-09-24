@@ -46,8 +46,10 @@ public class WebSecurityConfig {
                         .requestMatchers(antMatcher("/webjars/**")).permitAll() // Recursos de Swagger
                         .requestMatchers(antMatcher("/error")).permitAll() // Páginas de error
 
+
                         // Gestión de usuarios: solo ADMIN puede acceder
                         .requestMatchers(antMatcher("/api/v1/usuario/**")).hasAuthority("ADMIN")
+                        .requestMatchers(antMatcher("/api/v1/pms/**")).permitAll()
 
                         // Cualquier otra petición requiere autenticación
                         .anyRequest()

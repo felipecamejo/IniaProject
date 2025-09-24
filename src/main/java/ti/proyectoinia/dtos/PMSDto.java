@@ -22,6 +22,8 @@ public class PMSDto {
 
     private boolean repetido;
 
+    private Long reciboId;
+
     @Generated
     public boolean equals(final Object o) {
         if (this == o) return true;

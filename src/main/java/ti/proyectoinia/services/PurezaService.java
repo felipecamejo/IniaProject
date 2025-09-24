@@ -47,12 +47,12 @@ public class PurezaService {
         return "Pureza actualizada correctamente ID:" + dto.getId();
     }
 
-    public ResponseEntity<ResponseListadoPurezas> listadoPurezas() {
-        var purezasActivas = this.purezaRepository.findByActivoTrue();
-        var purezasDto = purezasActivas.stream()
+    public ResponseEntity<ResponseListadoPurezas> listadoPurezasPorRecibo(Long id) {
+        var activas = this.purezaRepository.findByActivoTrueAndReciboIdAndReciboActivoTrue(id);
+        var dto = activas.stream()
                 .map(mapsDtoEntityService::mapToDtoPureza)
                 .toList();
-        ResponseListadoPurezas responseListadoPurezas = new ResponseListadoPurezas(purezasDto);
+        ResponseListadoPurezas responseListadoPurezas = new ResponseListadoPurezas(dto);
         return ResponseEntity.ok(responseListadoPurezas);
     }
 }

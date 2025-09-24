@@ -72,8 +72,8 @@ public class DOSNService {
         return "DOSN actualizada correctamente ID:" + dosn.getId();
     }
 
-    public ResponseEntity<ResponseListadoDOSN> listadoDOSN() {
-        var activos = this.dosnRepository.findByActivoTrue();
+    public ResponseEntity<ResponseListadoDOSN> listadoDOSNporRecibo(Long id) {
+        var activos = this.dosnRepository.findByActivoTrueAndReciboIdAndReciboActivoTrue(id);
         var dtos = activos.stream()
                 .map(mapsDtoEntityService::mapToDtoDOSN)
                 .toList();

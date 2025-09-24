@@ -9,7 +9,11 @@ public class SemillaDto {
     
     private Long id;
     
-    private int nroSemillasPura;
+    private Integer nroSemillasPura;
+
+    private String descripcion;
+
+    private boolean activo;
 
     @Generated
     public boolean equals(final Object o) {
@@ -26,6 +30,6 @@ public class SemillaDto {
 
     @Generated
     public String toString() {
-        return "SemillaDto(id=" + id + ", nroSemillasPura=" + nroSemillasPura + ")";
+        return "SemillaDto(id=" + id + ", nroSemillasPura=" + nroSemillasPura + ", activo=" + activo + ")";
     }
 }

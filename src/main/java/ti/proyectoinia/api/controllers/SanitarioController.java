@@ -65,9 +65,10 @@ public class SanitarioController {
         }
     }
 
-    @GetMapping({"/listar"})
-    public ResponseEntity<ResponseListadoSanitario> getSanitarios() {
-        ResponseListadoSanitario response = this.sanitarioService.listadoSanitario().getBody();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    @GetMapping("/listar/recibo/{id}")
+    @Operation(description = "Lista todas los Sanitarios activos asociados a un recibo específico")
+    public ResponseEntity<ResponseListadoSanitario> listarSanitarioPorRecibo(@PathVariable("id") Long id) {
+        return this.sanitarioService.listadoSanitarioPorReciboId(id);
     }
+
 }

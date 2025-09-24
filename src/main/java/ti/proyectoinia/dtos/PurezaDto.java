@@ -32,6 +32,8 @@ public class PurezaDto {
 
     private boolean activo;
 
+    private Long reciboId;
+
     private boolean repetido;
 
     @Generated

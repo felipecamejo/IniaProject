@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import ti.proyectoinia.api.responses.ResponseListadoPMS;
 import ti.proyectoinia.api.responses.ResponseListadoPurezas;
 import ti.proyectoinia.dtos.PurezaDto;
 import ti.proyectoinia.services.PurezaService;
@@ -30,12 +31,6 @@ public class PurezaController {
         dto.setId((Long) null);
         String response = this.purezaService.crearPureza(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
-    @GetMapping({"/listar"})
-    public ResponseEntity<ResponseListadoPurezas> getPurezas() {
-        ResponseListadoPurezas response = this.purezaService.listadoPurezas().getBody();
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping({"/{id}"})
@@ -67,6 +62,12 @@ public class PurezaController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar la Pureza: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/listar/recibo/{id}")
+    @Operation(description = "Lista todas las Purezas activas asociadas a un recibo específico")
+    public ResponseEntity<ResponseListadoPurezas> listarPurezaPorRecibo(@PathVariable("id") Long id) {
+        return this.purezaService.listadoPurezasPorRecibo(id);
     }
 }
 

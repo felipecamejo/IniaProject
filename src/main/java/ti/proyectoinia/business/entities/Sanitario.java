@@ -29,13 +29,13 @@ public class Sanitario {
     private Metodo metodo;
 
     @Column(name = "SANITARIO_TEMPERATURA")
-    private int temperatura;
+    private Integer temperatura;
 
     @Column(name = "SANITARIO_HORASLUZOSCURIDAD")
-    private int horasLuzOscuridad;
+    private Integer horasLuzOscuridad;
 
     @Column(name = "SANITARIO_NRODIAS")
-    private int nroDias;
+    private Integer nroDias;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "SANITARIO_ESTADOPRODUCTODOSIS")
@@ -45,7 +45,7 @@ public class Sanitario {
     private String observaciones;
 
     @Column(name = "SANITARIO_NROSEMILLASREPETICION")
-    private int nroSemillasRepeticion;
+    private Integer nroSemillasRepeticion;
 
     @ManyToOne
     @JoinColumn(name = "RECIBO_ID")

@@ -48,8 +48,8 @@ public class SanitarioService {
         return "Sanitario eliminado correctamente ID:" + id;
     }
 
-    public ResponseEntity<ResponseListadoSanitario> listadoSanitario() {
-        var activos = this.sanitarioRepository.findByActivoTrue();
+    public ResponseEntity<ResponseListadoSanitario> listadoSanitarioPorReciboId( Long id) {
+        var activos = this.sanitarioRepository.findByActivoTrueAndReciboIdAndReciboActivoTrue(id);
         var dtos = activos.stream()
                 .map(mapsDtoEntityService::mapToDtoSanitario)
                 .toList();
