@@ -13,6 +13,7 @@ import { DOSNComponent } from './components/dosn/dosn.component';
 import { ListadoMalezasComponent } from './components/listado-malezas/listado-malezas.component';
 import { ListadoHongosComponent } from './components/listado-hongos/listado-hongos.component';
 import { ListadoCultivosComponent } from './components/listado-cultivos/listado-cultivos.component';
+import { PurezaPNotatumComponent } from './components/pureza-p-notatum/pureza-p-notatum.component';
 
 export const routes: Routes = [
     { path : 'home', component: HomeComponent },
@@ -26,6 +27,7 @@ export const routes: Routes = [
     { path : 'dosn', component: DOSNComponent },
     { path : 'lote', component: LoteComponent },
     { path : 'lote-analisis', component: LoteAnalisisComponent },
+    { path : 'pureza-p-notatum', component: PurezaPNotatumComponent },
     
     //listados
     { path : 'listado-lotes', component: ListadoLotesComponent },
