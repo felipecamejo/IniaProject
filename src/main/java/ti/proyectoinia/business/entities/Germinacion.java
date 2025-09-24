@@ -34,54 +34,54 @@ public class Germinacion {
     private Date fechaConteo5;
 
     @Column(name = "GERMINACION_TOTALDIAS")
-    private int totalDias;
+    private Integer totalDias;
 
     @Column(name = "GERMINACION_REPETICIONNORMAL_1")
-    private int repeticionNormal1;
+    private Integer repeticionNormal1;
 
     @Column(name = "GERMINACION_REPETICIONNORMAL_2")
-    private int repeticionNormal2;
+    private Integer repeticionNormal2;
 
     @Column(name = "GERMINACION_REPETICIONNORMAL_3")
-    private int repeticionNormal3;
+    private Integer repeticionNormal3;
 
     @Column(name = "GERMINACION_REPETICIONNORMAL_4")
-    private int repeticionNormal4;
+    private Integer repeticionNormal4;
 
     @Column(name = "GERMINACION_REPETICIONNORMAL_5")
-    private int repeticionNormal5;
+    private Integer repeticionNormal5;
 
     @Column(name = "GERMINACION_REPETICIONDURA")
-    private int repeticionDura;
+    private Integer repeticionDura;
 
     @Column(name = "GERMINACION_REPETICIONFRESCA")
-    private int repeticionFresca;
+    private Integer repeticionFresca;
 
     @Column(name = "GERMINACION_REPETICIONANORMAL")
-    private int repeticionAnormal;
+    private Integer repeticionAnormal;
 
     @Column(name = "GERMINACION_REPETICIONMUERTA")
-    private int repeticionMuerta;
+    private Integer repeticionMuerta;
 
     @Column(name = "GERMINACION_TOTALREPETICION")
-    private int totalRepeticion;
+    private Integer totalRepeticion;
 
     @Column(name = "GERMINACION_PROMEDIOREPETICIONES")
-    private float promedioRepeticiones;
+    private Float promedioRepeticiones;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "GERMINACION_TRATAMIENTO")
     private Tratamiento tratamiento;
 
     @Column(name = "GERMINACION_NROSEMILLAPORREPETICION")
-    private int nroSemillaPorRepeticion;
+    private Integer nroSemillaPorRepeticion;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "GERMINACION_METODO")
     private Metodo metodo;
 
     @Column(name = "GERMINACION_TEMPERATURA")
-    private float temperatura;
+    private Float temperatura;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "GERMINACION_PREFRIO")
@@ -92,28 +92,28 @@ public class Germinacion {
     private PreTratamiento preTratamiento;
 
     @Column(name = "GERMINACION_NRODIAS")
-    private int nroDias;
+    private Integer nroDias;
 
     @Column(name = "GERMINACION_FECHAFINAL")
     private Date fechaFinal;
 
     @Column(name = "GERMINACION_PREDONDEO")
-    private int pRedondeo;
+    private Integer pRedondeo;
 
     @Column(name = "GERMINACION_PNORMAL")
-    private int pNormal;
+    private Integer pNormal;
 
     @Column(name = "GERMINACION_PANORMAL")
-    private int pAnormal;
+    private Integer pAnormal;
 
     @Column(name = "GERMINACION_PMUERTAS")
-    private int pMuertas;
+    private Integer pMuertas;
 
     @Column(name = "GERMINACION_SEMILLASDURAS")
-    private int semillasDuras;
+    private Integer semillasDuras;
 
     @Column(name = "GERMINACION_GERMINACION")
-    private int germinacion;
+    private Integer germinacion;
 
     @Column(name = "GERMINACION_COMENTARIOS")
     private String comentarios;

@@ -5,6 +5,7 @@ import lombok.Generated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ti.proyectoinia.api.responses.ResponseListadoDOSN;
 import ti.proyectoinia.api.responses.ResponseListadoPMS;
 import ti.proyectoinia.dtos.PMSDto;
 import ti.proyectoinia.services.PMSService;
@@ -29,11 +30,6 @@ public class PMSController {
         pmsDto.setId((Long) null);
         String response = this.pmsService.crearPMS(pmsDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
-    @GetMapping({"/listar"})
-    public ResponseEntity<ResponseListadoPMS> getPMS() {
-        return this.pmsService.listadoPMS();
     }
 
     @GetMapping({"/{id}"})
@@ -65,5 +61,11 @@ public class PMSController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el PMS: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/listar/recibo/{id}")
+    @Operation(description = "Lista todas los PMS activos asociadas a un recibo específico")
+    public ResponseEntity<ResponseListadoPMS> listarPMSPorRecibo(@PathVariable("id") Long id) {
+        return this.pmsService.listadoPMSporRecibo(id);
     }
 }

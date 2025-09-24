@@ -20,28 +20,28 @@ public class DOSN {
     private Date fecha;
 
     @Column(name = "DOSN_GRAMOS_ANALIZADOS")
-    private float gramosAnalizados;
+    private Float gramosAnalizados;
 
     @Column(name = "DOSN_TIPOS_DE_ANALISIS")
     private String tiposDeanalisis;
 
     @Column(name = "DOSN_COMPLETO_REDUCIDO")
-    private boolean completoReducido;
+    private Boolean completoReducido;
 
     @Column(name = "DOSN_MALEZAS_TOLERANCIA_CERO")
-    private float malezasToleranciaCero;
+    private Float malezasToleranciaCero;
 
     @Column(name = "DOSN_OTROS_CULTIVOS")
-    private float otrosCultivos;
+    private Float otrosCultivos;
 
     @Column(name = "DOSN_DETERMINACION_BRASSICA")
-    private float determinacionBrassica;
+    private Float determinacionBrassica;
 
     @Column(name = "DOSN_DETERMINACION_CUSCUTA")
-    private float determinacionCuscuta;
+    private Float determinacionCuscuta;
 
     @Column(name = "DOSN_ESTANDAR")
-    private boolean estandar;
+    private Boolean estandar;
 
     @Column(name = "DOSN_FECHA_ANALISIS")
     private Date fechaAnalisis;

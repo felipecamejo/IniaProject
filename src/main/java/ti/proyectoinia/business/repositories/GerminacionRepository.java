@@ -9,5 +9,6 @@ import java.util.List;
 
 @Repository
 public interface GerminacionRepository extends JpaRepository<Germinacion, Long> {
-    List<Germinacion> findByActivoTrue();
+
+    List<Germinacion> findByActivoTrueAndReciboIdAndReciboActivoTrue(Long reciboId);
 }

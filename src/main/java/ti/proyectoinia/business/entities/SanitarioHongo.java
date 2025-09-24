@@ -29,5 +29,5 @@ public class SanitarioHongo {
     private Integer valor;
 
     @Column(name = "INCIDENCIA")
-    private Integer incidencia; // o porcentaje de humedad, según corresponda
+    private Integer incidencia;
 }

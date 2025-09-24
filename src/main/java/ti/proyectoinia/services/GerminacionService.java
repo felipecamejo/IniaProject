@@ -49,12 +49,12 @@ public class GerminacionService {
         return "Germinacion actualizada correctamente ID:" + germinacionDto.getId();
     }
 
-    public ResponseEntity<ResponseListadoGerminacion> listadoGerminacion() {
-        var activos = this.germinacionRepository.findByActivoTrue();
-        var dtos = activos.stream()
+    public ResponseEntity<ResponseListadoGerminacion> listarGerminacionesPorRecibo(Long reciboId) {
+        var germinaciones = this.germinacionRepository.findByActivoTrueAndReciboIdAndReciboActivoTrue(reciboId);
+        var dtos = germinaciones.stream()
                 .map(mapsDtoEntityService::mapToDtoGerminacion)
                 .toList();
-        ResponseListadoGerminacion responseListadoGerminacion = new ResponseListadoGerminacion(dtos);
-        return ResponseEntity.ok(responseListadoGerminacion);
+        ResponseListadoGerminacion response = new ResponseListadoGerminacion(dtos);
+        return ResponseEntity.ok(response);
     }
 }

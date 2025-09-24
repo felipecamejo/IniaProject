@@ -64,9 +64,9 @@ public class GerminacionController {
         }
     }
 
-    @GetMapping({"/listar"})
-    public ResponseEntity<ResponseListadoGerminacion> getGerminaciones() {
-        ResponseListadoGerminacion response = this.germinacionService.listadoGerminacion().getBody();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    @GetMapping("/listar/recibo/{id}")
+    @Operation(description = "Lista todas las germinaciones activas asociadas a un recibo específico")
+    public ResponseEntity<ResponseListadoGerminacion> listarGerminacionesPorRecibo(@PathVariable("id") Long id) {
+        return germinacionService.listarGerminacionesPorRecibo(id);
     }
 }

@@ -16,7 +16,7 @@ public class Recibo {
     private Long id;
 
     @Column(name = "NRO_ANALISIS")
-    private int nroAnalisis;
+    private Integer nroAnalisis;
 
     @Column(name = "ESPECIE")
     private String especie;
@@ -46,7 +46,7 @@ public class Recibo {
     private int lote;
 
     @Column(name = "KG_LIMPIOS")
-    private float kgLimpios;
+    private Float kgLimpios;
 
     @Column(name = "ANALISIS_SOLICITADOS")
     private String analisisSolicitados;

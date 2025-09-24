@@ -330,7 +330,12 @@ public class MapsDtoEntityService {
         pmsDto.setObservaciones(pms.getObservaciones());
         pmsDto.setActivo(pms.isActivo());
         pmsDto.setRepetido(pms.isRepetido());
-        
+
+        if (pms.getRecibo() != null) {
+            pmsDto.setReciboId(pms.getRecibo().getId());
+        } else {
+            pmsDto.setReciboId(null);
+        }
         return pmsDto;
     }
 
@@ -347,7 +352,13 @@ public class MapsDtoEntityService {
         pms.setObservaciones(pmsDto.getObservaciones());
         pms.setActivo(pmsDto.isActivo());
         pms.setRepetido(pmsDto.isRepetido());
-       
+        if (pmsDto.getReciboId() != null) {
+            Recibo recibo = new Recibo();
+            recibo.setId(pmsDto.getReciboId());
+            pms.setRecibo(recibo);
+        } else {
+            pms.setRecibo(null);
+        }
         return pms;
     }
 
@@ -368,10 +379,15 @@ public class MapsDtoEntityService {
         dto.setPesoTotal(pureza.getPesoTotal());
         dto.setOtrosCultivo(pureza.getOtrosCultivo());
         dto.setFechaEstandar(pureza.getFechaEstandar());
-        dto.setEstandar(pureza.isEstandar());
+        dto.setEstandar(pureza.getEstandar());
         dto.setActivo(pureza.isActivo());
         dto.setRepetido(pureza.isRepetido());
 
+        if (pureza.getRecibo() != null) {
+            dto.setReciboId(pureza.getRecibo().getId());
+        } else {
+            dto.setReciboId(null);
+        }
         return dto;
     }
 
@@ -398,6 +414,15 @@ public class MapsDtoEntityService {
         pureza.setFechaEstandar(dto.getFechaEstandar());
         pureza.setEstandar(dto.isEstandar());
         pureza.setActivo(dto.isActivo());
+        pureza.setRepetido(dto.isRepetido());
+
+        if (dto.getReciboId() != null) {
+            Recibo recibo = new Recibo();
+            recibo.setId(dto.getReciboId());
+            pureza.setRecibo(recibo);
+        } else {
+            pureza.setRecibo(null);
+        }
 
         return pureza;
     }
@@ -557,12 +582,12 @@ public class MapsDtoEntityService {
         dto.setFecha(dosn.getFecha());
         dto.setGramosAnalizados(dosn.getGramosAnalizados());
         dto.setTiposDeanalisis(dosn.getTiposDeanalisis());
-        dto.setCompletoReducido(dosn.isCompletoReducido());
+        dto.setCompletoReducido(dosn.getCompletoReducido());
         dto.setMalezasToleranciaCero(dosn.getMalezasToleranciaCero());
         dto.setOtrosCultivos(dosn.getOtrosCultivos());
         dto.setDeterminacionBrassica(dosn.getDeterminacionBrassica());
         dto.setDeterminacionCuscuta(dosn.getDeterminacionCuscuta());
-        dto.setEstandar(dosn.isEstandar());
+        dto.setEstandar(dosn.getEstandar());
         dto.setFechaAnalisis(dosn.getFechaAnalisis());
         dto.setActivo(dosn.isActivo());
         dto.setRepetido(dosn.isRepetido());
@@ -629,7 +654,6 @@ public class MapsDtoEntityService {
         if (pureza == null) {
             return null;
         }
-
         PurezaPNotatumDto dto = new PurezaPNotatumDto();
         dto.setId(pureza.getId());
         dto.setPorcentaje(pureza.getPorcentaje());
@@ -642,7 +666,11 @@ public class MapsDtoEntityService {
         dto.setSemillasLS(pureza.getSemillasLS());
         dto.setActivo(pureza.isActivo());
         dto.setRepetido(pureza.isRepetido());
-
+        if (pureza.getRecibo() != null) {
+            dto.setReciboId(pureza.getRecibo().getId());
+        } else {
+            dto.setReciboId(null);
+        }
         return dto;
     }
 
@@ -650,7 +678,6 @@ public class MapsDtoEntityService {
         if (dto == null) {
             return null;
         }
-
         PurezaPNotatum pureza = new PurezaPNotatum();
         pureza.setId(dto.getId());
         pureza.setPorcentaje(dto.getPorcentaje());
@@ -663,7 +690,13 @@ public class MapsDtoEntityService {
         pureza.setSemillasLS(dto.getSemillasLS());
         pureza.setActivo(dto.isActivo());
         pureza.setRepetido(dto.isRepetido());
-
+        if (dto.getReciboId() != null) {
+            Recibo recibo = new Recibo();
+            recibo.setId(dto.getReciboId());
+            pureza.setRecibo(recibo);
+        } else {
+            pureza.setRecibo(null);
+        }
         return pureza;
     }
 

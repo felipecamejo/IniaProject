@@ -26,31 +26,31 @@ public class Tetrazolio {
     private PreTratamiento pretratamiento;
 
     @Column(name = "CONCENTRACION")
-    private float concentracion;
+    private Float concentracion;
 
     @Column(name = "TINCION_HS")
-    private float tincionHoras;
+    private Float tincionHoras;
 
     @Column(name = "TINCION_GRADOS")
-    private float tincionGrados;
+    private Float tincionGrados;
 
     @Column(name = "TETRAZOLIO_FECHA")
     private Date fecha;
 
     @Column(name = "TETRAZOLIO_VIABLES")
-    private float viables;
+    private Float viables;
 
     @Column(name = "TETRAZOLIO_NO_VIABLES")
-    private float noViables;
+    private Float noViables;
 
     @Column(name = "TETRAZOLIO_DURAS")
-    private float duras;
+    private Float duras;
 
     @Column(name = "TETRAZOLIO_TOTAL")
-    private float total;
+    private Float total;
 
     @Column(name = "TETRAZOLIO_PROMEDIO")
-    private float promedio;
+    private Float promedio;
 
     @Column(name = "TETRAZOLIO_PORCENTAJE")
     private Integer porcentaje;

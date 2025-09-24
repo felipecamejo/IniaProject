@@ -64,9 +64,10 @@ public class TetrazolioController {
         }
     }
 
-    @GetMapping({"/listar"})
-    public ResponseEntity<ResponseListadoTetrazolio> getTetrazolios() {
-        ResponseListadoTetrazolio response = this.tetrazolioService.listadoTetrazolio().getBody();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    @GetMapping("/listar/recibo/{id}")
+    @Operation(description = "Lista todas los Tetrazolios activos asociados a un recibo específico")
+    public ResponseEntity<ResponseListadoTetrazolio> listarTetrazolioPorRecibo(@PathVariable("id") Long id) {
+        return this.tetrazolioService.listadoTetrazolioPorReciboId(id);
     }
+
 }

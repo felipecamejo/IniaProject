@@ -18,34 +18,34 @@ public class Pureza {
     private Date fecha;
 
     @Column(name = "PESO_INICIAL")
-    private float pesoInicial;
+    private Float pesoInicial;
 
     @Column(name = "SEMILLA_PURA")
-    private float semillaPura;
+    private Float semillaPura;
 
     @Column(name = "MATERIAL_INERTE")
-    private float materialInerte;
+    private Float materialInerte;
 
     @Column(name = "OTROS_CULTIVOS")
-    private float otrosCultivos;
+    private Float otrosCultivos;
 
     @Column(name = "MALEZAS")
-    private float malezas;
+    private Float malezas;
 
     @Column(name = "MALEZAS_TOLERADAS")
-    private float malezasToleradas;
+    private Float malezasToleradas;
 
     @Column(name = "PESO_TOTAL")
-    private float pesoTotal;
+    private Float pesoTotal;
 
     @Column(name = "OTROS_CULTIVO")
-    private float otrosCultivo;
+    private Float otrosCultivo;
 
     @Column(name = "FECHA_ESTANDAR")
     private Date fechaEstandar;
 
     @Column(name = "ESTANDAR")
-    private boolean estandar;
+    private Boolean estandar;
 
     @ManyToOne
     @JoinColumn(name = "RECIBO_ID")

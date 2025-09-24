@@ -11,6 +11,8 @@ public class SemillaDto {
     
     private int nroSemillasPura;
 
+    private boolean activo;
+
     @Generated
     public boolean equals(final Object o) {
         if (o == this) return true;
@@ -26,6 +28,6 @@ public class SemillaDto {
 
     @Generated
     public String toString() {
-        return "SemillaDto(id=" + id + ", nroSemillasPura=" + nroSemillasPura + ")";
+        return "SemillaDto(id=" + id + ", nroSemillasPura=" + nroSemillasPura + ", activo=" + activo + ")";
     }
 }

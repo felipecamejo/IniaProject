@@ -23,8 +23,7 @@ public class HongoDto {
         if (o == null || getClass() != o.getClass()) return false;
         HongoDto that = (HongoDto) o;
         return Objects.equals(id, that.id) &&
-                Objects.equals(nombre, that.nombre) &&
-                Objects.equals(tipo, that.tipo);
+                Objects.equals(nombre, that.nombre);
     }
 
     @Generated
@@ -39,14 +38,12 @@ public class HongoDto {
         result = result * 59 + ($id == null ? 43 : $id.hashCode());
         Object $nombre = this.getNombre();
         result = result * 59 + ($nombre == null ? 43 : $nombre.hashCode());
-        Object $tipo = this.getTipo();
-        result = result * 59 + ($tipo == null ? 43 : $tipo.hashCode());
         return result;
     }
 
     @Generated
     public String toString() {
-        return "HongoDto(id=" + this.getId() + ", nombre=" + this.getNombre() + ", tipo=" + String.valueOf(this.getTipo()) + ")";
+        return "HongoDto(id=" + this.getId() + ", nombre=" + this.getNombre() + ", descripcion=" + this.getDescripcion() + ", activo=" + this.isActivo() + ")";
     }
 
 }

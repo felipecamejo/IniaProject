@@ -47,8 +47,8 @@ public class PMSService {
         return "PMS actualizado correctamente ID:" + pmsDto.getId();
     }
 
-    public ResponseEntity<ResponseListadoPMS> listadoPMS() {
-        var pmsActivos = this.pmsRepository.findByActivoTrue();
+    public ResponseEntity<ResponseListadoPMS> listadoPMSporRecibo(Long id) {
+        var pmsActivos = this.pmsRepository.findByActivoTrueAndReciboIdAndReciboActivoTrue(id);
         var pmsDto = pmsActivos.stream()
                 .map(mapsDtoEntityService::mapToDtoPMS)
                 .toList();

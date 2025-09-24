@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import ti.proyectoinia.api.responses.ResponseListadoGerminacion;
+import ti.proyectoinia.api.responses.ResponseListadoPMS;
 import ti.proyectoinia.api.responses.ResponseListadoPurezaPNotatum;
 import ti.proyectoinia.dtos.PurezaPNotatumDto;
 import ti.proyectoinia.services.PurezaPNotatumService;
@@ -64,9 +65,9 @@ public class PurezaPNotatumController {
         }
     }
 
-    @GetMapping({"/listar"})
-    public ResponseEntity<ResponseListadoPurezaPNotatum> getPurezasPNotatum() {
-        ResponseListadoPurezaPNotatum response = this.purezaPNotatumService.listadoPurezaPnotatum().getBody();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    @GetMapping("/listar/recibo/{id}")
+    @Operation(description = "Lista todas las PurezasPNotatum activas asociadas a un recibo específico")
+    public ResponseEntity<ResponseListadoPurezaPNotatum> listarPurezaPNotatumPorRecibo(@PathVariable("id") Long id) {
+        return this.purezaPNotatumService.listadoPurezaPNotatumporRecibo(id);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import ti.proyectoinia.api.responses.ResponseListadoDOSN;
+import ti.proyectoinia.api.responses.ResponseListadoGerminacion;
 import ti.proyectoinia.api.responses.ResponseListadoPurezas;
 import ti.proyectoinia.dtos.DOSNDto;
 import ti.proyectoinia.services.DOSNService;
@@ -64,9 +65,9 @@ public class DOSNController {
         }
     }
 
-    @GetMapping({"/listar"})
-    public ResponseEntity<ResponseListadoDOSN> getDOSNs() {
-        ResponseListadoDOSN response = this.DOSNService.listadoDOSN().getBody();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    @GetMapping("/listar/recibo/{id}")
+    @Operation(description = "Lista todas los Dosn activos asociadas a un recibo específico")
+    public ResponseEntity<ResponseListadoDOSN> listarDosnPorRecibo(@PathVariable("id") Long id) {
+        return DOSNService.listadoDOSNporRecibo(id);
     }
 }
