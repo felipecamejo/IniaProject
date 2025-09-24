@@ -11,6 +11,10 @@ public class CultivoDto {
 
     private String nombre;
 
+    private String descripcion;
+
+    private boolean activo;
+
     @Generated
     public boolean equals(final Object o) {
         if (o == this) return true;

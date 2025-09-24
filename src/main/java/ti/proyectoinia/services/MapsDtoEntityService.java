@@ -23,6 +23,7 @@ public class MapsDtoEntityService {
         HongoDto hongoDto = new HongoDto();
         hongoDto.setId(hongo.getId());
         hongoDto.setNombre(hongo.getNombre());
+        hongoDto.setDescripcion(hongo.getDescripcion());
         hongoDto.setActivo(hongo.isActivo());
 
         return hongoDto;
@@ -36,6 +37,7 @@ public class MapsDtoEntityService {
         Hongo hongo = new Hongo();
         hongo.setId(hongoDto.getId());
         hongo.setNombre(hongoDto.getNombre());
+        hongo.setDescripcion(hongo.getDescripcion());
         hongo.setActivo(hongoDto.isActivo());
 
         return hongo;
@@ -606,6 +608,8 @@ public class MapsDtoEntityService {
         CultivoDto dto = new CultivoDto();
         dto.setId(cultivo.getId());
         dto.setNombre(cultivo.getNombre());
+        dto.setDescripcion(cultivo.getDescripcion());
+        dto.setActivo(cultivo.isActivo());
 
         return dto;
     }
@@ -615,6 +619,8 @@ public class MapsDtoEntityService {
         Cultivo cultivo = new Cultivo();
         cultivo.setId(dto.getId());
         cultivo.setNombre(dto.getNombre());
+        cultivo.setDescripcion(dto.getDescripcion());
+        cultivo.setActivo(dto.isActivo());
 
         return cultivo;
     }

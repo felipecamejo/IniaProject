@@ -60,7 +60,7 @@
         </div>
 
         <div class="form-field">
-          <label for="hongosSelect">Hongos</label>
+          <label for="hongosSelect">Hongos Patógenos</label>
           <div class="custom-multiselect" [class.open]="isHongosDropdownOpen">
             <div class="multiselect-trigger" (click)="toggleHongosDropdown()">
               <span class="selected-text">
@@ -135,6 +135,182 @@
                     type="number" 
                     [(ngModel)]="hongosTable[i].incidencia" 
                     name="incidencia_{{i}}"
+                    pInputText 
+                    style="width: 80px;"
+                    min="0" 
+                    max="100"
+                  />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+
+        <!-- Hongos Contaminantes Campo -->
+        <div class="form-field">
+          <label for="hongosCampoSelect">Hongos Contaminantes Campo</label>
+          <div class="custom-multiselect" [class.open]="isHongosCampoDropdownOpen">
+            <div class="multiselect-trigger" (click)="toggleHongosCampoDropdown()">
+              <span class="selected-text">
+                {{ getSelectedHongosCampoText() }}
+              </span>
+              <i class="pi pi-chevron-down" [class.rotated]="isHongosCampoDropdownOpen"></i>
+            </div>
+            <div class="multiselect-dropdown" *ngIf="isHongosCampoDropdownOpen">
+              <div class="multiselect-search">
+                <input type="text" 
+                       placeholder="Buscar hongos..." 
+                       [(ngModel)]="hongosCampoSearchText"
+                       name="hongosCampoSearch"
+                       (click)="$event.stopPropagation()"
+                       class="search-input">
+                <i class="pi pi-search"></i>
+              </div>
+              <div class="multiselect-options-container">
+                <div class="multiselect-option" 
+                     *ngFor="let hongo of getFilteredHongosCampo()" 
+                     (click)="toggleHongoCampoSelection(hongo)"
+                     [class.selected]="isHongoCampoSelected(hongo.id)">
+                  <input type="checkbox" 
+                         [checked]="isHongoCampoSelected(hongo.id)"
+                         (change)="toggleHongoCampoSelection(hongo)"
+                         (click)="$event.stopPropagation()">
+                  <span>{{ hongo.label }}</span>
+                </div>
+                <div class="no-results" *ngIf="getFilteredHongosCampo().length === 0">
+                  No se encontraron hongos
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de hongos contaminantes campo -->
+        <div class="table hongos-campo-table" *ngIf="hongosCampoTable.length > 0">
+          <h3>Hongos Contaminantes Campo</h3>
+          <p-table [value]="hongosCampoTable" [tableStyle]="{'width': 'auto'}">
+            <ng-template pTemplate="header">
+              <tr>
+                <th style="width: auto;">Tipo Hongo</th>
+                <th style="width: 100px;">Repeticion</th>
+                <th style="width: 100px;">Valor</th>
+                <th style="width: 120px;">% Incidencia</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-hongo let-i="rowIndex">
+              <tr>
+                <td>{{ hongo.tipoHongo }}</td>
+                <td>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="hongosCampoTable[i].repeticion" 
+                    name="repeticionCampo_{{i}}"
+                    pInputText 
+                    style="width: 80px;"
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="hongosCampoTable[i].valor" 
+                    name="valorCampo_{{i}}"
+                    pInputText 
+                    style="width: 80px;"
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="hongosCampoTable[i].incidencia" 
+                    name="incidenciaCampo_{{i}}"
+                    pInputText 
+                    style="width: 80px;"
+                    min="0" 
+                    max="100"
+                  />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+
+        <!-- Hongos Almacenaje -->
+        <div class="form-field">
+          <label for="hongosAlmacenajeSelect">Hongos Almacenaje</label>
+          <div class="custom-multiselect" [class.open]="isHongosAlmacenajeDropdownOpen">
+            <div class="multiselect-trigger" (click)="toggleHongosAlmacenajeDropdown()">
+              <span class="selected-text">
+                {{ getSelectedHongosAlmacenajeText() }}
+              </span>
+              <i class="pi pi-chevron-down" [class.rotated]="isHongosAlmacenajeDropdownOpen"></i>
+            </div>
+            <div class="multiselect-dropdown" *ngIf="isHongosAlmacenajeDropdownOpen">
+              <div class="multiselect-search">
+                <input type="text" 
+                       placeholder="Buscar hongos..." 
+                       [(ngModel)]="hongosAlmacenajeSearchText"
+                       name="hongosAlmacenajeSearch"
+                       (click)="$event.stopPropagation()"
+                       class="search-input">
+                <i class="pi pi-search"></i>
+              </div>
+              <div class="multiselect-options-container">
+                <div class="multiselect-option" 
+                     *ngFor="let hongo of getFilteredHongosAlmacenaje()" 
+                     (click)="toggleHongoAlmacenajeSelection(hongo)"
+                     [class.selected]="isHongoAlmacenajeSelected(hongo.id)">
+                  <input type="checkbox" 
+                         [checked]="isHongoAlmacenajeSelected(hongo.id)"
+                         (change)="toggleHongoAlmacenajeSelection(hongo)"
+                         (click)="$event.stopPropagation()">
+                  <span>{{ hongo.label }}</span>
+                </div>
+                <div class="no-results" *ngIf="getFilteredHongosAlmacenaje().length === 0">
+                  No se encontraron hongos
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de hongos almacenaje -->
+        <div class="table hongos-almacenaje-table" *ngIf="hongosAlmacenajeTable.length > 0">
+          <h3>Hongos Almacenaje</h3>
+          <p-table [value]="hongosAlmacenajeTable" [tableStyle]="{'width': 'auto'}">
+            <ng-template pTemplate="header">
+              <tr>
+                <th style="width: auto;">Tipo Hongo</th>
+                <th style="width: 100px;">Repeticion</th>
+                <th style="width: 100px;">Valor</th>
+                <th style="width: 120px;">% Incidencia</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-hongo let-i="rowIndex">
+              <tr>
+                <td>{{ hongo.tipoHongo }}</td>
+                <td>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="hongosAlmacenajeTable[i].repeticion" 
+                    name="repeticionAlmacenaje_{{i}}"
+                    pInputText 
+                    style="width: 80px;"
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="hongosAlmacenajeTable[i].valor" 
+                    name="valorAlmacenaje_{{i}}"
+                    pInputText 
+                    style="width: 80px;"
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="hongosAlmacenajeTable[i].incidencia" 
+                    name="incidenciaAlmacenaje_{{i}}"
                     pInputText 
                     style="width: 80px;"
                     min="0" 

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { LoteDto } from '../../../models/Lote.dto';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -9,7 +10,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
-  selector: 'app-pms',
+  selector: 'app-lote',
   imports: [
       CommonModule,
       FormsModule,
@@ -18,11 +19,11 @@ import { ButtonModule } from 'primeng/button';
       InputNumberModule,
       ButtonModule
   ],
-  templateUrl: './pms.component.html',
-  styleUrls: ['./pms.component.scss']
+  templateUrl: './lote.component.html',
+  styleUrls: ['./lote.component.scss']
 })
 
-export class PmsComponent {
+export class LoteComponent {
     metodos = [
       { label: 'Metodo A', id: 1 },
       { label: 'Metodo B', id: 2 },
@@ -31,11 +32,23 @@ export class PmsComponent {
 
     selectedMetodo: string = '';
 
-    // Campos de texto simples
-    nLab: number = 0;
-    especie: number = 0;
-    ficha: string = '';
-    fechaMedicion: string = '';
-    observaciones: string = '';
+    nombre: string = '';
+    descripcion: string = '';
+    
 
-}
+    createLote() {
+
+      const lote: LoteDto = {
+        id: null,
+        nombre: this.nombre,
+        descripcion: this.descripcion,
+        fechaCreacion: new Date(),
+        fechaFinalizacion: null,
+        usuarios: [],
+        recibos: [],
+        activo: true
+      };
+
+      console.log('Crear nuevo lote', lote);
+    }
+  }

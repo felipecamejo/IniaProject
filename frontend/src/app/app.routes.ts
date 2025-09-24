@@ -6,9 +6,13 @@ import { LoginComponent } from './components/login/login.component';
 import { PmsComponent } from './components/pms/pms.component';
 import { SanitarioComponent } from './components/sanitario/sanitario.component';
 import { PurezaComponent } from './components/pureza/pureza.component';
+import { LoteComponent } from './components/lote/lote.component';
+import { LoteAnalisisComponent } from './components/lote-analisis/lote-analisis.component';
 import { ListadoLotesComponent } from './components/listado-lotes/listado-lotes.component';
-import { ListadoMalezasComponent } from './components/listado-malezas.component/listado-malezas.component';
 import { DOSNComponent } from './components/dosn/dosn.component';
+import { ListadoMalezasComponent } from './components/listado-malezas/listado-malezas.component';
+import { ListadoHongosComponent } from './components/listado-hongos/listado-hongos.component';
+import { ListadoCultivosComponent } from './components/listado-cultivos/listado-cultivos.component';
 
 export const routes: Routes = [
     { path : 'home', component: HomeComponent },
@@ -17,8 +21,15 @@ export const routes: Routes = [
     { path : '', redirectTo: '/login', pathMatch: 'full' },
     { path : 'pms', component: PmsComponent },
     { path : 'sanitario', component: SanitarioComponent },
-    { path : 'listado-lotes', component: ListadoLotesComponent },
     { path : 'pureza', component: PurezaComponent },
     { path : 'listado-malezas', component: ListadoMalezasComponent },
     { path : 'dosn', component: DOSNComponent },
+    { path : 'lote', component: LoteComponent },
+    { path : 'lote-analisis', component: LoteAnalisisComponent },
+    
+    //listados
+    { path : 'listado-lotes', component: ListadoLotesComponent },
+    { path : 'listado-malezas', component: ListadoMalezasComponent },
+    { path : 'listado-hongos', component: ListadoHongosComponent },
+    { path : 'listado-cultivos', component: ListadoCultivosComponent },
 ];
