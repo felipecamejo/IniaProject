@@ -2,9 +2,8 @@ export interface LoteDto {
     id: number | null;
     nombre: string;
     descripcion: string;
-    fechaCreacion: Date | null;
-    fechaFinalizacion: Date | null;
+    fechaCreacion: string | null;
+    fechaFinalizacion: string | null;
     activo: boolean;
-    recibos: any[] | null;
-    usuarios: any[] | null;
+    usuariosId: number[] | null;
 }

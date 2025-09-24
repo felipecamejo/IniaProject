@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ReciboService } from '../../../services/ReciboService';
+import { ReciboDto } from '../../../models/Recibo.dto';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -47,4 +49,38 @@ export class ReciboComponent {
   ingresaFrio: string = '';
   saleFrio: string = '';
   observacion: string = '';
+
+  constructor(private reciboService: ReciboService) {}
+
+  crearRecibo() {
+    const payload: ReciboDto = {
+      id: null,
+      nroAnalisis: Number(this.nLab) || 0,
+      especie: this.especie,
+      ficha: this.ficha,
+      fechaRecibo: this.fechaRecibo || new Date().toISOString(),
+      remitente: this.remite,
+      origen: '',
+      cultivar: this.selectedCultivar,
+      deposito: '',
+      estado: '',
+      lote: Number(this.lote) || 0,
+      kgLimpios: Number(this.kilos) || 0,
+      analisisSolicitados: this.rec,
+      articulo: 0,
+      activo: true,
+      dosnAnalisis: [],
+      pmsAnalisis: [],
+      purezaAnalisis: [],
+      germinacionAnalisis: [],
+      purezaPNotatumAnalisis: [],
+      sanitarioAnalisis: [],
+      tetrazolioAnalisis: []
+    };
+
+    this.reciboService.crearRecibo(payload).subscribe({
+      next: (msg) => console.log(msg),
+      error: (err) => console.error('Error creando recibo', err)
+    });
+  }
 }

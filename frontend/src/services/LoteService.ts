@@ -1,16 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ReciboDto } from '../models/Recibo.dto';
 import { Observable } from 'rxjs';
-import { UrlService } from '../services/url.service';
+import { UrlService } from './url.service';
+import { LoteDto } from '../models/Lote.dto';
+
+interface ResponseListadoLotes {
+  lotes: LoteDto[];
+}
 
 @Injectable({ providedIn: 'root' })
-export class ReciboService {
-  private endpoint: string = '/recibo';
+export class LoteService {
+  private endpoint: string = '/lote';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
-  crearRecibo(payload: ReciboDto): Observable<string> {
+  crearLote(payload: LoteDto): Observable<string> {
     return this.http.post(
       `${this.urlService.baseUrl}${this.endpoint}/crear`,
       payload,
@@ -18,19 +22,19 @@ export class ReciboService {
     );
   }
 
-  listarRecibos(): Observable<{ recibos: ReciboDto[] }> {
-    return this.http.get<{ recibos: ReciboDto[] }>(
+  listarLotes(): Observable<ResponseListadoLotes> {
+    return this.http.get<ResponseListadoLotes>(
       `${this.urlService.baseUrl}${this.endpoint}/listar`
     );
   }
 
-  obtenerRecibo(id: number): Observable<ReciboDto> {
-    return this.http.get<ReciboDto>(
+  obtenerLote(id: number): Observable<LoteDto> {
+    return this.http.get<LoteDto>(
       `${this.urlService.baseUrl}${this.endpoint}/${id}`
     );
   }
 
-  editarRecibo(payload: ReciboDto): Observable<string> {
+  editarLote(payload: LoteDto): Observable<string> {
     return this.http.put(
       `${this.urlService.baseUrl}${this.endpoint}/editar`,
       payload,
@@ -38,13 +42,13 @@ export class ReciboService {
     );
   }
 
-  eliminarRecibo(id: number): Observable<string> {
+  eliminarLote(id: number): Observable<string> {
     return this.http.put(
       `${this.urlService.baseUrl}${this.endpoint}/eliminar/${id}`,
       {},
       { responseType: 'text' }
     );
   }
-
-
 }
+
+
