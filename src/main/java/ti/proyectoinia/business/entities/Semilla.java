@@ -14,7 +14,10 @@ public class Semilla {
     private Long id;
 
     @Column(name = "SEMILLA_NRO_SEMILLAS_PURA")
-    private int nroSemillasPura;
+    private Integer nroSemillasPura;
+
+    @Column(name = "SEMILLA_DESCRIPCION")
+    private String descripcion;
 
     @Column(name = "SEMILLA_ACTIVO")
     private boolean activo;

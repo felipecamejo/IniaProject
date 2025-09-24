@@ -787,4 +787,64 @@ public class MapsDtoEntityService {
 
         return tetrazolio;
     }
+
+    public SanitarioHongoDto mapToDtoSanitarioHongo(SanitarioHongo entity) {
+        if (entity == null) return null;
+        SanitarioHongoDto dto = new SanitarioHongoDto();
+        dto.setId(entity.getId());
+        dto.setSanitarioId(entity.getSanitario() != null ? entity.getSanitario().getId() : null);
+        dto.setHongoId(entity.getHongo() != null ? entity.getHongo().getId() : null);
+        dto.setRepeticion(entity.getRepeticion());
+        dto.setValor(entity.getValor());
+        dto.setIncidencia(entity.getIncidencia());
+        return dto;
+    }
+
+    public SanitarioHongo mapToEntitySanitarioHongo(SanitarioHongoDto dto) {
+        if (dto == null) return null;
+        SanitarioHongo entity = new SanitarioHongo();
+        entity.setId(dto.getId());
+        if (dto.getSanitarioId() != null) {
+            Sanitario sanitario = new Sanitario();
+            sanitario.setId(dto.getSanitarioId());
+            entity.setSanitario(sanitario);
+        } else {
+            entity.setSanitario(null);
+        }
+        if (dto.getHongoId() != null) {
+            Hongo hongo = new Hongo();
+            hongo.setId(dto.getHongoId());
+            entity.setHongo(hongo);
+        } else {
+            entity.setHongo(null);
+        }
+        entity.setRepeticion(dto.getRepeticion());
+        entity.setValor(dto.getValor());
+        entity.setIncidencia(dto.getIncidencia());
+        return entity;
+    }
+
+    public SemillaDto mapToDtoSemilla(Semilla entity) {
+        if (entity == null) return null;
+
+        SemillaDto dto = new SemillaDto();
+        dto.setId(entity.getId());
+        dto.setNroSemillasPura(entity.getNroSemillasPura());
+        dto.setActivo(entity.isActivo());
+        dto.setDescripcion(entity.getDescripcion());
+
+        return dto;
+    }
+
+    public Semilla mapToEntitySemilla(SemillaDto dto) {
+        if (dto == null) return null;
+
+        Semilla entity = new Semilla();
+        entity.setId(dto.getId());
+        entity.setNroSemillasPura(dto.getNroSemillasPura());
+        entity.setActivo(dto.isActivo());
+        entity.setDescripcion(dto.getDescripcion());
+
+        return entity;
+    }
 }

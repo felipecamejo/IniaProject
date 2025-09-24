@@ -9,7 +9,9 @@ public class SemillaDto {
     
     private Long id;
     
-    private int nroSemillasPura;
+    private Integer nroSemillasPura;
+
+    private String descripcion;
 
     private boolean activo;
 
