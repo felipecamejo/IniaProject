@@ -176,6 +176,8 @@
               <option value="41f7bef6-8ba8-4543-b050-b8e0442af8f5" />
               <option value="39220b63-9176-45d4-b085-e7936e661e08" />
               <option value="529f4003-7b57-480c-848a-25a602a28304" />
+              <option value="e01296a1-0978-4290-a930-d6c96ad409ad" />
+              <option value="249dadc9-0e0b-48fc-ab7c-bd2759fbaa3c" />
             </set>
           </value>
         </entry>
@@ -205,6 +207,7 @@
           <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/dtos/PurezaPNotatumDto.java" />
           <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/dtos/SemillaDto.java" />
           <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/services/MapsDtoEntityService.java" />
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/dtos/SanitarioHongoDto.java" />
         </set>
       </entry>
     </pendingWorkingSetItems>
