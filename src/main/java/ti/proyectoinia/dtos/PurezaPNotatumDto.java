@@ -3,6 +3,8 @@ package ti.proyectoinia.dtos;
 import lombok.Data;
 import lombok.Generated;
 
+import java.util.Date;
+
 @Data
 public class PurezaPNotatumDto {
     
@@ -29,6 +31,10 @@ public class PurezaPNotatumDto {
     private boolean repetido;
 
     private Long reciboId;
+
+    private Date fechaCreacion;
+
+    private Date fechaRepeticion;
 
     @Generated
     public boolean equals(final Object o) {

@@ -127,4 +127,10 @@ public class Germinacion {
 
     @Column(name = "GERMINACION_REPETIDO")
     private boolean repetido;
+
+    @Column(name = "GERMINACION_FECHA_CREACION")
+    private Date fechaCreacion;
+
+    @Column(name = "GERMINACION_FECHA_REPETICION")
+    private Date fechaRepeticion;
 }

@@ -35,4 +35,8 @@ public class SanitarioDto {
     private boolean repetido;
 
     private List<Long> SanitarioHongoids;
+
+    private Date fechaCreacion;
+
+    private Date fechaRepeticion;
 }

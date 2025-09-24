@@ -24,6 +24,10 @@ public class PMSDto {
 
     private Long reciboId;
 
+    private Date fechaCreacion;
+
+    private Date fechaRepeticion;
+
     @Generated
     public boolean equals(final Object o) {
         if (this == o) return true;

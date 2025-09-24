@@ -10,6 +10,6 @@ export interface PurezaPNotatumDto {
   semillasLS: number;
   activo: boolean;
   repetido: boolean;
+  fechaCreacion: string | null;
+  fechaRepeticion: string | null;
 }
-
-
