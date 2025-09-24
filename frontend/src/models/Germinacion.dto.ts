@@ -1,0 +1,46 @@
+export type Metodo = 'A' | 'B' | 'C';
+export type PreFrio = 'NINGUNO' | 'CORTO' | 'LARGO';
+export type PreTratamiento = 'NINGUNO' | 'X' | 'Y';
+export type Tratamiento = 'NINGUNO' | 'T1' | 'T2';
+
+export interface GerminacionDto {
+  id: number | null;
+  fechaInicio: string | null;
+  fechaConteo1: string | null;
+  fechaConteo2: string | null;
+  fechaConteo3: string | null;
+  fechaConteo4: string | null;
+  fechaConteo5: string | null;
+  totalDias: number;
+  repeticionNormal1: number;
+  repeticionNormal2: number;
+  repeticionNormal3: number;
+  repeticionNormal4: number;
+  repeticionNormal5: number;
+  repeticionDura: number;
+  repeticionFresca: number;
+  repeticionAnormal: number;
+  repeticionMuerta: number;
+  totalRepeticion: number;
+  promedioRepeticiones: number;
+  tratamiento: Tratamiento;
+  nroSemillaPorRepeticion: number;
+  metodo: Metodo;
+  temperatura: number;
+  preFrio: PreFrio;
+  preTratamiento: PreTratamiento;
+  nroDias: number;
+  fechaFinal: string | null;
+  pRedondeo: number;
+  pNormal: number;
+  pAnormal: number;
+  pMuertas: number;
+  semillasDuras: number;
+  germinacion: number;
+  comentarios: string;
+  reciboId: number | null;
+  activo: boolean;
+  repetido: boolean;
+}
+
+
