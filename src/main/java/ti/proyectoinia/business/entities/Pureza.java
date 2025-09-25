@@ -56,4 +56,10 @@ public class Pureza {
 
     @Column(name = "PUREZA_REPETIDO")
     private boolean repetido;
+
+    @Column(name = "PUREZA_FECHA_CREACION")
+    private Date fechaCreacion;
+
+    @Column(name = "PUREZA_FECHA_REPETICION")
+    private Date fechaRepeticion;
 }

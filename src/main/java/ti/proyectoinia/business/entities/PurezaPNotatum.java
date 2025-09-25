@@ -3,6 +3,8 @@ package ti.proyectoinia.business.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.Date;
+
 @Entity
 @Data
 @Table(name = "PUREZA_PNOTATUM")
@@ -46,4 +48,10 @@ public class PurezaPNotatum {
 
     @Column(name = "PUREZA_REPETIDO")
     private boolean repetido;
+
+    @Column(name = "PUREZA_PNOTATUM_FECHA_CREACION")
+    private Date fechaCreacion;
+
+    @Column(name = "PUREZA_PNOTATUM_FECHA_REPETICION")
+    private Date fechaRepeticion;
 }

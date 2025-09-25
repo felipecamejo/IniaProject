@@ -15,6 +15,6 @@ export interface DOSNDto {
   cultivos: CultivoDto[] | null;
   activo: boolean;
   repetido: boolean;
+  fechaCreacion: string | null;
+  fechaRepeticion: string | null;
 }
-
-
