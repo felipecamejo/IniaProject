@@ -22,7 +22,7 @@ public class LoteController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(
             description = "Esta Funcion crea un nuevo Lote"
     )
@@ -56,7 +56,7 @@ public class LoteController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<String> editarLote(@RequestBody LoteDto loteDto) {
         String result = this.loteService.editarLote(loteDto);
         return ResponseEntity.ok(result);

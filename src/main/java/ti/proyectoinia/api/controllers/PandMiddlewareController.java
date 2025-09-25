@@ -75,6 +75,30 @@ public class PandMiddlewareController {
             return ResponseEntity.status(500).body("Error procesando archivo: " + e.getMessage());
         }
     }
+
+    @PostMapping("/insertar-datos-masivos")
+    @Operation(summary = "Insertar datos masivos", description = "Inserta 5000 registros en todas las tablas excepto usuarios (20 registros) usando InsertTablesHere.py")
+    public ResponseEntity<String> insertarDatosMasivos() {
+        String salida = pandMiddlewareService.ejecutarInsertarDatosMasivos();
+        if (salida == null || salida.isBlank()) {
+            return ResponseEntity.status(500).body("Sin salida del proceso de Python");
+        }
+
+        String normalized = salida.trim();
+        // Errores obvios: script no encontrado o fallas de ejecución
+        if (normalized.contains("No se encontró el script")
+                || normalized.contains("Error ejecutando InsertTablesHere.py")
+                || normalized.contains("Ejecución interrumpida")) {
+            return ResponseEntity.status(500).body(salida);
+        }
+
+        // Si el proceso devolvió un ExitCode distinto de 0, responder 500
+        if (normalized.contains("ExitCode:") && !normalized.endsWith("ExitCode: 0")) {
+            return ResponseEntity.status(500).body(salida);
+        }
+
+        return ResponseEntity.ok(salida);
+    }
 }
 
 

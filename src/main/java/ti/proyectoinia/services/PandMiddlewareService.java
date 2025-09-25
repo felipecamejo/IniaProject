@@ -50,6 +50,26 @@ public class PandMiddlewareService {
         return runProcess(command, scriptPath.getParent().toFile());
     }
 
+    /**
+     * Ejecuta el script InsertTablesHere.py para insertar datos masivos.
+     * Inserta 5000 registros en todas las tablas excepto usuarios (20 registros).
+     */
+    public String ejecutarInsertarDatosMasivos() {
+        List<String> command = buildPythonCommand();
+
+        Path scriptPath = Paths.get(System.getProperty("user.dir"), "Middleware", "InsertTablesHere.py");
+        if (!scriptPath.toFile().exists()) {
+            return "No se encontró el script: " + scriptPath;
+        }
+
+        command.add(scriptPath.toString());
+        command.add("--rows");
+        command.add("5000");
+        // No skip usuario table - the Python script will handle limiting it to 20 records
+
+        return runProcess(command, scriptPath.getParent().toFile());
+    }
+
     private List<String> buildPythonCommand() {
         List<String> command = new ArrayList<>();
         String pythonExecutable = System.getenv("PYTHON_EXECUTABLE");
