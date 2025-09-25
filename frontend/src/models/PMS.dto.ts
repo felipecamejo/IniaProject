@@ -7,6 +7,7 @@ export interface PMSDto {
   observaciones: string;
   activo: boolean;
   repetido: boolean;
+  reciboId: number | null;
+  fechaCreacion: string | null;
+  fechaRepeticion: string | null;
 }
-
-

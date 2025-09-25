@@ -85,4 +85,8 @@ public class GerminacionDto {
     private boolean activo;
 
     private boolean repetido;
+
+    private Date fechaCreacion;
+
+    private Date fechaRepeticion;
 }

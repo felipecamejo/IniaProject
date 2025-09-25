@@ -13,6 +13,6 @@ export interface PurezaDto {
   estandar: boolean;
   activo: boolean;
   repetido: boolean;
+  fechaCreacion: string | null;
+  fechaRepeticion: string | null;
 }
-
-

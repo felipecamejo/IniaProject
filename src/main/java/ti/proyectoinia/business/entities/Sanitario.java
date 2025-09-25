@@ -60,4 +60,10 @@ public class Sanitario {
     @OneToMany(mappedBy = "sanitario", cascade = CascadeType.ALL)
     private List<SanitarioHongo> sanitarioHongos;
 
+    @Column(name = "SANITARIO_FECHA_CREACION")
+    private Date fechaCreacion;
+
+    @Column(name = "SANITARIO_FECHA_REPETICION")
+    private Date fechaRepeticion;
+
 }

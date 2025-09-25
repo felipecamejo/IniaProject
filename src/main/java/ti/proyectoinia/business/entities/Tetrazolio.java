@@ -102,4 +102,10 @@ public class Tetrazolio {
 
     @Column(name = "TETRAZOLIO_REPETIDO")
     private boolean repetido;
+
+    @Column(name = "TETRAZOLIO_FECHA_CREACION")
+    private Date fechaCreacion;
+
+    @Column(name = "TETRAZOLIO_FECHA_REPETICION")
+    private Date fechaRepeticion;
 }
