@@ -1,0 +1,219 @@
+<div class="container">
+  <p-card class="card">
+    <ng-template pTemplate="header">
+      <h2 class="title">Germinacion</h2>
+    </ng-template>
+    <form>
+      <!-- Tabla de fechas de conteo (solo una al inicio) -->
+      <div class="table-wrapper" style="margin-bottom:2rem;">
+        <table class="p-table" style="width:100%; margin-bottom:1rem;">
+          <thead>
+            <tr>
+              <th>Inicio</th>
+              <th>Primer conteo</th>
+              <th>Segundo conteo</th>
+              <th>Tercer conteo</th>
+              <th>Cuarto conteo</th>
+              <th>Quinto conteo</th>
+              <th>Total de días</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="date" [(ngModel)]="fechas.inicio" name="fechaInicio" pInputText style="width:130px;" /></td>
+              <td><input type="date" [(ngModel)]="fechas.primerConteo" name="fechaPrimerConteo" pInputText style="width:130px;" /></td>
+              <td><input type="date" [(ngModel)]="fechas.segundoConteo" name="fechaSegundoConteo" pInputText style="width:130px;" /></td>
+              <td><input type="date" [(ngModel)]="fechas.tercerConteo" name="fechaTercerConteo" pInputText style="width:130px;" /></td>
+              <td><input type="date" [(ngModel)]="fechas.cuartoConteo" name="fechaCuartoConteo" pInputText style="width:130px;" /></td>
+              <td><input type="date" [(ngModel)]="fechas.quintoConteo" name="fechaQuintoConteo" pInputText style="width:130px;" /></td>
+              <td><input type="number" [value]="fechas.totalDias" readonly pInputText style="width:100px; background:#f0f0f0;" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Select Tratamiento de semillas -->
+      <div class="form-field" style="margin-bottom: 1.5rem;">
+        <label for="tratamientoSemillas" style="font-weight:600; margin-right:1rem;">Tratamiento de semillas:</label>
+        <select id="tratamientoSemillas" [(ngModel)]="tratamientoSemillas" name="tratamientoSemillas" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
+          <option value="sin curar">Sin curar</option>
+          <option value="curada en planta">Curada en planta</option>
+          <option value="curada en laboratorio">Curada en Laboratorio</option>
+        </select>
+      </div>
+
+      <!-- Producto y dosis -->
+      <div class="form-field" style="margin-bottom: 1.5rem; display: flex; align-items: center;">
+        <label for="productoDosis" style="font-weight:600; margin-right:1rem;">Producto y dosis:</label>
+        <input id="productoDosis" type="text" [(ngModel)]="productoDosis" name="productoDosis" pInputText 
+          style="width:320px; padding:0.5rem 1rem; border-radius:8px; border:2px solid #2563eb; background:#f7fbff; font-size:1.05em; font-weight:500; color:#1746a0; box-shadow:0 2px 8px rgba(38,99,235,0.08); transition:border 0.2s;" 
+          placeholder="Ingrese producto y dosis..." />
+      </div>
+
+      <!-- Selects adicionales en una sola fila -->
+      <div style="display: flex; flex-wrap: wrap; gap: 1.2rem; align-items: center; margin-bottom: 1.5rem;">
+        <div class="form-field" style="margin-bottom: 0;">
+          <label for="numSemillas" style="font-weight:600; margin-right:0.5rem;">Número de semillas por repetición:</label>
+          <select id="numSemillas" [(ngModel)]="numSemillas" name="numSemillas" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <div class="form-field" style="margin-bottom: 0;">
+          <label for="metodo" style="font-weight:600; margin-right:0.5rem;">Método:</label>
+          <select id="metodo" [(ngModel)]="metodo" name="metodo" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
+            <option value="SP">SP</option>
+            <option value="EP">EP</option>
+            <option value="A">A</option>
+            <option value="RPT">RPT</option>
+            <option value="Tierra">Tierra</option>
+          </select>
+        </div>
+        <div class="form-field" style="margin-bottom: 0;">
+          <label for="temperatura" style="font-weight:600; margin-right:0.5rem;">Temperatura:</label>
+          <select id="temperatura" [(ngModel)]="temperatura" name="temperatura" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
+            <option value="15°C">15°C</option>
+            <option value="20°C">20°C</option>
+            <option value="25°C">25°C</option>
+            <option value="20°C<==>30°C">20°C&lt;==&gt;30°C</option>
+            <option value="15°C<==>30°C">15°C&lt;==&gt;30°C</option>
+          </select>
+        </div>
+        <div class="form-field" style="margin-bottom: 0;">
+          <label for="preFrio" style="font-weight:600; margin-right:0.5rem;">Pre-frío:</label>
+          <select id="preFrio" [(ngModel)]="preFrio" name="preFrio" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
+            <option value="No">No</option>
+            <option *ngFor="let d of diasPreFrio" [value]="d">{{d}}</option>
+          </select>
+        </div>
+        <div class="form-field" style="margin-bottom: 0;">
+          <label for="preTratamiento" style="font-weight:600; margin-right:0.5rem;">Pre-tratamiento:</label>
+          <select id="preTratamiento" [(ngModel)]="preTratamiento" name="preTratamiento" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
+            <option value="No">No</option>
+            <option value="KNO3">KNO3</option>
+            <option value="Pre-lavado">Pre-lavado</option>
+            <option value="Pre-secado">Pre-secado</option>
+            <option value="GA3">GA3</option>
+          </select>
+        </div>
+      </div>
+      <!-- Tabla de repeticiones para germinación -->
+      <h3 style="margin-top:2rem;">Tabla de repeticiones - Germinación</h3>
+      <div class="table-wrapper">
+        <table class="p-table" style="width:100%; margin-bottom:1rem;">
+          <thead>
+            <tr>
+              <th>Repetición</th>
+              <th *ngFor="let n of [1,2,3,4,5]">Normales {{n}}</th>
+              <th>Anormales</th>
+              <th>Duras</th>
+              <th>Frescas</th>
+              <th>Muertas</th>
+              <th>Total</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rep of repeticiones; let i = index">
+              <td>{{ rep.numero }}</td>
+              <td *ngFor="let n of [0,1,2,3,4]">
+                <input type="number" [(ngModel)]="rep.normales[n]" name="normales{{i}}_{{n}}" pInputText style="width:70px;" />
+              </td>
+              <td><input type="number" [(ngModel)]="rep.anormales" name="anormales{{i}}" pInputText style="width:70px;" /></td>
+              <td><input type="number" [(ngModel)]="rep.duras" name="duras{{i}}" pInputText style="width:70px;" /></td>
+              <td><input type="number" [(ngModel)]="rep.frescas" name="frescas{{i}}" pInputText style="width:70px;" /></td>
+              <td><input type="number" [(ngModel)]="rep.muertas" name="muertas{{i}}" pInputText style="width:70px;" /></td>
+              <td>
+                <input type="number" [value]="getTotal(rep)" readonly pInputText style="width:70px; background:#f0f0f0;" />
+              </td>
+              <td>
+                <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="eliminarRepeticion(i)" [disabled]="repeticiones.length === 1"></button>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td style="font-weight:bold; background:#f0f0f0;">Promedio</td>
+              <td *ngFor="let n of [0,1,2,3,4]">
+                <input type="number" [value]="getPromedioNormales(n)" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
+              </td>
+              <td>
+                <input type="number" [value]="getPromedioAnormales()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
+              </td>
+              <td>
+                <input type="number" [value]="getPromedioDuras()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
+              </td>
+              <td>
+                <input type="number" [value]="getPromedioFrescas()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
+              </td>
+              <td>
+                <input type="number" [value]="getPromedioMuertas()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
+              </td>
+              <td>
+                <input type="number" [value]="getPromedioTotal()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
+              </td>
+              <td style="background:#f0f0f0;"></td>
+            </tr>
+          </tfoot>
+        </table>
+        <button pButton type="button" label="Agregar repetición" class="btn-agregar-rep" (click)="agregarRepeticion()"></button>
+      </div>
+
+      <!-- Tabla INIA/INASE -->
+      <div class="table-wrapper" style="margin-top:2rem;">
+        <table class="p-table" style="width:100%; margin-bottom:1rem;">
+          <thead>
+            <tr>
+              <th></th>
+              <th>P.Normales</th>
+              <th>P.Anormales</th>
+              <th>Duras</th>
+              <th>Frescas</th>
+              <th>Muertas</th>
+              <th>Germinacion</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:bold;">INIA</td>
+              <td><input type="number" [(ngModel)]="inia.pNormales" name="iniaPNormales" pInputText style="width:90px;" /></td>
+              <td><input type="number" [(ngModel)]="inia.pAnormales" name="iniaPAnormales" pInputText style="width:90px;" /></td>
+              <td><input type="number" [(ngModel)]="inia.duras" name="iniaDuras" pInputText style="width:90px;" /></td>
+              <td><input type="number" [(ngModel)]="inia.frescas" name="iniaFrescas" pInputText style="width:90px;" /></td>
+              <td><input type="number" [(ngModel)]="inia.muertas" name="iniaMuertas" pInputText style="width:90px;" /></td>
+              <td><input type="number" [(ngModel)]="inia.germinacion" name="iniaGerminacion" pInputText style="width:90px;" /></td>
+            </tr>
+            <tr>
+              <td style="font-weight:bold;">INASE</td>
+              <td><input type="number" [(ngModel)]="inase.pNormales" name="inasePNormales" pInputText style="width:90px;" /></td>
+              <td><input type="number" [(ngModel)]="inase.pAnormales" name="inasePAnormales" pInputText style="width:90px;" /></td>
+              <td><input type="number" [(ngModel)]="inase.duras" name="inaseDuras" pInputText style="width:90px;" /></td>
+              <td><input type="number" [(ngModel)]="inase.frescas" name="inaseFrescas" pInputText style="width:90px;" /></td>
+              <td><input type="number" [(ngModel)]="inase.muertas" name="inaseMuertas" pInputText style="width:90px;" /></td>
+              <td><input type="number" [(ngModel)]="inase.germinacion" name="inaseGerminacion" pInputText style="width:90px;" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+
+      <!-- Comentarios del analista -->
+      <div class="form-field" style="margin-bottom: 2.5rem;">
+        <label for="comentarios" style="font-weight:600; display:block; margin-bottom:0.5rem;">Comentarios:</label>
+        <textarea id="comentarios" [(ngModel)]="comentarios" name="comentarios" rows="4" style="width:100%; max-width:700px; padding:0.7rem 1rem; border-radius:10px; border:2px solid #2563eb; background:#f7fbff; font-size:1.05em; color:#1746a0; resize:vertical; box-shadow:0 2px 8px rgba(38,99,235,0.08);"></textarea>
+      </div>
+
+      <div class="submit-btn" style="margin-top: 1.2rem;">
+        <button
+          pButton
+          type="submit"
+          label="Crear Germinacion"
+          class="p-button-success"
+        ></button>
+      </div>
+
+    </form>
+  </p-card>
+</div>
+
