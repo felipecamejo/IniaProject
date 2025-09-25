@@ -14,6 +14,7 @@ import { ListadoMalezasComponent } from './components/listado-malezas/listado-ma
 import { ListadoHongosComponent } from './components/listado-hongos/listado-hongos.component';
 import { ListadoCultivosComponent } from './components/listado-cultivos/listado-cultivos.component';
 import { PurezaPNotatumComponent } from './components/pureza-p-notatum/pureza-p-notatum.component';
+import { ListadoPmsComponent } from './components/listado-pms/listado-pms.component';
 
 export const routes: Routes = [
     { path : 'home', component: HomeComponent },
@@ -34,4 +35,5 @@ export const routes: Routes = [
     { path : 'listado-malezas', component: ListadoMalezasComponent },
     { path : 'listado-hongos', component: ListadoHongosComponent },
     { path : 'listado-cultivos', component: ListadoCultivosComponent },
+    { path : 'listado-pms', component: ListadoPmsComponent },
 ];

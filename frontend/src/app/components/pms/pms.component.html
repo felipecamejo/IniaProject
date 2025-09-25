@@ -4,17 +4,17 @@
       <h2 class="title">PMS</h2>
     </ng-template>
 
-    <form>
+    <form (ngSubmit)="onSubmit()">
       <div class="form-grid">
         <!-- Campos de texto -->
         <div class="form-field">
-          <label for="nLab">Peso Mil Semillas</label>
-          <input id="nLab" type="number" [(ngModel)]="nLab" name="nLab" pInputText />
+          <label for="pesoMilSemillas">Peso Mil Semillas</label>
+          <input id="pesoMilSemillas" type="number" [(ngModel)]="pesoMilSemillas" name="pesoMilSemillas" pInputText />
         </div>
 
         <div class="form-field">
-          <label for="especie">% Humedad</label>
-          <input id="especie" type="number" [(ngModel)]="especie" name="especie" pInputText />
+          <label for="humedadPorcentual">% Humedad</label>
+          <input id="humedadPorcentual" type="number" [(ngModel)]="humedadPorcentual" name="humedadPorcentual" pInputText />
         </div>
 
         <div class="form-field">
@@ -47,7 +47,7 @@
         <button
           pButton
           type="submit"
-          label="Realizar PMS"
+          [label]="itemEditando ? 'Actualizar PMS' : 'Crear PMS'"
           class="p-button-success"
         ></button>
       </div>
