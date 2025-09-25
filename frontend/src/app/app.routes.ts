@@ -15,6 +15,7 @@ import { ListadoHongosComponent } from './components/listado-hongos/listado-hong
 import { ListadoCultivosComponent } from './components/listado-cultivos/listado-cultivos.component';
 import { PurezaPNotatumComponent } from './components/pureza-p-notatum/pureza-p-notatum.component';
 import { ListadoPmsComponent } from './components/listado-pms/listado-pms.component';
+import { GerminacionComponent } from './components/germinacion/germinacion.component';
 
 export const routes: Routes = [
     { path : 'home', component: HomeComponent },
@@ -29,7 +30,8 @@ export const routes: Routes = [
     { path : 'lote', component: LoteComponent },
     { path : 'lote-analisis', component: LoteAnalisisComponent },
     { path : 'pureza-p-notatum', component: PurezaPNotatumComponent },
-    
+    { path : 'germinacion', component: GerminacionComponent },
+
     //listados
     { path : 'listado-lotes', component: ListadoLotesComponent },
     { path : 'listado-malezas', component: ListadoMalezasComponent },
