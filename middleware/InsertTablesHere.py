@@ -101,18 +101,36 @@ def _truncate(value: str, max_length: Optional[int]) -> str:
 
 
 def _get_enum_value_for_column(column_name: str) -> Optional[str]:
-    """Genera valores apropiados para columnas enum basadas en el nombre de la columna."""
+    """Genera valores apropiados para columnas enum basadas en el nombre de la columna.
+    
+    Mapeo basado en los enums definidos en las entidades Java del proyecto INIA.
+    """
     col_name = str(column_name).lower()
     
     # Mapeo de enums basado en las entidades Java del proyecto INIA
     enum_mappings = {
+        # RolUsuario enum
         'rol': ['ADMIN', 'ANALISTA', 'OBSERVADOR'],
+        
+        # PreTratamiento enum
         'pretratamiento': ['NINGUNO', 'ESCARIFICADO', 'OTRO'],
+        
+        # Tratamiento enum
         'tratamiento': ['BIOLOGICO', 'QUIMICO', 'NINGUNO'],
+        
+        # Estado enum
         'estado': ['ESTADO_X', 'ESTADO_Y'],
+        
+        # Metodo enum
         'metodo': ['METODO_A', 'METODO_B', 'METODO_C'],
+        
+        # PreFrio enum
         'prefrio': ['PREFRIO', 'SIN_PREFRIO'],
+        
+        # ViabilidadPorTz enum
         'viabilidad_tz': ['VIABLE_SIN_DEFECTOS', 'DEFECTOS_LEVES', 'DEFECTOS_MODERADOS', 'DEFECTOS_SEVEROS', 'NO_VIABLES'],
+        
+        # ViabilidadVigorTZ enum
         'viabilidad_vigor_tz': ['VIGOR_ALTO', 'VIGOR_MEDIO', 'VIGOR_BAJO', 'LIMITE_CRITICO', 'NO_VIABLES']
     }
     
@@ -121,6 +139,8 @@ def _get_enum_value_for_column(column_name: str) -> Optional[str]:
         if key in col_name:
             return random.choice(values)
     
+    # Si no se encuentra un enum específico, retornar None para que se use la lógica general
+    # pero esto NO causará NULL en la base de datos ya que _guess_value_for_column manejará el caso
     return None
 
 
@@ -149,7 +169,7 @@ def _guess_value_for_column(
     if enum_value:
         return enum_value
 
-    # Algunos heurísticos por nombre de columna específicos del proyecto INIA
+    # Reglas de negocio específicas del proyecto INIA
     if isinstance(col_type, (String, Text)):
         if faker:
             if "email" in col_name:
@@ -158,16 +178,21 @@ def _guess_value_for_column(
                 value = faker.unique.name() if unique_cache is not None else faker.name()
             elif any(k in col_name for k in ["descripcion", "observacion", "observaciones", "detalle", "comentarios"]):
                 value = faker.sentence(nb_words=8)
-            elif "estado" in col_name:
+            elif "estado" in col_name and "producto" not in col_name:  # Estado general, no estadoProductoDosis
                 value = random.choice(["ACTIVO", "INACTIVO", "PENDIENTE", "PROCESADO"])
             elif "especie" in col_name:
-                value = random.choice(["Trigo", "Maíz", "Soja", "Girasol", "Sorgo"])
+                # Especies comunes en análisis de semillas
+                value = random.choice(["Trigo", "Maíz", "Soja", "Girasol", "Sorgo", "Avena", "Cebada", "Arroz"])
             elif "ficha" in col_name:
                 value = f"FICHA-{random.randint(1000, 9999)}"
             elif "deposito" in col_name:
-                value = random.choice(["Depósito A", "Depósito B", "Depósito C"])
+                value = random.choice(["Depósito A", "Depósito B", "Depósito C", "Almacén Central"])
             elif "analisis_solicitados" in col_name:
-                value = random.choice(["Pureza", "Germinación", "PMS", "Sanitario", "Tetrazolio"])
+                # Tipos de análisis disponibles en el sistema
+                value = random.choice(["Pureza", "Germinación", "PMS", "Sanitario", "Tetrazolio", "DOSN"])
+            elif "tipos_deanalisis" in col_name or "tipos_de_analisis" in col_name:
+                # Para DOSN - tipos de análisis
+                value = random.choice(["Completo", "Reducido", "Estándar"])
             else:
                 value = faker.text(max_nb_chars=max(8, (max_len or 50) - 1))
         else:
@@ -175,48 +200,118 @@ def _guess_value_for_column(
         return _truncate(value, max_len)
 
     if isinstance(col_type, (Integer, BigInteger)):
-        # Rango razonable; si es boolean-like por nombre, tratamos aparte
-        if "porcentaje" in col_name or "nro" in col_name or "numero" in col_name:
-            return random.randint(0, 100)
+        # Reglas de negocio para valores enteros específicos del proyecto INIA
+        if "porcentaje" in col_name:
+            return random.randint(0, 100)  # Porcentajes siempre 0-100
+        elif "nro" in col_name or "numero" in col_name:
+            if "analisis" in col_name:
+                return random.randint(1000, 9999)  # Números de análisis
+            elif "semillas" in col_name:
+                return random.randint(50, 500)  # Número de semillas
+            else:
+                return random.randint(1, 100)
         elif "temperatura" in col_name:
             return random.randint(15, 35)  # Temperatura en grados Celsius
         elif "horas" in col_name:
-            return random.randint(1, 24)  # Horas
+            if "luz" in col_name or "oscuridad" in col_name:
+                return random.randint(8, 16)  # Horas de luz/oscuridad
+            else:
+                return random.randint(1, 24)  # Horas generales
         elif "dias" in col_name:
             return random.randint(1, 30)  # Días
         elif "repeticion" in col_name:
-            return random.randint(1, 5)  # Repeticiones
+            return random.randint(1, 5)  # Repeticiones típicas
         elif "semillas" in col_name:
-            return random.randint(50, 500)  # Número de semillas
+            if "por_repeticion" in col_name:
+                return random.randint(25, 100)  # Semillas por repetición
+            else:
+                return random.randint(50, 500)  # Número total de semillas
         elif "concentracion" in col_name:
             return random.randint(1, 10)  # Concentración
         elif "grados" in col_name:
             return random.randint(20, 40)  # Grados
+        elif "lote" in col_name and col_name != "lote_id":
+            return random.randint(1, 1000)  # Número de lote
+        elif "articulo" in col_name:
+            return random.randint(1, 100)  # Número de artículo
+        # Para IDs, usar un rango más alto para evitar conflictos
+        elif col_name.endswith("_id") and column.primary_key:
+            return random.randint(1_000_000, 9_999_999)  # IDs únicos en rango alto
         return random.randint(0, 1_000_000)
 
     if isinstance(col_type, (Float, Numeric)):
+        # Reglas de negocio para valores decimales específicos del proyecto INIA
         if "peso" in col_name:
-            return round(random.uniform(0.1, 100.0), 3)  # Peso en gramos
+            if "inicial" in col_name:
+                return round(random.uniform(1.0, 50.0), 3)  # Peso inicial en gramos
+            elif "total" in col_name:
+                return round(random.uniform(0.5, 50.0), 3)  # Peso total en gramos
+            else:
+                return round(random.uniform(0.1, 100.0), 3)  # Peso general en gramos
         elif "humedad" in col_name:
             return round(random.uniform(5.0, 15.0), 2)  # Humedad porcentual
         elif "porcentaje" in col_name:
             return round(random.uniform(0.0, 100.0), 2)  # Porcentajes
         elif "temperatura" in col_name:
             return round(random.uniform(15.0, 35.0), 1)  # Temperatura decimal
+        elif "gramos" in col_name and "analizados" in col_name:
+            return round(random.uniform(1.0, 10.0), 3)  # Gramos analizados para DOSN
+        elif "concentracion" in col_name:
+            return round(random.uniform(0.1, 5.0), 2)  # Concentración
+        elif "tincion" in col_name and "hs" in col_name:
+            return round(random.uniform(1.0, 24.0), 1)  # Tinción en horas
+        elif "tincion" in col_name and "grados" in col_name:
+            return round(random.uniform(20.0, 40.0), 1)  # Tinción en grados
+        elif any(k in col_name for k in ["viables", "no_viables", "duras", "total", "promedio"]):
+            return round(random.uniform(0.0, 100.0), 2)  # Valores de viabilidad
+        elif "incidencia" in col_name:
+            return round(random.uniform(0.0, 100.0), 2)  # Incidencia porcentual
+        elif "valor" in col_name:
+            return round(random.uniform(0.0, 100.0), 2)  # Valores generales
         return round(random.uniform(0, 10_000), 3)
 
     if isinstance(col_type, Boolean):
-        # Para campos activo, siempre true por defecto
+        # Reglas de negocio para campos booleanos del proyecto INIA
         if "activo" in col_name:
-            return True
+            return True  # Todos los registros deben estar activos por defecto
+        elif "repetido" in col_name:
+            return random.choice([True, False])  # Puede ser repetido o no
+        elif "estandar" in col_name:
+            return random.choice([True, False])  # Puede ser estándar o no
+        elif "completo" in col_name and "reducido" in col_name:
+            return random.choice([True, False])  # Completo o reducido
         return random.choice([True, False])
 
     if isinstance(col_type, Date):
-        base = date.today() - timedelta(days=random.randint(0, 3650))
+        # Reglas de negocio para fechas del proyecto INIA
+        if "creacion" in col_name:
+            # Fechas de creación más recientes (últimos 2 años)
+            base = date.today() - timedelta(days=random.randint(0, 730))
+        elif "repeticion" in col_name:
+            # Fechas de repetición más recientes (último año)
+            base = date.today() - timedelta(days=random.randint(0, 365))
+        elif "analisis" in col_name:
+            # Fechas de análisis más recientes (últimos 6 meses)
+            base = date.today() - timedelta(days=random.randint(0, 180))
+        else:
+            # Fechas generales (últimos 10 años)
+            base = date.today() - timedelta(days=random.randint(0, 3650))
         return base
 
     if isinstance(col_type, DateTime):
-        base = datetime.now() - timedelta(days=random.randint(0, 3650), seconds=random.randint(0, 86400))
+        # Reglas de negocio para fechas y horas del proyecto INIA
+        if "creacion" in col_name:
+            # Fechas de creación más recientes (últimos 2 años)
+            base = datetime.now() - timedelta(days=random.randint(0, 730), seconds=random.randint(0, 86400))
+        elif "repeticion" in col_name:
+            # Fechas de repetición más recientes (último año)
+            base = datetime.now() - timedelta(days=random.randint(0, 365), seconds=random.randint(0, 86400))
+        elif "analisis" in col_name:
+            # Fechas de análisis más recientes (últimos 6 meses)
+            base = datetime.now() - timedelta(days=random.randint(0, 180), seconds=random.randint(0, 86400))
+        else:
+            # Fechas generales (últimos 10 años)
+            base = datetime.now() - timedelta(days=random.randint(0, 3650), seconds=random.randint(0, 86400))
         return base
 
     if isinstance(col_type, Time):
@@ -227,13 +322,22 @@ def _guess_value_for_column(
 
 
 def _is_autogenerated_pk(column) -> bool:
+    """Determina si una columna PK es autogenerada y no debe incluirse en el INSERT."""
     if not column.primary_key:
         return False
-    # Si tiene autoincrement o default/servidor, lo omitimos en el insert
+    
+    # Verificar si es autoincrement
     if getattr(column, "autoincrement", False):
         return True
+    
+    # Verificar si tiene default o server_default
     if column.default is not None or column.server_default is not None:
         return True
+    
+    # Verificar el tipo de columna - si es Integer/BigInteger probablemente es autogenerada
+    if isinstance(column.type, (Integer, BigInteger)):
+        return True
+    
     return False
 
 
@@ -252,16 +356,40 @@ def _collect_unique_columns(table: Table) -> Set[str]:
 
 
 def _fetch_parent_values(engine: Engine, fk_column) -> List[Any]:
-    """Obtiene valores existentes de la columna PK referenciada por una FK."""
+    """Obtiene valores existentes de la columna PK referenciada por una FK.
+    
+    Solo retorna valores de registros activos (activo = true) para mantener
+    consistencia con las reglas de negocio del proyecto INIA.
+    """
     try:
         # Tomar el primer destino (la mayoría de FK simples tienen 1)
         fk = next(iter(fk_column.foreign_keys))
         target_col = fk.column
         target_table = target_col.table
-        # Consultar hasta 10_000 valores (suficiente para muestrear)
-        query = target_table.select().with_only_columns(target_col).limit(10000)  # type: ignore[arg-type]
+        
+        # Construir query que solo incluya registros activos
+        from sqlalchemy import text
+        
+        # Determinar el nombre de la columna activo basado en el nombre de la tabla
+        table_name = target_table.name.lower()
+        activo_column = f"{table_name}_activo"
+        
+        # Verificar si la tabla tiene columna activo
+        has_activo_column = any(col.name.lower() == activo_column for col in target_table.columns)
+        
+        if has_activo_column:
+            # Solo obtener registros activos
+            query = text(f"SELECT {target_col.name} FROM {target_table.name} WHERE {activo_column} = true LIMIT 10000")
+        else:
+            # Si no tiene columna activo, obtener todos los registros
+            query = target_table.select().with_only_columns(target_col).limit(10000)  # type: ignore[arg-type]
+        
         with engine.connect() as conn:
-            rows = conn.execute(query).fetchall()
+            if has_activo_column:
+                rows = conn.execute(query).fetchall()
+            else:
+                rows = conn.execute(query).fetchall()
+        
         return [row[0] for row in rows]
     except StopIteration:
         return []
@@ -296,7 +424,7 @@ def _insert_usuario_lote_data(engine: Engine, table: Table) -> int:
             lotes = conn.execute(text("SELECT lote_id FROM lote WHERE lote_activo = true")).fetchall()
         
         if not usuarios or not lotes:
-            logger.warning("No hay usuarios o lotes para crear relaciones")
+            logger.warning("No hay usuarios o lotes para crear relaciones - saltando tabla usuario_lote")
             return 0
         
         # Crear relaciones aleatorias
@@ -415,14 +543,14 @@ def generate_rows_for_table(engine: Engine, table: Table, num_rows: int) -> int:
             value: Any
             existing_fk_values = fk_values_map.get(column.name) or []
 
-            # Nulabilidad: ocasionalmente dejar nulo si es permitido
-            allow_null = bool(getattr(column, "nullable", True))
-
-            # Generar valor
+            # Generar valor - NUNCA permitir NULL
             unique_cache = unique_trackers.get(column.name)
-            if allow_null and random.random() < 0.05 and column.name not in unique_columns:
-                value = None
+            
+            # Regla especial: campos 'activo' siempre deben ser True
+            if "activo" in column.name.lower():
+                value = True
             else:
+                # Siempre generar un valor válido, nunca NULL
                 value = _guess_value_for_column(faker, column, existing_fk_values, unique_cache)
 
             # Mantener unicidad simple por columna, si corresponde
@@ -442,6 +570,10 @@ def generate_rows_for_table(engine: Engine, table: Table, num_rows: int) -> int:
 
 
 def seed_all_tables(num_rows: int = 5000, only_tables: Optional[List[str]] = None, skip_tables: Optional[List[str]] = None) -> None:
+    """Inserta datos sintéticos en todas las tablas excepto usuarios y tablas de unión.
+    
+    Las tablas se insertan en orden de dependencias para respetar las claves foráneas.
+    """
     engine = get_engine()
     metadata = MetaData()
     logger.info("Reflejando metadatos de la base de datos...")
@@ -454,33 +586,63 @@ def seed_all_tables(num_rows: int = 5000, only_tables: Optional[List[str]] = Non
 
     only_set = set(t.lower() for t in (only_tables or []))
     skip_set = set(t.lower() for t in (skip_tables or []))
-    
+
     # Tablas de unión que se manejan por separado
     join_tables = {'usuario_lote', 'sanitario_hongo'}
     skip_set.update(join_tables)
+    
+    # Excluir tabla de usuarios completamente
+    skip_set.add('usuario')
 
-    # Insertar en tablas principales primero
+    # Definir orden específico de inserción para respetar dependencias FK
+    # Las tablas padre deben insertarse antes que las hijas
+    table_insertion_order = [
+        'hongo', 'maleza', 'semilla', 'lote',  # Tablas base sin dependencias
+        'recibo',  # Depende de lote
+        'dosn', 'germinacion', 'pms', 'pureza', 'pureza_pnotatum', 'sanitario', 'tetrazolio',  # Dependen de recibo
+        'cultivo'  # Depende de dosn
+    ]
+    
+    # Crear un mapa de tablas por nombre
+    tables_by_name = {table.name.lower(): table for table in all_tables}
+    
+    # Insertar tablas en el orden especificado
+    for table_name in table_insertion_order:
+        if table_name in tables_by_name:
+            table = tables_by_name[table_name]
+            name_lower = table.name.lower()
+            
+            if only_set and name_lower not in only_set:
+                continue
+            if name_lower in skip_set:
+                logger.info(f"Saltando tabla {table.name} (en lista de exclusión)")
+                continue
+
+            logger.info(f"Insertando {num_rows} filas en {table.name}...")
+            try:
+                inserted = generate_rows_for_table(engine, table, num_rows)
+                logger.info(f"Tabla {table.name}: {inserted} filas insertadas.")
+            except SQLAlchemyError as e:
+                logger.error(f"Fallo al insertar filas en {table.name}: {e}")
+                continue
+
+    # Insertar cualquier tabla restante que no esté en el orden específico
     for table in all_tables:
         name_lower = table.name.lower()
-        if only_set and name_lower not in only_set:
-            continue
-        if name_lower in skip_set:
-            logger.info(f"Saltando tabla {table.name} (en lista de exclusión)")
-            continue
+        if name_lower not in table_insertion_order:
+            if only_set and name_lower not in only_set:
+                continue
+            if name_lower in skip_set:
+                logger.info(f"Saltando tabla {table.name} (en lista de exclusión)")
+                continue
 
-        # Determinar el número de filas a insertar
-        rows_to_insert = num_rows
-        if name_lower == "usuario":
-            rows_to_insert = 20  # Solo 20 usuarios como se especifica
-            logger.info(f"Tabla {table.name} detectada - limitando a {rows_to_insert} registros")
-
-        logger.info(f"Insertando {rows_to_insert} filas en {table.name}...")
-        try:
-            inserted = generate_rows_for_table(engine, table, rows_to_insert)
-            logger.info(f"Tabla {table.name}: {inserted} filas insertadas.")
-        except SQLAlchemyError:
-            logger.error(f"Fallo al insertar filas en {table.name}. Continuando con la siguiente tabla.")
-            continue
+            logger.info(f"Insertando {num_rows} filas en {table.name}...")
+            try:
+                inserted = generate_rows_for_table(engine, table, num_rows)
+                logger.info(f"Tabla {table.name}: {inserted} filas insertadas.")
+            except SQLAlchemyError as e:
+                logger.error(f"Fallo al insertar filas en {table.name}: {e}")
+                continue
 
     # Manejar tablas de unión al final
     logger.info("Procesando tablas de unión...")
@@ -493,7 +655,7 @@ def _parse_args(argv: List[str]):
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Insertar datos sintéticos en todas las tablas (por defecto 5000 filas por tabla)."
+        description="Insertar datos sintéticos en todas las tablas excepto usuarios (por defecto 5000 filas por tabla)."
     )
     parser.add_argument("--rows", "-r", type=int, default=5000, help="Cantidad de filas por tabla")
     parser.add_argument(
