@@ -1,4 +1,5 @@
-Write-Host "==> Setup simple del middleware (KISS)" -ForegroundColor Cyan
+Write-Host "==> Setup del middleware para InsertTablesHere.py" -ForegroundColor Cyan
+Write-Host "Instalando dependencias: SQLAlchemy, psycopg2-binary, faker, pandas" -ForegroundColor Gray
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -25,25 +26,65 @@ Write-Host "Activando .venv..." -ForegroundColor Cyan
 Write-Host "Actualizando pip..." -ForegroundColor Cyan
 py -m pip install --upgrade pip setuptools wheel
 
-# 4) Instalar dependencias mínimas
+# 4) Instalar dependencias completas para InsertTablesHere.py
 Write-Host "Instalando dependencias..." -ForegroundColor Cyan
-pip install SQLAlchemy psycopg2-binary Faker pandas
+pip install SQLAlchemy psycopg2-binary faker pandas
 
-# 5) Verificación simple
+# 5) Verificación completa de dependencias
 Write-Host "Verificando importaciones..." -ForegroundColor Cyan
 $testCode = @"
 import importlib, sys
 mods = ["sqlalchemy", "psycopg2", "faker", "pandas"]
 for m in mods:
-    importlib.import_module(m)
-print("OK")
+    try:
+        importlib.import_module(m)
+        print(f"✓ {m} - OK")
+    except ImportError as e:
+        print(f"✗ {m} - ERROR: {e}")
+        sys.exit(1)
+print("✓ Todas las dependencias instaladas correctamente")
 "@
 $testCode | py
-if ($LASTEXITCODE -ne 0) { exit 1 }
+if ($LASTEXITCODE -ne 0) { 
+    Write-Error "Error en la verificación de dependencias"
+    exit 1 
+}
 
-Write-Host "Listo. Activa el entorno con:" -ForegroundColor Green
-Write-Host ".\.venv\Scripts\Activate.ps1" -ForegroundColor Yellow
-Write-Host "Y ejecuta: python .\InsertTablesHere.py --rows 5000" -ForegroundColor Yellow
+# 6) Prueba rápida del script InsertTablesHere.py
+Write-Host "Probando InsertTablesHere.py..." -ForegroundColor Cyan
+$testScript = @"
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+try:
+    # Importar las funciones principales del script
+    from InsertTablesHere import get_engine, _fallback_connection_string
+    print("✓ InsertTablesHere.py se puede importar correctamente")
+    
+    # Probar la conexión a la base de datos
+    try:
+        engine = get_engine()
+        print("✓ Conexión a la base de datos exitosa")
+    except Exception as e:
+        print(f"⚠ Advertencia: No se pudo conectar a la base de datos: {e}")
+        print("  Asegúrate de que PostgreSQL esté ejecutándose y la base de datos 'Inia' exista")
+    
+except Exception as e:
+    print(f"✗ Error importando InsertTablesHere.py: {e}")
+    sys.exit(1)
+"@
+
+$testScript | py
+if ($LASTEXITCODE -ne 0) { 
+    Write-Warning "El script InsertTablesHere.py tiene problemas, pero las dependencias están instaladas"
+}
+
+Write-Host "`n=== SETUP COMPLETADO ===" -ForegroundColor Green
+Write-Host "Para usar el middleware:" -ForegroundColor Yellow
+Write-Host "1. Activa el entorno: .\.venv\Scripts\Activate.ps1" -ForegroundColor White
+Write-Host "2. Ejecuta el script: python .\InsertTablesHere.py --rows 5000" -ForegroundColor White
+Write-Host "3. O usa el endpoint: POST /api/pandmiddleware/insertar-datos-masivos" -ForegroundColor White
 
 Pop-Location
 
