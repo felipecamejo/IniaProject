@@ -14,8 +14,9 @@ import { ListadoMalezasComponent } from './components/listado-malezas/listado-ma
 import { ListadoHongosComponent } from './components/listado-hongos/listado-hongos.component';
 import { ListadoCultivosComponent } from './components/listado-cultivos/listado-cultivos.component';
 import { PurezaPNotatumComponent } from './components/pureza-p-notatum/pureza-p-notatum.component';
-import { ListadoPmsComponent } from './components/listado-pms/listado-pms.component';
+//import { ListadoPmsComponent } from './components/listado-pms/listado-pms.component';
 import { GerminacionComponent } from './components/germinacion/germinacion.component';
+import { TetrazolioComponent } from './components/tetrazolio/tetrazolio.component';
 
 export const routes: Routes = [
     { path : 'home', component: HomeComponent },
@@ -31,11 +32,12 @@ export const routes: Routes = [
     { path : 'lote-analisis', component: LoteAnalisisComponent },
     { path : 'pureza-p-notatum', component: PurezaPNotatumComponent },
     { path : 'germinacion', component: GerminacionComponent },
+    { path : 'tetrazolio', component: TetrazolioComponent },
 
     //listados
     { path : 'listado-lotes', component: ListadoLotesComponent },
     { path : 'listado-malezas', component: ListadoMalezasComponent },
     { path : 'listado-hongos', component: ListadoHongosComponent },
     { path : 'listado-cultivos', component: ListadoCultivosComponent },
-    { path : 'listado-pms', component: ListadoPmsComponent },
+   // { path : 'listado-pms', component: ListadoPmsComponent },
 ];
