@@ -49,7 +49,24 @@ public class WebSecurityConfig {
 
                         // Gestión de usuarios: solo ADMIN puede acceder
                         .requestMatchers(antMatcher("/api/v1/usuario/**")).hasAuthority("ADMIN")
-                        .requestMatchers(antMatcher("/api/v1/pms/**")).permitAll()
+                        
+                        // Endpoints del middleware: solo ADMIN puede acceder
+                        .requestMatchers(antMatcher("/api/pandmiddleware/**")).hasAuthority("ADMIN")
+                        
+                        // Endpoints de gestión de datos: solo ADMIN puede acceder
+                        .requestMatchers(antMatcher("/api/v1/pms/**")).hasAuthority("ADMIN")
+                        .requestMatchers(antMatcher("/api/v1/hongo/**")).hasAuthority("ADMIN")
+                        .requestMatchers(antMatcher("/api/v1/germinacion/**")).hasAuthority("ADMIN")
+                        .requestMatchers(antMatcher("/api/v1/DOSN/**")).hasAuthority("ADMIN")
+                        .requestMatchers(antMatcher("/api/v1/pureza/**")).hasAuthority("ADMIN")
+                        .requestMatchers(antMatcher("/api/v1/maleza/**")).hasAuthority("ADMIN")
+                        .requestMatchers(antMatcher("/api/v1/PurezaPNotatum/**")).hasAuthority("ADMIN")
+                        .requestMatchers(antMatcher("/api/v1/Tetrazolio/**")).hasAuthority("ADMIN")
+                        .requestMatchers(antMatcher("/api/v1/Sanitario/**")).hasAuthority("ADMIN")
+                        .requestMatchers(antMatcher("/api/v1/recibo/**")).hasAuthority("ADMIN")
+                        
+                        // Endpoints de lotes: ADMIN, ANALISTA y OBSERVADOR pueden acceder
+                        .requestMatchers(antMatcher("/api/v1/lote/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")
 
                         // Cualquier otra petición requiere autenticación
                         .anyRequest()
@@ -86,8 +103,10 @@ public class WebSecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOriginPattern("http://localhost:*");
         configuration.addAllowedOrigin("https://localhost:8080");
+        configuration.addAllowedOrigin("https://solfuentes-prueba.netlify.app"); // Frontend en producción
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true); // Permitir cookies si es necesario
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

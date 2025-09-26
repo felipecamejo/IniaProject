@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ti.proyectoinia.business.entities.*;
+import ti.proyectoinia.business.repositories.ReciboRepository;
 import ti.proyectoinia.dtos.*;
 
 import java.util.List;
@@ -14,6 +15,24 @@ public class MapsDtoEntityService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private ReciboRepository reciboRepository;
+
+    /**
+     * Método helper para validar y obtener un recibo por ID
+     * @param reciboId ID del recibo a validar
+     * @return Recibo si existe y está activo, null en caso contrario
+     */
+    private Recibo getValidRecibo(Long reciboId) {
+        if (reciboId == null || reciboId <= 0) {
+            return null;
+        }
+        
+        return reciboRepository.findById(reciboId)
+            .filter(Recibo::isActivo)
+            .orElse(null);
+    }
 
     public HongoDto mapToDtoHongo(Hongo hongo) {
         if (hongo == null) {
@@ -143,13 +162,9 @@ public class MapsDtoEntityService {
         germinacion.setFechaCreacion(dto.getFechaCreacion());
         germinacion.setFechaRepeticion(dto.getFechaRepeticion());
 
-        if (dto.getReciboId() != null) {
-            Recibo recibo = new Recibo();
-            recibo.setId(dto.getReciboId());
-            germinacion.setRecibo(recibo);
-        } else {
-            germinacion.setRecibo(null);
-        }
+        // Validar y obtener el recibo si existe
+        Recibo recibo = getValidRecibo(dto.getReciboId());
+        germinacion.setRecibo(recibo);
 
 
         return germinacion;
@@ -297,13 +312,9 @@ public class MapsDtoEntityService {
         sanitario.setFechaCreacion(sanitarioDto.getFechaCreacion());
         sanitario.setFechaRepeticion(sanitarioDto.getFechaRepeticion());
 
-        if (sanitarioDto.getReciboId() != null) {
-            Recibo recibo = new Recibo();
-            recibo.setId(sanitarioDto.getReciboId());
-            sanitario.setRecibo(recibo);
-        } else {
-            sanitario.setRecibo(null);
-        }
+        // Validar y obtener el recibo si existe
+        Recibo recibo = getValidRecibo(sanitarioDto.getReciboId());
+        sanitario.setRecibo(recibo);
 
         // Traducción de IDs a entidades SanitarioHongo
         if (sanitarioDto.getSanitarioHongoids() != null) {
@@ -364,13 +375,9 @@ public class MapsDtoEntityService {
         pms.setFechaCreacion(pmsDto.getFechaCreacion());
         pms.setFechaRepeticion(pmsDto.getFechaRepeticion());
 
-        if (pmsDto.getReciboId() != null) {
-            Recibo recibo = new Recibo();
-            recibo.setId(pmsDto.getReciboId());
-            pms.setRecibo(recibo);
-        } else {
-            pms.setRecibo(null);
-        }
+        // Validar y obtener el recibo si existe
+        Recibo recibo = getValidRecibo(pmsDto.getReciboId());
+        pms.setRecibo(recibo);
         return pms;
     }
 
@@ -432,13 +439,9 @@ public class MapsDtoEntityService {
         pureza.setFechaCreacion(dto.getFechaCreacion());
         pureza.setFechaRepeticion(dto.getFechaRepeticion());
 
-        if (dto.getReciboId() != null) {
-            Recibo recibo = new Recibo();
-            recibo.setId(dto.getReciboId());
-            pureza.setRecibo(recibo);
-        } else {
-            pureza.setRecibo(null);
-        }
+        // Validar y obtener el recibo si existe
+        Recibo recibo = getValidRecibo(dto.getReciboId());
+        pureza.setRecibo(recibo);
 
         return pureza;
     }
@@ -501,6 +504,29 @@ public class MapsDtoEntityService {
         usuarioDto.setEmail(usuario.getEmail());
         usuarioDto.setNombre(usuario.getNombre());
         usuarioDto.setPassword(usuario.getPassword());
+        usuarioDto.setRol(usuario.getRol());
+        usuarioDto.setActivo(usuario.isActivo());
+
+        if (usuario.getLotes() != null) {
+            usuarioDto.setLotesId(usuario.getLotes().stream().map(Lote::getId).collect(Collectors.toList()));
+        } else {
+            usuarioDto.setLotesId(null);
+        }
+
+        return usuarioDto;
+    }
+
+    public UsuarioDto mapToDtoUsuarioSinPassword(Usuario usuario) {
+        if (usuario == null) {
+            return null;
+        }
+
+        UsuarioDto usuarioDto = new UsuarioDto();
+        usuarioDto.setId(usuario.getId());
+        usuarioDto.setEmail(usuario.getEmail());
+        usuarioDto.setNombre(usuario.getNombre());
+        // NO incluir password por seguridad
+        usuarioDto.setPassword(null);
         usuarioDto.setRol(usuario.getRol());
         usuarioDto.setActivo(usuario.isActivo());
 
@@ -717,13 +743,9 @@ public class MapsDtoEntityService {
         pureza.setFechaCreacion(dto.getFechaCreacion());
         pureza.setFechaRepeticion(dto.getFechaRepeticion());
 
-        if (dto.getReciboId() != null) {
-            Recibo recibo = new Recibo();
-            recibo.setId(dto.getReciboId());
-            pureza.setRecibo(recibo);
-        } else {
-            pureza.setRecibo(null);
-        }
+        // Validar y obtener el recibo si existe
+        Recibo recibo = getValidRecibo(dto.getReciboId());
+        pureza.setRecibo(recibo);
 
         return pureza;
     }

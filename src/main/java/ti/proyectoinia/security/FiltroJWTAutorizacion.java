@@ -20,8 +20,6 @@ public class FiltroJWTAutorizacion extends OncePerRequestFilter {
             "/api/seguridad",            // Todas las rutas de seguridad son públicas (startsWith)
             "/api/seguridad/login",
             "/api/seguridad/register",
-            "/api/v1/DOSN",
-            "/api/v1/pms",
             "/v3/api-docs",
             "/swagger-ui",
             "/swagger-resources",

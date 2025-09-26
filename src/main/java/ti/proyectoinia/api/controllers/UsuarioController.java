@@ -10,6 +10,8 @@ import ti.proyectoinia.api.responses.ResponseListadoUsuarios;
 import ti.proyectoinia.dtos.UsuarioDto;
 import ti.proyectoinia.services.UsuarioService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping({"api/v1/usuario"})
 public class UsuarioController {
@@ -26,13 +28,7 @@ public class UsuarioController {
     @Operation(
             description = "Esta Funcion crea un nuevo Usuario"
     )
-    public ResponseEntity<?> crearUsuario(@RequestBody UsuarioDto usuarioDto) {
-        if (usuarioDto.getEmail() == null || usuarioDto.getEmail().trim().isEmpty()) {
-            return new ResponseEntity<>("El email del Usuario es obligatorio", HttpStatus.BAD_REQUEST);
-        }
-        if (usuarioDto.getRol() == null) {
-            return new ResponseEntity<>("El rol del Usuario es obligatorio", HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<?> crearUsuario(@Valid @RequestBody UsuarioDto usuarioDto) {
         usuarioDto.setId(null); // ID será generado automáticamente
         String mensaje = this.usuarioService.crearUsuario(usuarioDto);
         return new ResponseEntity<>(mensaje, HttpStatus.CREATED);
@@ -47,11 +43,10 @@ public class UsuarioController {
     
     @Secured({"ADMIN"})
     @PutMapping({"/editar"})
-    
-    public ResponseEntity<String> editarUsuario(@RequestBody UsuarioDto usuarioDto) {
-        if (usuarioDto.getRol() == null) {
-            return new ResponseEntity<>("El rol del Usuario es obligatorio", HttpStatus.BAD_REQUEST);
-        }
+    @Operation(
+            description = "Esta Funcion edita un Usuario existente"
+    )
+    public ResponseEntity<String> editarUsuario(@Valid @RequestBody UsuarioDto usuarioDto) {
         String result = this.usuarioService.editarUsuario(usuarioDto);
         return ResponseEntity.ok(result);
     }

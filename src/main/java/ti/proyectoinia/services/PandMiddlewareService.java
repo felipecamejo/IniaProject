@@ -55,17 +55,56 @@ public class PandMiddlewareService {
      * Inserta 5000 registros en todas las tablas excepto usuarios (20 registros).
      */
     public String ejecutarInsertarDatosMasivos() {
-        List<String> command = buildPythonCommand();
+        return ejecutarInsertarDatosMasivos(5000);
+    }
 
-        Path scriptPath = Paths.get(System.getProperty("user.dir"), "Middleware", "InsertTablesHere.py");
+    /**
+     * Ejecuta el script InsertTablesHere.py para insertar datos masivos con cantidad personalizada.
+     * @param numRows Número de registros a insertar por tabla
+     */
+    public String ejecutarInsertarDatosMasivos(int numRows) {
+        List<String> command = buildPythonCommandWithVenv();
+
+        Path scriptPath = Paths.get(System.getProperty("user.dir"), "middleware", "InsertTablesHere.py");
         if (!scriptPath.toFile().exists()) {
             return "No se encontró el script: " + scriptPath;
         }
 
         command.add(scriptPath.toString());
         command.add("--rows");
-        command.add("5000");
-        // No skip usuario table - the Python script will handle limiting it to 20 records
+        command.add(String.valueOf(numRows));
+
+        return runProcess(command, scriptPath.getParent().toFile());
+    }
+
+    /**
+     * Ejecuta el script InsertTablesHere.py con parámetros personalizados.
+     * @param numRows Número de registros a insertar por tabla
+     * @param onlyTables Lista de tablas específicas (separadas por comas)
+     * @param skipTables Lista de tablas a excluir (separadas por comas)
+     */
+    public String ejecutarInsertScriptConParametros(int numRows, String onlyTables, String skipTables) {
+        List<String> command = buildPythonCommandWithVenv();
+
+        Path scriptPath = Paths.get(System.getProperty("user.dir"), "middleware", "InsertTablesHere.py");
+        if (!scriptPath.toFile().exists()) {
+            return "No se encontró el script: " + scriptPath;
+        }
+
+        command.add(scriptPath.toString());
+        command.add("--rows");
+        command.add(String.valueOf(numRows));
+
+        // Agregar parámetros opcionales
+        if (onlyTables != null && !onlyTables.trim().isEmpty()) {
+            command.add("--only");
+            command.add(onlyTables.trim());
+        }
+
+        if (skipTables != null && !skipTables.trim().isEmpty()) {
+            command.add("--skip");
+            command.add(skipTables.trim());
+        }
 
         return runProcess(command, scriptPath.getParent().toFile());
     }
@@ -79,6 +118,37 @@ public class PandMiddlewareService {
             pythonExecutable = osName.contains("win") ? "py" : "python";
         }
         command.add(pythonExecutable);
+        return command;
+    }
+
+    /**
+     * Construye el comando Python usando el entorno virtual del middleware.
+     * Esto asegura que se usen las dependencias correctas instaladas por SetupMiddleware.ps1
+     */
+    private List<String> buildPythonCommandWithVenv() {
+        List<String> command = new ArrayList<>();
+        String osName = System.getProperty("os.name", "").toLowerCase();
+        
+        if (osName.contains("win")) {
+            // En Windows, usar el Python del entorno virtual
+            Path venvPython = Paths.get(System.getProperty("user.dir"), "middleware", ".venv", "Scripts", "python.exe");
+            if (venvPython.toFile().exists()) {
+                command.add(venvPython.toString());
+            } else {
+                // Fallback a py si no existe el venv
+                command.add("py");
+            }
+        } else {
+            // En Linux/Mac, usar el Python del entorno virtual
+            Path venvPython = Paths.get(System.getProperty("user.dir"), "middleware", ".venv", "bin", "python");
+            if (venvPython.toFile().exists()) {
+                command.add(venvPython.toString());
+            } else {
+                // Fallback a python si no existe el venv
+                command.add("python");
+            }
+        }
+        
         return command;
     }
 

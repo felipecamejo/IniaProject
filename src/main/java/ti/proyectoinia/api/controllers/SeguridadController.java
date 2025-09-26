@@ -83,78 +83,51 @@ public class SeguridadController {
         return token;
     }
     
-    @PostMapping("/create-test-user")
-    @Operation(summary = "Crear usuario de prueba", description = "Crea un usuario de prueba para testing")
-    public ResponseEntity<String> crearUsuarioPrueba() {
+    @PostMapping("/create-test-users")
+    @Operation(summary = "Crear usuarios de prueba", description = "Crea 5 usuarios de prueba: 1 ADMIN, 1 ANALISTA, 2 OBSERVADORES")
+    public ResponseEntity<String> crearUsuariosPrueba() {
         try {
-            // Verificar si ya existe
-            if (usuarioRepository.findByEmail("admin@inia.com").isPresent()) {
-                return ResponseEntity.ok("Usuario de prueba ya existe: admin@inia.com / password123");
+            StringBuilder resultado = new StringBuilder();
+            int usuariosCreados = 0;
+            int usuariosExistentes = 0;
+            
+            // Definir usuarios a crear
+            List<Usuario> usuariosParaCrear = List.of(
+                crearUsuario("admin@inia.com", "Administrador", RolUsuario.ADMIN),
+                crearUsuario("analista@inia.com", "Analista", RolUsuario.ANALISTA),
+                crearUsuario("observador1@inia.com", "Observador 1", RolUsuario.OBSERVADOR),
+                crearUsuario("observador2@inia.com", "Observador 2", RolUsuario.OBSERVADOR)
+            );
+            
+            // Crear usuarios
+            for (Usuario usuario : usuariosParaCrear) {
+                if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
+                    resultado.append("Usuario ya existe: ").append(usuario.getEmail()).append("\n");
+                    usuariosExistentes++;
+                } else {
+                    usuarioRepository.save(usuario);
+                    resultado.append("Usuario creado: ").append(usuario.getEmail()).append(" / password123\n");
+                    usuariosCreados++;
+                }
             }
             
-            Usuario usuario = new Usuario();
-            usuario.setEmail("admin@inia.com");
-            usuario.setNombre("Administrador");
-            usuario.setPassword(passwordEncoder.encode("password123"));
-            usuario.setActivo(true);
-            usuario.setRol(RolUsuario.ADMIN);
+            resultado.append("\nResumen: ").append(usuariosCreados).append(" usuarios creados, ")
+                    .append(usuariosExistentes).append(" ya existían");
             
-            usuarioRepository.save(usuario);
-            
-            return ResponseEntity.ok("Usuario de prueba creado: admin@inia.com / password123");
+            return ResponseEntity.ok(resultado.toString());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error creando usuario: " + e.getMessage());
+                    .body("Error creando usuarios: " + e.getMessage());
         }
     }
-
-    @PostMapping("/create-test-analista")
-    @Operation(summary = "Crear usuario ANALISTA de prueba", description = "Crea un usuario con rol ANALISTA para testing")
-    public ResponseEntity<String> crearUsuarioAnalistaPrueba() {
-        try {
-            String email = "analista@inia.com";
-            if (usuarioRepository.findByEmail(email).isPresent()) {
-                return ResponseEntity.ok("Usuario de prueba ya existe: " + email + " / password123");
-            }
-
-            Usuario usuario = new Usuario();
-            usuario.setEmail(email);
-            usuario.setNombre("Analista");
-            usuario.setPassword(passwordEncoder.encode("password123"));
-            usuario.setActivo(true);
-            usuario.setRol(RolUsuario.ANALISTA);
-
-            usuarioRepository.save(usuario);
-
-            return ResponseEntity.ok("Usuario de prueba creado: " + email + " / password123");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error creando usuario: " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/create-test-observador")
-    @Operation(summary = "Crear usuario OBSERVADOR de prueba", description = "Crea un usuario con rol OBSERVADOR para testing")
-    public ResponseEntity<String> crearUsuarioObservadorPrueba() {
-        try {
-            String email = "observador@inia.com";
-            if (usuarioRepository.findByEmail(email).isPresent()) {
-                return ResponseEntity.ok("Usuario de prueba ya existe: " + email + " / password123");
-            }
-
-            Usuario usuario = new Usuario();
-            usuario.setEmail(email);
-            usuario.setNombre("Observador");
-            usuario.setPassword(passwordEncoder.encode("password123"));
-            usuario.setActivo(true);
-            usuario.setRol(RolUsuario.OBSERVADOR);
-
-            usuarioRepository.save(usuario);
-
-            return ResponseEntity.ok("Usuario de prueba creado: " + email + " / password123");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error creando usuario: " + e.getMessage());
-        }
+    
+    private Usuario crearUsuario(String email, String nombre, RolUsuario rol) {
+        Usuario usuario = new Usuario();
+        usuario.setEmail(email);
+        usuario.setNombre(nombre);
+        usuario.setPassword(passwordEncoder.encode("password123"));
+        usuario.setActivo(true);
+        usuario.setRol(rol);
+        return usuario;
     }
 }

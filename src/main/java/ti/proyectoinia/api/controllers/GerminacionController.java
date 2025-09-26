@@ -23,7 +23,7 @@ public class GerminacionController {
     }
 
     @PostMapping({"/crear"})
-    //@Secured({"ADMIN"})
+    @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion crea una nueva germinacion"
     )
@@ -34,6 +34,7 @@ public class GerminacionController {
     }
 
     @GetMapping({"/{id}"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<?> getGerminacionPorId(@PathVariable Long id) {
         GerminacionDto hongoDto = this.germinacionService.obtenerGerminacionPorId(id);
         if (hongoDto != null) {
@@ -44,14 +45,14 @@ public class GerminacionController {
     }
 
     @PutMapping({"/editar"})
-    //@Secured({"ADMIN"})
+    @Secured({"ADMIN"})
     public ResponseEntity<String> editarGerminacion(@RequestBody GerminacionDto germinacionDto) {
         String result = this.germinacionService.editarGerminacion(germinacionDto);
         return ResponseEntity.ok(result);
     }
 
     @PutMapping({"/eliminar/{id}"})
-    //@Secured({"ADMIN"})
+    @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina una germinacion"
     )
@@ -65,6 +66,7 @@ public class GerminacionController {
     }
 
     @GetMapping("/listar/recibo/{id}")
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(description = "Lista todas las germinaciones activas asociadas a un recibo específico")
     public ResponseEntity<ResponseListadoGerminacion> listarGerminacionesPorRecibo(@PathVariable("id") Long id) {
         return germinacionService.listarGerminacionesPorRecibo(id);

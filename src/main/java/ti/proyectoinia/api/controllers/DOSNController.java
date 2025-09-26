@@ -24,7 +24,7 @@ public class DOSNController {
     }
 
     @PostMapping({"/crear"})
-    //@Secured({"ADMIN"})
+    @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion crea una nueva DOSN"
     )
@@ -35,6 +35,7 @@ public class DOSNController {
     }
 
     @GetMapping({"/{id}"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<?> getDOSNPorId(@PathVariable Long id) {
         DOSNDto dosnDto = this.DOSNService.obtenerDOSNPorId(id);
         if (dosnDto != null) {
@@ -45,14 +46,14 @@ public class DOSNController {
     }
 
     @PutMapping({"/editar"})
-    //@Secured({"ADMIN"})
+    @Secured({"ADMIN"})
     public ResponseEntity<String> editarDOSN(@RequestBody DOSNDto dosnDto) {
         String result = this.DOSNService.editarDOSN(dosnDto);
         return ResponseEntity.ok(result);
     }
 
     @PutMapping({"/eliminar/{id}"})
-    //@Secured({"ADMIN"})
+    @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina una DOSN"
     )
@@ -66,6 +67,7 @@ public class DOSNController {
     }
 
     @GetMapping("/listar/recibo/{id}")
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(description = "Lista todas los Dosn activos asociadas a un recibo específico")
     public ResponseEntity<ResponseListadoDOSN> listarDosnPorRecibo(@PathVariable("id") Long id) {
         return DOSNService.listadoDOSNporRecibo(id);

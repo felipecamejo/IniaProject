@@ -41,11 +41,13 @@ public class LoteController {
     }
 
     @GetMapping({"/listar"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<ResponseListadoLotes> getLotes() {
         return this.loteService.listadoLotes();
     }
 
     @GetMapping({"/{id}"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<?> getLoteById(@PathVariable Long id) {
         LoteDto loteDto = this.loteService.obtenerLotePorId(id);
         if (loteDto != null) {

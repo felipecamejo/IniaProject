@@ -35,6 +35,7 @@ public class SanitarioController {
     }
 
     @GetMapping({"/{id}"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<?> getSanitarioById(@PathVariable Long id) {
         SanitarioDto sanitarioDto = this.sanitarioService.obtenerSanitarioPorId(id);
         if (sanitarioDto != null) {
@@ -66,6 +67,7 @@ public class SanitarioController {
     }
 
     @GetMapping("/listar/recibo/{id}")
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(description = "Lista todas los Sanitarios activos asociados a un recibo específico")
     public ResponseEntity<ResponseListadoSanitario> listarSanitarioPorRecibo(@PathVariable("id") Long id) {
         return this.sanitarioService.listadoSanitarioPorReciboId(id);

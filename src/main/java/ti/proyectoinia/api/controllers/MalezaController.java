@@ -42,12 +42,14 @@ public class MalezaController {
     }
 
     @GetMapping({"/listar"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<ResponseListadoMalezas> getMaleza() {
         ResponseListadoMalezas response = this.MalezaService.listadoMalezas().getBody();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping({"/{id}"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<?> getMalezasById(@PathVariable Long id) {
         MalezaDto malezaDto = this.MalezaService.obtenerMalezaPorId(id);
         if (malezaDto != null) {

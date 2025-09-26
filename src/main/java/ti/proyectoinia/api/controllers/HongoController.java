@@ -22,7 +22,7 @@ public class HongoController {
     }
 
     @PostMapping({"/crear"})
-    //@Secured({"ADMIN"})
+    @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion crea un nuevo Hongo"
     )
@@ -41,12 +41,14 @@ public class HongoController {
     }
 
     @GetMapping({"/listar"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<ResponseListadoHongos> getHongos() {
         ResponseListadoHongos response = this.hongoService.listadoHongos().getBody();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping({"/{id}"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<?> getHongoById(@PathVariable Long id) {
         HongoDto hongoDto = this.hongoService.obtenerHongoPorId(id);
         if (hongoDto != null) {

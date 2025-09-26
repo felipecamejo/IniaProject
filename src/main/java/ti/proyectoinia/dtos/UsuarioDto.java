@@ -4,6 +4,9 @@ import lombok.Data;
 import lombok.Generated;
 import ti.proyectoinia.business.entities.RolUsuario;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
@@ -11,12 +14,16 @@ public class UsuarioDto {
 
     private Long id;
 
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El email debe tener un formato válido")
     private String email;
 
+    @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
 
     private String password;
 
+    @NotNull(message = "El rol es obligatorio")
     private RolUsuario rol;
 
     private boolean activo;
