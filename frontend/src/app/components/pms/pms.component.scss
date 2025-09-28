@@ -1,14 +1,43 @@
 // Los estilos de .form-grid y .submit-btn se importan desde styles.scss
 
+// Estilos específicos para el checkbox en el formulario PMS
+.form-field {
+  label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    
+    input[type="checkbox"] {
+      margin-right: 12px;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--verde);
+      cursor: pointer;
+    }
+    
+    span {
+      font-size: 14px;
+      color: #333;
+      user-select: none;
+      font-weight: 500;
+    }
+  }
+}
+
 .submit-btn {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  
   ::ng-deep .p-button {
     background: var(--verde) !important;
     background-color: var(--verde) !important;
     border: 1px solid var(--verde) !important;
-    border-radius: 25px !important;
+    border-radius: 20px !important;
     font-weight: 600 !important;
-    width: 100% !important;
-    padding: 0.75rem 1.5rem !important;
+    width: auto !important;
+    min-width: 120px !important;
+    padding: 0.5rem 1rem !important;
     color: white !important;
     font-family: var(--font-main) !important;
     transition: all 0.2s ease !important;
@@ -45,6 +74,32 @@
       background-color: var(--verde) !important;
       border-color: var(--verde) !important;
       filter: brightness(0.85) !important;
+    }
+  }
+
+  ::ng-deep .p-button-secondary {
+    background: #6c757d !important;
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    color: white !important;
+
+    &:hover {
+      background: #5a6268 !important;
+      background-color: #5a6268 !important;
+      border-color: #5a6268 !important;
+    }
+
+    &:focus {
+      background: #5a6268 !important;
+      background-color: #5a6268 !important;
+      border-color: #5a6268 !important;
+      box-shadow: 0 0 0 2px rgba(108, 117, 125, 0.25) !important;
+    }
+
+    &:active {
+      background: #545b62 !important;
+      background-color: #545b62 !important;
+      border-color: #545b62 !important;
     }
   }
 }

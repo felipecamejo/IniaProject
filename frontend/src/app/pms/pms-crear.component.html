@@ -1,0 +1,29 @@
+<form [formGroup]="pmsForm" (ngSubmit)="crearPMS()">
+  <label>Peso Mil Semillas:</label>
+  <input formControlName="pesoMilSemillas" type="number" required>
+
+  <label>Humedad Porcentual:</label>
+  <input formControlName="humedadPorcentual" type="number" required>
+
+  <label>Fecha Medición:</label>
+  <input formControlName="fechaMedicion" type="date" required>
+
+  <label>Método:</label>
+  <input formControlName="metodo" type="text" required>
+
+  <label>Observaciones:</label>
+  <input formControlName="observaciones" type="text">
+
+  <label>Activo:</label>
+  <input formControlName="activo" type="checkbox">
+
+  <label>Repetido:</label>
+  <input formControlName="repetido" type="checkbox">
+
+  <label>Recibo ID:</label>
+  <input formControlName="reciboId" type="number" required>
+
+  <button type="submit" [disabled]="!pmsForm.valid">Crear PMS</button>
+</form>
+<div *ngIf="mensaje">{{ mensaje }}</div>
+

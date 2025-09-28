@@ -1,7 +1,12 @@
 <div class="container">
+  <!-- Botón de navegación hacia atrás -->
+  <button class="back-button" (click)="onCancel()">
+    <i class="pi pi-arrow-left"></i>
+  </button>
+  
   <p-card class="card">
     <ng-template pTemplate="header">
-      <h2 class="title">PMS</h2>
+      <h2 class="title">{{ isEditing ? 'Editar PMS' : 'Crear PMS' }}</h2>
     </ng-template>
 
     <form (ngSubmit)="onSubmit()">
@@ -41,14 +46,33 @@
           ></textarea>
         </div>
 
+        <!-- Checkbox Repetido - solo visible al editar -->
+        <div class="form-field" *ngIf="isEditing">
+          <label>
+            <input 
+              type="checkbox" 
+              [(ngModel)]="repetido" 
+              name="repetido"
+            />
+            <span>Repetir</span>
+          </label>
+        </div>
+
       </div>
 
       <div class="submit-btn">
         <button
           pButton
           type="submit"
-          [label]="itemEditando ? 'Actualizar PMS' : 'Crear PMS'"
+          [label]="isEditing ? 'Actualizar PMS' : 'Crear PMS'"
           class="p-button-success"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Cancelar"
+          class="p-button-secondary"
+          (click)="onCancel()"
         ></button>
       </div>
     </form>
