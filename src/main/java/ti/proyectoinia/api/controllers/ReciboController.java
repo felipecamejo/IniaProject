@@ -33,6 +33,7 @@ public class ReciboController {
     }
 
     @GetMapping({"/{id}"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<?> getReciboById(@PathVariable Long id) {
         ReciboDto reciboDto = this.reciboService.obtenerReciboPorId(id);
         if (reciboDto != null) {

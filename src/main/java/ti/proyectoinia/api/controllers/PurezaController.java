@@ -34,6 +34,7 @@ public class PurezaController {
     }
 
     @GetMapping({"/{id}"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<?> getPurezaById(@PathVariable Long id) {
         PurezaDto purezaDto = this.purezaService.obtenerPurezaPorId(id);
         if (purezaDto != null) {
@@ -65,6 +66,7 @@ public class PurezaController {
     }
 
     @GetMapping("/listar/recibo/{id}")
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(description = "Lista todas las Purezas activas asociadas a un recibo específico")
     public ResponseEntity<ResponseListadoPurezas> listarPurezaPorRecibo(@PathVariable("id") Long id) {
         return this.purezaService.listadoPurezasPorRecibo(id);

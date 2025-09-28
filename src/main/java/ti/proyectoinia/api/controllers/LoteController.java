@@ -22,7 +22,7 @@ public class LoteController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(
             description = "Esta Funcion crea un nuevo Lote"
     )
@@ -41,11 +41,13 @@ public class LoteController {
     }
 
     @GetMapping({"/listar"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<ResponseListadoLotes> getLotes() {
         return this.loteService.listadoLotes();
     }
 
     @GetMapping({"/{id}"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<?> getLoteById(@PathVariable Long id) {
         LoteDto loteDto = this.loteService.obtenerLotePorId(id);
         if (loteDto != null) {
@@ -56,7 +58,7 @@ public class LoteController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<String> editarLote(@RequestBody LoteDto loteDto) {
         String result = this.loteService.editarLote(loteDto);
         return ResponseEntity.ok(result);

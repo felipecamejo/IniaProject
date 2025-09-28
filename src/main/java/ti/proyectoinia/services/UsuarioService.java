@@ -28,7 +28,7 @@ public class UsuarioService {
         if (usuario == null || !usuario.isActivo()) {
             return null;
         }
-        return mapsDtoEntityService.mapToDtoUsuario(usuario);
+        return mapsDtoEntityService.mapToDtoUsuarioSinPassword(usuario);  // ✅ Sin contraseña por seguridad
     }
 
     public String eliminarUsuario(Long id) {
@@ -64,7 +64,7 @@ public class UsuarioService {
     public ResponseEntity<ResponseListadoUsuarios> listadoUsuarios() {
         var usuariosActivos = this.usuarioRepository.findByActivoTrue();
         var usuariosDto = usuariosActivos.stream()
-                .map(mapsDtoEntityService::mapToDtoUsuario)
+                .map(mapsDtoEntityService::mapToDtoUsuarioSinPassword)  // ✅ Sin contraseña por seguridad
                 .toList();
         ResponseListadoUsuarios responseListadoUsuarios = new ResponseListadoUsuarios(usuariosDto);
         return ResponseEntity.ok(responseListadoUsuarios);

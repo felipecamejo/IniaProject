@@ -34,6 +34,7 @@ public class TetrazolioController {
     }
 
     @GetMapping({"/{id}"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<?> getTetrazolioPorId(@PathVariable Long id) {
         TetrazolioDto tetrazolioDto = this.tetrazolioService.obtenerTetrazolioPorId(id);
         if (tetrazolioDto != null) {
@@ -65,6 +66,7 @@ public class TetrazolioController {
     }
 
     @GetMapping("/listar/recibo/{id}")
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(description = "Lista todas los Tetrazolios activos asociados a un recibo específico")
     public ResponseEntity<ResponseListadoTetrazolio> listarTetrazolioPorRecibo(@PathVariable("id") Long id) {
         return this.tetrazolioService.listadoTetrazolioPorReciboId(id);

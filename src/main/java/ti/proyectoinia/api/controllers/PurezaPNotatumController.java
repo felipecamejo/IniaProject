@@ -35,6 +35,7 @@ public class PurezaPNotatumController {
     }
 
     @GetMapping({"/{id}"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<?> getPurezaPNotatumPorId(@PathVariable Long id) {
         PurezaPNotatumDto purezaPNotatumDto = this.purezaPNotatumService.obtenerPurezaPNotatumPorId(id);
         if (purezaPNotatumDto != null) {
@@ -66,6 +67,7 @@ public class PurezaPNotatumController {
     }
 
     @GetMapping("/listar/recibo/{id}")
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(description = "Lista todas las PurezasPNotatum activas asociadas a un recibo específico")
     public ResponseEntity<ResponseListadoPurezaPNotatum> listarPurezaPNotatumPorRecibo(@PathVariable("id") Long id) {
         return this.purezaPNotatumService.listadoPurezaPNotatumporRecibo(id);
