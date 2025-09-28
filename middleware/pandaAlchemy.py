@@ -56,8 +56,8 @@ def build_connection_string():
 Base = declarative_base()
 
 # Definir la estructura de la tabla basada en el Excel
-class MiTalbla(Base):
-    __tablename__ = 'mi_talbla'
+class MiTabla(Base):
+    __tablename__ = 'mi_tabla'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     segment = Column(String(100), nullable=True)
@@ -181,8 +181,8 @@ def insertar_datos_desde_excel(archivo_excel):
         # Eliminar filas totalmente vacías
         df = df.dropna(how='all')
 
-        # Insertar datos usando pandas en la tabla mi_talbla
-        df.to_sql('mi_talbla', engine, if_exists='append', index=False)
+        # Insertar datos usando pandas en la tabla mi_tabla
+        df.to_sql('mi_tabla', engine, if_exists='append', index=False)
         logger.info("Datos insertados correctamente")
         
         return True
@@ -194,6 +194,13 @@ def insertar_datos_desde_excel(archivo_excel):
 def consultar_datos():
     """Consultar datos de la tabla"""
     try:
+        # Importar pandas para la consulta
+        try:
+            import pandas as pd  # type: ignore
+        except ModuleNotFoundError:
+            logger.error("Falta el paquete 'pandas'. Instálalo con: pip install pandas")
+            return None
+            
         connection_string = build_connection_string()
         engine = create_engine(connection_string)
         
