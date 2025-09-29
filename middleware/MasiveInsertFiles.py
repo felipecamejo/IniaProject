@@ -17,6 +17,22 @@ except ModuleNotFoundError:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Colores ANSI para logs en consola
+GREEN = "\033[92m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
+CYAN = "\033[96m"
+RESET = "\033[0m"
+
+def log_ok(message: str):
+    logger.info(f"{GREEN}✅ {message}{RESET}")
+
+def log_fail(message: str):
+    logger.error(f"{RED}❌ {message}{RESET}")
+
+def log_step(message: str):
+    logger.info(f"{CYAN}{message}{RESET}")
+
 # ================================
 # Configuración inline por defecto
 # ================================
@@ -269,8 +285,7 @@ class Tetrazolio(Base):
     tetrazolio_viables = Column(Float, nullable=True)
     recibo_id = Column(BigInteger, nullable=True)
     tetrazolio_repetido = Column(Boolean, nullable=True)
-    tetrazolio_fecha_creacion = Column(DateTime, nullable=True)
-    tetrazolio_fecha_repeticion = Column(DateTime, nullable=True)
+
 
 class UsuarioLote(Base):
     __tablename__ = 'usuario_lote'
@@ -450,6 +465,313 @@ def obtener_tipos_hongo_permitidos(engine):
     except Exception:
         return []
     
+def obtener_valores_check(engine, tabla: str, columna: str) -> list:
+    """Devuelve valores permitidos por un CHECK de enumeración en PostgreSQL.
+    Busca definiciones ARRAY[...] o IN(...). Retorna lista en mayúsculas o [].
+    """
+    try:
+        with engine.connect() as conn:
+            sql = text(
+                """
+                SELECT pg_get_constraintdef(c.oid) AS def
+                FROM pg_constraint c
+                JOIN pg_class t ON t.oid = c.conrelid
+                JOIN pg_namespace n ON n.oid = t.relnamespace
+                WHERE n.nspname = 'public'
+                  AND t.relname = :tabla
+                  AND c.contype = 'c'
+                  AND c.conname ILIKE :columna_like
+                LIMIT 1
+                """
+            )
+            row = conn.execute(sql, {"tabla": tabla, "columna_like": f"%{columna}%"}).fetchone()
+            if not row or not row[0]:
+                return []
+            definition = row[0]
+            m = re.search(r"ARRAY\[(.*?)\]", definition)
+            values_blob = m.group(1) if m else None
+            if not values_blob:
+                m = re.search(r"\bIN\s*\((.*?)\)", definition, re.IGNORECASE)
+                values_blob = m.group(1) if m else None
+            if not values_blob:
+                return []
+            parts = re.findall(r"'([^']+)'", values_blob)
+            return [p.upper() for p in parts]
+    except Exception:
+        return []
+    
+# ================================
+# Inserciones separadas por análisis
+# ================================
+
+def insert_pms(session, recibos):
+    try:
+        log_step("➡️ Insertando PMS...")
+        pms_list = []
+        for i in range(15):
+            pms = Pms(
+                pms_activo=True,
+                fecha_medicion=generar_fecha_aleatoria(30),
+                humedad_porcentual=round(random.uniform(8.0, 15.0), 2),
+                metodo=random.choice(DATOS_MUESTRA['metodos']),
+                observaciones=random.choice(DATOS_MUESTRA['observaciones']),
+                peso_mil_semillas=round(random.uniform(20.0, 50.0), 2),
+                recibo_id=random.choice([r.recibo_id for r in recibos]),
+                pms_repetido=random.choice([True, False])
+            )
+            pms_list.append(pms)
+        session.add_all(pms_list)
+        session.flush()
+        session.commit()
+        log_ok(f"PMS insertados: {len(pms_list)}")
+        return pms_list
+    except Exception as e:
+        session.rollback()
+        log_fail(f"Error insertando PMS: {e}")
+        return []
+
+def insert_pureza(session, recibos):
+    try:
+        log_step("➡️ Insertando Pureza...")
+        purezas = []
+        for i in range(18):
+            pureza = Pureza(
+                pureza_activo=True,
+                estandar=random.choice([True, False]),
+                fecha=generar_fecha_aleatoria(30),
+                fecha_estandar=generar_fecha_aleatoria(25),
+                malezas=round(random.uniform(0.0, 5.0), 2),
+                malezas_toleradas=round(random.uniform(0.0, 2.0), 2),
+                material_inerte=round(random.uniform(0.0, 3.0), 2),
+                otros_cultivo=round(random.uniform(0.0, 2.0), 2),
+                otros_cultivos=round(random.uniform(0.0, 2.0), 2),
+                peso_inicial=round(random.uniform(50.0, 200.0), 2),
+                peso_total=round(random.uniform(45.0, 195.0), 2),
+                semilla_pura=round(random.uniform(90.0, 99.0), 2),
+                recibo_id=random.choice([r.recibo_id for r in recibos]),
+                pureza_repetido=random.choice([True, False])
+            )
+            purezas.append(pureza)
+        session.add_all(purezas)
+        session.flush()
+        session.commit()
+        log_ok(f"Purezas insertadas: {len(purezas)}")
+        return purezas
+    except Exception as e:
+        session.rollback()
+        log_fail(f"Error insertando Pureza: {e}")
+        return []
+
+def insert_pureza_pnotatum(session, recibos):
+    try:
+        log_step("➡️ Insertando Pureza PNotatum...")
+        purezas_pnotatum = []
+        for i in range(12):
+            pureza_pnotatum = PurezaPnotatum(
+                pureza_at=round(random.uniform(0.0, 5.0), 2),
+                pureza_pi=round(random.uniform(0.0, 3.0), 2),
+                pureza_activo=True,
+                pureza_peso_inicial=round(random.uniform(10.0, 50.0), 2),
+                pureza_porcentaje=round(random.uniform(0.0, 10.0), 2),
+                pureza_porcentaje_a=round(random.uniform(0.0, 8.0), 2),
+                pureza_repeticiones=random.randint(2, 4),
+                pureza_semillas_ls=round(random.uniform(0.0, 2.0), 2),
+                pureza_total_a=random.randint(0, 5),
+                recibo_id=random.choice([r.recibo_id for r in recibos]),
+                pureza_repetido=random.choice([True, False])
+            )
+            purezas_pnotatum.append(pureza_pnotatum)
+        session.add_all(purezas_pnotatum)
+        session.flush()
+        session.commit()
+        log_ok(f"Pureza PNotatum insertadas: {len(purezas_pnotatum)}")
+        return purezas_pnotatum
+    except Exception as e:
+        session.rollback()
+        log_fail(f"Error insertando Pureza PNotatum: {e}")
+        return []
+
+def insert_tetrazolio(session, recibos, engine=None):
+    try:
+        log_step("➡️ Insertando Tetrazolio...")
+        pretratamientos_validos = DATOS_MUESTRA['pretratamientos']
+        viabilidades_validas = DATOS_MUESTRA['viabilidades']
+        viabilidades_vigor_validas = DATOS_MUESTRA['viabilidades_vigor']
+        if engine is not None:
+            valores = obtener_valores_check(engine, 'tetrazolio', 'pretratamiento')
+            if valores:
+                pretratamientos_validos = valores
+            vals_via = obtener_valores_check(engine, 'tetrazolio', 'viabilidad_tz')
+            if vals_via:
+                viabilidades_validas = vals_via
+            vals_vigor = obtener_valores_check(engine, 'tetrazolio', 'viabilidad_vigor_tz')
+            if vals_vigor:
+                viabilidades_vigor_validas = vals_vigor
+        tetrazolios = []
+        for i in range(14):
+            tetrazolio = Tetrazolio(
+                tetrazolio_activo=True,
+                concentracion=round(random.uniform(0.5, 2.0), 2),
+                tetrazolio_danio_ambiente=random.randint(0, 5),
+                tetrazolio_danios_chinches=random.randint(0, 3),
+                tetrazolio_danios_duras=random.randint(0, 8),
+                tetrazolio_danios_fracturas=random.randint(0, 5),
+                tetrazolio_danios_mecanicos=random.randint(0, 4),
+                tetrazolio_danios_nro_semillas=random.randint(0, 10),
+                tetrazolio_danios_otros=random.randint(0, 2),
+                tetrazolio_danios_por_porcentajes=random.randint(0, 5),
+                tetrazolio_duras=round(random.uniform(0.0, 10.0), 2),
+                tetrazolio_fecha=generar_fecha_aleatoria(30),
+                tetrazolio_no_viables=round(random.uniform(0.0, 15.0), 2),
+                tetrazolio_nro_semillas=random.randint(200, 400),
+                tetrazolio_nro_semillas_por_repeticion=random.randint(50, 100),
+                tetrazolio_porcentaje=random.randint(70, 95),
+                tetrazolio_porcentaje_final=random.randint(70, 95),
+                pretratamiento=random.choice(pretratamientos_validos),
+                tetrazolio_promedio=round(random.uniform(80.0, 95.0), 2),
+                tetrazolio_repeticion=random.randint(2, 4),
+                tincion_grados=round(random.uniform(20.0, 40.0), 1),
+                tincion_hs=round(random.uniform(2.0, 4.0), 1),
+                tetrazolio_total=round(random.uniform(80.0, 95.0), 2),
+                viabilidad_tz=random.choice(viabilidades_validas),
+                viabilidad_vigor_tz=random.choice(viabilidades_vigor_validas),
+                tetrazolio_viables=round(random.uniform(80.0, 95.0), 2),
+                recibo_id=random.choice([r.recibo_id for r in recibos]),
+                tetrazolio_repetido=random.choice([True, False])
+            )
+            tetrazolios.append(tetrazolio)
+        session.add_all(tetrazolios)
+        session.flush()
+        session.commit()
+        log_ok(f"Tetrazolios insertados: {len(tetrazolios)}")
+        return tetrazolios
+    except Exception as e:
+        session.rollback()
+        log_fail(f"Error insertando Tetrazolio: {e}")
+        return []
+
+def insert_dosn(session, recibos):
+    try:
+        log_step("➡️ Insertando DOSN...")
+        dosns = []
+        for i in range(30):
+            dosn = Dosn(
+                dosn_activo=True,
+                dosn_completo_reducido=random.choice([True, False]),
+                dosn_determinacion_brassica=round(random.uniform(0.0, 10.0), 2),
+                dosn_determinacion_cuscuta=round(random.uniform(0.0, 5.0), 2),
+                dosn_estandar=random.choice([True, False]),
+                dosn_fecha=generar_fecha_aleatoria(60),
+                dosn_fecha_analisis=generar_fecha_aleatoria(30),
+                dosn_gramos_analizados=round(random.uniform(10.0, 100.0), 2),
+                dosn_malezas_tolerancia_cero=round(random.uniform(0.0, 2.0), 2),
+                dosn_otros_cultivos=round(random.uniform(0.0, 5.0), 2),
+                dosn_tipos_de_analisis=random.choice(DATOS_MUESTRA['tipos_analisis']),
+                recibo_id=random.choice([r.recibo_id for r in recibos]),
+                dosn_repetido=random.choice([True, False])
+            )
+            dosns.append(dosn)
+        session.add_all(dosns)
+        session.flush()
+        session.commit()
+        log_ok(f"DOSN insertados: {len(dosns)}")
+        return dosns
+    except Exception as e:
+        session.rollback()
+        log_fail(f"Error insertando DOSN: {e}")
+        return []
+
+def insert_cultivos(session, dosns):
+    try:
+        log_step("➡️ Insertando Cultivos (dependen de DOSN)...")
+        if not dosns:
+            log_fail("No hay DOSN disponibles para asociar Cultivos.")
+            return []
+        cultivos = []
+        for i in range(25):
+            cultivo = Cultivo(
+                cultivo_activo=True,
+                cultivo_nombre=f"Cultivo-{i+1}",
+                dosn_id=random.choice([d.dosn_id for d in dosns]),
+                cultivo_descripcion=f"Descripción del cultivo {i+1}"
+            )
+            cultivos.append(cultivo)
+        session.add_all(cultivos)
+        session.flush()
+        session.commit()
+        log_ok(f"Cultivos insertados: {len(cultivos)}")
+        return cultivos
+    except Exception as e:
+        session.rollback()
+        log_fail(f"Error insertando Cultivos: {e}")
+        return []
+
+def insert_germinacion(session, recibos, engine=None):
+    try:
+        log_step("➡️ Insertando Germinación...")
+        germinaciones = []
+        # Normalizamos valores para cumplir constraints de BD
+        metodos_validos = DATOS_MUESTRA['metodos']
+        tratamientos_validos = DATOS_MUESTRA['tratamientos']
+        prefrios_validos = DATOS_MUESTRA['prefrios']
+        pretratamientos_validos = DATOS_MUESTRA['pretratamientos']
+        if engine is not None:
+            valores_prefrio = obtener_valores_check(engine, 'germinacion', 'prefrio')
+            if valores_prefrio:
+                prefrios_validos = valores_prefrio
+            valores_pretrat = obtener_valores_check(engine, 'germinacion', 'pretratamiento')
+            if valores_pretrat:
+                pretratamientos_validos = valores_pretrat
+        for i in range(20):
+            germinacion = Germinacion(
+                germinacion_activo=True,
+                germinacion_comentarios=random.choice(DATOS_MUESTRA['comentarios']),
+                germinacion_fechaconteo_1=generar_fecha_aleatoria(30),
+                germinacion_fechaconteo_2=generar_fecha_aleatoria(25),
+                germinacion_fechaconteo_3=generar_fecha_aleatoria(20),
+                germinacion_fechaconteo_4=generar_fecha_aleatoria(15),
+                germinacion_fechaconteo_5=generar_fecha_aleatoria(10),
+                germinacion_fechafinal=generar_fecha_aleatoria(5),
+                germinacion_fechainicio=generar_fecha_aleatoria(40),
+                germinacion_germinacion=random.randint(70, 95),
+                germinacion_metodo=random.choice(metodos_validos),
+                germinacion_nrodias=random.randint(5, 15),
+                germinacion_nrosemillaporrepeticion=random.randint(50, 200),
+                germinacion_panormal=random.randint(0, 10),
+                germinacion_pmuertas=random.randint(0, 5),
+                germinacion_pnormal=random.randint(80, 95),
+                germinacion_predondeo=random.randint(0, 3),
+                germinacion_prefrio=random.choice(prefrios_validos),
+                germinacion_pretratamiento=random.choice(pretratamientos_validos),
+                germinacion_promediorepeticiones=round(random.uniform(80.0, 95.0), 2),
+                germinacion_repeticionanormal=random.randint(0, 2),
+                germinacion_repeticiondura=random.randint(0, 3),
+                germinacion_repeticionfresca=random.randint(0, 1),
+                germinacion_repeticionmuerta=random.randint(0, 2),
+                germinacion_repeticionnormal_1=random.randint(40, 50),
+                germinacion_repeticionnormal_2=random.randint(40, 50),
+                germinacion_repeticionnormal_3=random.randint(40, 50),
+                germinacion_repeticionnormal_4=random.randint(40, 50),
+                germinacion_repeticionnormal_5=random.randint(40, 50),
+                germinacion_semillasduras=random.randint(0, 5),
+                germinacion_temperatura=round(random.uniform(20.0, 25.0), 1),
+                germinacion_totaldias=random.randint(5, 15),
+                germinacion_totalrepeticion=random.randint(200, 250),
+                germinacion_tratamiento=random.choice(tratamientos_validos),
+                recibo_id=random.choice([r.recibo_id for r in recibos]),
+                germinacion_repetido=random.choice([True, False])
+            )
+            germinaciones.append(germinacion)
+        session.add_all(germinaciones)
+        session.flush()
+        session.commit()
+        log_ok(f"Germinaciones insertadas: {len(germinaciones)}")
+        return germinaciones
+    except Exception as e:
+        session.rollback()
+        log_fail(f"Error insertando Germinación: {e}")
+        return []
+    
 def insertar_datos_masivos():
     """Inserta datos masivos respetando las dependencias entre tablas"""
     try:
@@ -597,198 +919,34 @@ def insertar_datos_masivos():
             session.flush()
             logger.info(f"✅ Semillas insertadas: {len(semillas)}")
 
-            # DOSN (mover después - evitamos restricciones de germinación ahora)
-            # Postergamos Germinación al final
-            
-            # PMS
-            pms_list = []
-            for i in range(15):
-                pms = Pms(
-                    pms_activo=True,
-                    fecha_medicion=generar_fecha_aleatoria(30),
-                    humedad_porcentual=round(random.uniform(8.0, 15.0), 2),
-                    metodo=random.choice(DATOS_MUESTRA['metodos']),
-                    observaciones=random.choice(DATOS_MUESTRA['observaciones']),
-                    peso_mil_semillas=round(random.uniform(20.0, 50.0), 2),
-                    recibo_id=random.choice([r.recibo_id for r in recibos]),
-                    pms_repetido=random.choice([True, False])
-                )
-                pms_list.append(pms)
-            session.add_all(pms_list)
-            session.flush()
-            
-            # Pureza
-            purezas = []
-            for i in range(18):
-                pureza = Pureza(
-                    pureza_activo=True,
-                    estandar=random.choice([True, False]),
-                    fecha=generar_fecha_aleatoria(30),
-                    fecha_estandar=generar_fecha_aleatoria(25),
-                    malezas=round(random.uniform(0.0, 5.0), 2),
-                    malezas_toleradas=round(random.uniform(0.0, 2.0), 2),
-                    material_inerte=round(random.uniform(0.0, 3.0), 2),
-                    otros_cultivo=round(random.uniform(0.0, 2.0), 2),
-                    otros_cultivos=round(random.uniform(0.0, 2.0), 2),
-                    peso_inicial=round(random.uniform(50.0, 200.0), 2),
-                    peso_total=round(random.uniform(45.0, 195.0), 2),
-                    semilla_pura=round(random.uniform(90.0, 99.0), 2),
-                    recibo_id=random.choice([r.recibo_id for r in recibos]),
-                    pureza_repetido=random.choice([True, False])
-                )
-                purezas.append(pureza)
-            session.add_all(purezas)
-            session.flush()
-            
-            # Pureza Pnotatum
-            purezas_pnotatum = []
-            for i in range(12):
-                pureza_pnotatum = PurezaPnotatum(
-                    pureza_at=round(random.uniform(0.0, 5.0), 2),
-                    pureza_pi=round(random.uniform(0.0, 3.0), 2),
-                    pureza_activo=True,
-                    pureza_peso_inicial=round(random.uniform(10.0, 50.0), 2),
-                    pureza_porcentaje=round(random.uniform(0.0, 10.0), 2),
-                    pureza_porcentaje_a=round(random.uniform(0.0, 8.0), 2),
-                    pureza_repeticiones=random.randint(2, 4),
-                    pureza_semillas_ls=round(random.uniform(0.0, 2.0), 2),
-                    pureza_total_a=random.randint(0, 5),
-                    recibo_id=random.choice([r.recibo_id for r in recibos]),
-                    pureza_repetido=random.choice([True, False])
-                )
-                purezas_pnotatum.append(pureza_pnotatum)
-            session.add_all(purezas_pnotatum)
-            session.flush()
-
-            # Tetrazolio
-            tetrazolios = []
-            for i in range(14):
-                tetrazolio = Tetrazolio(
-                    tetrazolio_activo=True,
-                    concentracion=round(random.uniform(0.5, 2.0), 2),
-                    tetrazolio_danio_ambiente=random.randint(0, 5),
-                    tetrazolio_danios_chinches=random.randint(0, 3),
-                    tetrazolio_danios_duras=random.randint(0, 8),
-                    tetrazolio_danios_fracturas=random.randint(0, 5),
-                    tetrazolio_danios_mecanicos=random.randint(0, 4),
-                    tetrazolio_danios_nro_semillas=random.randint(0, 10),
-                    tetrazolio_danios_otros=random.randint(0, 2),
-                    tetrazolio_danios_por_porcentajes=random.randint(0, 5),
-                    tetrazolio_duras=round(random.uniform(0.0, 10.0), 2),
-                    tetrazolio_fecha=generar_fecha_aleatoria(30),
-                    tetrazolio_no_viables=round(random.uniform(0.0, 15.0), 2),
-                    tetrazolio_nro_semillas=random.randint(200, 400),
-                    tetrazolio_nro_semillas_por_repeticion=random.randint(50, 100),
-                    tetrazolio_porcentaje=random.randint(70, 95),
-                    tetrazolio_porcentaje_final=random.randint(70, 95),
-                    pretratamiento=random.choice(DATOS_MUESTRA['pretratamientos']),
-                    tetrazolio_promedio=round(random.uniform(80.0, 95.0), 2),
-                    tetrazolio_repeticion=random.randint(2, 4),
-                    tincion_grados=round(random.uniform(20.0, 40.0), 1),
-                    tincion_hs=round(random.uniform(2.0, 4.0), 1),
-                    tetrazolio_total=round(random.uniform(80.0, 95.0), 2),
-                    viabilidad_tz=random.choice(DATOS_MUESTRA['viabilidades']),
-                    viabilidad_vigor_tz=random.choice(DATOS_MUESTRA['viabilidades_vigor']),
-                    tetrazolio_viables=round(random.uniform(80.0, 95.0), 2),
-                    recibo_id=random.choice([r.recibo_id for r in recibos]),
-                    tetrazolio_repetido=random.choice([True, False]),
-                    tetrazolio_fecha_creacion=generar_fecha_aleatoria(90),
-                    tetrazolio_fecha_repeticion=generar_fecha_aleatoria(30)
-                )
-                tetrazolios.append(tetrazolio)
-            session.add_all(tetrazolios)
-            session.flush()
-            
-            # Cultivos (dependen de DOSN)
-            cultivos = []
-            for i in range(25):
-                cultivo = Cultivo(
-                    cultivo_activo=True,
-                    cultivo_nombre=f"Cultivo-{i+1}",
-                    dosn_id=random.choice([d.dosn_id for d in dosns]),
-                    cultivo_descripcion=f"Descripción del cultivo {i+1}"
-                )
-                cultivos.append(cultivo)
-            session.add_all(cultivos)
-            session.flush()
-
-            # Ahora insertamos DOSN
-            dosns = []
-            for i in range(30):
-                dosn = Dosn(
-                    dosn_activo=True,
-                    dosn_completo_reducido=random.choice([True, False]),
-                    dosn_determinacion_brassica=round(random.uniform(0.0, 10.0), 2),
-                    dosn_determinacion_cuscuta=round(random.uniform(0.0, 5.0), 2),
-                    dosn_estandar=random.choice([True, False]),
-                    dosn_fecha=generar_fecha_aleatoria(60),
-                    dosn_fecha_analisis=generar_fecha_aleatoria(30),
-                    dosn_gramos_analizados=round(random.uniform(10.0, 100.0), 2),
-                    dosn_malezas_tolerancia_cero=round(random.uniform(0.0, 2.0), 2),
-                    dosn_otros_cultivos=round(random.uniform(0.0, 5.0), 2),
-                    dosn_tipos_de_analisis=random.choice(DATOS_MUESTRA['tipos_analisis']),
-                    recibo_id=random.choice([r.recibo_id for r in recibos]),
-                    dosn_repetido=random.choice([True, False])
-                )
-                dosns.append(dosn)
-            session.add_all(dosns)
-            session.flush()
-
-            # Finalmente, Germinación (la dejamos al final por restricciones)
-            germinaciones = []
-            for i in range(20):
-                germinacion = Germinacion(
-                    germinacion_activo=True,
-                    germinacion_comentarios=random.choice(DATOS_MUESTRA['comentarios']),
-                    germinacion_fechaconteo_1=generar_fecha_aleatoria(30),
-                    germinacion_fechaconteo_2=generar_fecha_aleatoria(25),
-                    germinacion_fechaconteo_3=generar_fecha_aleatoria(20),
-                    germinacion_fechaconteo_4=generar_fecha_aleatoria(15),
-                    germinacion_fechaconteo_5=generar_fecha_aleatoria(10),
-                    germinacion_fechafinal=generar_fecha_aleatoria(5),
-                    germinacion_fechainicio=generar_fecha_aleatoria(40),
-                    germinacion_germinacion=random.randint(70, 95),
-                    germinacion_metodo=random.choice(DATOS_MUESTRA['metodos']),
-                    germinacion_nrodias=random.randint(5, 15),
-                    germinacion_nrosemillaporrepeticion=random.randint(50, 200),
-                    germinacion_panormal=random.randint(0, 10),
-                    germinacion_pmuertas=random.randint(0, 5),
-                    germinacion_pnormal=random.randint(80, 95),
-                    germinacion_predondeo=random.randint(0, 3),
-                    germinacion_prefrio=random.choice(DATOS_MUESTRA['prefrios']),
-                    germinacion_pretratamiento=random.choice(DATOS_MUESTRA['pretratamientos']),
-                    germinacion_promediorepeticiones=round(random.uniform(80.0, 95.0), 2),
-                    germinacion_repeticionanormal=random.randint(0, 2),
-                    germinacion_repeticiondura=random.randint(0, 3),
-                    germinacion_repeticionfresca=random.randint(0, 1),
-                    germinacion_repeticionmuerta=random.randint(0, 2),
-                    germinacion_repeticionnormal_1=random.randint(40, 50),
-                    germinacion_repeticionnormal_2=random.randint(40, 50),
-                    germinacion_repeticionnormal_3=random.randint(40, 50),
-                    germinacion_repeticionnormal_4=random.randint(40, 50),
-                    germinacion_repeticionnormal_5=random.randint(40, 50),
-                    germinacion_semillasduras=random.randint(0, 5),
-                    germinacion_temperatura=round(random.uniform(20.0, 25.0), 1),
-                    germinacion_totaldias=random.randint(5, 15),
-                    germinacion_totalrepeticion=random.randint(200, 250),
-                    germinacion_tratamiento=random.choice(DATOS_MUESTRA['tratamientos']),
-                    recibo_id=random.choice([r.recibo_id for r in recibos]),
-                    germinacion_repetido=random.choice([True, False])
-                )
-                germinaciones.append(germinacion)
-            session.add_all(germinaciones)
-            session.flush()
+            # Inserciones separadas de análisis
+            pms_list = insert_pms(session, recibos)
+            purezas = insert_pureza(session, recibos)
+            purezas_pnotatum = insert_pureza_pnotatum(session, recibos)
+            tetrazolios = insert_tetrazolio(session, recibos, engine)
+            dosns = insert_dosn(session, recibos)
+            cultivos = insert_cultivos(session, dosns)
+            germinaciones = insert_germinacion(session, recibos, engine)
             # Relaciones
             usuario_lotes = []
             if usuarios:
+                pares_existentes = set()
                 for i in range(30):
+                    par = (
+                        random.choice([u.usuario_id for u in usuarios]),
+                        random.choice([l.lote_id for l in lotes])
+                    )
+                    if par in pares_existentes:
+                        continue
+                    pares_existentes.add(par)
                     usuario_lote = UsuarioLote(
-                        usuario_id=random.choice([u.usuario_id for u in usuarios]),
-                        lote_id=random.choice([l.lote_id for l in lotes])
+                        usuario_id=par[0],
+                        lote_id=par[1]
                     )
                     usuario_lotes.append(usuario_lote)
-                session.add_all(usuario_lotes)
-                session.flush()
+                if usuario_lotes:
+                    session.add_all(usuario_lotes)
+                    session.flush()
             else:
                 logger.info("ℹ️ No hay usuarios; se omite la creación de relaciones usuario-lote")
             
@@ -805,8 +963,11 @@ def insertar_datos_masivos():
             session.add_all(sanitario_hongos)
             session.flush()
             
-            # Commit final de la secuencia 5
-            session.commit()
+            # Commit final de la secuencia 5 (seguridad, puede no haber cambios pendientes)
+            try:
+                session.commit()
+            except Exception:
+                session.rollback()
             
             # Resumen final
             total_registros = (
