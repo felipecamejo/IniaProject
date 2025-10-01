@@ -250,8 +250,6 @@ class Hongo(Base):
     hongo_id = Column(BigInteger, primary_key=True, autoincrement=True)
     hongo_activo = Column(Boolean, nullable=True)
     hongo_nombre = Column(String(255), nullable=True)
-    hongo_tipo = Column(String(255), nullable=True)
-    sanitario_id = Column(BigInteger, nullable=True)
     hongo_descripcion = Column(String(255), nullable=True)
 
 class Tetrazolio(Base):
@@ -428,42 +426,10 @@ def cargar_usuarios(session):
     return users
 
 def obtener_tipos_hongo_permitidos(engine):
-    """Intenta leer desde PostgreSQL los valores permitidos por el CHECK de hongo.hongo_tipo.
-    Devuelve una lista de strings en mayúsculas si se detectan; caso contrario, lista vacía.
+    """Función obsoleta - la tabla hongo ya no tiene columna hongo_tipo.
+    Devuelve lista vacía ya que no hay restricciones de tipo.
     """
-    try:
-        with engine.connect() as conn:
-            # Buscar constraint de check por nombre o por columna
-            sql = text(
-                """
-                SELECT pg_get_constraintdef(c.oid) AS def
-                FROM pg_constraint c
-                JOIN pg_class t ON t.oid = c.conrelid
-                JOIN pg_namespace n ON n.oid = t.relnamespace
-                WHERE n.nspname = 'public'
-                  AND t.relname = 'hongo'
-                  AND c.contype = 'c'
-                  AND c.conname ILIKE '%hongo_tipo%'
-                LIMIT 1
-                """
-            )
-            row = conn.execute(sql).fetchone()
-            if not row or not row[0]:
-                return []
-            definition = row[0]
-            # Intentar extraer lista entre ARRAY['A','B',...] o IN ('A','B',...)
-            m = re.search(r"ARRAY\[(.*?)\]", definition)
-            values_blob = m.group(1) if m else None
-            if not values_blob:
-                m = re.search(r"\bIN\s*\((.*?)\)", definition, re.IGNORECASE)
-                values_blob = m.group(1) if m else None
-            if not values_blob:
-                return []
-            # Separar por comas considerando comillas
-            parts = re.findall(r"'([^']+)'", values_blob)
-            return [p.upper() for p in parts]
-    except Exception:
-        return []
+    return []
     
 def obtener_valores_check(engine, tabla: str, columna: str) -> list:
     """Devuelve valores permitidos por un CHECK de enumeración en PostgreSQL.
@@ -509,9 +475,10 @@ def insert_pms(session, recibos):
         log_step("➡️ Insertando PMS...")
         pms_list = []
         for i in range(15):
+            fecha_medicion = generar_fecha_aleatoria(30)
             pms = Pms(
                 pms_activo=True,
-                fecha_medicion=generar_fecha_aleatoria(30),
+                fecha_medicion=fecha_medicion,
                 humedad_porcentual=round(random.uniform(8.0, 15.0), 2),
                 metodo=random.choice(DATOS_MUESTRA['metodos']),
                 observaciones=random.choice(DATOS_MUESTRA['observaciones']),
@@ -535,11 +502,13 @@ def insert_pureza(session, recibos):
         log_step("➡️ Insertando Pureza...")
         purezas = []
         for i in range(18):
+            fecha_pureza = generar_fecha_aleatoria(30)
+            fecha_estandar = generar_fecha_aleatoria(25)
             pureza = Pureza(
                 pureza_activo=True,
                 estandar=random.choice([True, False]),
-                fecha=generar_fecha_aleatoria(30),
-                fecha_estandar=generar_fecha_aleatoria(25),
+                fecha=fecha_pureza,
+                fecha_estandar=fecha_estandar,
                 malezas=round(random.uniform(0.0, 5.0), 2),
                 malezas_toleradas=round(random.uniform(0.0, 2.0), 2),
                 material_inerte=round(random.uniform(0.0, 3.0), 2),
@@ -609,6 +578,7 @@ def insert_tetrazolio(session, recibos, engine=None):
                 viabilidades_vigor_validas = vals_vigor
         tetrazolios = []
         for i in range(14):
+            fecha_tetrazolio = generar_fecha_aleatoria(30)
             tetrazolio = Tetrazolio(
                 tetrazolio_activo=True,
                 concentracion=round(random.uniform(0.5, 2.0), 2),
@@ -621,7 +591,7 @@ def insert_tetrazolio(session, recibos, engine=None):
                 tetrazolio_danios_otros=random.randint(0, 2),
                 tetrazolio_danios_por_porcentajes=random.randint(0, 5),
                 tetrazolio_duras=round(random.uniform(0.0, 10.0), 2),
-                tetrazolio_fecha=generar_fecha_aleatoria(30),
+                tetrazolio_fecha=fecha_tetrazolio,
                 tetrazolio_no_viables=round(random.uniform(0.0, 15.0), 2),
                 tetrazolio_nro_semillas=random.randint(200, 400),
                 tetrazolio_nro_semillas_por_repeticion=random.randint(50, 100),
@@ -655,14 +625,16 @@ def insert_dosn(session, recibos):
         log_step("➡️ Insertando DOSN...")
         dosns = []
         for i in range(30):
+            fecha_dosn = generar_fecha_aleatoria(60)
+            fecha_analisis = generar_fecha_aleatoria(30)
             dosn = Dosn(
                 dosn_activo=True,
                 dosn_completo_reducido=random.choice([True, False]),
                 dosn_determinacion_brassica=round(random.uniform(0.0, 10.0), 2),
                 dosn_determinacion_cuscuta=round(random.uniform(0.0, 5.0), 2),
                 dosn_estandar=random.choice([True, False]),
-                dosn_fecha=generar_fecha_aleatoria(60),
-                dosn_fecha_analisis=generar_fecha_aleatoria(30),
+                dosn_fecha=fecha_dosn,
+                dosn_fecha_analisis=fecha_analisis,
                 dosn_gramos_analizados=round(random.uniform(10.0, 100.0), 2),
                 dosn_malezas_tolerancia_cero=round(random.uniform(0.0, 2.0), 2),
                 dosn_otros_cultivos=round(random.uniform(0.0, 5.0), 2),
@@ -723,16 +695,25 @@ def insert_germinacion(session, recibos, engine=None):
             if valores_pretrat:
                 pretratamientos_validos = valores_pretrat
         for i in range(20):
+            # Generar fechas en orden cronológico lógico
+            fecha_inicio = generar_fecha_aleatoria(40)
+            fecha_conteo_1 = generar_fecha_aleatoria(30)
+            fecha_conteo_2 = generar_fecha_aleatoria(25)
+            fecha_conteo_3 = generar_fecha_aleatoria(20)
+            fecha_conteo_4 = generar_fecha_aleatoria(15)
+            fecha_conteo_5 = generar_fecha_aleatoria(10)
+            fecha_final = generar_fecha_aleatoria(5)
+            
             germinacion = Germinacion(
                 germinacion_activo=True,
                 germinacion_comentarios=random.choice(DATOS_MUESTRA['comentarios']),
-                germinacion_fechaconteo_1=generar_fecha_aleatoria(30),
-                germinacion_fechaconteo_2=generar_fecha_aleatoria(25),
-                germinacion_fechaconteo_3=generar_fecha_aleatoria(20),
-                germinacion_fechaconteo_4=generar_fecha_aleatoria(15),
-                germinacion_fechaconteo_5=generar_fecha_aleatoria(10),
-                germinacion_fechafinal=generar_fecha_aleatoria(5),
-                germinacion_fechainicio=generar_fecha_aleatoria(40),
+                germinacion_fechaconteo_1=fecha_conteo_1,
+                germinacion_fechaconteo_2=fecha_conteo_2,
+                germinacion_fechaconteo_3=fecha_conteo_3,
+                germinacion_fechaconteo_4=fecha_conteo_4,
+                germinacion_fechaconteo_5=fecha_conteo_5,
+                germinacion_fechafinal=fecha_final,
+                germinacion_fechainicio=fecha_inicio,
                 germinacion_germinacion=random.randint(70, 95),
                 germinacion_metodo=random.choice(metodos_validos),
                 germinacion_nrodias=random.randint(5, 15),
@@ -799,12 +780,14 @@ def insertar_datos_masivos():
             logger.info("📦 SECUENCIA 2: Insertando lotes...")
             lotes = []
             for i in range(20):
+                fecha_creacion = generar_fecha_aleatoria(180)
+                fecha_finalizacion = generar_fecha_aleatoria(30)
                 lote = Lote(
                     lote_activo=True,
                     lote_nombre=f"Lote-{i+1:03d}",
                     lote_descripcion=f"Descripción del lote {i+1}",
-                    lote_fecha_creacion=generar_fecha_aleatoria(180),
-                    lote_fecha_finalizacion=generar_fecha_aleatoria(30)
+                    lote_fecha_creacion=fecha_creacion,
+                    lote_fecha_finalizacion=fecha_finalizacion
                 )
                 lotes.append(lote)
             session.add_all(lotes)
@@ -816,6 +799,7 @@ def insertar_datos_masivos():
             logger.info("📋 SECUENCIA 3: Insertando recibos...")
             recibos = []
             for i in range(50):
+                fecha_recibo = generar_fecha_aleatoria(90)
                 recibo = Recibo(
                     recibo_activo=True,
                     analisis_solicitados=random.choice(DATOS_MUESTRA['analisis']),
@@ -824,7 +808,7 @@ def insertar_datos_masivos():
                     deposito=random.choice(DATOS_MUESTRA['depositos']),
                     especie=random.choice(DATOS_MUESTRA['especies']),
                     estado=random.choice(DATOS_MUESTRA['estados']),
-                    fecha_recibo=generar_fecha_aleatoria(90),
+                    fecha_recibo=fecha_recibo,
                     ficha=f"FICHA-{i+1:04d}",
                     kg_limpios=round(random.uniform(1.0, 100.0), 2),
                     lote=random.randint(1, 100),
@@ -862,11 +846,13 @@ def insertar_datos_masivos():
             # Sanitario (para poder asociar Hongos)
             sanitarios = []
             for i in range(16):
+                fecha_sanitario = generar_fecha_aleatoria(30)
+                fecha_siembra = generar_fecha_aleatoria(25)
                 sanitario = Sanitario(
                     sanitario_activo=True,
                     sanitario_estadoproductodosis=random.choice(DATOS_MUESTRA['estados_producto']),
-                    sanitario_fecha=generar_fecha_aleatoria(30),
-                    sanitario_fechasiembra=generar_fecha_aleatoria(25),
+                    sanitario_fecha=fecha_sanitario,
+                    sanitario_fechasiembra=fecha_siembra,
                     sanitario_horasluzoscuridad=random.randint(8, 16),
                     sanitario_metodo=random.choice(DATOS_MUESTRA['metodos']),
                     sanitario_nrodias=random.randint(5, 14),
@@ -884,18 +870,10 @@ def insertar_datos_masivos():
 
             # Hongos (dependen de Sanitario)
             hongos = []
-            tipos_permitidos = obtener_tipos_hongo_permitidos(engine)
-            if tipos_permitidos:
-                # Si hay restricción, ajustamos el pool a los valores permitidos
-                tipos_pool = tipos_permitidos
-            else:
-                tipos_pool = DATOS_MUESTRA['tipos_hongo']
             for i in range(20):
                 hongo = Hongo(
                     hongo_activo=True,
                     hongo_nombre=random.choice(DATOS_MUESTRA['hongos']),
-                    hongo_tipo=random.choice(tipos_pool),
-                    sanitario_id=random.choice([s.sanitario_id for s in sanitarios]),
                     hongo_descripcion=f"Descripción del hongo {i+1}"
                 )
                 hongos.append(hongo)

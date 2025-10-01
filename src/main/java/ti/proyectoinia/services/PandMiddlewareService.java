@@ -15,111 +15,44 @@ import java.util.List;
 @Service
 public class PandMiddlewareService {
 
-    /**
-     * Ejecuta el script Python `Middleware/pandaAlchemy.py` para crear la tabla.
-     * Retorna la salida combinada (stdout y stderr) del proceso.
-     */
-    public String ejecutarCrearTabla() {
-        List<String> command = buildPythonCommand();
-
-        // Ruta del script: <projectRoot>/Middleware/pandaAlchemy.py
-        Path scriptPath = Paths.get(System.getProperty("user.dir"), "Middleware", "pandaAlchemy.py");
-        if (!scriptPath.toFile().exists()) {
-            return "No se encontró el script: " + scriptPath;
-        }
-        command.add(scriptPath.toString());
-
-        return runProcess(command, scriptPath.getParent().toFile());
-    }
+    // Eliminados métodos de pandaAlchemy (crear tabla y cargar Excel a mi_tabla)
 
     /**
-     * Ejecuta el script para insertar datos desde un archivo Excel en la tabla mi_talbla.
-     */
-    public String ejecutarInsertarDesdeExcel(String rutaExcel) {
-        List<String> command = buildPythonCommand();
-
-        Path scriptPath = Paths.get(System.getProperty("user.dir"), "Middleware", "pandaAlchemy.py");
-        if (!scriptPath.toFile().exists()) {
-            return "No se encontró el script: " + scriptPath;
-        }
-
-        command.add(scriptPath.toString());
-        command.add("--insert");
-        command.add(rutaExcel);
-
-        return runProcess(command, scriptPath.getParent().toFile());
-    }
-
-    /**
-     * Ejecuta el script InsertTablesHere.py para insertar datos masivos.
-     * Inserta 5000 registros en todas las tablas excepto usuarios (20 registros).
+     * Ejecuta el script MassiveInsertFiles.py para insertar datos masivos.
+     * Inserta datos en todas las tablas del sistema.
      */
     public String ejecutarInsertarDatosMasivos() {
         return ejecutarInsertarDatosMasivos(5000);
     }
 
     /**
-     * Ejecuta el script InsertTablesHere.py para insertar datos masivos con cantidad personalizada.
-     * @param numRows Número de registros a insertar por tabla
+     * Ejecuta el script MassiveInsertFiles.py para insertar datos masivos.
+     * @param numRows Número de registros a insertar por tabla (ignorado, usa valores por defecto)
      */
     public String ejecutarInsertarDatosMasivos(int numRows) {
         List<String> command = buildPythonCommandWithVenv();
 
-        Path scriptPath = Paths.get(System.getProperty("user.dir"), "middleware", "InsertTablesHere.py");
+        Path scriptPath = Paths.get(System.getProperty("user.dir"), "middleware", "MassiveInsertFiles.py");
         if (!scriptPath.toFile().exists()) {
             return "No se encontró el script: " + scriptPath;
         }
 
         command.add(scriptPath.toString());
-        command.add("--rows");
-        command.add(String.valueOf(numRows));
 
         return runProcess(command, scriptPath.getParent().toFile());
     }
 
     /**
-     * Ejecuta el script InsertTablesHere.py con parámetros personalizados.
-     * @param numRows Número de registros a insertar por tabla
-     * @param onlyTables Lista de tablas específicas (separadas por comas)
-     * @param skipTables Lista de tablas a excluir (separadas por comas)
+     * Ejecuta el script MassiveInsertFiles.py (sin parámetros personalizados).
+     * @param numRows Número de registros a insertar por tabla (ignorado)
+     * @param onlyTables Lista de tablas específicas (ignorado)
+     * @param skipTables Lista de tablas a excluir (ignorado)
      */
     public String ejecutarInsertScriptConParametros(int numRows, String onlyTables, String skipTables) {
-        List<String> command = buildPythonCommandWithVenv();
-
-        Path scriptPath = Paths.get(System.getProperty("user.dir"), "middleware", "InsertTablesHere.py");
-        if (!scriptPath.toFile().exists()) {
-            return "No se encontró el script: " + scriptPath;
-        }
-
-        command.add(scriptPath.toString());
-        command.add("--rows");
-        command.add(String.valueOf(numRows));
-
-        // Agregar parámetros opcionales
-        if (onlyTables != null && !onlyTables.trim().isEmpty()) {
-            command.add("--only");
-            command.add(onlyTables.trim());
-        }
-
-        if (skipTables != null && !skipTables.trim().isEmpty()) {
-            command.add("--skip");
-            command.add(skipTables.trim());
-        }
-
-        return runProcess(command, scriptPath.getParent().toFile());
+        // MassiveInsertFiles.py no acepta parámetros personalizados, usa configuración interna
+        return ejecutarInsertarDatosMasivos();
     }
 
-    private List<String> buildPythonCommand() {
-        List<String> command = new ArrayList<>();
-        String pythonExecutable = System.getenv("PYTHON_EXECUTABLE");
-        if (pythonExecutable == null || pythonExecutable.isBlank()) {
-            // Preferir 'py' en Windows; 'python' en otros entornos
-            String osName = System.getProperty("os.name", "").toLowerCase();
-            pythonExecutable = osName.contains("win") ? "py" : "python";
-        }
-        command.add(pythonExecutable);
-        return command;
-    }
 
     /**
      * Construye el comando Python usando el entorno virtual del middleware.
@@ -178,7 +111,7 @@ public class PandMiddlewareService {
             Thread.currentThread().interrupt();
             outputBuilder.append("Ejecución interrumpida: ").append(e.getMessage());
         } catch (IOException e) {
-            outputBuilder.append("Error ejecutando pandaAlchemy.py: ").append(e.getMessage());
+            outputBuilder.append("Error ejecutando MassiveInsertFiles.py: ").append(e.getMessage());
         }
 
         return outputBuilder.toString();

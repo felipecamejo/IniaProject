@@ -1,8 +1,9 @@
 package ti.proyectoinia.api.controllers;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,18 +13,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import ti.proyectoinia.services.PandMiddlewareService;
 import ti.proyectoinia.services.PythonMiddlewareHttpService;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ContentDisposition;
 
 /**
  * Controlador REST para manejar operaciones del middleware de pandas/SQLAlchemy.
  * 
  * Este controlador proporciona endpoints para:
- * - Crear tablas en la base de datos usando scripts de Python
- * - Cargar datos desde archivos Excel
- * - Insertar datos masivos de prueba
- * - Ejecutar scripts de inserción con parámetros personalizados
+ * - Exportar tablas a Excel usando el servidor HTTP Python
+ * - Importar datos desde archivos Excel automáticamente
+ * - Insertar datos masivos de prueba usando MassiveInsertFiles.py
  * 
  * Todos los endpoints requieren permisos de ADMIN para su ejecución.
  * 
@@ -52,83 +49,108 @@ public class PandMiddlewareController {
   
     @PostMapping("/http/exportar")
     @Secured({"ADMIN"})
-    @Operation(summary = "Exportar tablas (HTTP Python)", description = "Descarga ZIP exportado por el middleware Python - Solo ADMIN")
-    public ResponseEntity<byte[]> httpExportar(
-            @RequestParam(required = false) String tablas,
-            @RequestParam(required = false, defaultValue = "xlsx") String formato) {
-        byte[] zip = pythonHttpService.descargarExportZip(tablas, formato);
-        if (zip == null || zip.length == 0) {
-            return ResponseEntity.status(500).build();
+    @Operation(summary = "Exportar tablas (HTTP Python)", description = "Exporta todas las tablas a Excel y descarga automáticamente el archivo ZIP - Solo ADMIN")
+    public ResponseEntity<byte[]> httpExportar() {
+        try {
+            // Exportar todas las tablas sin especificar tabla específica
+            byte[] zip = pythonHttpService.descargarExportZip(null, "xlsx");
+            if (zip == null) {
+                return ResponseEntity.status(500).body("Error en la exportación - el servicio Python no respondió o retornó null".getBytes());
+            }
+            if (zip.length == 0) {
+                return ResponseEntity.status(500).body("Error en la exportación - se generó un archivo vacío".getBytes());
+            }
+            
+            // Configurar headers para descarga automática del archivo ZIP
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", "export_tablas.xlsx.zip");
+            headers.setContentLength(zip.length);
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(zip);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(("Error durante la exportación: " + e.getMessage() + 
+                    " (Tipo: " + e.getClass().getSimpleName() + ")").getBytes());
         }
+    }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDisposition(ContentDisposition.attachment().filename("export_inia.zip").build());
-        return ResponseEntity.ok().headers(headers).body(zip);
+    
+
+    @PostMapping(value = "/http/importar", consumes = {"multipart/form-data"})
+    @Secured({"ADMIN"})
+    @Operation(summary = "Importar Excel automático", description = "Carga archivo Excel automáticamente a la base de datos - Solo ADMIN")
+    public ResponseEntity<String> httpImportar(
+            @RequestPart("file") MultipartFile file) {
+        try {
+            if (file == null || file.isEmpty()) {
+                return ResponseEntity.badRequest().body("Archivo vacío");
+            }
+            
+            // Verificar que sea un archivo Excel
+            String nombreArchivo = file.getOriginalFilename();
+            if (nombreArchivo == null || (!nombreArchivo.toLowerCase().endsWith(".xlsx") && !nombreArchivo.toLowerCase().endsWith(".xls"))) {
+                return ResponseEntity.badRequest().body("Solo se permiten archivos Excel (.xlsx o .xls)");
+            }
+            
+            byte[] bytes = file.getBytes();
+            
+            // Determinar automáticamente la tabla basándose en el nombre del archivo
+            // Por ejemplo, si el archivo se llama "usuarios.xlsx", la tabla será "usuarios"
+            String tabla = determinarTablaDesdeNombre(nombreArchivo);
+            
+            // Importar con configuración automática (upsert=false, keep_ids=false por defecto)
+            String respuesta = pythonHttpService.importarTabla(tabla, false, false, nombreArchivo, bytes);
+            if (respuesta == null || respuesta.isBlank()) {
+                return ResponseEntity.status(500).body("Sin respuesta del middleware Python");
+            }
+            return ResponseEntity.ok(respuesta);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error enviando importación: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Determina automáticamente el nombre de la tabla basándose en el nombre del archivo.
+     * Remueve la extensión y convierte a minúsculas.
+     * 
+     * @param nombreArchivo Nombre del archivo Excel
+     * @return Nombre de la tabla sugerido
+     */
+    private String determinarTablaDesdeNombre(String nombreArchivo) {
+        if (nombreArchivo == null) {
+            return "mi_tabla"; // Tabla por defecto
+        }
+        
+        // Remover extensión
+        String nombreSinExtension = nombreArchivo;
+        if (nombreArchivo.toLowerCase().endsWith(".xlsx")) {
+            nombreSinExtension = nombreArchivo.substring(0, nombreArchivo.length() - 5);
+        } else if (nombreArchivo.toLowerCase().endsWith(".xls")) {
+            nombreSinExtension = nombreArchivo.substring(0, nombreArchivo.length() - 4);
+        }
+        
+        // Convertir a minúsculas y reemplazar espacios/guiones con guiones bajos
+        return nombreSinExtension.toLowerCase()
+                .replaceAll("\\s+", "_")
+                .replaceAll("-", "_")
+                .replaceAll("[^a-z0-9_]", "");
     }
 
     
 
     /**
-     * Endpoint para cargar datos desde un archivo Excel a la tabla mi_tabla.
+     * Endpoint para insertar datos masivos de prueba.
      * 
-     * Este endpoint permite subir un archivo Excel y procesarlo usando el script
-     * pandaAlchemy.py para insertar los datos en la base de datos.
-     * 
-     * @param file Archivo Excel (.xlsx) que contiene los datos a cargar
-     * @return ResponseEntity<String> Respuesta con el resultado de la carga
-     *         - 200 OK: Si la carga fue exitosa
-     *         - 400 Bad Request: Si el archivo está vacío o es inválido
-     *         - 500 Internal Server Error: Si hubo errores en el procesamiento
-     */
-    @PostMapping(value = "/cargar-excel", consumes = {"multipart/form-data"})
-    @Secured({"ADMIN"})
-    @Operation(summary = "Cargar Excel a mi_talbla", description = "Sube un Excel y lo inserta en la tabla mi_talbla usando pandaAlchemy.py - Solo ADMIN")
-    public ResponseEntity<String> cargarExcel(@RequestPart("file") MultipartFile file) {
-        try {
-            // Validar que el archivo no esté vacío
-            if (file == null || file.isEmpty()) {
-                return ResponseEntity.badRequest().body("Archivo vacío");
-            }
-
-            // Crear directorio temporal en la carpeta Middleware para evitar problemas de rutas
-            java.nio.file.Path tempDir = java.nio.file.Paths.get(System.getProperty("user.dir"), "Middleware");
-            java.nio.file.Files.createDirectories(tempDir);
-            
-            // Crear archivo temporal con el contenido del Excel
-            java.nio.file.Path tempFile = java.nio.file.Files.createTempFile(tempDir, "excel_", ".xlsx");
-            file.transferTo(tempFile.toFile());
-
-            // Ejecutar el script de Python para procesar el Excel
-            String salida = pandMiddlewareService.ejecutarInsertarDesdeExcel(tempFile.toString());
-
-            String normalized = salida == null ? "" : salida.trim();
-            
-            // Verificar errores en la ejecución del script
-            if (normalized.contains("No se encontró el script")
-                    || normalized.contains("Error ejecutando pandaAlchemy.py")
-                    || normalized.contains("Ejecución interrumpida")
-                    || (normalized.contains("ExitCode:") && !normalized.endsWith("ExitCode: 0"))) {
-                return ResponseEntity.status(500).body(salida);
-            }
-
-            return ResponseEntity.ok(salida);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error procesando archivo: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Endpoint para insertar datos masivos de prueba con cantidad por defecto.
-     * 
-     * Este endpoint inserta 5000 registros en todas las tablas del sistema
-     * (excepto usuarios que recibe 20 registros) usando el script InsertTablesHere.py.
+     * Este endpoint inserta datos en todas las tablas del sistema
+     * usando el script MassiveInsertFiles.py con configuración interna.
      * 
      * @return ResponseEntity<String> Respuesta con el resultado de la inserción
      */
     @PostMapping("/insertar-datos-masivos")
     @Secured({"ADMIN"})
-    @Operation(summary = "Insertar datos masivos", description = "Inserta 5000 registros en todas las tablas excepto usuarios (20 registros) usando InsertTablesHere.py - Solo ADMIN")
+    @Operation(summary = "Insertar datos masivos", description = "Inserta datos en todas las tablas del sistema usando MassiveInsertFiles.py - Solo ADMIN")
     public ResponseEntity<String> insertarDatosMasivos() {
         String salida = pandMiddlewareService.ejecutarInsertarDatosMasivos(5000);
 
@@ -139,7 +161,7 @@ public class PandMiddlewareController {
         String normalized = salida.trim();
 
         if (normalized.contains("No se encontró el script")
-                || normalized.contains("Error ejecutando InsertTablesHere.py")
+                || normalized.contains("Error ejecutando MassiveInsertFiles.py")
                 || normalized.contains("Ejecución interrumpida")) {
             return ResponseEntity.status(500).body(salida);
         }
