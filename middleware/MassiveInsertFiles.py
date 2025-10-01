@@ -33,6 +33,34 @@ def log_fail(message: str):
 def log_step(message: str):
     logger.info(f"{CYAN}{message}{RESET}")
 
+def log_progress(current: int, total: int, operation: str):
+    """Muestra progreso de inserción masiva"""
+    percentage = (current / total) * 100
+    bar_length = 30
+    filled_length = int(bar_length * current // total)
+    bar = '█' * filled_length + '-' * (bar_length - filled_length)
+    logger.info(f"{CYAN}{operation}: |{bar}| {percentage:.1f}% ({current}/{total}){RESET}")
+
+def insert_batch_optimized(session, objects_list, batch_size=1000, operation_name="Inserción"):
+    """Inserta objetos en lotes optimizados con progreso"""
+    total = len(objects_list)
+    if total == 0:
+        return
+    
+    log_step(f"➡️ {operation_name} - Total: {total} registros")
+    
+    for i in range(0, total, batch_size):
+        batch = objects_list[i:i + batch_size]
+        session.add_all(batch)
+        session.flush()
+        session.commit()
+        
+        # Mostrar progreso cada lote
+        current = min(i + batch_size, total)
+        log_progress(current, total, operation_name)
+    
+    log_ok(f"{operation_name} completada: {total} registros")
+
 # ================================
 # Configuración inline por defecto
 # ================================
@@ -472,9 +500,8 @@ def obtener_valores_check(engine, tabla: str, columna: str) -> list:
 
 def insert_pms(session, recibos):
     try:
-        log_step("➡️ Insertando PMS...")
         pms_list = []
-        for i in range(15):
+        for i in range(5000):
             fecha_medicion = generar_fecha_aleatoria(30)
             pms = Pms(
                 pms_activo=True,
@@ -487,10 +514,9 @@ def insert_pms(session, recibos):
                 pms_repetido=random.choice([True, False])
             )
             pms_list.append(pms)
-        session.add_all(pms_list)
-        session.flush()
-        session.commit()
-        log_ok(f"PMS insertados: {len(pms_list)}")
+        
+        # Usar inserción optimizada por lotes
+        insert_batch_optimized(session, pms_list, batch_size=1000, operation_name="PMS")
         return pms_list
     except Exception as e:
         session.rollback()
@@ -499,9 +525,8 @@ def insert_pms(session, recibos):
 
 def insert_pureza(session, recibos):
     try:
-        log_step("➡️ Insertando Pureza...")
         purezas = []
-        for i in range(18):
+        for i in range(5000):
             fecha_pureza = generar_fecha_aleatoria(30)
             fecha_estandar = generar_fecha_aleatoria(25)
             pureza = Pureza(
@@ -521,10 +546,9 @@ def insert_pureza(session, recibos):
                 pureza_repetido=random.choice([True, False])
             )
             purezas.append(pureza)
-        session.add_all(purezas)
-        session.flush()
-        session.commit()
-        log_ok(f"Purezas insertadas: {len(purezas)}")
+        
+        # Usar inserción optimizada por lotes
+        insert_batch_optimized(session, purezas, batch_size=1000, operation_name="Pureza")
         return purezas
     except Exception as e:
         session.rollback()
@@ -533,9 +557,8 @@ def insert_pureza(session, recibos):
 
 def insert_pureza_pnotatum(session, recibos):
     try:
-        log_step("➡️ Insertando Pureza PNotatum...")
         purezas_pnotatum = []
-        for i in range(12):
+        for i in range(5000):
             pureza_pnotatum = PurezaPnotatum(
                 pureza_at=round(random.uniform(0.0, 5.0), 2),
                 pureza_pi=round(random.uniform(0.0, 3.0), 2),
@@ -550,10 +573,9 @@ def insert_pureza_pnotatum(session, recibos):
                 pureza_repetido=random.choice([True, False])
             )
             purezas_pnotatum.append(pureza_pnotatum)
-        session.add_all(purezas_pnotatum)
-        session.flush()
-        session.commit()
-        log_ok(f"Pureza PNotatum insertadas: {len(purezas_pnotatum)}")
+        
+        # Usar inserción optimizada por lotes
+        insert_batch_optimized(session, purezas_pnotatum, batch_size=1000, operation_name="Pureza PNotatum")
         return purezas_pnotatum
     except Exception as e:
         session.rollback()
@@ -577,7 +599,7 @@ def insert_tetrazolio(session, recibos, engine=None):
             if vals_vigor:
                 viabilidades_vigor_validas = vals_vigor
         tetrazolios = []
-        for i in range(14):
+        for i in range(5000):
             fecha_tetrazolio = generar_fecha_aleatoria(30)
             tetrazolio = Tetrazolio(
                 tetrazolio_activo=True,
@@ -610,10 +632,8 @@ def insert_tetrazolio(session, recibos, engine=None):
                 tetrazolio_repetido=random.choice([True, False])
             )
             tetrazolios.append(tetrazolio)
-        session.add_all(tetrazolios)
-        session.flush()
-        session.commit()
-        log_ok(f"Tetrazolios insertados: {len(tetrazolios)}")
+        # Usar inserción optimizada por lotes
+        insert_batch_optimized(session, tetrazolios, batch_size=1000, operation_name="Tetrazolio")
         return tetrazolios
     except Exception as e:
         session.rollback()
@@ -624,7 +644,7 @@ def insert_dosn(session, recibos):
     try:
         log_step("➡️ Insertando DOSN...")
         dosns = []
-        for i in range(30):
+        for i in range(5000):
             fecha_dosn = generar_fecha_aleatoria(60)
             fecha_analisis = generar_fecha_aleatoria(30)
             dosn = Dosn(
@@ -643,10 +663,8 @@ def insert_dosn(session, recibos):
                 dosn_repetido=random.choice([True, False])
             )
             dosns.append(dosn)
-        session.add_all(dosns)
-        session.flush()
-        session.commit()
-        log_ok(f"DOSN insertados: {len(dosns)}")
+        # Usar inserción optimizada por lotes
+        insert_batch_optimized(session, dosns, batch_size=1000, operation_name="DOSN")
         return dosns
     except Exception as e:
         session.rollback()
@@ -660,7 +678,7 @@ def insert_cultivos(session, dosns):
             log_fail("No hay DOSN disponibles para asociar Cultivos.")
             return []
         cultivos = []
-        for i in range(25):
+        for i in range(5000):
             cultivo = Cultivo(
                 cultivo_activo=True,
                 cultivo_nombre=f"Cultivo-{i+1}",
@@ -668,10 +686,8 @@ def insert_cultivos(session, dosns):
                 cultivo_descripcion=f"Descripción del cultivo {i+1}"
             )
             cultivos.append(cultivo)
-        session.add_all(cultivos)
-        session.flush()
-        session.commit()
-        log_ok(f"Cultivos insertados: {len(cultivos)}")
+        # Usar inserción optimizada por lotes
+        insert_batch_optimized(session, cultivos, batch_size=1000, operation_name="Cultivos")
         return cultivos
     except Exception as e:
         session.rollback()
@@ -694,7 +710,7 @@ def insert_germinacion(session, recibos, engine=None):
             valores_pretrat = obtener_valores_check(engine, 'germinacion', 'pretratamiento')
             if valores_pretrat:
                 pretratamientos_validos = valores_pretrat
-        for i in range(20):
+        for i in range(5000):
             # Generar fechas en orden cronológico lógico
             fecha_inicio = generar_fecha_aleatoria(40)
             fecha_conteo_1 = generar_fecha_aleatoria(30)
@@ -743,10 +759,8 @@ def insert_germinacion(session, recibos, engine=None):
                 germinacion_repetido=random.choice([True, False])
             )
             germinaciones.append(germinacion)
-        session.add_all(germinaciones)
-        session.flush()
-        session.commit()
-        log_ok(f"Germinaciones insertadas: {len(germinaciones)}")
+        # Usar inserción optimizada por lotes
+        insert_batch_optimized(session, germinaciones, batch_size=1000, operation_name="Germinación")
         return germinaciones
     except Exception as e:
         session.rollback()
@@ -790,9 +804,7 @@ def insertar_datos_masivos():
                     lote_fecha_finalizacion=fecha_finalizacion
                 )
                 lotes.append(lote)
-            session.add_all(lotes)
-            session.flush()
-            session.commit()
+            insert_batch_optimized(session, lotes, batch_size=20, operation_name="Lotes")
             logger.info(f"✅ SECUENCIA 2 COMPLETADA: {len(lotes)} lotes")
 
             # SECUENCIA 3: Recibos (dependen de Lotes)
@@ -818,9 +830,7 @@ def insertar_datos_masivos():
                     lote_id=random.choice([l.lote_id for l in lotes])
                 )
                 recibos.append(recibo)
-            session.add_all(recibos)
-            session.flush()
-            session.commit()
+            insert_batch_optimized(session, recibos, batch_size=50, operation_name="Recibos")
             logger.info(f"✅ SECUENCIA 3 COMPLETADA: {len(recibos)} recibos")
 
             # SECUENCIA 4: Hongos y Malezas (respetando dependencias internas)
@@ -838,9 +848,7 @@ def insertar_datos_masivos():
                     maleza_descripcion=f"Descripción de maleza {i+1}"
                 )
                 malezas.append(maleza)
-            session.add_all(malezas)
-            session.flush()
-            session.commit()
+            insert_batch_optimized(session, malezas, batch_size=15, operation_name="Malezas")
             logger.info(f"✅ Malezas insertadas: {len(malezas)}")
 
             # Sanitario (para poder asociar Hongos)
@@ -863,9 +871,7 @@ def insertar_datos_masivos():
                     sanitario_repetido=random.choice([True, False])
                 )
                 sanitarios.append(sanitario)
-            session.add_all(sanitarios)
-            session.flush()
-            session.commit()
+            insert_batch_optimized(session, sanitarios, batch_size=16, operation_name="Sanitarios")
             logger.info(f"✅ Sanitarios insertados: {len(sanitarios)}")
 
             # Hongos (dependen de Sanitario)
@@ -877,9 +883,7 @@ def insertar_datos_masivos():
                     hongo_descripcion=f"Descripción del hongo {i+1}"
                 )
                 hongos.append(hongo)
-            session.add_all(hongos)
-            session.flush()
-            session.commit()
+            insert_batch_optimized(session, hongos, batch_size=20, operation_name="Hongos")
             logger.info(f"✅ SECUENCIA 4 COMPLETADA: {len(hongos)} hongos, {len(malezas)} malezas")
 
             # SECUENCIA 5: El resto de entidades y relaciones
@@ -893,8 +897,7 @@ def insertar_datos_masivos():
                     semilla_nro_semillas_pura=random.randint(100, 10000)
                 )
                 semillas.append(semilla)
-            session.add_all(semillas)
-            session.flush()
+            insert_batch_optimized(session, semillas, batch_size=10, operation_name="Semillas")
             logger.info(f"✅ Semillas insertadas: {len(semillas)}")
 
             # Inserciones separadas de análisis
@@ -923,8 +926,7 @@ def insertar_datos_masivos():
                     )
                     usuario_lotes.append(usuario_lote)
                 if usuario_lotes:
-                    session.add_all(usuario_lotes)
-                    session.flush()
+                    insert_batch_optimized(session, usuario_lotes, batch_size=30, operation_name="Usuario-Lote")
             else:
                 logger.info("ℹ️ No hay usuarios; se omite la creación de relaciones usuario-lote")
             
@@ -938,8 +940,7 @@ def insertar_datos_masivos():
                     sanitario_id=random.choice([s.sanitario_id for s in sanitarios])
                 )
                 sanitario_hongos.append(sanitario_hongo)
-            session.add_all(sanitario_hongos)
-            session.flush()
+            insert_batch_optimized(session, sanitario_hongos, batch_size=25, operation_name="Sanitario-Hongo")
             
             # Commit final de la secuencia 5 (seguridad, puede no haber cambios pendientes)
             try:
@@ -974,7 +975,7 @@ def insertar_datos_masivos():
 
 if __name__ == "__main__":
     print("=" * 80)
-    print("🚀 SCRIPT DE INSERCIÓN MASIVA DE DATOS")
+    print("🚀 SCRIPT DE INSERCIÓN MASIVA DE DATOS - LABORATORIO")
     print("=" * 80)
     print("📋 Respetando dependencias entre tablas:")
     print("   1. Lote, Maleza, Semilla, Usuario (independientes)")
@@ -982,6 +983,9 @@ if __name__ == "__main__":
     print("   3. DOSN, Germinación, PMS, Pureza, PurezaPnotatum, Sanitario, Tetrazolio (dependen de Recibo)")
     print("   4. Cultivo (depende de DOSN), Hongo (depende de Sanitario)")
     print("   5. UsuarioLote, SanitarioHongo (tablas de relación)")
+    print("")
+    print("🔥 MODO LABORATORIO: 5000 registros por análisis para pruebas de rendimiento")
+    print("⚡ Inserción optimizada por lotes con indicadores de progreso")
     print("=" * 80)
     
     exito = insertar_datos_masivos()
