@@ -12,4 +12,5 @@ export interface PurezaPNotatumDto {
   repetido: boolean;
   fechaCreacion: string | null;
   fechaRepeticion: string | null;
+  observaciones: string;
 }

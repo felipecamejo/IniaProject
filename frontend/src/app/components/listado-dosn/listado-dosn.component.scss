@@ -1,0 +1,233 @@
+
+// Estilos para hacer la card más ancha
+.container {
+  max-width: 1000px !important;
+  width: 95% !important;
+  margin: 0 auto !important;
+  
+  // Responsive para tablets
+  @media (max-width: 768px) {
+    width: 98% !important;
+    max-width: 100% !important;
+  }
+}
+
+// Estilos para la sección de búsqueda y filtros
+.search-section {
+  display: flex !important;
+  gap: 1rem !important;
+  align-items: center !important;
+  margin-bottom: 1rem !important;
+  flex-wrap: wrap !important;
+
+  @media (max-width: 768px) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+}
+
+.search-bar {
+  flex: 1 !important;
+  min-width: 200px !important;
+  
+  .search-input {
+    width: 100% !important;
+    padding: 0.75rem 1rem !important;
+    border: 2px solid var(--gris) !important;
+    border-radius: 8px !important;
+    font-family: var(--font-main) !important;
+    font-size: 0.9rem !important;
+    outline: none !important;
+    transition: border-color 0.2s ease !important;
+
+    &:focus {
+      border-color: var(--azul) !important;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul) 25%, transparent) !important;
+    }
+
+    &::placeholder {
+      color: var(--gris-oscuro) !important;
+      opacity: 0.7 !important;
+    }
+  }
+}
+
+.filter-dropdown {
+  display: flex !important;
+  align-items: center !important;
+
+  select {
+    padding: 0.75rem 1rem !important;
+    border: 2px solid var(--gris) !important;
+    border-radius: 8px !important;
+    font-family: var(--font-main) !important;
+    font-size: 0.9rem !important;
+    background-color: white !important;
+    outline: none !important;
+    transition: border-color 0.2s ease !important;
+    min-width: 140px !important;
+
+    &:focus {
+      border-color: var(--azul) !important;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul) 25%, transparent) !important;
+    }
+  }
+}
+
+.submit-btn {
+  display: flex !important;
+  align-items: center !important;
+  padding-bottom: 23px !important;
+  
+  ::ng-deep .p-button {
+    background: var(--verde) !important;
+    background-color: var(--verde) !important;
+    border: 2px solid var(--verde) !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    padding: 0.75rem 1.5rem !important;
+    color: white !important;
+    font-family: var(--font-main) !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+    height: auto !important;
+    min-height: 46px !important; // Misma altura que los selects
+
+    &:hover {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      filter: brightness(0.85) !important;
+    }
+
+    &:focus {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--verde) 25%, transparent) !important;
+    }
+
+    &:active {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      filter: brightness(0.8) !important;
+    }
+  }
+
+  ::ng-deep .p-button-primary {
+    background: var(--verde) !important;
+    background-color: var(--verde) !important;
+    border-color: var(--verde) !important;
+
+    &:hover {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      filter: brightness(0.85) !important;
+    }
+  }
+}
+
+::ng-deep .card {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+// Usar los estilos globales pero agregar los específicos para DOSN
+.blue-rectangle {
+  // Estados específicos para DOSN
+  &.pendiente .status-badge {
+    background-color: var(--naranja) !important;
+    border-color: var(--naranja) !important;
+    color: white !important;
+  }
+  
+  &.repetido .status-badge {
+    background-color: var(--rojo) !important;
+    border-color: var(--rojo) !important;
+    color: white !important;
+  }
+}
+
+// Estilos para los botones de acción en el rectángulo azul
+.item-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.action-button {
+  background-color: var(--naranja);
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+
+  i {
+    color: white;
+    font-size: 1rem;
+  }
+
+  &:hover {
+    filter: brightness(0.85);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.edit-button {
+    background-color: var(--naranja);
+    
+    &:hover {
+      background-color: var(--naranja);
+      box-shadow: 0 2px 8px rgba(237, 168, 70, 0.4);
+    }
+  }
+
+  &.delete-button {
+    background-color: var(--rojo);
+    
+    &:hover {
+      background-color: var(--rojo);
+      box-shadow: 0 2px 8px rgba(218, 105, 106, 0.4);
+    }
+  }
+}
+
+// Responsive para botones
+@media (max-width: 768px) {
+  .action-button {
+    width: 35px;
+    height: 35px;
+    
+    i {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .item-actions {
+    gap: 0.3rem;
+  }
+  
+  .action-button {
+    width: 30px;
+    height: 30px;
+    
+    i {
+      font-size: 0.8rem;
+    }
+  }
+}

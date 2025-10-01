@@ -17,4 +17,5 @@ export interface DOSNDto {
   repetido: boolean;
   fechaCreacion: string | null;
   fechaRepeticion: string | null;
+  observaciones?: string;
 }

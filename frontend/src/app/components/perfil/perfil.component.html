@@ -1,0 +1,16 @@
+<div class="perfil-container">
+  <div class="perfil-card">
+    <div class="perfil-avatar">
+      <img src="assets/default-avatar.png" alt="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
+    </div>
+    <div class="perfil-info">
+      <h2 class="perfil-nombre">{{ nombre || 'Usuario' }}</h2>
+      <p class="perfil-mail"><strong>Mail:</strong> {{ mail || 'ejemplo@inia.com' }}</p>
+      <p class="perfil-tel"><strong>Teléfono:</strong> {{ telefono || '123456789' }}</p>
+      <p class="perfil-rol"><strong>ROL:</strong> {{ rol || 'Analista' }}</p>
+    </div>
+    <div class="perfil-acciones">
+      <button pButton type="button" label="Editar" class="p-button p-button-success perfil-boton">Editar</button>
+    </div>
+  </div>
+</div>
