@@ -19,16 +19,17 @@ import { GerminacionComponent } from './components/germinacion/germinacion.compo
 import { TetrazolioComponent } from './components/tetrazolio/tetrazolio.component';
 import { ListadoDosnComponent } from './components/listado-dosn/listado-dosn.component';
 import { ListadoPurezaPNotatumComponent } from './components/listado-pureza-p-notatum/listado-pureza-p-notatum.component';
-import { ListadoGerminacionComponent } from './components/listado-germinacion.component/listado-germinacion.component';
+import { ListadoPurezaComponent } from './components/listado-pureza/listado-pureza.component';
+import { ListadoTetrazolioComponent } from './components/listado-tetrazolio/listado-tetrazolio.component';
+import { ListadoGerminacionComponent } from './components/listado-germinacion/listado-germinacion.component';
 import { PerfilComponent } from './components/perfil/perfil.component';
+import { ListadoSanitarioComponent } from './components/listado-sanitario/listado-sanitario.component';
 
 export const routes: Routes = [
     { path : 'home', component: HomeComponent },
     { path : 'recibo', component: ReciboComponent },
     { path : 'login', component: LoginComponent },
     { path : '', redirectTo: '/login', pathMatch: 'full' },
-    { path : 'pms/crear', component: PmsComponent },
-    { path : 'pms/editar/:id', component: PmsComponent },
     { path : 'sanitario', component: SanitarioComponent },
     { path : 'pureza', component: PurezaComponent },
     { path : 'listado-malezas', component: ListadoMalezasComponent },
@@ -47,6 +48,26 @@ export const routes: Routes = [
     { path : 'listado-cultivos', component: ListadoCultivosComponent },
     { path : 'listado-dosn', component: ListadoDosnComponent },
     { path : 'listado-pms', component: ListadoPmsComponent },
+    { path : 'listado-pureza', component: ListadoPurezaComponent },
     { path : 'listado-pureza-p-notatum', component: ListadoPurezaPNotatumComponent },
+    { path : 'listado-tetrazolio', component: ListadoTetrazolioComponent },
     { path : 'listado-germinacion', component: ListadoGerminacionComponent },
+    { path : 'listado-sanitario', component: ListadoSanitarioComponent },
+
+    //Formularios de creación y edición
+    { path : 'pms/crear', component: PmsComponent },
+    { path : 'pms/editar/:id', component: PmsComponent },
+    { path : 'sanitario/crear', component: SanitarioComponent },
+    { path : 'sanitario/editar/:id', component: SanitarioComponent },
+    { path : 'pureza/crear', component: PurezaComponent },
+    { path : 'pureza/editar/:id', component: PurezaComponent },
+    { path : 'dosn/crear', component: DOSNComponent },
+    { path : 'dosn/editar/:id', component: DOSNComponent },
+    { path : 'pureza-p-notatum/crear', component: PurezaPNotatumComponent },
+    { path : 'pureza-p-notatum/editar/:id', component: PurezaPNotatumComponent },
+    { path : 'germinacion/crear', component: GerminacionComponent },
+    { path : 'germinacion/editar/:id', component: GerminacionComponent },
+    { path : 'tetrazolio/crear', component: TetrazolioComponent },
+    { path : 'tetrazolio/editar/:id', component: TetrazolioComponent },
 ];
+

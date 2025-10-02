@@ -1,6 +1,8 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { SanitarioDto } from '../../../models/Sanitario.dto';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -29,7 +31,11 @@ import { MultiSelectModule } from 'primeng/multiselect';
   templateUrl: './sanitario.component.html',
   styleUrl: './sanitario.component.scss'
 })
-export class SanitarioComponent {
+export class SanitarioComponent implements OnInit {
+  
+  // Variables para manejar navegación
+  isEditing: boolean = false;
+  editingId: number | null = null;
   
   metodos = [
       { label: 'Metodo A', id: 1 },
@@ -98,6 +104,26 @@ export class SanitarioComponent {
   
   // Campos de texto
   observaciones: string = '';
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    // Verificar si estamos en modo edición basado en la ruta
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.isEditing = true;
+        this.editingId = parseInt(params['id']);
+        this.cargarDatosParaEdicion(this.editingId);
+      } else {
+        this.isEditing = false;
+        this.editingId = null;
+        this.cargarDatos();
+      }
+    });
+  }
 
   // Métodos para el multiselect personalizado
   toggleHongosDropdown() {
@@ -295,6 +321,104 @@ export class SanitarioComponent {
         });
       }
     });
+  }
+
+  // Datos de prueba (deberían venir de un servicio)
+  private itemsData: SanitarioDto[] = [
+    {
+      id: 1,
+      fechaSiembra: '2023-01-10',
+      fecha: '2023-01-15',
+      metodo: 'METODO_A',
+      temperatura: 25.5,
+      horasLuzOscuridad: 12,
+      nroDias: 7,
+      estadoProductoDosis: 'ESTADO_X',
+      observaciones: 'Control de calidad mensual - Muestra estándar',
+      nroSemillasRepeticion: 100,
+      reciboId: 101,
+      activo: true,
+      repetido: false,
+      SanitarioHongoids: [1, 2],
+      fechaCreacion: '2023-01-15',
+      fechaRepeticion: null
+    },
+    {
+      id: 2,
+      fechaSiembra: '2022-02-15',
+      fecha: '2022-02-20',
+      metodo: 'METODO_B',
+      temperatura: 23.8,
+      horasLuzOscuridad: 14,
+      nroDias: 10,
+      estadoProductoDosis: 'ESTADO_Y',
+      observaciones: 'Lote especial - Requiere repetición',
+      nroSemillasRepeticion: 150,
+      reciboId: 102,
+      activo: true,
+      repetido: true,
+      SanitarioHongoids: [3, 4, 5],
+      fechaCreacion: '2022-02-20',
+      fechaRepeticion: '2022-02-22'
+    }
+  ];
+
+  private cargarDatosParaEdicion(id: number) {
+    // En un escenario real, esto vendría de un servicio
+    const item = this.itemsData.find(sanitario => sanitario.id === id);
+    if (item) {
+      console.log('Cargando datos para edición:', item);
+      this.fechaSiembra = item.fechaSiembra || '';
+      this.fecha = item.fecha || '';
+      this.temperatura = item.temperatura || 0;
+      this.horasLuzOscuridad = item.horasLuzOscuridad || 0;
+      this.numeroDias = item.nroDias || 0;
+      this.numeroSemillasRepeticion = item.nroSemillasRepeticion || 0;
+      this.observaciones = item.observaciones || '';
+      // Aquí también podrías cargar el método y estado seleccionados
+    }
+  }
+
+  private cargarDatos() {
+    console.log('Modo creación - limpiando campos');
+    // Limpiar campos para creación
+    this.fechaSiembra = '';
+    this.fecha = '';
+    this.temperatura = 0;
+    this.horasLuzOscuridad = 0;
+    this.numeroDias = 0;
+    this.numeroSemillasRepeticion = 0;
+    this.observaciones = '';
+  }
+
+  onSubmit() {
+    const sanitarioData: Partial<SanitarioDto> = {
+      fechaSiembra: this.fechaSiembra,
+      fecha: this.fecha,
+      temperatura: this.temperatura,
+      horasLuzOscuridad: this.horasLuzOscuridad,
+      nroDias: this.numeroDias,
+      nroSemillasRepeticion: this.numeroSemillasRepeticion,
+      observaciones: this.observaciones,
+      activo: true
+      // Aquí también deberías agregar el método y estado seleccionados
+    };
+
+    if (this.isEditing && this.editingId) {
+      // Actualizar Sanitario existente
+      console.log('Actualizando Sanitario ID:', this.editingId, 'con datos:', sanitarioData);
+    } else {
+      // Crear nuevo Sanitario
+      console.log('Creando nuevo Sanitario:', sanitarioData);
+    }
+
+    // Navegar de vuelta al listado
+    this.router.navigate(['/listado-sanitario']);
+  }
+
+  onCancel() {
+    // Navegar de vuelta al listado
+    this.router.navigate(['/listado-sanitario']);
   }
 
 }

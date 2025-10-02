@@ -49,12 +49,12 @@
         <!-- Checkbox Repetido - solo visible al editar -->
         <div class="form-field" *ngIf="isEditing">
           <label>
+            <span>Repetir</span>
             <input 
               type="checkbox" 
               [(ngModel)]="repetido" 
               name="repetido"
             />
-            <span>Repetir</span>
           </label>
         </div>
 

@@ -232,12 +232,35 @@
         <label for="estandar">¿Cumple estándar?</label>
         <input id="estandar" type="checkbox" [(ngModel)]="estandar" name="estandar" />
       </div>
+
+      <!-- Checkbox Repetido - solo visible al editar -->
+      <div class="form-field" *ngIf="isEditing">
+        <label>
+          <span>Repetir</span>
+          <input 
+            type="checkbox" 
+            [(ngModel)]="repetido" 
+            name="repetido"
+          />
+        </label>
+      </div>
+
       <div class="submit-btn">
         <button
           pButton
-          type="submit"
-          label="Guardar Pureza"
+          type="button"
+          (click)="onSubmit()"
+          [label]="isEditing ? 'Actualizar Pureza' : 'Crear Pureza'"
           class="p-button-success"
+        ></button>
+        
+        <button
+          pButton
+          type="button"
+          (click)="onCancel()"
+          label="Cancelar"
+          class="p-button-secondary"
+          style="margin-left: 10px;"
         ></button>
       </div>
     </form>
