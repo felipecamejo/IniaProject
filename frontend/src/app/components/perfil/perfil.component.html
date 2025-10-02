@@ -1,7 +1,8 @@
+
 <div class="perfil-container">
   <div class="perfil-card">
     <div class="perfil-avatar">
-      <img src="assets/default-avatar.png" alt="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
+      <img [src]="imagenPreview || 'assets/default-avatar.png'" alt="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
     </div>
     <div class="perfil-info">
       <h2 class="perfil-nombre">{{ nombre || 'Usuario' }}</h2>
@@ -10,7 +11,34 @@
       <p class="perfil-rol"><strong>ROL:</strong> {{ rol || 'Analista' }}</p>
     </div>
     <div class="perfil-acciones">
-      <button pButton type="button" label="Editar" class="p-button p-button-success perfil-boton">Editar</button>
+      <button type="button" class="p-button p-button-success perfil-boton" (click)="abrirModal()">Editar</button>
     </div>
+  </div>
+</div>
+
+<!-- Modal de edición -->
+<div class="modal-overlay" *ngIf="modalAbierto">
+  <div class="modal-card">
+    <h2>Editar Perfil</h2>
+    <form (ngSubmit)="guardarCambios()">
+      <div class="modal-avatar-preview">
+        <img [src]="imagenPreview || 'assets/default-avatar.png'" alt="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
+        <input type="file" accept="image/*" (change)="cambiarImagen($event)">
+      </div>
+      <label>Nombre:</label>
+      <input type="text" [(ngModel)]="nombre" name="nombre" required>
+      <label>Apellido:</label>
+      <input type="text" [(ngModel)]="apellido" name="apellido" required>
+      <label>Email:</label>
+      <input type="email" [(ngModel)]="mail" name="mail" required>
+      <label>Teléfono:</label>
+      <input type="text" [(ngModel)]="telefono" name="telefono">
+      <label>Rol:</label>
+      <input type="text" [(ngModel)]="rol" name="rol">
+      <div class="modal-actions">
+        <button type="submit" class="p-button perfil-boton">Guardar</button>
+        <button type="button" class="p-button perfil-boton" (click)="cerrarModal()">Cancelar</button>
+      </div>
+    </form>
   </div>
 </div>
