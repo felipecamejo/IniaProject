@@ -1,0 +1,82 @@
+<div class="container">
+    <!-- Botón de navegación hacia atrás -->
+    <button class="back-button" (click)="goToHome()">
+        <i class="pi pi-arrow-left"></i>
+    </button>
+    
+    <p-card class="card">
+        <ng-template pTemplate="header">
+            <h2 class="title">Listado de Pureza P. notatum</h2>
+        </ng-template>
+
+        <div class="search-section">
+            <div class="search-bar">
+                <input type="text" placeholder="Buscar por ID..." class="search-input" [(ngModel)]="searchText" name="search" />
+            </div>
+            <div class="filter-dropdown">
+                <select class="mes-select" [(ngModel)]="selectedMes" name="mes">
+                    <option value="">Todos los meses</option>
+                    <option *ngFor="let mes of meses" [value]="mes.id">{{ mes.label }}</option>
+                </select>
+            </div>
+            <div class="filter-dropdown">
+                <select class="anio-select" [(ngModel)]="selectedAnio" name="anio" (change)="onAnioChange()">
+                    <option value="">Todos los años</option>
+                    <option *ngFor="let anio of anios" [value]="anio.id">{{ anio.label }}</option>
+                </select>
+            </div>
+            <div class="filter-dropdown">
+                <div class="submit-btn">
+                    <button pButton type="button" (click)="crearPurezaPNotatum()" label="Crear Pureza P. notatum" class="p-button-primary"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensaje cuando no hay elementos -->
+        <div class="no-results-message" *ngIf="itemsFiltrados.length === 0">
+            <div class="no-results-content">
+                <h3>No se encontraron Pureza P. notatum</h3>
+                <p>No hay análisis Pureza P. notatum que coincidan con los filtros seleccionados.</p>
+                <p>Intenta ajustar los criterios de búsqueda.</p>
+            </div>
+        </div>
+
+        <!-- Lista de PMS filtrados -->
+        <div class="blue-rectangle" 
+             *ngFor="let item of itemsFiltrados"
+             [ngClass]="{
+               'pendiente': !item.repetido,
+               'repetido': item.repetido
+             }">
+            <div class="item-header">
+                <div class="item-info">
+                    <h3 class="item-title">Pureza P. notatum #{{ item.id }}</h3>    
+                </div>
+                <div class="item-status">
+                    <span class="status-badge">
+                        {{ item.repetido ? 'Repetido' : 'Pendiente' }}
+                    </span>
+                </div>
+            </div>
+            <div class="divider-line"></div>
+            <div class="item-content">
+                <div class="item-description">
+                    <p>{{ item.observaciones || 'Sin observaciones disponibles' }}</p>
+                </div>
+                <div class="item-actions">
+                    <button class="action-button edit-button" (click)="navegarAEditar(item)">
+                        <i class="pi pi-pencil"></i>
+                    </button>
+                    <button class="action-button delete-button" (click)="eliminarPurezaPNotatum(item)">
+                        <i class="pi pi-trash"></i>
+                    </button>
+                </div>
+                <div class="item-date">
+                    <span class="fecha">{{ getFechaConTipo(item).fecha }} ({{ getFechaConTipo(item).tipo }})</span>
+                </div>
+            </div>
+        </div>
+
+       
+    </p-card>
+</div>

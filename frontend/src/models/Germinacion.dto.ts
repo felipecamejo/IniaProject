@@ -38,6 +38,7 @@ export interface GerminacionDto {
   semillasDuras: number;
   germinacion: number;
   comentarios: string;
+  observaciones?: string;
   reciboId: number | null;
   activo: boolean;
   repetido: boolean;

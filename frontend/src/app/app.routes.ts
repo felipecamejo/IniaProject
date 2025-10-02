@@ -14,9 +14,13 @@ import { ListadoMalezasComponent } from './components/listado-malezas/listado-ma
 import { ListadoHongosComponent } from './components/listado-hongos/listado-hongos.component';
 import { ListadoCultivosComponent } from './components/listado-cultivos/listado-cultivos.component';
 import { PurezaPNotatumComponent } from './components/pureza-p-notatum/pureza-p-notatum.component';
-//import { ListadoPmsComponent } from './components/listado-pms/listado-pms.component';
+import { ListadoPmsComponent } from './components/listado-pms/listado-pms.component';
 import { GerminacionComponent } from './components/germinacion/germinacion.component';
 import { TetrazolioComponent } from './components/tetrazolio/tetrazolio.component';
+import { ListadoDosnComponent } from './components/listado-dosn/listado-dosn.component';
+import { ListadoPurezaPNotatumComponent } from './components/listado-pureza-p-notatum/listado-pureza-p-notatum.component';
+import { ListadoGerminacionComponent } from './components/listado-germinacion.component/listado-germinacion.component';
+import { PerfilComponent } from './components/perfil/perfil.component';
 
 export const routes: Routes = [
     { path : 'home', component: HomeComponent },
@@ -34,11 +38,15 @@ export const routes: Routes = [
     { path : 'pureza-p-notatum', component: PurezaPNotatumComponent },
     { path : 'germinacion', component: GerminacionComponent },
     { path : 'tetrazolio', component: TetrazolioComponent },
+    { path : 'perfil', component: PerfilComponent },
 
     //listados
     { path : 'listado-lotes', component: ListadoLotesComponent },
     { path : 'listado-malezas', component: ListadoMalezasComponent },
     { path : 'listado-hongos', component: ListadoHongosComponent },
     { path : 'listado-cultivos', component: ListadoCultivosComponent },
-   // { path : 'listado-pms', component: ListadoPmsComponent },
+    { path : 'listado-dosn', component: ListadoDosnComponent },
+    { path : 'listado-pms', component: ListadoPmsComponent },
+    { path : 'listado-pureza-p-notatum', component: ListadoPurezaPNotatumComponent },
+    { path : 'listado-germinacion', component: ListadoGerminacionComponent },
 ];
