@@ -32,6 +32,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
   styleUrl: './sanitario.component.scss'
 })
 export class SanitarioComponent implements OnInit {
+  repetido: boolean = false;
   
   // Variables para manejar navegación
   isEditing: boolean = false;

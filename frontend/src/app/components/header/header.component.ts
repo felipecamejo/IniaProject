@@ -1,12 +1,21 @@
 import { Component, HostListener } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-header',
-  imports: [],
+  standalone: true,
+  imports: [RouterModule],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent {
+  constructor(private router: Router) {}
+
+  navigateTo(route: string): void {
+    this.router.navigate([route]);
+    this.closeMobileMenu();
+  }
   isMobileMenuOpen = false;
 
   toggleMobileMenu(): void {

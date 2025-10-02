@@ -16,6 +16,16 @@ import { SanitarioDto } from '../../../models/Sanitario.dto';
   styleUrls: ['./listado-sanitario.component.scss']
 })
 export class ListadoSanitarioComponent {
+    crearItem() {
+      this.router.navigate(['/sanitario/crear']);
+    }
+
+    eliminarItem(item: SanitarioDto) {
+      if (confirm(`¿Estás seguro de que quieres eliminar el Sanitario #${item.id}?`)) {
+        this.items = this.items.filter(sanitario => sanitario.id !== item.id);
+        console.log('Sanitario eliminado');
+      }
+    }
     constructor(private router: Router) {}
 
     selectedMes: string = '';

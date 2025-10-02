@@ -24,22 +24,22 @@
       [class.nav--mobile-open]="isMobileMenuOpen"
       role="navigation" 
       aria-label="Menú principal">
-      <a href="#" class="nav__item" aria-label="Inicio" (click)="closeMobileMenu()">
+      <a [routerLink]="['/home']" class="nav__item" aria-label="Inicio" (click)="navigateTo('/home')">
         <i class="pi pi-home"></i>
         <span class="nav__label">Inicio</span>
       </a>
 
-      <a href="#" class="nav__item" aria-label="Perfil" (click)="closeMobileMenu()">
+      <a [routerLink]="['/perfil']" class="nav__item" aria-label="Perfil" (click)="navigateTo('/perfil')">
         <i class="pi pi-user"></i>
         <span class="nav__label">Perfil</span>
       </a>
 
-      <a href="#" class="nav__item" aria-label="Documentación" (click)="closeMobileMenu()">
+      <a [routerLink]="['/listado-lotes']" class="nav__item" aria-label="Documentación" (click)="navigateTo('/listado-lotes')">
         <i class="pi pi-file"></i>
         <span class="nav__label">Documentos</span>
       </a>
 
-      <a href="#" class="nav__item" aria-label="Cerrar sesión" (click)="closeMobileMenu()">
+      <a [routerLink]="['/login']" class="nav__item" aria-label="Cerrar sesión" (click)="navigateTo('/login')">
         <i class="pi pi-sign-out"></i>
         <span class="nav__label">Salir</span>
       </a>

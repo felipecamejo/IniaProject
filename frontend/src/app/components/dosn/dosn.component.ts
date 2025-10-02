@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
@@ -21,21 +22,30 @@ import { MultiSelectModule } from 'primeng/multiselect';
   templateUrl: './dosn.component.html',
   styleUrl: './dosn.component.scss'
 })
-
-export class DOSNComponent {
-  isMalezasToleradasDropdownOpen: boolean = false;
-  malezasToleradasSearchText: string = '';
-
+// ...existing code...
+export class DOSNComponent implements OnInit {
+  // Métodos para multiselect de malezas toleradas
   toggleMalezasToleradasDropdown() {
     this.isMalezasToleradasDropdownOpen = !this.isMalezasToleradasDropdownOpen;
   }
+
+  getSelectedMalezasToleradasText() {
+    if (this.selectedMalezasToleradas.length === 0) return 'Seleccionar malezas toleradas...';
+    return this.selectedMalezasToleradas.map(id => {
+      const item = this.malezasToleradasOptions.find(mt => mt.id === id);
+      return item ? item.label : '';
+    }).join(', ');
+  }
+
   getFilteredMalezasToleradas() {
     const search = this.malezasToleradasSearchText.toLowerCase();
     return this.malezasToleradasOptions.filter(mt => mt.label.toLowerCase().includes(search));
   }
+
   isMalezaToleradaSelected(id: number) {
     return this.selectedMalezasToleradas.includes(id);
   }
+
   toggleMalezaToleradaSelection(maleza: {id: number, label: string}) {
     if (this.isMalezaToleradaSelected(maleza.id)) {
       this.selectedMalezasToleradas = this.selectedMalezasToleradas.filter(id => id !== maleza.id);
@@ -43,24 +53,125 @@ export class DOSNComponent {
       this.selectedMalezasToleradas = [...this.selectedMalezasToleradas, maleza.id];
     }
   }
-  malezasCeroOptions = [
-    { id: 1, label: 'Cuscuta spp.' },
-    { id: 2, label: 'Brassica spp.' },
-    { id: 3, label: 'Orobanche spp.' }
-  ];
-  selectedMalezasCero: number[] = [];
   malezasToleradasOptions = [
     { id: 1, label: 'Lolium perenne' },
     { id: 2, label: 'Poa annua' },
     { id: 3, label: 'Capsella bursa-pastoris' }
   ];
   selectedMalezasToleradas: number[] = [];
-  getSelectedMalezasToleradasText() {
-    if (this.selectedMalezasToleradas.length === 0) return 'Seleccionar malezas toleradas...';
-    return this.selectedMalezasToleradas.map(id => {
-      const item = this.malezasToleradasOptions.find(mt => mt.id === id);
-      return item ? item.label : '';
-    }).join(', ');
+
+  malezasCeroOptions = [
+    { id: 1, label: 'Cuscuta spp.' },
+    { id: 2, label: 'Brassica spp.' },
+    { id: 3, label: 'Orobanche spp.' }
+  ];
+  selectedMalezasCero: number[] = [];
+  // Variables para manejar navegación
+  isEditing: boolean = false;
+  editingId: number | null = null;
+
+  isMalezasToleradasDropdownOpen: boolean = false;
+  malezasToleradasSearchText: string = '';
+  // ...existing code...
+
+  // Datos de prueba (deberían venir de un servicio)
+  private itemsData: any[] = [
+    {
+      id: 1,
+      fechaInase: '2023-01-15',
+      gramosInase: 100,
+      tipoAnalisisInase: 'Completo',
+      fechaInia: '2023-01-16',
+      gramosInia: 90,
+      tipoAnalisisInia: 'Reducido',
+      selectedMalezas: [1,2],
+      selectedCultivos: [1],
+      selectedMalezasToleradas: [1],
+      selectedMalezasCero: [2],
+      brassica: [1],
+      cuscuta: [2]
+    }
+    // ...otros datos de prueba
+  ];
+
+  constructor(private route: ActivatedRoute, private router: Router) {}
+
+  ngOnInit() {
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.isEditing = true;
+        this.editingId = parseInt(params['id']);
+        this.cargarDatosParaEdicion(this.editingId);
+      } else {
+        this.isEditing = false;
+        this.editingId = null;
+        this.cargarDatos();
+      }
+    });
+  }
+
+  cargarDatosParaEdicion(id: number) {
+    const item = this.itemsData.find(dosn => dosn.id === id);
+    if (item) {
+      this.fechaInase = item.fechaInase || '';
+      this.gramosInase = item.gramosInase || null;
+      this.tipoAnalisisInase = item.tipoAnalisisInase || '';
+      this.fechaInia = item.fechaInia || '';
+      this.gramosInia = item.gramosInia || null;
+      this.tipoAnalisisInia = item.tipoAnalisisInia || '';
+      this.selectedMalezas = item.selectedMalezas || [];
+      this.selectedCultivos = item.selectedCultivos || [];
+      this.selectedMalezasToleradas = item.selectedMalezasToleradas || [];
+      this.selectedMalezasCero = item.selectedMalezasCero || [];
+      this.brassica = item.brassica || [];
+      this.cuscuta = item.cuscuta || [];
+    }
+  }
+
+  cargarDatos() {
+    this.fechaInase = '';
+    this.gramosInase = null;
+    this.tipoAnalisisInase = '';
+    this.fechaInia = '';
+    this.gramosInia = null;
+    this.tipoAnalisisInia = '';
+    this.selectedMalezas = [];
+    this.selectedCultivos = [];
+    this.selectedMalezasToleradas = [];
+    this.selectedMalezasCero = [];
+    this.brassica = [];
+    this.cuscuta = [];
+  }
+
+  onSubmit() {
+    const dosnData: any = {
+      fechaInase: this.fechaInase,
+      gramosInase: this.gramosInase,
+      tipoAnalisisInase: this.tipoAnalisisInase,
+      fechaInia: this.fechaInia,
+      gramosInia: this.gramosInia,
+      tipoAnalisisInia: this.tipoAnalisisInia,
+      selectedMalezas: this.selectedMalezas,
+      selectedCultivos: this.selectedCultivos,
+      selectedMalezasToleradas: this.selectedMalezasToleradas,
+      selectedMalezasCero: this.selectedMalezasCero,
+      brassica: this.brassica,
+      cuscuta: this.cuscuta
+    };
+    if (this.isEditing && this.editingId) {
+      // Actualizar DOSN existente
+      console.log('Actualizando DOSN ID:', this.editingId, 'con datos:', dosnData);
+    } else {
+      // Crear nuevo DOSN
+      console.log('Creando nuevo DOSN:', dosnData);
+    }
+    // Navegar de vuelta al listado
+    this.router.navigate(['/listado-dosn']);
+  }
+
+  onCancel() {
+    // Navegar de vuelta al listado
+    this.router.navigate(['/listado-dosn']);
   }
   // ...existing code...
   // INASE

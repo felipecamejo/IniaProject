@@ -124,12 +124,20 @@
   <button pButton type="button" label="Agregar repetición" class="btn-agregar-rep" (click)="agregarRepeticion()"></button>
       </div>
 
-      <div class="submit-btn">
+      <div class="submit-btn" style="display: flex; gap: 1rem;">
         <button
           pButton
-          type="submit"
-          label="Crear Pureza P. notatum"
+          type="button"
+          [label]="isEditing ? 'Editar Pureza P. notatum' : 'Crear Pureza P. notatum'"
           class="p-button-success"
+          (click)="onSubmit()"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Cancelar"
+          class="p-button-secondary"
+          (click)="onCancel()"
         ></button>
       </div>
     </form>

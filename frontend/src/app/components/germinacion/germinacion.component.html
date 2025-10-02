@@ -204,12 +204,20 @@
         <textarea id="comentarios" [(ngModel)]="comentarios" name="comentarios" rows="4" style="width:100%; max-width:700px; padding:0.7rem 1rem; border-radius:10px; border:2px solid #2563eb; background:#f7fbff; font-size:1.05em; color:#1746a0; resize:vertical; box-shadow:0 2px 8px rgba(38,99,235,0.08);"></textarea>
       </div>
 
-      <div class="submit-btn" style="margin-top: 1.2rem;">
+      <div class="submit-btn" style="margin-top: 1.2rem; display: flex; gap: 1rem;">
         <button
           pButton
-          type="submit"
-          label="Crear Germinacion"
+          type="button"
+          [label]="isEditing ? 'Editar Germinacion' : 'Crear Germinacion'"
           class="p-button-success"
+          (click)="onSubmit()"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Cancelar"
+          class="p-button-secondary"
+          (click)="onCancel()"
         ></button>
       </div>
 

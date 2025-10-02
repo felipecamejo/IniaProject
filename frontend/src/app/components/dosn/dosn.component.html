@@ -185,12 +185,20 @@
           </span>
         </div>
       </div>
-      <div class="submit-btn">
+      <div class="submit-btn" style="display: flex; gap: 1rem;">
         <button
           pButton
-          type="submit"
-          label="Crear DOSN"
+          type="button"
+          [label]="isEditing ? 'Editar DOSN' : 'Crear DOSN'"
           class="p-button-success"
+          (click)="onSubmit()"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Cancelar"
+          class="p-button-secondary"
+          (click)="onCancel()"
         ></button>
       </div>
     </form>
