@@ -4,28 +4,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ti.proyectoinia.business.entities.*;
-import ti.proyectoinia.business.repositories.ReciboRepository;
 import ti.proyectoinia.dtos.*;
-
+import ti.proyectoinia.business.repositories.ReciboRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class MapsDtoEntityService {
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    
     @Autowired
     private ReciboRepository reciboRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    /**
-     * Método helper para validar y obtener un recibo por ID
-     * @param reciboId ID del recibo a validar
-     * @return Recibo si existe y está activo, null en caso contrario
-     */
-    private Recibo getValidRecibo(Long reciboId) {
-        if (reciboId == null || reciboId <= 0) {
+    public Recibo getValidRecibo(Long reciboId) {
+        if (reciboId == null) {
             return null;
         }
         
@@ -56,7 +48,7 @@ public class MapsDtoEntityService {
         Hongo hongo = new Hongo();
         hongo.setId(hongoDto.getId());
         hongo.setNombre(hongoDto.getNombre());
-        hongo.setDescripcion(hongo.getDescripcion());
+        hongo.setDescripcion(hongoDto.getDescripcion());
         hongo.setActivo(hongoDto.isActivo());
 
         return hongo;
@@ -338,14 +330,15 @@ public class MapsDtoEntityService {
         if (pms == null) {
             return null;
         }
-
         PMSDto pmsDto = new PMSDto();
         pmsDto.setId(pms.getId());
+        pmsDto.setGramosPorRepeticiones(pms.getGramosPorRepeticiones());
+        pmsDto.setPesoPromedioCienSemillas(pms.getPesoPromedioCienSemillas());
         pmsDto.setPesoMilSemillas(pms.getPesoMilSemillas());
-        pmsDto.setHumedadPorcentual(pms.getHumedadPorcentual());
-        pmsDto.setFechaMedicion(pms.getFechaMedicion());
-        pmsDto.setMetodo(pms.getMetodo());
-        pmsDto.setObservaciones(pms.getObservaciones());
+        pmsDto.setPesoPromedioMilSemillas(pms.getPesoPromedioMilSemillas());
+        pmsDto.setDesvioEstandar(pms.getDesvioEstandar());
+        pmsDto.setCoeficienteVariacion(pms.getCoeficienteVariacion());
+        pmsDto.setComentarios(pms.getComentarios());
         pmsDto.setActivo(pms.isActivo());
         pmsDto.setRepetido(pms.isRepetido());
         pmsDto.setFechaCreacion(pms.getFechaCreacion());
@@ -365,11 +358,13 @@ public class MapsDtoEntityService {
         }
         PMS pms = new PMS();
         pms.setId(pmsDto.getId());
+        pms.setGramosPorRepeticiones(pmsDto.getGramosPorRepeticiones());
+        pms.setPesoPromedioCienSemillas(pmsDto.getPesoPromedioCienSemillas());
         pms.setPesoMilSemillas(pmsDto.getPesoMilSemillas());
-        pms.setHumedadPorcentual(pmsDto.getHumedadPorcentual());
-        pms.setFechaMedicion(pmsDto.getFechaMedicion());
-        pms.setMetodo(pmsDto.getMetodo());
-        pms.setObservaciones(pmsDto.getObservaciones());
+        pms.setPesoPromedioMilSemillas(pmsDto.getPesoPromedioMilSemillas());
+        pms.setDesvioEstandar(pmsDto.getDesvioEstandar());
+        pms.setCoeficienteVariacion(pmsDto.getCoeficienteVariacion());
+        pms.setComentarios(pmsDto.getComentarios());
         pms.setActivo(pmsDto.isActivo());
         pms.setRepetido(pmsDto.isRepetido());
         pms.setFechaCreacion(pmsDto.getFechaCreacion());
