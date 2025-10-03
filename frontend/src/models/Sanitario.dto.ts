@@ -1,19 +1,18 @@
-export type Metodo = 'METODO_A' | 'METODO_B' | 'METODO_C';
-export type Estado = 'ESTADO_X' | 'ESTADO_Y';
-
 export interface SanitarioDto {
   id: number | null;
   fechaSiembra: string | null;
   fecha: string | null;
-  metodo: Metodo;
-  temperatura: number;
-  horasLuzOscuridad: number;
-  nroDias: number;
-  estadoProductoDosis: Estado;
+  metodo: string;
+  temperatura: number | null;
+  horasLuz: number | null;
+  horasOscuridad: number | null;
+  nroDias: number | null;
+  estadoProductoDosis: string;
   observaciones: string;
-  nroSemillasRepeticion: number;
+  nroSemillasRepeticion: number | null;
   reciboId: number | null;
   activo: boolean;
+  estandar: boolean;
   repetido: boolean;
   SanitarioHongoids: number[] | null;
   fechaCreacion: string | null;

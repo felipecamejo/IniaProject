@@ -33,6 +33,8 @@ public class PMSDto {
 
     private Date fechaRepeticion;
 
+    private boolean estandar;
+
     @Generated
     public boolean equals(final Object o) {
         if (this == o) return true;

@@ -78,7 +78,7 @@ public class Germinacion {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "GERMINACION_METODO")
-    private Metodo metodo;
+    private String metodo;
 
     @Column(name = "GERMINACION_TEMPERATURA")
     private Float temperatura;

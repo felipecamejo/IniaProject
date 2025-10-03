@@ -60,15 +60,17 @@ export class ListadoSanitarioComponent {
         id: 1,
         fechaSiembra: '2023-01-10',
         fecha: '2023-01-15',
-        metodo: 'METODO_A',
-        temperatura: 25.5,
-        horasLuzOscuridad: 12,
+        metodo: 'Metodo A',
+        temperatura: 25,
+        horasLuz: 12,
+        horasOscuridad: 12,
         nroDias: 7,
-        estadoProductoDosis: 'ESTADO_X',
+        estadoProductoDosis: 'Activo',
         observaciones: 'Control de calidad mensual - Muestra estándar',
         nroSemillasRepeticion: 100,
         reciboId: 101,
         activo: true,
+        estandar: false,
         repetido: false,
         SanitarioHongoids: [1, 2],
         fechaCreacion: '2023-01-15',
@@ -78,15 +80,17 @@ export class ListadoSanitarioComponent {
         id: 2,
         fechaSiembra: '2022-02-15',
         fecha: '2022-02-20',
-        metodo: 'METODO_B',
-        temperatura: 23.8,
-        horasLuzOscuridad: 14,
+        metodo: 'Metodo B',
+        temperatura: 23,
+        horasLuz: 14,
+        horasOscuridad: 10,
         nroDias: 10,
-        estadoProductoDosis: 'ESTADO_Y',
+        estadoProductoDosis: 'Pendiente',
         observaciones: 'Lote especial - Requiere repetición',
         nroSemillasRepeticion: 150,
         reciboId: 102,
         activo: true,
+        estandar: true,
         repetido: true,
         SanitarioHongoids: [3, 4, 5],
         fechaCreacion: '2022-02-20',
@@ -96,15 +100,17 @@ export class ListadoSanitarioComponent {
         id: 3,
         fechaSiembra: '2023-03-05',
         fecha: '2023-03-10',
-        metodo: 'METODO_C',
-        temperatura: 26.1,
-        horasLuzOscuridad: 16,
+        metodo: 'Metodo C',
+        temperatura: 26,
+        horasLuz: 16,
+        horasOscuridad: 8,
         nroDias: 14,
-        estadoProductoDosis: 'ESTADO_X',
+        estadoProductoDosis: 'Completado',
         observaciones: 'Inspección rutinaria de equipos - Repetir análisis',
         nroSemillasRepeticion: 200,
         reciboId: 103,
-        activo: true,
+        activo: false,
+        estandar: false,
         repetido: true,
         SanitarioHongoids: null,
         fechaCreacion: '2023-03-10',
@@ -117,14 +123,14 @@ export class ListadoSanitarioComponent {
     get itemsFiltrados() {
       return this.items.filter(item => {
 
-        const cumpleId = !this.searchText || 
+        const cumpleId = !this.searchText ||
           item.id?.toString().includes(this.searchText);
-        
+
         const fechaParaFiltro = this.getFechaConTipo(item).fecha;
         const cumpleMes = !this.selectedMes || this.getMesFromFecha(fechaParaFiltro) === parseInt(this.selectedMes);
-        
+
         const cumpleAnio = !this.selectedAnio || this.getAnioFromFecha(fechaParaFiltro) === parseInt(this.selectedAnio);
-        
+
         return cumpleId && cumpleMes && cumpleAnio;
       }).sort((a, b) => {
         // Ordenar: pendientes primero (repetido = false), luego repetidos (repetido = true)

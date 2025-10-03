@@ -177,6 +177,7 @@ public class MapsDtoEntityService {
         reciboDto.setOrigen(recibo.getOrigen());
         reciboDto.setCultivar(recibo.getCultivar());
         reciboDto.setDeposito(recibo.getDeposito());
+        reciboDto.setDepositoId(recibo.getDepositoId());
         reciboDto.setEstado(recibo.getEstado());
         reciboDto.setLote(recibo.getLote());
         reciboDto.setKgLimpios(recibo.getKgLimpios());
@@ -184,6 +185,12 @@ public class MapsDtoEntityService {
         reciboDto.setArticulo(recibo.getArticulo());
         reciboDto.setActivo(recibo.isActivo());
 
+        // Mapear humedades a lista de IDs
+        if (recibo.getHumedades() != null) {
+            reciboDto.setHumedadesId(recibo.getHumedades().stream().map(h -> h.getId().intValue()).collect(Collectors.toList()));
+        } else {
+            reciboDto.setHumedadesId(null);
+        }
         return reciboDto;
     }
 
@@ -205,6 +212,7 @@ public class MapsDtoEntityService {
         recibo.setOrigen(reciboDto.getOrigen());
         recibo.setCultivar(reciboDto.getCultivar());
         recibo.setDeposito(reciboDto.getDeposito());
+        recibo.setDepositoId(reciboDto.getDepositoId());
         recibo.setEstado(reciboDto.getEstado());
         recibo.setLote(reciboDto.getLote());
         recibo.setKgLimpios(reciboDto.getKgLimpios());
@@ -212,6 +220,16 @@ public class MapsDtoEntityService {
         recibo.setArticulo(reciboDto.getArticulo());
         recibo.setActivo(reciboDto.isActivo());
 
+        // Mapear lista de IDs a entidades HumedadRecibo (solo con id)
+        if (reciboDto.getHumedadesId() != null) {
+            recibo.setHumedades(reciboDto.getHumedadesId().stream().map(id -> {
+                HumedadRecibo h = new HumedadRecibo();
+                h.setId(Long.valueOf(id));
+                return h;
+            }).collect(Collectors.toList()));
+        } else {
+            recibo.setHumedades(null);
+        }
         return recibo;
     }
 
@@ -247,39 +265,25 @@ public class MapsDtoEntityService {
         if (sanitario == null) {
             return null;
         }
-
         SanitarioDto sanitarioDto = new SanitarioDto();
         sanitarioDto.setId(sanitario.getId());
         sanitarioDto.setFechaSiembra(sanitario.getFechaSiembra());
         sanitarioDto.setFecha(sanitario.getFecha());
         sanitarioDto.setMetodo(sanitario.getMetodo());
         sanitarioDto.setTemperatura(sanitario.getTemperatura());
-        sanitarioDto.setHorasLuzOscuridad(sanitario.getHorasLuzOscuridad());
+        sanitarioDto.setHorasLuz(sanitario.getHorasLuz());
+        sanitarioDto.setHorasOscuridad(sanitario.getHorasOscuridad());
         sanitarioDto.setNroDias(sanitario.getNroDias());
         sanitarioDto.setEstadoProductoDosis(sanitario.getEstadoProductoDosis());
         sanitarioDto.setObservaciones(sanitario.getObservaciones());
         sanitarioDto.setNroSemillasRepeticion(sanitario.getNroSemillasRepeticion());
         sanitarioDto.setActivo(sanitario.isActivo());
+        sanitarioDto.setEstandar(sanitario.isEstandar());
         sanitarioDto.setRepetido(sanitario.isRepetido());
         sanitarioDto.setFechaCreacion(sanitario.getFechaCreacion());
         sanitarioDto.setFechaRepeticion(sanitario.getFechaRepeticion());
-
-        if (sanitario.getRecibo() != null) {
-            sanitarioDto.setReciboId(sanitario.getRecibo().getId());
-        } else {
-            sanitarioDto.setReciboId(null);
-        }
-
-        if (sanitario.getSanitarioHongos() != null) {
-            sanitarioDto.setSanitarioHongoids(
-                sanitario.getSanitarioHongos().stream()
-                    .map(SanitarioHongo::getId)
-                    .collect(Collectors.toList())
-            );
-        } else {
-            sanitarioDto.setSanitarioHongoids(null);
-        }
-
+        sanitarioDto.setReciboId(sanitario.getReciboId());
+        sanitarioDto.setSanitarioHongoids(sanitario.getSanitarioHongoids());
         return sanitarioDto;
     }
 
@@ -287,42 +291,25 @@ public class MapsDtoEntityService {
         if (sanitarioDto == null) {
             return null;
         }
-
         Sanitario sanitario = new Sanitario();
         sanitario.setId(sanitarioDto.getId());
         sanitario.setFechaSiembra(sanitarioDto.getFechaSiembra());
         sanitario.setFecha(sanitarioDto.getFecha());
         sanitario.setMetodo(sanitarioDto.getMetodo());
         sanitario.setTemperatura(sanitarioDto.getTemperatura());
-        sanitario.setHorasLuzOscuridad(sanitarioDto.getHorasLuzOscuridad());
+        sanitario.setHorasLuz(sanitarioDto.getHorasLuz());
+        sanitario.setHorasOscuridad(sanitarioDto.getHorasOscuridad());
         sanitario.setNroDias(sanitarioDto.getNroDias());
         sanitario.setEstadoProductoDosis(sanitarioDto.getEstadoProductoDosis());
         sanitario.setObservaciones(sanitarioDto.getObservaciones());
         sanitario.setNroSemillasRepeticion(sanitarioDto.getNroSemillasRepeticion());
         sanitario.setActivo(sanitarioDto.isActivo());
+        sanitario.setEstandar(sanitarioDto.isEstandar());
         sanitario.setRepetido(sanitarioDto.isRepetido());
         sanitario.setFechaCreacion(sanitarioDto.getFechaCreacion());
         sanitario.setFechaRepeticion(sanitarioDto.getFechaRepeticion());
-
-        // Validar y obtener el recibo si existe
-        Recibo recibo = getValidRecibo(sanitarioDto.getReciboId());
-        sanitario.setRecibo(recibo);
-
-        // Traducción de IDs a entidades SanitarioHongo
-        if (sanitarioDto.getSanitarioHongoids() != null) {
-            List<SanitarioHongo> sanitarioHongos = sanitarioDto.getSanitarioHongoids().stream()
-                .map(id -> {
-                    SanitarioHongo sh = new SanitarioHongo();
-                    sh.setId(id);
-                    sh.setSanitario(sanitario);
-                    return sh;
-                })
-                .collect(Collectors.toList());
-            sanitario.setSanitarioHongos(sanitarioHongos);
-        } else {
-            sanitario.setSanitarioHongos(null);
-        }
-
+        sanitario.setReciboId(sanitarioDto.getReciboId());
+        sanitario.setSanitarioHongoids(sanitarioDto.getSanitarioHongoids());
         return sanitario;
     }
 
@@ -383,15 +370,37 @@ public class MapsDtoEntityService {
 
         PurezaDto dto = new PurezaDto();
         dto.setId(pureza.getId());
-        dto.setFecha(pureza.getFecha());
+        dto.setFechaInase(pureza.getFechaInase());
+        dto.setFechaInia(pureza.getFechaInia());
         dto.setPesoInicial(pureza.getPesoInicial());
+        dto.setPesoInicialInase(pureza.getPesoInicialInase());
+        dto.setPesoInicialPorcentajeRedondeo(pureza.getPesoInicialPorcentajeRedondeo());
+        dto.setPesoInicialPorcentajeRedondeoInase(pureza.getPesoInicialPorcentajeRedondeoInase());
         dto.setSemillaPura(pureza.getSemillaPura());
+        dto.setSemillaPuraInase(pureza.getSemillaPuraInase());
+        dto.setSemillaPuraPorcentajeRedondeo(pureza.getSemillaPuraPorcentajeRedondeo());
+        dto.setSemillaPuraPorcentajeRedondeoInase(pureza.getSemillaPuraPorcentajeRedondeoInase());
         dto.setMaterialInerte(pureza.getMaterialInerte());
+        dto.setMaterialInerteInase(pureza.getMaterialInerteInase());
+        dto.setMaterialInertePorcentajeRedondeo(pureza.getMaterialInertePorcentajeRedondeo());
+        dto.setMaterialInertePorcentajeRedondeoInase(pureza.getMaterialInertePorcentajeRedondeoInase());
         dto.setOtrosCultivos(pureza.getOtrosCultivos());
+        dto.setOtrosCultivosInase(pureza.getOtrosCultivosInase());
+        dto.setOtrosCultivosPorcentajeRedondeo(pureza.getOtrosCultivosPorcentajeRedondeo());
+        dto.setOtrosCultivosPorcentajeRedondeoInase(pureza.getOtrosCultivosPorcentajeRedondeoInase());
         dto.setMalezas(pureza.getMalezas());
+        dto.setMalezasInase(pureza.getMalezasInase());
+        dto.setMalezasPorcentajeRedondeo(pureza.getMalezasPorcentajeRedondeo());
+        dto.setMalezasPorcentajeRedondeoInase(pureza.getMalezasPorcentajeRedondeoInase());
         dto.setMalezasToleradas(pureza.getMalezasToleradas());
+        dto.setMalezasToleradasInase(pureza.getMalezasToleradasInase());
+        dto.setMalezasToleradasPorcentajeRedondeo(pureza.getMalezasToleradasPorcentajeRedondeo());
+        dto.setMalezasToleradasPorcentajeRedondeoInase(pureza.getMalezasToleradasPorcentajeRedondeoInase());
+        dto.setMalezasToleranciaCero(pureza.getMalezasToleranciaCero());
+        dto.setMalezasToleranciaCeroInase(pureza.getMalezasToleranciaCeroInase());
+        dto.setMalezasToleranciaCeroPorcentajeRedondeo(pureza.getMalezasToleranciaCeroPorcentajeRedondeo());
+        dto.setMalezasToleranciaCeroPorcentajeRedondeoInase(pureza.getMalezasToleranciaCeroPorcentajeRedondeoInase());
         dto.setPesoTotal(pureza.getPesoTotal());
-        dto.setOtrosCultivo(pureza.getOtrosCultivo());
         dto.setFechaEstandar(pureza.getFechaEstandar());
         dto.setEstandar(pureza.getEstandar());
         dto.setActivo(pureza.isActivo());
@@ -402,8 +411,10 @@ public class MapsDtoEntityService {
         if (pureza.getRecibo() != null) {
             dto.setReciboId(pureza.getRecibo().getId());
         } else {
+
             dto.setReciboId(null);
         }
+
         return dto;
     }
 
@@ -411,22 +422,42 @@ public class MapsDtoEntityService {
         if (dto == null) {
             return null;
         }
-
         Pureza pureza = new Pureza();
-
         if (dto.getId() != null) {
             pureza.setId(dto.getId());
         }
 
-        pureza.setFecha(dto.getFecha());
+        pureza.setFechaInase(dto.getFechaInase());
+        pureza.setFechaInia(dto.getFechaInia());
         pureza.setPesoInicial(dto.getPesoInicial());
+        pureza.setPesoInicialInase(dto.getPesoInicialInase());
+        pureza.setPesoInicialPorcentajeRedondeo(dto.getPesoInicialPorcentajeRedondeo());
+        pureza.setPesoInicialPorcentajeRedondeoInase(dto.getPesoInicialPorcentajeRedondeoInase());
         pureza.setSemillaPura(dto.getSemillaPura());
+        pureza.setSemillaPuraInase(dto.getSemillaPuraInase());
+        pureza.setSemillaPuraPorcentajeRedondeo(dto.getSemillaPuraPorcentajeRedondeo());
+        pureza.setSemillaPuraPorcentajeRedondeoInase(dto.getSemillaPuraPorcentajeRedondeoInase());
         pureza.setMaterialInerte(dto.getMaterialInerte());
+        pureza.setMaterialInerteInase(dto.getMaterialInerteInase());
+        pureza.setMaterialInertePorcentajeRedondeo(dto.getMaterialInertePorcentajeRedondeo());
+        pureza.setMaterialInertePorcentajeRedondeoInase(dto.getMaterialInertePorcentajeRedondeoInase());
         pureza.setOtrosCultivos(dto.getOtrosCultivos());
+        pureza.setOtrosCultivosInase(dto.getOtrosCultivosInase());
+        pureza.setOtrosCultivosPorcentajeRedondeo(dto.getOtrosCultivosPorcentajeRedondeo());
+        pureza.setOtrosCultivosPorcentajeRedondeoInase(dto.getOtrosCultivosPorcentajeRedondeoInase());
         pureza.setMalezas(dto.getMalezas());
+        pureza.setMalezasInase(dto.getMalezasInase());
+        pureza.setMalezasPorcentajeRedondeo(dto.getMalezasPorcentajeRedondeo());
+        pureza.setMalezasPorcentajeRedondeoInase(dto.getMalezasPorcentajeRedondeoInase());
         pureza.setMalezasToleradas(dto.getMalezasToleradas());
+        pureza.setMalezasToleradasInase(dto.getMalezasToleradasInase());
+        pureza.setMalezasToleradasPorcentajeRedondeo(dto.getMalezasToleradasPorcentajeRedondeo());
+        pureza.setMalezasToleradasPorcentajeRedondeoInase(dto.getMalezasToleradasPorcentajeRedondeoInase());
+        pureza.setMalezasToleranciaCero(dto.getMalezasToleranciaCero());
+        pureza.setMalezasToleranciaCeroInase(dto.getMalezasToleranciaCeroInase());
+        pureza.setMalezasToleranciaCeroPorcentajeRedondeo(dto.getMalezasToleranciaCeroPorcentajeRedondeo());
+        pureza.setMalezasToleranciaCeroPorcentajeRedondeoInase(dto.getMalezasToleranciaCeroPorcentajeRedondeoInase());
         pureza.setPesoTotal(dto.getPesoTotal());
-        pureza.setOtrosCultivo(dto.getOtrosCultivo());
         pureza.setFechaEstandar(dto.getFechaEstandar());
         pureza.setEstandar(dto.isEstandar());
         pureza.setActivo(dto.isActivo());
@@ -903,6 +934,24 @@ public class MapsDtoEntityService {
         entity.setActivo(dto.isActivo());
         entity.setDescripcion(dto.getDescripcion());
 
+        return entity;
+    }
+
+    public HumedadReciboDto mapToDtoHumedadRecibo(HumedadRecibo entity) {
+        if (entity == null) return null;
+        HumedadReciboDto dto = new HumedadReciboDto();
+        dto.setId(entity.getId());
+        dto.setLugar(entity.getLugar());
+        dto.setNumero(entity.getNumero());
+        return dto;
+    }
+
+    public HumedadRecibo mapToEntityHumedadRecibo(HumedadReciboDto dto) {
+        if (dto == null) return null;
+        HumedadRecibo entity = new HumedadRecibo();
+        entity.setId(dto.getId());
+        entity.setLugar(dto.getLugar());
+        entity.setNumero(dto.getNumero());
         return entity;
     }
 }

@@ -48,11 +48,13 @@ export class ListadoPmsComponent {
     items: PMSDto[] = [
       {
         id: 1,
+        gramosPorRepeticiones: [2.5, 2.6, 2.4],
+        pesoPromedioCienSemillas: 2.5,
         pesoMilSemillas: 25.5,
-        humedadPorcentual: 12.3,
-        fechaMedicion: '2023-01-15',
-        metodo: 'Manual',
-        observaciones: 'Control de calidad mensual - Muestra estándar',
+        pesoPromedioMilSemillas: 25.0,
+        desvioEstandar: 0.1,
+        coeficienteVariacion: 0.4,
+        comentarios: 'Control de calidad mensual - Muestra estándar',
         activo: true,
         repetido: false,
         reciboId: 101,
@@ -61,11 +63,13 @@ export class ListadoPmsComponent {
       },
       {
         id: 2,
+        gramosPorRepeticiones: [2.3, 2.4, 2.2],
+        pesoPromedioCienSemillas: 2.3,
         pesoMilSemillas: 23.8,
-        humedadPorcentual: 11.7,
-        fechaMedicion: '2022-02-20',
-        metodo: 'Automático',
-        observaciones: 'Lote especial - Requiere repetición',
+        pesoPromedioMilSemillas: 23.5,
+        desvioEstandar: 0.15,
+        coeficienteVariacion: 0.6,
+        comentarios: 'Lote especial - Requiere repetición',
         activo: true,
         repetido: true,
         reciboId: 102,
@@ -74,11 +78,13 @@ export class ListadoPmsComponent {
       },
       {
         id: 3,
+        gramosPorRepeticiones: [2.6, 2.7, 2.5],
+        pesoPromedioCienSemillas: 2.6,
         pesoMilSemillas: 26.1,
-        humedadPorcentual: 13.2,
-        fechaMedicion: '2023-03-10',
-        metodo: 'Manual',
-        observaciones: 'Inspección rutinaria de equipos - Repetir análisis',
+        pesoPromedioMilSemillas: 25.8,
+        desvioEstandar: 0.12,
+        coeficienteVariacion: 0.5,
+        comentarios: 'Inspección rutinaria de equipos - Repetir análisis',
         activo: true,
         repetido: true,
         reciboId: 103,
@@ -90,14 +96,14 @@ export class ListadoPmsComponent {
     get itemsFiltrados() {
       return this.items.filter(item => {
 
-        const cumpleId = !this.searchText || 
+        const cumpleId = !this.searchText ||
           item.id?.toString().includes(this.searchText);
-        
+
         const fechaParaFiltro = this.getFechaConTipo(item).fecha;
         const cumpleMes = !this.selectedMes || this.getMesFromFecha(fechaParaFiltro) === parseInt(this.selectedMes);
-        
+
         const cumpleAnio = !this.selectedAnio || this.getAnioFromFecha(fechaParaFiltro) === parseInt(this.selectedAnio);
-        
+
         return cumpleId && cumpleMes && cumpleAnio;
       }).sort((a, b) => {
         // Ordenar: pendientes primero (repetido = false), luego repetidos (repetido = true)

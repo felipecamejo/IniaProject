@@ -2,24 +2,46 @@ package ti.proyectoinia.dtos;
 
 import lombok.Data;
 import lombok.Generated;
+import ti.proyectoinia.business.entities.HumedadLugar;
+import ti.proyectoinia.business.entities.ReciboEstado;
+
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class ReciboDto {
     private Long id;
-    private int nroAnalisis;
+
+    private Integer nroAnalisis;
+
+    private Integer depositoId;
+
+    private ReciboEstado estado;
+
+    private List<Integer> HumedadesId;
+
     private String especie;
+
     private String ficha;
+
     private Date fechaRecibo;
+
     private String remitente;
+
     private String origen;
+
     private String cultivar;
+
     private String deposito;
-    private String estado;
-    private int lote;
-    private float kgLimpios;
+
+    private Integer lote;
+
+    private Float kgLimpios;
+
     private String analisisSolicitados;
+
     private Integer articulo;
+
     private boolean activo;
 
     @Generated

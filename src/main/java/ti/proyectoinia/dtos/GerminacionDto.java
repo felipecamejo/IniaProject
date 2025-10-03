@@ -2,7 +2,6 @@ package ti.proyectoinia.dtos;
 
 
 import lombok.Data;
-import ti.proyectoinia.business.entities.Metodo;
 import ti.proyectoinia.business.entities.PreFrio;
 import ti.proyectoinia.business.entities.PreTratamiento;
 import ti.proyectoinia.business.entities.Tratamiento;
@@ -54,7 +53,7 @@ public class GerminacionDto {
 
     private int nroSemillaPorRepeticion;
 
-    private Metodo metodo;
+    private String metodo;
 
     private float temperatura;
 

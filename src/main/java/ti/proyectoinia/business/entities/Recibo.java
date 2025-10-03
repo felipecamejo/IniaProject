@@ -39,11 +39,15 @@ public class Recibo {
     @Column(name = "DEPOSITO")
     private String deposito;
 
-    @Column(name = "ESTADO")
-    private String estado;
+    @Column(name = "DEPOSITO_ID")
+    private Integer depositoId;
+
+    @Column(name = "ESTADO_ENUM")
+    @Enumerated(EnumType.STRING)
+    private ReciboEstado estado;
 
     @Column(name = "LOTE")
-    private int lote;
+    private Integer lote;
 
     @Column(name = "KG_LIMPIOS")
     private Float kgLimpios;
@@ -78,4 +82,12 @@ public class Recibo {
 
     @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Tetrazolio> tetrazolioAnalisis;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "RECIBO_HUMEDADES",
+        joinColumns = @JoinColumn(name = "RECIBO_ID"),
+        inverseJoinColumns = @JoinColumn(name = "HUMEDAD_RECIBO_ID")
+    )
+    private List<HumedadRecibo> humedades;
 }

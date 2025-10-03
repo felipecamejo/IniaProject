@@ -1,10 +1,12 @@
 export interface PMSDto {
   id: number | null;
-  pesoMilSemillas: number;
-  humedadPorcentual: number;
-  fechaMedicion: string | null;
-  metodo: string;
-  observaciones: string;
+  gramosPorRepeticiones: number[];
+  pesoPromedioCienSemillas: number | null;
+  pesoMilSemillas: number | null;
+  pesoPromedioMilSemillas: number | null;
+  desvioEstandar: number | null;
+  coeficienteVariacion: number | null;
+  comentarios: string;
   activo: boolean;
   repetido: boolean;
   reciboId: number | null;
