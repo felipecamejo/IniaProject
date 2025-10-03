@@ -1,44 +1,57 @@
-
 <div class="perfil-container">
-  <div class="perfil-card">
-    <div class="perfil-avatar">
-      <img [src]="imagenPreview || 'assets/default-avatar.png'" alt="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
+    <div class="perfil-card">
+        <div class="perfil-avatar">
+            <img [src]="imagenPreview || 'assets/default-avatar.png'" alt="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
+        </div>
+        <div class="perfil-info">
+            <h2 class="perfil-nombre">{{ nombre || 'Cargando...' }}</h2>
+            <p class="perfil-mail"><strong>Mail:</strong> {{ mail || 'Cargando...' }}</p>
+            <p class="perfil-tel"><strong>Teléfono:</strong> {{ telefono || 'No disponible' }}</p>
+            <p class="perfil-rol"><strong>ROL:</strong> {{ rol || 'Cargando...' }}</p>
+        </div>
+        <div class="perfil-acciones">
+            <button type="button" class="p-button p-button-success perfil-boton" (click)="abrirModal()" [disabled]="loading">
+        {{ loading ? 'Cargando...' : 'Editar' }}
+      </button>
+        </div>
     </div>
-    <div class="perfil-info">
-      <h2 class="perfil-nombre">{{ nombre || 'Usuario' }}</h2>
-      <p class="perfil-mail"><strong>Mail:</strong> {{ mail || 'ejemplo@inia.com' }}</p>
-      <p class="perfil-tel"><strong>Teléfono:</strong> {{ telefono || '123456789' }}</p>
-      <p class="perfil-rol"><strong>ROL:</strong> {{ rol || 'Analista' }}</p>
-    </div>
-    <div class="perfil-acciones">
-      <button type="button" class="p-button p-button-success perfil-boton" (click)="abrirModal()">Editar</button>
-    </div>
-  </div>
+
+    <!-- Mensajes de error y éxito -->
+    <div *ngIf="error" class="error-message">{{ error }}</div>
+    <div *ngIf="success" class="success-message">{{ success }}</div>
 </div>
 
 <!-- Modal de edición -->
 <div class="modal-overlay" *ngIf="modalAbierto">
-  <div class="modal-card">
-    <h2>Editar Perfil</h2>
-    <form (ngSubmit)="guardarCambios()">
-      <div class="modal-avatar-preview">
-        <img [src]="imagenPreview || 'assets/default-avatar.png'" alt="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
-        <input type="file" accept="image/*" (change)="cambiarImagen($event)">
-      </div>
-      <label>Nombre:</label>
-      <input type="text" [(ngModel)]="nombre" name="nombre" required>
-      <label>Apellido:</label>
-      <input type="text" [(ngModel)]="apellido" name="apellido" required>
-      <label>Email:</label>
-      <input type="email" [(ngModel)]="mail" name="mail" required>
-      <label>Teléfono:</label>
-      <input type="text" [(ngModel)]="telefono" name="telefono">
-      <label>Rol:</label>
-      <input type="text" [(ngModel)]="rol" name="rol">
-      <div class="modal-actions">
-        <button type="submit" class="p-button perfil-boton">Guardar</button>
-        <button type="button" class="p-button perfil-boton" (click)="cerrarModal()">Cancelar</button>
-      </div>
-    </form>
-  </div>
+    <div class="modal-card">
+        <h2>Editar Perfil</h2>
+        <form (ngSubmit)="guardarCambios()" #form="ngForm">
+            <div class="modal-avatar-preview">
+                <img [src]="imagenPreview || 'assets/default-avatar.png'" alt="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
+                <input type="file" accept="image/*" (change)="cambiarImagen($event)">
+            </div>
+
+            <label>Nombre:</label>
+            <input type="text" [(ngModel)]="nombre" name="nombre" required>
+
+            <label>Email:</label>
+            <input type="email" [(ngModel)]="mail" name="mail" required>
+
+            <label>Rol:</label>
+            <input type="text" [(ngModel)]="rol" name="rol" readonly>
+
+            <!-- Mensajes de error y éxito en el modal -->
+            <div *ngIf="error" class="error-message">{{ error }}</div>
+            <div *ngIf="success" class="success-message">{{ success }}</div>
+
+            <div class="modal-actions">
+                <button type="submit" class="p-button perfil-boton" [disabled]="loading || form.invalid">
+          {{ loading ? 'Guardando...' : 'Guardar' }}
+        </button>
+                <button type="button" class="p-button perfil-boton" (click)="cerrarModal()" [disabled]="loading">
+          Cancelar
+        </button>
+            </div>
+        </form>
+    </div>
 </div>

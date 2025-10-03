@@ -60,7 +60,7 @@ export class ListadoSanitarioComponent {
         id: 1,
         fechaSiembra: '2023-01-10',
         fecha: '2023-01-15',
-        metodo: 'METODO_A',
+        metodo: 'A',
         temperatura: 25.5,
         horasLuzOscuridad: 12,
         nroDias: 7,
@@ -70,7 +70,7 @@ export class ListadoSanitarioComponent {
         reciboId: 101,
         activo: true,
         repetido: false,
-        SanitarioHongoids: [1, 2],
+        sanitarioHongoids: [1, 2],
         fechaCreacion: '2023-01-15',
         fechaRepeticion: null
       },
@@ -78,7 +78,7 @@ export class ListadoSanitarioComponent {
         id: 2,
         fechaSiembra: '2022-02-15',
         fecha: '2022-02-20',
-        metodo: 'METODO_B',
+        metodo: 'B',
         temperatura: 23.8,
         horasLuzOscuridad: 14,
         nroDias: 10,
@@ -88,7 +88,7 @@ export class ListadoSanitarioComponent {
         reciboId: 102,
         activo: true,
         repetido: true,
-        SanitarioHongoids: [3, 4, 5],
+        sanitarioHongoids: [3, 4, 5],
         fechaCreacion: '2022-02-20',
         fechaRepeticion: '2022-02-22'
       },
@@ -96,7 +96,7 @@ export class ListadoSanitarioComponent {
         id: 3,
         fechaSiembra: '2023-03-05',
         fecha: '2023-03-10',
-        metodo: 'METODO_C',
+        metodo: 'C',
         temperatura: 26.1,
         horasLuzOscuridad: 16,
         nroDias: 14,
@@ -106,7 +106,7 @@ export class ListadoSanitarioComponent {
         reciboId: 103,
         activo: true,
         repetido: true,
-        SanitarioHongoids: null,
+        sanitarioHongoids: null,
         fechaCreacion: '2023-03-10',
         fechaRepeticion: '2023-03-12'
       }

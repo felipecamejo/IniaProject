@@ -40,6 +40,19 @@ public class UsuarioController {
         return this.usuarioService.listadoUsuarios();
     }
 
+    @GetMapping({"/obtener/{id}"})
+    @Secured({"ADMIN"})
+    @Operation(
+            description = "Esta Funcion obtiene un usuario por ID"
+    )
+    public ResponseEntity<UsuarioDto> obtenerUsuarioPorId(@PathVariable Long id) {
+        UsuarioDto usuario = this.usuarioService.obtenerUsuarioPorId(id);
+        if (usuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(usuario);
+    }
+
     
     @Secured({"ADMIN"})
     @PutMapping({"/editar"})
@@ -63,6 +76,31 @@ public class UsuarioController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Usuario: " + e.getMessage());
         }
+    }
+
+    @GetMapping({"/perfil/{email}"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Operation(
+            description = "Esta Funcion obtiene el perfil del usuario por email"
+    )
+    public ResponseEntity<UsuarioDto> obtenerPerfilUsuario(@PathVariable String email) {
+        UsuarioDto usuario = this.usuarioService.obtenerUsuarioPorEmail(email);
+        if (usuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(usuario);
+    }
+
+    @PutMapping({"/perfil/actualizar"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Operation(
+            description = "Esta Funcion actualiza el perfil del usuario (sin contraseña)"
+    )
+    public ResponseEntity<String> actualizarPerfilUsuario(@Valid @RequestBody UsuarioDto usuarioDto) {
+        // No permitir cambiar la contraseña desde este endpoint
+        usuarioDto.setPassword(null);
+        String result = this.usuarioService.editarUsuario(usuarioDto);
+        return ResponseEntity.ok(result);
     }
 }
 

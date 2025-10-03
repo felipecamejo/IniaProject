@@ -330,7 +330,7 @@ export class SanitarioComponent implements OnInit {
       id: 1,
       fechaSiembra: '2023-01-10',
       fecha: '2023-01-15',
-      metodo: 'METODO_A',
+      metodo: 'A',
       temperatura: 25.5,
       horasLuzOscuridad: 12,
       nroDias: 7,
@@ -340,7 +340,7 @@ export class SanitarioComponent implements OnInit {
       reciboId: 101,
       activo: true,
       repetido: false,
-      SanitarioHongoids: [1, 2],
+      sanitarioHongoids: [1, 2],
       fechaCreacion: '2023-01-15',
       fechaRepeticion: null
     },
@@ -348,7 +348,7 @@ export class SanitarioComponent implements OnInit {
       id: 2,
       fechaSiembra: '2022-02-15',
       fecha: '2022-02-20',
-      metodo: 'METODO_B',
+      metodo: 'B',
       temperatura: 23.8,
       horasLuzOscuridad: 14,
       nroDias: 10,
@@ -358,7 +358,7 @@ export class SanitarioComponent implements OnInit {
       reciboId: 102,
       activo: true,
       repetido: true,
-      SanitarioHongoids: [3, 4, 5],
+      sanitarioHongoids: [3, 4, 5],
       fechaCreacion: '2022-02-20',
       fechaRepeticion: '2022-02-22'
     }

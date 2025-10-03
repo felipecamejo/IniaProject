@@ -1,6 +1,7 @@
 import { Component, HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../services/AuthService';
 
 @Component({
   selector: 'app-header',
@@ -10,7 +11,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent {
-  constructor(private router: Router) {}
+  constructor(private router: Router, private auth: AuthService) {}
 
   navigateTo(route: string): void {
     this.router.navigate([route]);
@@ -40,5 +41,11 @@ export class HeaderComponent {
     if (this.isMobileMenuOpen) {
       this.closeMobileMenu();
     }
+  }
+
+  logout(): void {
+    this.auth.logout();
+    this.router.navigate(['/login']);
+    this.closeMobileMenu();
   }
 }

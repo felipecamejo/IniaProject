@@ -27,6 +27,16 @@ export class AuthService {
     );
   }
 
+  get userEmail(): string | null {
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData).email : null;
+  }
+
+  get userData(): any {
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData) : null;
+  }
+
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
