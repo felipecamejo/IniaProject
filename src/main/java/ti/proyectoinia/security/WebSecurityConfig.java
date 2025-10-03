@@ -49,6 +49,8 @@ public class WebSecurityConfig {
 
                         // Gestión de usuarios: solo ADMIN puede acceder
                         .requestMatchers(antMatcher("/api/v1/usuario/**")).hasAuthority("ADMIN")
+                        // Excepción: los usuarios pueden acceder a su propio perfil
+                        .requestMatchers(antMatcher("/api/v1/usuario/perfil/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")
                         
                         // Endpoints del middleware: solo ADMIN puede acceder
                         .requestMatchers(antMatcher("/api/pandmiddleware/**")).hasAuthority("ADMIN")

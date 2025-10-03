@@ -40,7 +40,8 @@ public class UsuarioDto {
                 java.util.Objects.equals(nombre, that.nombre) &&
                 java.util.Objects.equals(password, that.password) &&
                 java.util.Objects.equals(rol, that.rol) &&
-                activo == that.activo;
+                activo == that.activo &&
+                java.util.Objects.equals(lotesId, that.lotesId);
     }
 
     @Generated
@@ -62,11 +63,13 @@ public class UsuarioDto {
         Object $rol = this.getRol();
         result = result * 59 + ($rol == null ? 43 : $rol.hashCode());
         result = result * 59 + (this.isActivo() ? 79 : 97);
+        Object $lotesId = this.getLotesId();
+        result = result * 59 + ($lotesId == null ? 43 : $lotesId.hashCode());
         return result;
     }
 
     @Generated
     public String toString() {
-        return "UsuarioDto(id=" + this.getId() + ", email=" + this.getEmail() + ", nombre=" + this.getNombre() + ", rol=" + this.getRol() + ")";
+        return "UsuarioDto(id=" + this.getId() + ", email=" + this.getEmail() + ", nombre=" + this.getNombre() + ", rol=" + this.getRol() + ", activo=" + this.isActivo() + ", lotesId=" + this.getLotesId() + ")";
     }
 }

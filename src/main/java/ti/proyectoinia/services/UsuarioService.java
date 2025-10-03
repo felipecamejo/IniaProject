@@ -19,6 +19,12 @@ public class UsuarioService {
     }
 
     public String crearUsuario(UsuarioDto usuarioDto) {
+        // Validar que no exista otro usuario activo con el mismo email
+        Usuario usuarioExistente = this.usuarioRepository.findByEmailAndActivoTrue(usuarioDto.getEmail());
+        if (usuarioExistente != null) {
+            throw new IllegalArgumentException("Ya existe un usuario activo con el email: " + usuarioDto.getEmail());
+        }
+        
         this.usuarioRepository.save(mapsDtoEntityService.mapToEntityUsuario(usuarioDto));
         return "Usuario creado correctamente ID:" + usuarioDto.getId();
     }
@@ -42,23 +48,44 @@ public class UsuarioService {
     }
 
     public String editarUsuario(UsuarioDto usuarioDto) {
-        // Validar que no exista otro usuario activo con el mismo email
+        // Validar que no exista otro usuario activo con el mismo email (solo usuarios no borrados lógicamente)
         Usuario usuarioExistente = this.usuarioRepository.findByEmailAndActivoTrue(usuarioDto.getEmail());
         if (usuarioExistente != null && !usuarioExistente.getId().equals(usuarioDto.getId())) {
-            throw new IllegalArgumentException("Ya existe un usuario activo con el email: " + usuarioDto.getEmail());
+            throw new IllegalArgumentException("Ya existe un usuario activo con el email: " + usuarioDto.getEmail() + 
+                ". Solo se consideran usuarios que no han sido eliminados lógicamente.");
         }
         
         // Obtener el usuario existente para preservar la contraseña si no se proporciona una nueva
         Usuario usuarioActual = this.usuarioRepository.findById(usuarioDto.getId()).orElse(null);
-        if (usuarioActual != null) {
-            // Si no se proporciona contraseña o está vacía, mantener la contraseña actual
-            if (usuarioDto.getPassword() == null || usuarioDto.getPassword().trim().isEmpty()) {
-                usuarioDto.setPassword(usuarioActual.getPassword());
-            }
+        if (usuarioActual == null) {
+            throw new IllegalArgumentException("Usuario no encontrado con ID: " + usuarioDto.getId());
         }
         
-        this.usuarioRepository.save(mapsDtoEntityService.mapToEntityUsuario(usuarioDto));
+        // Lógica de contraseña corregida: solo cambiar si se proporciona una nueva válida
+        if (usuarioDto.getPassword() == null || 
+            usuarioDto.getPassword().trim().isEmpty()) {
+            // NO modificar la contraseña en el DTO, dejarla null para que no se encripte de nuevo
+            usuarioDto.setPassword(null);
+        }
+        // Si la contraseña es válida, se mantiene para ser encriptada en mapToEntityUsuario
+        
+        Usuario usuarioActualizado = mapsDtoEntityService.mapToEntityUsuario(usuarioDto);
+        
+        // Si la contraseña es null, mantener la contraseña actual del usuario existente
+        if (usuarioActualizado.getPassword() == null) {
+            usuarioActualizado.setPassword(usuarioActual.getPassword());
+        }
+        
+        this.usuarioRepository.save(usuarioActualizado);
         return "Usuario actualizado correctamente ID:" + usuarioDto.getId();
+    }
+
+    public UsuarioDto obtenerUsuarioPorEmail(String email) {
+        Usuario usuario = this.usuarioRepository.findByEmailAndActivoTrue(email);
+        if (usuario == null) {
+            return null;
+        }
+        return mapsDtoEntityService.mapToDtoUsuarioSinPassword(usuario);  // ✅ Sin contraseña por seguridad
     }
 
     public ResponseEntity<ResponseListadoUsuarios> listadoUsuarios() {

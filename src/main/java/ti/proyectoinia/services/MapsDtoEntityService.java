@@ -553,7 +553,8 @@ public class MapsDtoEntityService {
         if (usuarioDto.getPassword() != null && !usuarioDto.getPassword().trim().isEmpty()) {
             usuario.setPassword(passwordEncoder.encode(usuarioDto.getPassword()));
         } else {
-            usuario.setPassword(usuarioDto.getPassword());
+            // Si la contraseña es null o vacía, se mantiene null para ser manejada en el servicio
+            usuario.setPassword(null);
         }
         
         usuario.setRol(usuarioDto.getRol());
