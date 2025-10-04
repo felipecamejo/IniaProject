@@ -2,13 +2,15 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UrlService } from './url.service';
+import { UserRole } from '../models/enums';
 
 export interface UsuarioDto {
   id: number;
   email: string;
   nombre: string;
-  rol: string;
+  rol: UserRole; // Usar el enum de roles del frontend
   activo: boolean;
+  lotesId?: number[]; // Agregar campo opcional para lotes
 }
 
 @Injectable({ providedIn: 'root' })
@@ -17,6 +19,10 @@ export class UsuarioService {
 
   obtenerPerfilUsuario(email: string): Observable<UsuarioDto> {
     return this.http.get<UsuarioDto>(`${this.url.baseUrl}/api/v1/usuario/perfil/${email}`);
+  }
+
+  obtenerPerfilUsuarioActual(): Observable<UsuarioDto> {
+    return this.http.get<UsuarioDto>(`${this.url.baseUrl}/api/v1/usuario/perfil/actual`);
   }
 
   actualizarUsuario(usuario: UsuarioDto): Observable<string> {
