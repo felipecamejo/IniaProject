@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import ti.proyectoinia.business.entities.*;
 import ti.proyectoinia.dtos.*;
 import ti.proyectoinia.business.repositories.ReciboRepository;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -282,7 +281,12 @@ public class MapsDtoEntityService {
         sanitarioDto.setRepetido(sanitario.isRepetido());
         sanitarioDto.setFechaCreacion(sanitario.getFechaCreacion());
         sanitarioDto.setFechaRepeticion(sanitario.getFechaRepeticion());
-        sanitarioDto.setReciboId(sanitario.getReciboId());
+        // Manejar la relación con Recibo
+        if (sanitario.getRecibo() != null) {
+            sanitarioDto.setReciboId(sanitario.getRecibo().getId());
+        } else {
+            sanitarioDto.setReciboId(null);
+        }
         sanitarioDto.setSanitarioHongoids(sanitario.getSanitarioHongoids());
         return sanitarioDto;
     }
@@ -308,7 +312,13 @@ public class MapsDtoEntityService {
         sanitario.setRepetido(sanitarioDto.isRepetido());
         sanitario.setFechaCreacion(sanitarioDto.getFechaCreacion());
         sanitario.setFechaRepeticion(sanitarioDto.getFechaRepeticion());
-        sanitario.setReciboId(sanitarioDto.getReciboId());
+        // Manejar la relación con Recibo
+        if (sanitarioDto.getReciboId() != null) {
+            Recibo recibo = getValidRecibo(sanitarioDto.getReciboId());
+            sanitario.setRecibo(recibo);
+        } else {
+            sanitario.setRecibo(null);
+        }
         sanitario.setSanitarioHongoids(sanitarioDto.getSanitarioHongoids());
         return sanitario;
     }
@@ -786,7 +796,7 @@ public class MapsDtoEntityService {
         dto.setRepeticion(tetrazolio.getRepeticion());
         dto.setNroSemillasPorRepeticion(tetrazolio.getNroSemillasPorRepeticion());
         if (tetrazolio.getPretratamiento() != null) {
-            dto.setPretratamientoId(tetrazolio.getPretratamiento().ordinal());
+            dto.setPretratamiento(tetrazolio.getPretratamiento());
         }
         dto.setConcentracion(tetrazolio.getConcentracion());
         dto.setTincionHoras(tetrazolio.getTincionHoras());
@@ -837,8 +847,8 @@ public class MapsDtoEntityService {
         tetrazolio.setRepeticion(dto.getRepeticion());
         tetrazolio.setNroSemillasPorRepeticion(dto.getNroSemillasPorRepeticion());
 
-        if (dto.getPretratamientoId() != null) {
-            tetrazolio.setPretratamiento(PreTratamiento.values()[dto.getPretratamientoId()]);
+        if (dto.getPretratamiento() != null) {
+            tetrazolio.setPretratamiento(dto.getPretratamiento());
         }
 
         tetrazolio.setConcentracion(dto.getConcentracion());

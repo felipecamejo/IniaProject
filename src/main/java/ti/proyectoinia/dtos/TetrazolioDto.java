@@ -2,6 +2,7 @@ package ti.proyectoinia.dtos;
 
 import lombok.Data;
 import lombok.Generated;
+import ti.proyectoinia.business.entities.PreTratamiento;
 import ti.proyectoinia.business.entities.ViabilidadPorTz;
 import ti.proyectoinia.business.entities.ViabilidadVigorTZ;
 
@@ -16,7 +17,7 @@ public class TetrazolioDto {
     
     private Integer nroSemillasPorRepeticion;
     
-    private Integer pretratamientoId;
+    private PreTratamiento pretratamiento;
     
     private float concentracion;
     

@@ -23,8 +23,9 @@ public class Sanitario {
     @Column(name = "SANITARIO_FECHA")
     private Date fecha;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "SANITARIO_METODO")
-    private String metodo;
+    private Metodo metodo;
 
     @Column(name = "SANITARIO_TEMPERATURA")
     private Integer temperatura;
@@ -38,8 +39,9 @@ public class Sanitario {
     @Column(name = "SANITARIO_NRODIAS")
     private Integer nroDias;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "SANITARIO_ESTADOPRODUCTODOSIS")
-    private String estadoProductoDosis;
+    private Estado estadoProductoDosis;
 
     @Column(name = "SANITARIO_OBSERVACIONES")
     private String observaciones;
@@ -47,8 +49,9 @@ public class Sanitario {
     @Column(name = "SANITARIO_NROSEMILLASREPETICION")
     private Integer nroSemillasRepeticion;
 
-    @Column(name = "SANITARIO_RECIBOID")
-    private Long reciboId;
+    @ManyToOne
+    @JoinColumn(name = "SANITARIO_RECIBOID")
+    private Recibo recibo;
 
     @Column(name = "SANITARIO_ACTIVO")
     private boolean activo;
