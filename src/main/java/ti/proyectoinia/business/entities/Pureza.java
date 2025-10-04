@@ -14,26 +14,74 @@ public class Pureza {
     @Column(name = "PUREZA_ID")
     private Long id;
 
-    @Column(name = "FECHA")
-    private Date fecha;
+    @Column(name = "FECHA_INASE")
+    private Date fechaInase;
+
+    @Column(name = "FECHA_INIA")
+    private Date fechaInia;
 
     @Column(name = "PESO_INICIAL")
     private Float pesoInicial;
+    @Column(name = "PESO_INICIAL_INASE")
+    private Float pesoInicialInase;
+    @Column(name = "PESO_INICIAL_PORCENTAJE_REDONDEO")
+    private Float pesoInicialPorcentajeRedondeo;
+    @Column(name = "PESO_INICIAL_PORCENTAJE_REDONDEO_INASE")
+    private Float pesoInicialPorcentajeRedondeoInase;
 
     @Column(name = "SEMILLA_PURA")
     private Float semillaPura;
+    @Column(name = "SEMILLA_PURA_INASE")
+    private Float semillaPuraInase;
+    @Column(name = "SEMILLA_PURA_PORCENTAJE_REDONDEO")
+    private Float semillaPuraPorcentajeRedondeo;
+    @Column(name = "SEMILLA_PURA_PORCENTAJE_REDONDEO_INASE")
+    private Float semillaPuraPorcentajeRedondeoInase;
 
     @Column(name = "MATERIAL_INERTE")
     private Float materialInerte;
+    @Column(name = "MATERIAL_INERTE_INASE")
+    private Float materialInerteInase;
+    @Column(name = "MATERIAL_INERTE_PORCENTAJE_REDONDEO")
+    private Float materialInertePorcentajeRedondeo;
+    @Column(name = "MATERIAL_INERTE_PORCENTAJE_REDONDEO_INASE")
+    private Float materialInertePorcentajeRedondeoInase;
 
     @Column(name = "OTROS_CULTIVOS")
     private Float otrosCultivos;
+    @Column(name = "OTROS_CULTIVOS_INASE")
+    private Float otrosCultivosInase;
+    @Column(name = "OTROS_CULTIVOS_PORCENTAJE_REDONDEO")
+    private Float otrosCultivosPorcentajeRedondeo;
+    @Column(name = "OTROS_CULTIVOS_PORCENTAJE_REDONDEO_INASE")
+    private Float otrosCultivosPorcentajeRedondeoInase;
 
     @Column(name = "MALEZAS")
     private Float malezas;
+    @Column(name = "MALEZAS_INASE")
+    private Float malezasInase;
+    @Column(name = "MALEZAS_PORCENTAJE_REDONDEO")
+    private Float malezasPorcentajeRedondeo;
+    @Column(name = "MALEZAS_PORCENTAJE_REDONDEO_INASE")
+    private Float malezasPorcentajeRedondeoInase;
 
     @Column(name = "MALEZAS_TOLERADAS")
     private Float malezasToleradas;
+    @Column(name = "MALEZAS_TOLERADAS_INASE")
+    private Float malezasToleradasInase;
+    @Column(name = "MALEZAS_TOLERADAS_PORCENTAJE_REDONDEO")
+    private Float malezasToleradasPorcentajeRedondeo;
+    @Column(name = "MALEZAS_TOLERADAS_PORCENTAJE_REDONDEO_INASE")
+    private Float malezasToleradasPorcentajeRedondeoInase;
+
+    @Column(name = "MALEZAS_TOLERANCIA_CERO")
+    private Float malezasToleranciaCero;
+    @Column(name = "MALEZAS_TOLERANCIA_CERO_INASE")
+    private Float malezasToleranciaCeroInase;
+    @Column(name = "MALEZAS_TOLERANCIA_CERO_PORCENTAJE_REDONDEO")
+    private Float malezasToleranciaCeroPorcentajeRedondeo;
+    @Column(name = "MALEZAS_TOLERANCIA_CERO_PORCENTAJE_REDONDEO_INASE")
+    private Float malezasToleranciaCeroPorcentajeRedondeoInase;
 
     @Column(name = "PESO_TOTAL")
     private Float pesoTotal;

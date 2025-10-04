@@ -8,23 +8,46 @@ import java.util.Date;
 public class PurezaDto {
     private Long id;
 
-    private Date fecha;
+    private Date fechaInase;
 
-    private float pesoInicial;
+    private Date fechaInia;
 
-    private float semillaPura;
+    private Float pesoInicial;
+    private Float pesoInicialInase;
+    private Float pesoInicialPorcentajeRedondeo;
+    private Float pesoInicialPorcentajeRedondeoInase;
 
-    private float materialInerte;
+    private Float semillaPura;
+    private Float semillaPuraInase;
+    private Float semillaPuraPorcentajeRedondeo;
+    private Float semillaPuraPorcentajeRedondeoInase;
 
-    private float otrosCultivos;
+    private Float materialInerte;
+    private Float materialInerteInase;
+    private Float materialInertePorcentajeRedondeo;
+    private Float materialInertePorcentajeRedondeoInase;
 
-    private float malezas;
+    private Float otrosCultivos;
+    private Float otrosCultivosInase;
+    private Float otrosCultivosPorcentajeRedondeo;
+    private Float otrosCultivosPorcentajeRedondeoInase;
 
-    private float malezasToleradas;
+    private Float malezas;
+    private Float malezasInase;
+    private Float malezasPorcentajeRedondeo;
+    private Float malezasPorcentajeRedondeoInase;
 
-    private float pesoTotal;
+    private Float malezasToleradas;
+    private Float malezasToleradasInase;
+    private Float malezasToleradasPorcentajeRedondeo;
+    private Float malezasToleradasPorcentajeRedondeoInase;
 
-    private float otrosCultivo;
+    private Float malezasToleranciaCero;
+    private Float malezasToleranciaCeroInase;
+    private Float malezasToleranciaCeroPorcentajeRedondeo;
+    private Float malezasToleranciaCeroPorcentajeRedondeoInase;
+
+    private Float pesoTotal;
 
     private Date fechaEstandar;
 
@@ -46,7 +69,8 @@ public class PurezaDto {
         if (o == null || getClass() != o.getClass()) return false;
         PurezaDto that = (PurezaDto) o;
         return java.util.Objects.equals(id, that.id) &&
-                java.util.Objects.equals(fecha, that.fecha) &&
+                java.util.Objects.equals(fechaInase, that.fechaInase) &&
+                java.util.Objects.equals(fechaInia, that.fechaInia) &&
                 Float.compare(pesoInicial, that.pesoInicial) == 0 &&
                 Float.compare(semillaPura, that.semillaPura) == 0 &&
                 Float.compare(materialInerte, that.materialInerte) == 0 &&
@@ -70,8 +94,10 @@ public class PurezaDto {
         int result = 1;
         Object $id = this.getId();
         result = result * 59 + ($id == null ? 43 : $id.hashCode());
-        Object $fecha = this.getFecha();
-        result = result * 59 + ($fecha == null ? 43 : $fecha.hashCode());
+        Object $fechaInase = this.getFechaInase();
+        result = result * 59 + ($fechaInase == null ? 43 : $fechaInase.hashCode());
+        Object $fechaInia = this.getFechaInia();
+        result = result * 59 + ($fechaInia == null ? 43 : $fechaInia.hashCode());
         result = result * 59 + Float.floatToIntBits(this.getPesoInicial());
         result = result * 59 + Float.floatToIntBits(this.getSemillaPura());
         result = result * 59 + Float.floatToIntBits(this.getMaterialInerte());
@@ -89,6 +115,6 @@ public class PurezaDto {
 
     @Generated
     public String toString() {
-        return "PurezaDto(id=" + this.getId() + ", fecha=" + String.valueOf(this.getFecha()) + ")";
+        return "PurezaDto(id=" + this.getId() + ", fechaInase=" + String.valueOf(this.getFechaInase()) + ", fechaInia=" + String.valueOf(this.getFechaInia()) + ")";
     }
 }

@@ -3,7 +3,6 @@ package ti.proyectoinia.business.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import ti.proyectoinia.dtos.HongoDto;
 
 import java.util.Date;
 import java.util.List;
@@ -24,22 +23,23 @@ public class Sanitario {
     @Column(name = "SANITARIO_FECHA")
     private Date fecha;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "SANITARIO_METODO")
-    private Metodo metodo;
+    private String metodo;
 
     @Column(name = "SANITARIO_TEMPERATURA")
     private Integer temperatura;
 
-    @Column(name = "SANITARIO_HORASLUZOSCURIDAD")
-    private Integer horasLuzOscuridad;
+    @Column(name = "SANITARIO_HORASLUZ")
+    private Integer horasLuz;
+
+    @Column(name = "SANITARIO_HORASOSCURIDAD")
+    private Integer horasOscuridad;
 
     @Column(name = "SANITARIO_NRODIAS")
     private Integer nroDias;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "SANITARIO_ESTADOPRODUCTODOSIS")
-    private Estado estadoProductoDosis;
+    private String estadoProductoDosis;
 
     @Column(name = "SANITARIO_OBSERVACIONES")
     private String observaciones;
@@ -47,23 +47,27 @@ public class Sanitario {
     @Column(name = "SANITARIO_NROSEMILLASREPETICION")
     private Integer nroSemillasRepeticion;
 
-    @ManyToOne
-    @JoinColumn(name = "RECIBO_ID")
-    private Recibo recibo;
+    @Column(name = "SANITARIO_RECIBOID")
+    private Long reciboId;
 
     @Column(name = "SANITARIO_ACTIVO")
     private boolean activo;
 
+    @Column(name = "SANITARIO_ESTANDAR")
+    private boolean estandar;
+
     @Column(name = "SANITARIO_REPETIDO")
     private boolean repetido;
 
-    @OneToMany(mappedBy = "sanitario", cascade = CascadeType.ALL)
-    private List<SanitarioHongo> sanitarioHongos;
+    @ElementCollection
+    @CollectionTable(name = "SANITARIO_HONGO_IDS", joinColumns = @JoinColumn(name = "SANITARIO_ID"))
+    @Column(name = "HONGO_ID")
+    private List<Long> SanitarioHongoids;
 
-    @Column(name = "SANITARIO_FECHA_CREACION")
+    @Column(name = "SANITARIO_FECHACREACION")
     private Date fechaCreacion;
 
-    @Column(name = "SANITARIO_FECHA_REPETICION")
+    @Column(name = "SANITARIO_FECHAREPETICION")
     private Date fechaRepeticion;
 
 }

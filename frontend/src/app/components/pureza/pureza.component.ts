@@ -23,7 +23,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
   styleUrl: './pureza.component.scss'
 })
 export class PurezaComponent implements OnInit {
-  
+
   // Variables para manejar navegación
   isEditing: boolean = false;
   editingId: number | null = null;
@@ -43,16 +43,16 @@ export class PurezaComponent implements OnInit {
   malezasCeroSearchText: string = '';
 
   toggleMalezasCeroDropdown() { this.isMalezasCeroDropdownOpen = !this.isMalezasCeroDropdownOpen; }
-  
+
   getFilteredMalezasCero() {
     const search = this.malezasCeroSearchText.toLowerCase();
     return this.malezasCeroOptions.filter(mc => mc.label.toLowerCase().includes(search));
   }
 
-  isMalezaCeroSelected(id: number) { 
-    return this.selectedMalezasCero.includes(id); 
+  isMalezaCeroSelected(id: number) {
+    return this.selectedMalezasCero.includes(id);
   }
- 
+
   toggleMalezaCeroSelection(maleza: {id: number, label: string}) {
     if (this.isMalezaCeroSelected(maleza.id)) {
       this.selectedMalezasCero = this.selectedMalezasCero.filter(id => id !== maleza.id);
@@ -83,8 +83,8 @@ export class PurezaComponent implements OnInit {
 
   malezasComunesSearchText: string = '';
 
-  toggleMalezasComunesDropdown() { 
-    this.isMalezasComunesDropdownOpen = !this.isMalezasComunesDropdownOpen; 
+  toggleMalezasComunesDropdown() {
+    this.isMalezasComunesDropdownOpen = !this.isMalezasComunesDropdownOpen;
   }
 
   getFilteredMalezasComunes() {
@@ -92,10 +92,10 @@ export class PurezaComponent implements OnInit {
     return this.malezasComunesOptions.filter(m => m.label.toLowerCase().includes(search));
   }
 
-  isMalezaComunSelected(id: number) { 
-    return this.selectedMalezasComunes.includes(id); 
+  isMalezaComunSelected(id: number) {
+    return this.selectedMalezasComunes.includes(id);
   }
-  
+
   toggleMalezaComunSelection(maleza: {id: number, label: string}) {
     if (this.isMalezaComunSelected(maleza.id)) {
       this.selectedMalezasComunes = this.selectedMalezasComunes.filter(id => id !== maleza.id);
@@ -155,16 +155,16 @@ export class PurezaComponent implements OnInit {
   cultivosSearchText: string = '';
 
   toggleCultivosDropdown() { this.isCultivosDropdownOpen = !this.isCultivosDropdownOpen; }
-  
+
   getFilteredCultivos() {
     const search = this.cultivosSearchText.toLowerCase();
     return this.cultivosOptions.filter(c => c.label.toLowerCase().includes(search));
   }
 
-  isCultivoSelected(id: number) { 
-    return this.selectedCultivos.includes(id); 
+  isCultivoSelected(id: number) {
+    return this.selectedCultivos.includes(id);
   }
-  
+
   toggleCultivoSelection(cultivo: {id: number, label: string}) {
     if (this.isCultivoSelected(cultivo.id)) {
       this.selectedCultivos = this.selectedCultivos.filter(id => id !== cultivo.id);
@@ -226,6 +226,49 @@ export class PurezaComponent implements OnInit {
   malezaComunSeleccionada: { id: string, label: string } | null = null;
   malezaTolSeleccionada: { id: string, label: string } | null = null;
   cultivoSeleccionado: { id: string, label: string } | null = null;
+
+  // Objeto pureza de tipo PurezaDto
+  pureza: PurezaDto = {
+    id: null,
+    fechaInase: null,
+    fechaInia: null,
+    pesoInicial: 0,
+    pesoInicialInase: 0,
+    pesoInicialPorcentajeRedondeo: 0,
+    pesoInicialPorcentajeRedondeoInase: 0,
+    semillaPura: 0,
+    semillaPuraInase: 0,
+    semillaPuraPorcentajeRedondeo: 0,
+    semillaPuraPorcentajeRedondeoInase: 0,
+    materialInerte: 0,
+    materialInerteInase: 0,
+    materialInertePorcentajeRedondeo: 0,
+    materialInertePorcentajeRedondeoInase: 0,
+    otrosCultivos: 0,
+    otrosCultivosInase: 0,
+    otrosCultivosPorcentajeRedondeo: 0,
+    otrosCultivosPorcentajeRedondeoInase: 0,
+    malezas: 0,
+    malezasInase: 0,
+    malezasPorcentajeRedondeo: 0,
+    malezasPorcentajeRedondeoInase: 0,
+    malezasToleradas: 0,
+    malezasToleradasInase: 0,
+    malezasToleradasPorcentajeRedondeo: 0,
+    malezasToleradasPorcentajeRedondeoInase: 0,
+    malezasToleranciaCero: 0,
+    malezasToleranciaCeroInase: 0,
+    malezasToleranciaCeroPorcentajeRedondeo: 0,
+    malezasToleranciaCeroPorcentajeRedondeoInase: 0,
+    pesoTotal: 0,
+    fechaEstandar: null,
+    estandar: false,
+    activo: true,
+    reciboId: null,
+    repetido: false,
+    fechaCreacion: null,
+    fechaRepeticion: null
+  };
 
   constructor(
     private route: ActivatedRoute,

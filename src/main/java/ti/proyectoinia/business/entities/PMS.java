@@ -20,17 +20,25 @@ public class PMS {
     @Column(name = "PESO_MIL_SEMILLAS")
     private Float pesoMilSemillas; // en gramos
 
-    @Column(name = "HUMEDAD_PORCENTUAL")
-    private Float humedadPorcentual; // 0-100
+    @ElementCollection
+    @CollectionTable(name = "PMS_GRAMOS_REPETICIONES", joinColumns = @JoinColumn(name = "PMS_ID"))
+    @Column(name = "GRAMOS_POR_REPETICION")
+    private java.util.List<Float> gramosPorRepeticiones;
 
-    @Column(name = "FECHA_MEDICION")
-    private Date fechaMedicion;
+    @Column(name = "PESO_PROM_CIEN_SEMILLAS")
+    private Float pesoPromedioCienSemillas;
 
-    @Column(name = "METODO")
-    private String metodo;
+    @Column(name = "PESO_PROM_MIL_SEMILLAS")
+    private Float pesoPromedioMilSemillas;
 
-    @Column(name = "OBSERVACIONES")
-    private String observaciones;
+    @Column(name = "DESVIO_ESTANDAR")
+    private Float desvioEstandar;
+
+    @Column(name = "COEF_VARIACION")
+    private Float coeficienteVariacion;
+
+    @Column(name = "COMENTARIOS")
+    private String comentarios;
 
     @Column(name = "PMS_ACTIVO")
     private boolean activo;

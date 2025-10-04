@@ -3,20 +3,25 @@ package ti.proyectoinia.dtos;
 import lombok.Data;
 import lombok.Generated;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class PMSDto {
     private Long id;
 
-    private float pesoMilSemillas;
+    private List<Float> gramosPorRepeticiones;
 
-    private float humedadPorcentual;
+    private Float pesoPromedioCienSemillas;
 
-    private Date fechaMedicion;
+    private Float pesoMilSemillas;
 
-    private String metodo;
+    private Float pesoPromedioMilSemillas;
 
-    private String observaciones;
+    private Float desvioEstandar;
+
+    private Float coeficienteVariacion;
+
+    private String comentarios;
 
     private boolean activo;
 
@@ -28,6 +33,8 @@ public class PMSDto {
 
     private Date fechaRepeticion;
 
+    private boolean estandar;
+
     @Generated
     public boolean equals(final Object o) {
         if (this == o) return true;
@@ -35,10 +42,6 @@ public class PMSDto {
         PMSDto that = (PMSDto) o;
         return java.util.Objects.equals(id, that.id) &&
                 Float.compare(pesoMilSemillas, that.pesoMilSemillas) == 0 &&
-                Float.compare(humedadPorcentual, that.humedadPorcentual) == 0 &&
-                java.util.Objects.equals(fechaMedicion, that.fechaMedicion) &&
-                java.util.Objects.equals(metodo, that.metodo) &&
-                java.util.Objects.equals(observaciones, that.observaciones) &&
                 activo == that.activo;
     }
 
@@ -53,13 +56,6 @@ public class PMSDto {
         Object $id = this.getId();
         result = result * 59 + ($id == null ? 43 : $id.hashCode());
         result = result * 59 + Float.floatToIntBits(this.getPesoMilSemillas());
-        result = result * 59 + Float.floatToIntBits(this.getHumedadPorcentual());
-        Object $fechaMedicion = this.getFechaMedicion();
-        result = result * 59 + ($fechaMedicion == null ? 43 : $fechaMedicion.hashCode());
-        Object $metodo = this.getMetodo();
-        result = result * 59 + ($metodo == null ? 43 : $metodo.hashCode());
-        Object $observaciones = this.getObservaciones();
-        result = result * 59 + ($observaciones == null ? 43 : $observaciones.hashCode());
         result = result * 59 + (this.isActivo() ? 79 : 97);
         return result;
     }

@@ -33,11 +33,11 @@ import { MultiSelectModule } from 'primeng/multiselect';
 })
 export class SanitarioComponent implements OnInit {
   repetido: boolean = false;
-  
+
   // Variables para manejar navegación
   isEditing: boolean = false;
   editingId: number | null = null;
-  
+
   metodos = [
       { label: 'Metodo A', id: 1 },
       { label: 'Metodo B', id: 2 },
@@ -78,12 +78,12 @@ export class SanitarioComponent implements OnInit {
   selectedHongos: number[] = [];
   selectedHongosCampo: number[] = [];
   selectedHongosAlmacenaje: number[] = [];
-  
+
   // Tabla de hongos seleccionados
   hongosTable: Array<{tipoHongo: string, repeticion: number | null, valor: number | null, incidencia: number | null}> = [];
   hongosCampoTable: Array<{tipoHongo: string, repeticion: number | null, valor: number | null, incidencia: number | null}> = [];
   hongosAlmacenajeTable: Array<{tipoHongo: string, repeticion: number | null, valor: number | null, incidencia: number | null}> = [];
-  
+
   // Control del dropdown personalizado
   isHongosDropdownOpen: boolean = false;
   hongosSearchText: string = '';
@@ -91,20 +91,40 @@ export class SanitarioComponent implements OnInit {
   hongosCampoSearchText: string = '';
   isHongosAlmacenajeDropdownOpen: boolean = false;
   hongosAlmacenajeSearchText: string = '';
-  
+
   // Campos de fecha
   fechaSiembra: string = '';
   fecha: string = '';
-  
+
   // Campos numéricos
   nLab: number = 0;
   temperatura: number = 0;
   horasLuzOscuridad: number = 0;
   numeroDias: number = 0;
   numeroSemillasRepeticion: number = 0;
-  
+
   // Campos de texto
   observaciones: string = '';
+
+  // Propiedades actualizadas según el nuevo DTO
+  id: number | null = null;
+  fechaSiembra: string | null = null;
+  fecha: string | null = null;
+  metodo: string = '';
+  temperatura: number | null = null;
+  horasLuz: number | null = null;
+  horasOscuridad: number | null = null;
+  nroDias: number | null = null;
+  estadoProductoDosis: string = '';
+  observaciones: string = '';
+  nroSemillasRepeticion: number | null = null;
+  reciboId: number | null = null;
+  activo: boolean = true;
+  estandar: boolean = false;
+  repetido: boolean = false;
+  SanitarioHongoids: number[] | null = null;
+  fechaCreacion: string | null = null;
+  fechaRepeticion: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -138,7 +158,7 @@ export class SanitarioComponent implements OnInit {
     if (!this.hongosSearchText) {
       return this.hongos;
     }
-    return this.hongos.filter(hongo => 
+    return this.hongos.filter(hongo =>
       hongo.label.toLowerCase().includes(this.hongosSearchText.toLowerCase())
     );
   }
@@ -212,7 +232,7 @@ export class SanitarioComponent implements OnInit {
     if (!this.hongosCampoSearchText) {
       return this.hongosCampo;
     }
-    return this.hongosCampo.filter(hongo => 
+    return this.hongosCampo.filter(hongo =>
       hongo.label.toLowerCase().includes(this.hongosCampoSearchText.toLowerCase())
     );
   }
@@ -274,7 +294,7 @@ export class SanitarioComponent implements OnInit {
     if (!this.hongosAlmacenajeSearchText) {
       return this.hongosAlmacenaje;
     }
-    return this.hongosAlmacenaje.filter(hongo => 
+    return this.hongosAlmacenaje.filter(hongo =>
       hongo.label.toLowerCase().includes(this.hongosAlmacenajeSearchText.toLowerCase())
     );
   }
@@ -332,7 +352,8 @@ export class SanitarioComponent implements OnInit {
       fecha: '2023-01-15',
       metodo: 'A',
       temperatura: 25.5,
-      horasLuzOscuridad: 12,
+      horasLuz: 12,
+      horasOscuridad: 12,
       nroDias: 7,
       estadoProductoDosis: 'ESTADO_X',
       observaciones: 'Control de calidad mensual - Muestra estándar',
@@ -350,7 +371,8 @@ export class SanitarioComponent implements OnInit {
       fecha: '2022-02-20',
       metodo: 'B',
       temperatura: 23.8,
-      horasLuzOscuridad: 14,
+      horasLuz: 14,
+      horasOscuridad: 10,
       nroDias: 10,
       estadoProductoDosis: 'ESTADO_Y',
       observaciones: 'Lote especial - Requiere repetición',
@@ -372,7 +394,8 @@ export class SanitarioComponent implements OnInit {
       this.fechaSiembra = item.fechaSiembra || '';
       this.fecha = item.fecha || '';
       this.temperatura = item.temperatura || 0;
-      this.horasLuzOscuridad = item.horasLuzOscuridad || 0;
+      this.horasLuz = item.horasLuz || 0;
+      this.horasOscuridad = item.horasOscuridad || 0;
       this.numeroDias = item.nroDias || 0;
       this.numeroSemillasRepeticion = item.nroSemillasRepeticion || 0;
       this.observaciones = item.observaciones || '';
@@ -383,13 +406,24 @@ export class SanitarioComponent implements OnInit {
   private cargarDatos() {
     console.log('Modo creación - limpiando campos');
     // Limpiar campos para creación
-    this.fechaSiembra = '';
-    this.fecha = '';
-    this.temperatura = 0;
-    this.horasLuzOscuridad = 0;
-    this.numeroDias = 0;
-    this.numeroSemillasRepeticion = 0;
-    this.observaciones = '';
+    this.id = null;
+    this.fechaSiembra = '2025-10-01';
+    this.fecha = '2025-10-03';
+    this.metodo = 'Metodo A';
+    this.temperatura = 22;
+    this.horasLuz = 12;
+    this.horasOscuridad = 12;
+    this.nroDias = 7;
+    this.estadoProductoDosis = 'Activo';
+    this.observaciones = 'Ejemplo de sanitario actualizado';
+    this.nroSemillasRepeticion = 100;
+    this.reciboId = 1;
+    this.activo = true;
+    this.estandar = false;
+    this.repetido = false;
+    this.SanitarioHongoids = [1, 2];
+    this.fechaCreacion = '2025-10-03';
+    this.fechaRepeticion = null;
   }
 
   onSubmit() {
@@ -397,7 +431,8 @@ export class SanitarioComponent implements OnInit {
       fechaSiembra: this.fechaSiembra,
       fecha: this.fecha,
       temperatura: this.temperatura,
-      horasLuzOscuridad: this.horasLuzOscuridad,
+      horasLuz: this.horasLuz,
+      horasOscuridad: this.horasOscuridad,
       nroDias: this.numeroDias,
       nroSemillasRepeticion: this.numeroSemillasRepeticion,
       observaciones: this.observaciones,

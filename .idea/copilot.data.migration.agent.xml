@@ -6,9 +6,12 @@
       <option value="09150c0e-48af-4ad6-a43c-0d6f7f8dcea6" />
       <option value="5ffb51d2-587b-4ad8-912b-7f75f42df6ef" />
       <option value="614cc146-4334-48b5-bf6f-9602f9d9a2f7" />
+      <option value="669264b4-6953-4058-b944-1b631d62a17e" />
+      <option value="6888f49f-8865-4142-949b-1b2eb5d3c514" />
       <option value="68ac337b-3963-435e-8ef3-a928633398bf" />
       <option value="6cd85a5f-748e-46f8-b8bf-dcc8848024ec" />
       <option value="804a4f57-6653-41f4-ab52-2f3d27a831e9" />
+      <option value="855a24fe-6eda-4655-b13e-61eb5c01fa24" />
       <option value="9975886c-2285-4e37-89f8-b5798ada4767" />
       <option value="a2109dd4-0bf9-4d51-9ad9-95e9c93ed20d" />
       <option value="a9a7b44f-7ad4-4f16-8487-c7d1c2d14fed" />
@@ -26,9 +29,9 @@
         <entry key="09150c0e-48af-4ad6-a43c-0d6f7f8dcea6">
           <value>
             <set>
-              <option value="a8561c32-f178-4872-be0d-df5e9b6f1186" />
-              <option value="97ed0e0a-0a9e-4c8d-a661-5182b0dea98e" />
               <option value="01e407d2-5295-4b6e-a3e2-b9883b442057" />
+              <option value="97ed0e0a-0a9e-4c8d-a661-5182b0dea98e" />
+              <option value="a8561c32-f178-4872-be0d-df5e9b6f1186" />
             </set>
           </value>
         </entry>
@@ -51,6 +54,40 @@
           <value>
             <set>
               <option value="fc22df2f-3fc3-4cbd-b46a-e8be8539827e" />
+            </set>
+          </value>
+        </entry>
+        <entry key="669264b4-6953-4058-b944-1b631d62a17e">
+          <value>
+            <set>
+              <option value="b3fd65e1-10f3-45e1-9c12-1c437859e54f" />
+              <option value="9dd14099-a2d6-4da4-83d4-f6576ac1c750" />
+              <option value="0df9fa43-033d-463e-80ad-e058b6ac05b5" />
+              <option value="7c1f4ea6-197d-4422-b87c-e85e0ab9a1cd" />
+              <option value="14525189-24da-4fbc-b71d-39050b95623e" />
+              <option value="d165759d-32fc-4b4b-bd45-f35a8e8a3b52" />
+              <option value="abd9efd7-fffb-46a5-af43-e53d37da278b" />
+              <option value="a12fad98-8286-4955-98a2-5611f8cf4e60" />
+              <option value="5dcb71f1-e634-485b-b176-315f11dc4b4e" />
+            </set>
+          </value>
+        </entry>
+        <entry key="6888f49f-8865-4142-949b-1b2eb5d3c514">
+          <value>
+            <set>
+              <option value="01a8c03d-cf67-475c-b3fd-7bf49155c822" />
+              <option value="85cd40e8-3d6c-4582-996d-d74184978b03" />
+              <option value="d86e00a8-4e9a-41f7-8be7-228e2c92f8a1" />
+              <option value="fd9ec0e7-c6d8-4583-a3bc-c73eb9b91cf3" />
+              <option value="b8863089-386e-4c53-beab-a13518abbd53" />
+              <option value="20741ee6-496f-4f42-be21-ba473aa9fa19" />
+              <option value="931f85bf-6869-49ca-a7df-42e67f41b774" />
+              <option value="8792c463-e5a0-46fa-b63c-781d8e7dc1e1" />
+              <option value="a2ac0354-4fcc-42b3-ba02-7cd92bc0b659" />
+              <option value="fac96e70-7728-4025-adb6-cf29bce8d7b2" />
+              <option value="de8d8a42-529f-4594-9f99-8151f6ed76b9" />
+              <option value="00c01d4c-dd78-4542-b9fe-f116125264bf" />
+              <option value="766c6f1a-4000-434d-9bb8-92e6a95e3180" />
             </set>
           </value>
         </entry>
@@ -78,6 +115,13 @@
               <option value="6ef827e8-84fa-40b2-b7b7-2fa3df4e67cd" />
               <option value="ac0990c5-ed8a-4509-abcb-d309047e5a17" />
               <option value="e9d6b91b-1eff-4ed7-bde1-5ec2cb48ac47" />
+            </set>
+          </value>
+        </entry>
+        <entry key="855a24fe-6eda-4655-b13e-61eb5c01fa24">
+          <value>
+            <set>
+              <option value="c1d971a5-279a-4d9f-98db-014be54bd7b0" />
             </set>
           </value>
         </entry>
@@ -202,48 +246,51 @@
       </map>
     </option>
     <pendingWorkingSetItems>
-      <entry key="09150c0e-48af-4ad6-a43c-0d6f7f8dcea6">
-        <set>
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/DOSN.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/Germinacion.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/Pureza.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/PurezaPNotatum.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/Tetrazolio.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/Sanitario.java" />
-          <option value="file://$PROJECT_DIR$/frontend/src/models/DOSN.dto.ts" />
-          <option value="file://$PROJECT_DIR$/frontend/src/models/Germinacion.dto.ts" />
-          <option value="file://$PROJECT_DIR$/frontend/src/models/Pureza.dto.ts" />
-          <option value="file://$PROJECT_DIR$/frontend/src/models/PurezaPNotatum.dto.ts" />
-          <option value="file://$PROJECT_DIR$/frontend/src/models/Tetrazolio.dto.ts" />
-          <option value="file://$PROJECT_DIR$/frontend/src/models/Sanitario.dto.ts" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/services/MapsDtoEntityService.java" />
-        </set>
-      </entry>
+      <entry key="09150c0e-48af-4ad6-a43c-0d6f7f8dcea6" />
       <entry key="5ffb51d2-587b-4ad8-912b-7f75f42df6ef" />
       <entry key="614cc146-4334-48b5-bf6f-9602f9d9a2f7" />
+      <entry key="669264b4-6953-4058-b944-1b631d62a17e">
+        <set>
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/dtos/PMSDto.java" />
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/PMS.java" />
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/services/MapsDtoEntityService.java" />
+          <option value="file://$PROJECT_DIR$/frontend/src/models/PMS.dto.ts" />
+          <option value="file://$PROJECT_DIR$/frontend/src/app/components/pms/pms.component.ts" />
+          <option value="file://$PROJECT_DIR$/frontend/src/app/components/listado-pms/listado-pms.component.ts" />
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/Sanitario.java" />
+          <option value="file://$PROJECT_DIR$/frontend/src/models/Sanitario.dto.ts" />
+          <option value="file://$PROJECT_DIR$/frontend/src/app/components/listado-sanitario/listado-sanitario.component.ts" />
+          <option value="file://$PROJECT_DIR$/frontend/src/app/components/sanitario/sanitario.component.ts" />
+        </set>
+      </entry>
+      <entry key="6888f49f-8865-4142-949b-1b2eb5d3c514">
+        <set>
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/dtos/PurezaDto.java" />
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/Pureza.java" />
+          <option value="file://$PROJECT_DIR$/frontend/src/models/Pureza.dto.ts" />
+          <option value="file://$PROJECT_DIR$/frontend/src/app/components/listado-pureza/listado-pureza.component.ts" />
+          <option value="file://$PROJECT_DIR$/frontend/src/app/components/pureza/pureza.component.ts" />
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/services/MapsDtoEntityService.java" />
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/HumedadRecibo.java" />
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/Recibo.java" />
+        </set>
+      </entry>
       <entry key="68ac337b-3963-435e-8ef3-a928633398bf" />
       <entry key="6cd85a5f-748e-46f8-b8bf-dcc8848024ec" />
       <entry key="804a4f57-6653-41f4-ab52-2f3d27a831e9" />
+      <entry key="855a24fe-6eda-4655-b13e-61eb5c01fa24">
+        <set>
+          <option value="file://$PROJECT_DIR$/frontend/src/models/Recibo.dto.ts" />
+        </set>
+      </entry>
       <entry key="a2109dd4-0bf9-4d51-9ad9-95e9c93ed20d" />
       <entry key="a9a7b44f-7ad4-4f16-8487-c7d1c2d14fed" />
       <entry key="b0b00b00-7023-4d65-9aae-7c67b9598c98" />
       <entry key="bd77f7f6-730c-443a-9385-f850aba977a5" />
       <entry key="c31684c1-2dc2-41da-82e2-5042b4c7a33e" />
-      <entry key="ddb41aa2-2cc0-4ec7-bad2-35af77b0f013">
-        <set>
-          <option value="file://$PROJECT_DIR$/frontend/src/models/PMS.dto.ts" />
-          <option value="file://$PROJECT_DIR$/frontend/src/app/pms/pms-crear.component.ts" />
-          <option value="file://$PROJECT_DIR$/frontend/src/app/pms/pms-crear.component.html" />
-          <option value="file://$PROJECT_DIR$/frontend/src/app/pms/pms-crear.component.scss" />
-          <option value="file://$PROJECT_DIR$/frontend/src/app/app.routes.ts" />
-        </set>
-      </entry>
+      <entry key="ddb41aa2-2cc0-4ec7-bad2-35af77b0f013" />
       <entry key="f0d649d2-85bc-4ef0-92fa-d2bef3282706" />
-      <entry key="ff30c0b7-286d-466a-b5c1-f55a0bfb352a">
-        <set>
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/dtos/SemillaDto.java" />
-        </set>
-      </entry>
+      <entry key="ff30c0b7-286d-466a-b5c1-f55a0bfb352a" />
     </pendingWorkingSetItems>
   </component>
 </project>
