@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 import ti.proyectoinia.api.responses.ResponseListadoPurezas;
 import ti.proyectoinia.api.responses.ResponseListadoRecibos;
 import ti.proyectoinia.business.entities.Recibo;
+import ti.proyectoinia.business.entities.Lote;
 import ti.proyectoinia.business.repositories.ReciboRepository;
+import ti.proyectoinia.business.repositories.LoteRepository;
 import ti.proyectoinia.dtos.ReciboDto;
 
 @Service
@@ -13,13 +15,23 @@ public class ReciboService {
 
     private final ReciboRepository reciboRepository;
     private final MapsDtoEntityService mapsDtoEntityService;
+    private final LoteRepository loteRepository;
 
-    public ReciboService(ReciboRepository reciboRepository, MapsDtoEntityService mapsDtoEntityService) {
+    public ReciboService(ReciboRepository reciboRepository, MapsDtoEntityService mapsDtoEntityService, LoteRepository loteRepository) {
         this.mapsDtoEntityService = mapsDtoEntityService;
         this.reciboRepository = reciboRepository;
+        this.loteRepository = loteRepository;
     }
 
     public String crearRecibo(ReciboDto reciboDto) {
+        // Validar que el lote existe y está activo
+        if (reciboDto.getLote() != null) {
+            Lote lote = loteRepository.findById(Long.valueOf(reciboDto.getLote())).orElse(null);
+            if (lote == null || !lote.isActivo()) {
+                throw new IllegalArgumentException("El lote con ID " + reciboDto.getLote() + " no existe o no está activo");
+            }
+        }
+        
         this.reciboRepository.save(mapsDtoEntityService.mapToEntityRecibo(reciboDto));
         return "Recibo creado correctamente ID:" + reciboDto.getId();
     }
@@ -43,6 +55,14 @@ public class ReciboService {
     }
 
     public String editarRecibo(ReciboDto reciboDto) {
+        // Validar que el lote existe y está activo
+        if (reciboDto.getLote() != null) {
+            Lote lote = loteRepository.findById(Long.valueOf(reciboDto.getLote())).orElse(null);
+            if (lote == null || !lote.isActivo()) {
+                throw new IllegalArgumentException("El lote con ID " + reciboDto.getLote() + " no existe o no está activo");
+            }
+        }
+        
         this.reciboRepository.save(mapsDtoEntityService.mapToEntityRecibo(reciboDto));
         return "Recibo actualizado correctamente ID:" + reciboDto.getId();
     }

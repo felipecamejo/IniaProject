@@ -27,9 +27,15 @@ public class ReciboController {
             description = "Esta Funcion crea un nuevo Recibo"
     )
     public ResponseEntity<String> crearRecibo(@RequestBody ReciboDto reciboDto) {
-        reciboDto.setId((Long) null);
-        String response = this.reciboService.crearRecibo(reciboDto);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        try {
+            reciboDto.setId((Long) null);
+            String response = this.reciboService.crearRecibo(reciboDto);
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error al crear el recibo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping({"/{id}"})
@@ -46,8 +52,14 @@ public class ReciboController {
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
     public ResponseEntity<String> editarRecibo(@RequestBody ReciboDto reciboDto) {
-        String result = this.reciboService.editarRecibo(reciboDto);
-        return ResponseEntity.ok(result);
+        try {
+            String result = this.reciboService.editarRecibo(reciboDto);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error al editar el recibo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PutMapping({"/eliminar/{id}"})
