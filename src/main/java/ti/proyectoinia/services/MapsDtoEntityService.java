@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ti.proyectoinia.business.entities.*;
 import ti.proyectoinia.dtos.*;
 import ti.proyectoinia.business.repositories.ReciboRepository;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -220,12 +221,17 @@ public class MapsDtoEntityService {
         recibo.setActivo(reciboDto.isActivo());
 
         // Mapear lista de IDs a entidades HumedadRecibo (solo con id)
-        if (reciboDto.getHumedadesId() != null) {
-            recibo.setHumedades(reciboDto.getHumedadesId().stream().map(id -> {
-                HumedadRecibo h = new HumedadRecibo();
-                h.setId(Long.valueOf(id));
-                return h;
-            }).collect(Collectors.toList()));
+        if (reciboDto.getHumedadesId() != null && !reciboDto.getHumedadesId().isEmpty()) {
+            List<HumedadRecibo> humedadesValidas = reciboDto.getHumedadesId().stream()
+                .filter(id -> id != null && id > 0) // Filtrar IDs nulos o cero
+                .map(id -> {
+                    HumedadRecibo h = new HumedadRecibo();
+                    h.setId(Long.valueOf(id));
+                    return h;
+                }).collect(Collectors.toList());
+            
+            // Solo establecer humedades si hay IDs válidos
+            recibo.setHumedades(humedadesValidas.isEmpty() ? null : humedadesValidas);
         } else {
             recibo.setHumedades(null);
         }
