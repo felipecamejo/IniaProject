@@ -91,6 +91,29 @@ public class UsuarioController {
         return ResponseEntity.ok(usuario);
     }
 
+    @GetMapping({"/perfil/actual"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Operation(
+            description = "Esta Funcion obtiene el perfil del usuario autenticado actual"
+    )
+    public ResponseEntity<UsuarioDto> obtenerPerfilUsuarioActual(@RequestHeader("Authorization") String token) {
+        try {
+            // Extraer email del token JWT
+            String email = this.usuarioService.extraerEmailDelToken(token);
+            if (email == null) {
+                return ResponseEntity.badRequest().build();
+            }
+            
+            UsuarioDto usuario = this.usuarioService.obtenerUsuarioPorEmail(email);
+            if (usuario == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(usuario);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @PutMapping({"/perfil/actualizar"})
     @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(

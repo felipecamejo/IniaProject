@@ -7,7 +7,7 @@
             <h2 class="perfil-nombre">{{ nombre || 'Cargando...' }}</h2>
             <p class="perfil-mail"><strong>Mail:</strong> {{ mail || 'Cargando...' }}</p>
             <p class="perfil-tel"><strong>Teléfono:</strong> {{ telefono || 'No disponible' }}</p>
-            <p class="perfil-rol"><strong>ROL:</strong> {{ rol || 'Cargando...' }}</p>
+            <p class="perfil-rol"><strong>ROL:</strong> {{ getRoleDisplayName(rol) || 'Cargando...' }}</p>
         </div>
         <div class="perfil-acciones">
             <button type="button" class="p-button p-button-success perfil-boton" (click)="abrirModal()" [disabled]="loading">
@@ -38,7 +38,7 @@
             <input type="email" [(ngModel)]="mail" name="mail" required>
 
             <label>Rol:</label>
-            <input type="text" [(ngModel)]="rol" name="rol" readonly>
+            <input type="text" [value]="getRoleDisplayName(rol)" name="rol" readonly>
 
             <!-- Mensajes de error y éxito en el modal -->
             <div *ngIf="error" class="error-message">{{ error }}</div>

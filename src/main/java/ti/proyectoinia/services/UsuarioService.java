@@ -6,6 +6,8 @@ import ti.proyectoinia.api.responses.ResponseListadoUsuarios;
 import ti.proyectoinia.business.entities.Usuario;
 import ti.proyectoinia.business.repositories.UsuarioRepository;
 import ti.proyectoinia.dtos.UsuarioDto;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Claims;
 
 @Service
 public class UsuarioService {
@@ -95,5 +97,24 @@ public class UsuarioService {
                 .toList();
         ResponseListadoUsuarios responseListadoUsuarios = new ResponseListadoUsuarios(usuariosDto);
         return ResponseEntity.ok(responseListadoUsuarios);
+    }
+
+    public String extraerEmailDelToken(String token) {
+        try {
+            // Remover "Bearer " del token si está presente
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+            
+            // Decodificar el token JWT
+            Claims claims = Jwts.parser()
+                    .setSigningKey("iniaSecretKey") // Usar la misma clave que en SeguridadController
+                    .parseClaimsJws(token)
+                    .getBody();
+            
+            return claims.getSubject(); // El email está en el subject del token
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
