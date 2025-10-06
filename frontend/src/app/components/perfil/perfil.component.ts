@@ -47,13 +47,18 @@ export class PerfilComponent implements OnInit {
     this.loading = true;
     this.error = '';
     
-    // Usar el nuevo endpoint que obtiene el perfil del usuario autenticado actual
-    this.usuarioService.obtenerPerfilUsuarioActual().subscribe({
+    const email = this.auth.userEmail;
+    const obs = email
+      ? this.usuarioService.obtenerPerfilUsuario(email)
+      : this.usuarioService.obtenerPerfilUsuarioActual();
+
+    obs.subscribe({
       next: (usuario: UsuarioDto) => {
         if (usuario) {
           this.usuarioId = usuario.id;
           this.nombre = usuario.nombre;
           this.mail = usuario.email;
+          this.telefono = usuario.telefono || '';
           this.rol = EnumConverter.convertBackendRoleToFrontend(usuario.rol.toString());
           this.loading = false;
         } else {
@@ -65,7 +70,6 @@ export class PerfilComponent implements OnInit {
         console.error('Error al cargar perfil:', error);
         this.loading = false;
         
-        // Manejar diferentes tipos de errores
         if (error.status === 401) {
           this.error = 'Sesión expirada. Por favor, inicia sesión nuevamente.';
           this.auth.logout();
@@ -74,6 +78,8 @@ export class PerfilComponent implements OnInit {
           this.error = 'No tienes permisos para acceder a esta información.';
         } else if (error.status === 404) {
           this.error = 'Usuario no encontrado.';
+        } else if (error.status === 400) {
+          this.error = typeof error.error === 'string' ? error.error : 'Solicitud inválida.';
         } else {
           this.error = 'Error al cargar el perfil del usuario. Intenta nuevamente.';
         }
@@ -136,6 +142,7 @@ export class PerfilComponent implements OnInit {
       id: this.usuarioId,
       email: this.mail,
       nombre: this.nombre,
+      telefono: this.telefono || undefined,
       rol: typeof this.rol === 'string' ? EnumConverter.convertBackendRoleToFrontend(this.rol) : this.rol,
       activo: true
     };

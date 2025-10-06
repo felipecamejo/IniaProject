@@ -35,14 +35,22 @@ export class LoginComponent {
       this.error = '';
 
       this.auth.login({ email: this.email, password: this.password }).subscribe({
-        next: () => {
+      next: () => {
           this.loading = false;
           this.router.navigate(['/home']);
         },
-        error: () => {
-          this.loading = false;
+      error: (e) => {
+        this.loading = false;
+        if (e?.status === 403) {
+          this.error = 'Acceso denegado. Verifica tus credenciales o permisos.';
+        } else if (e?.status === 400) {
+          this.error = typeof e.error === 'string' ? e.error : 'Datos inválidos.';
+        } else if (e?.status === 0) {
+          this.error = 'No se pudo conectar con el servidor.';
+        } else {
           this.error = 'Credenciales inválidas. Intenta nuevamente.';
         }
+      }
       });
     }
 
