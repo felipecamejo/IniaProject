@@ -1,6 +1,10 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  // No adjuntar Authorization para rutas de autenticación
+  if (req.url.includes('/api/seguridad')) {
+    return next(req);
+  }
   const token = localStorage.getItem('token');
   if (token) {
     req = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });

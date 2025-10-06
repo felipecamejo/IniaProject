@@ -546,6 +546,7 @@ public class MapsDtoEntityService {
         usuarioDto.setEmail(usuario.getEmail());
         usuarioDto.setNombre(usuario.getNombre());
         usuarioDto.setPassword(usuario.getPassword());
+        usuarioDto.setTelefono(usuario.getTelefono());
         usuarioDto.setRol(usuario.getRol());
         usuarioDto.setActivo(usuario.isActivo());
 
@@ -569,6 +570,7 @@ public class MapsDtoEntityService {
         usuarioDto.setNombre(usuario.getNombre());
         // NO incluir password por seguridad
         usuarioDto.setPassword(null);
+        usuarioDto.setTelefono(usuario.getTelefono());
         usuarioDto.setRol(usuario.getRol());
         usuarioDto.setActivo(usuario.isActivo());
 
@@ -590,6 +592,7 @@ public class MapsDtoEntityService {
         usuario.setId(usuarioDto.getId());
         usuario.setEmail(usuarioDto.getEmail());
         usuario.setNombre(usuarioDto.getNombre());
+        usuario.setTelefono(usuarioDto.getTelefono());
         
         // Encriptar la contraseña si no está vacía
         if (usuarioDto.getPassword() != null && !usuarioDto.getPassword().trim().isEmpty()) {

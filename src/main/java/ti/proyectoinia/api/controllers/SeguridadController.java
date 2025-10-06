@@ -203,6 +203,14 @@ public class SeguridadController {
         usuarioDto.setEmail(email);
         usuarioDto.setNombre(nombre);
         usuarioDto.setPassword("password123"); // El servicio se encargará de encriptarla
+        // Asignar un teléfono de demostración
+        // Formato simple; ajusta a tu regla de negocio si aplica
+        String telefonoDemo = switch (rol) {
+            case ADMIN -> "+598-099-000-001";
+            case ANALISTA -> "+598-099-000-002";
+            case OBSERVADOR -> "+598-099-000-003";
+        };
+        usuarioDto.setTelefono(telefonoDemo);
         usuarioDto.setActivo(true);
         usuarioDto.setRol(rol);
         usuarioDto.setLotesId(null); // Sin lotes asignados inicialmente

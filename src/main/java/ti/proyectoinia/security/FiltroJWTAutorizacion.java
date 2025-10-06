@@ -29,8 +29,11 @@ public class FiltroJWTAutorizacion extends OncePerRequestFilter {
     );
 
     private boolean esRutaPublica(HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        return rutasPublicas.stream().anyMatch(requestURI::startsWith);
+        // Usar la ruta sin el context path (por ejemplo, "/Inia") para que los startsWith funcionen
+        String context = request.getContextPath();
+        String uri = request.getRequestURI();
+        String path = uri.startsWith(context) ? uri.substring(context.length()) : uri;
+        return rutasPublicas.stream().anyMatch(path::startsWith);
     }
 
     private final String CLAVE = obtenerClaveSecretaSegura();
