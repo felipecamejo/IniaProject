@@ -1,7 +1,7 @@
 <div class="container">
   <p-card class="card">
     <ng-template pTemplate="header">
-      <h2 class="title">Pureza</h2>
+      <h2 class="title">{{ isEditing ? 'Editar Pureza' : 'Crear Pureza' }}</h2>
     </ng-template>
 
     <form>
@@ -9,114 +9,142 @@
       <div class="form-grid">
         <!-- Fecha -->
         <div class="form-field">
-          <label for="fecha">Fecha</label>
-          <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" pInputText />
+          <label for="fecha">Fecha Inia</label>
+          <input id="fecha" type="date" [(ngModel)]="fechaInia" name="fecha" pInputText />
         </div>
+      </div>
 
-        <!-- Peso inicial -->
-        <div class="form-field">
-          <label>Peso inicial</label>
-          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="pesoInicialGr" name="pesoInicialGr" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
-            </div>
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="pesoInicialPct" name="pesoInicialPct" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
-            </div>
-          </div>
+      <!-- Tabla INIA -->
+      <div class="table-section" style="margin: 2.5rem 0 3rem 0;">
+        <h3 style="margin-bottom: 1rem; color: var(--azul); font-weight: 600;">Análisis INIA</h3>
+        <div class="table-wrapper">
+          <p-table 
+            [value]="purezaTableRows" 
+            [tableStyle]="{'width': '100%'}" 
+            styleClass="p-datatable-gridlines rounded-table">
+            <ng-template pTemplate="header">
+            <tr>
+              <th>Componente</th>
+              <th>Gramos</th>
+              <th>%</th>
+              <th>% Redondeo</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
+            <tr>
+              <td><strong>{{ rowData.label }}</strong></td>
+              <td>
+                <div>
+                  <input 
+                    type="number" 
+                    [ngModel]="getGramosValue(rowIndex)"
+                    (ngModelChange)="setGramosValue(rowIndex, $event)"
+                    [name]="'gramos_' + rowIndex" 
+                    pInputText 
+                  />
+                  <span>g</span>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <input 
+                    type="number" 
+                    [ngModel]="getPorcentajeValue(rowIndex)"
+                    (ngModelChange)="setPorcentajeValue(rowIndex, $event)"
+                    [name]="'porcentaje_' + rowIndex" 
+                    pInputText 
+                  />
+                  <span>%</span>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <input 
+                    type="number" 
+                    [ngModel]="getPorcentajeRedondeoValue(rowIndex)"
+                    (ngModelChange)="setPorcentajeRedondeoValue(rowIndex, $event)"
+                    [name]="'porcentajeRedondeo_' + rowIndex" 
+                    pInputText 
+                  />
+                  <span>%</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          </p-table>
         </div>
+      </div>
 
-        <!-- Semilla pura -->
+       <div class="form-grid">
+        <!-- Fecha -->
         <div class="form-field">
-          <label>Semilla pura</label>
-          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="semillaPuraGr" name="semillaPuraGr" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
-            </div>
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="semillaPuraPct" name="semillaPuraPct" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
-            </div>
-          </div>
+          <label for="fecha">Fecha Inase</label>
+          <input id="fecha" type="date" [(ngModel)]="fechaInase" name="fecha" pInputText />
         </div>
+      </div>
 
-        <!-- Materia inerte -->
-        <div class="form-field">
-          <label>Materia inerte</label>
-          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="materiaInerteGr" name="materiaInerteGr" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
-            </div>
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="materiaInertePct" name="materiaInertePct" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
-            </div>
-          </div>
+      <!-- Tabla INASE -->
+      <div class="table-section" style="margin: 2.5rem 0 3rem 0;">
+        <h3 style="margin-bottom: 1rem; color: var(--azul); font-weight: 600;">Análisis INASE</h3>
+        <div class="table-wrapper">
+          <p-table 
+            [value]="purezaTableRows" 
+            [tableStyle]="{'width': '100%'}" 
+            styleClass="p-datatable-gridlines rounded-table">
+            <ng-template pTemplate="header">
+            <tr>
+              <th>Componente</th>
+              <th>Gramos</th>
+              <th>%</th>
+              <th>% Redondeo</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
+            <tr>
+              <td><strong>{{ rowData.label }}</strong></td>
+              <td>
+                <div>
+                  <input 
+                    type="number" 
+                    [ngModel]="getGramosInaseValue(rowIndex)"
+                    (ngModelChange)="setGramosInaseValue(rowIndex, $event)"
+                    [name]="'gramosInase_' + rowIndex" 
+                    pInputText 
+                  />
+                  <span>g</span>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <input 
+                    type="number" 
+                    [ngModel]="getPorcentajeInaseValue(rowIndex)"
+                    (ngModelChange)="setPorcentajeInaseValue(rowIndex, $event)"
+                    [name]="'porcentajeInase_' + rowIndex" 
+                    pInputText 
+                  />
+                  <span>%</span>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <input 
+                    type="number" 
+                    [ngModel]="getPorcentajeRedondeoInaseValue(rowIndex)"
+                    (ngModelChange)="setPorcentajeRedondeoInaseValue(rowIndex, $event)"
+                    [name]="'porcentajeRedondeoInase_' + rowIndex" 
+                    pInputText 
+                  />
+                  <span>%</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          </p-table>
         </div>
+      </div>
 
-        <!-- Otros cultivos (g y %) -->
-        <div class="form-field">
-          <label>Otros cultivos</label>
-          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="otrosCultivosGr" name="otrosCultivosGr" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
-            </div>
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="otrosCultivosPct" name="otrosCultivosPct" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Malezas (g y %) -->
-        <div class="form-field">
-          <label>Malezas</label>
-          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="malezasGr" name="malezasGr" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
-            </div>
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="malezasPct" name="malezasPct" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Malezas toleradas (g y %) -->
-        <div class="form-field">
-          <label>Malezas toleradas</label>
-          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="malezasToleradasGr" name="malezasToleradasGr" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
-            </div>
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="malezasToleradasPct" name="malezasToleradasPct" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Peso total (g y %) -->
-        <div class="form-field">
-          <label>Peso total</label>
-          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="pesoTotalGr" name="pesoTotalGr" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
-            </div>
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="pesoTotalPct" name="pesoTotalPct" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
-            </div>
-          </div>
-        </div>
+      <div class="form-grid" style="margin-top: 3rem;">
 
         <!-- Fecha estándar -->
         <div class="form-field">
@@ -150,6 +178,7 @@
             </div>
           </div>
         </div>
+
         <!-- Multiselect Malezas comunes -->
         <div class="form-field">
           <label>Malezas comunes</label>
@@ -227,22 +256,38 @@
         </div>
       </div>
 
-      <!-- Estándar booleano (al final) -->
-      <div class="form-field">
-        <label for="estandar">¿Cumple estándar?</label>
-        <input id="estandar" type="checkbox" [(ngModel)]="estandar" name="estandar" />
-      </div>
-
-      <!-- Checkbox Repetido - solo visible al editar -->
-      <div class="form-field" *ngIf="isEditing">
-        <label>
-          <span>Repetir</span>
-          <input 
-            type="checkbox" 
-            [(ngModel)]="repetido" 
-            name="repetido"
-          />
-        </label>
+      <!-- Checkboxes mejorados -->
+      <div class="checkbox-container" *ngIf="isEditing">
+        <h4 class="checkbox-title">Opciones De Edición</h4>
+        <div class="checkbox-grid">
+          <div class="checkbox-item">
+            <input 
+              type="checkbox" 
+              id="estandar-checkbox"
+              [(ngModel)]="estandar" 
+              name="estandar"
+              class="custom-checkbox"
+            />
+            <label for="estandar-checkbox" class="checkbox-label">
+              <span class="checkmark"></span>
+              <span class="checkbox-text">Estándar</span>
+            </label>
+          </div>
+          
+          <div class="checkbox-item">
+            <input 
+              type="checkbox" 
+              id="repetido-checkbox"
+              [(ngModel)]="repetido" 
+              name="repetido"
+              class="custom-checkbox"
+            />
+            <label for="repetido-checkbox" class="checkbox-label">
+              <span class="checkmark"></span>
+              <span class="checkbox-text">Repetir</span>
+            </label>
+          </div>
+        </div>
       </div>
 
       <div class="submit-btn">

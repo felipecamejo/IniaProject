@@ -108,20 +108,15 @@ export class SanitarioComponent implements OnInit {
 
   // Propiedades actualizadas según el nuevo DTO
   id: number | null = null;
-  fechaSiembra: string | null = null;
-  fecha: string | null = null;
   metodo: string = '';
-  temperatura: number | null = null;
   horasLuz: number | null = null;
   horasOscuridad: number | null = null;
   nroDias: number | null = null;
   estadoProductoDosis: string = '';
-  observaciones: string = '';
   nroSemillasRepeticion: number | null = null;
   reciboId: number | null = null;
   activo: boolean = true;
   estandar: boolean = false;
-  repetido: boolean = false;
   SanitarioHongoids: number[] | null = null;
   fechaCreacion: string | null = null;
   fechaRepeticion: string | null = null;
@@ -360,6 +355,7 @@ export class SanitarioComponent implements OnInit {
       nroSemillasRepeticion: 100,
       reciboId: 101,
       activo: true,
+      estandar: true,
       repetido: false,
       SanitarioHongoids: [1, 2],
       fechaCreacion: '2023-01-15',
@@ -379,6 +375,7 @@ export class SanitarioComponent implements OnInit {
       nroSemillasRepeticion: 150,
       reciboId: 102,
       activo: true,
+      estandar: false,
       repetido: true,
       SanitarioHongoids: [3, 4, 5],
       fechaCreacion: '2022-02-20',

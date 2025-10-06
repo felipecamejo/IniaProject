@@ -1,7 +1,12 @@
 <div class="container">
+  <!-- Botón de navegación hacia atrás -->
+  <button class="back-button" (click)="onCancel()">
+    <i class="pi pi-arrow-left"></i>
+  </button>
+  
   <p-card class="card">
     <ng-template pTemplate="header">
-      <h2 class="title">Sanitario</h2>
+      <h2 class="title">{{ isEditing ? 'Editar Sanitario' : 'Crear Sanitario' }}</h2>
     </ng-template>
 
     <form>
@@ -322,16 +327,38 @@
           </p-table>
         </div>
 
-        <!-- Checkbox Repetido - solo visible al editar -->
-        <div class="form-field" *ngIf="isEditing">
-          <label>
-            <span>Repetir</span>
-            <input 
-              type="checkbox" 
-              [(ngModel)]="repetido" 
-              name="repetido"
-            />
-          </label>
+        <!-- Checkboxes - solo visible al editar -->
+        <div class="checkbox-container" *ngIf="isEditing">
+          <h4 class="checkbox-title">Opciones De Edición</h4>
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input 
+                type="checkbox" 
+                id="repetido-checkbox"
+                [(ngModel)]="repetido" 
+                name="repetido"
+                class="custom-checkbox"
+              />
+              <label for="repetido-checkbox" class="checkbox-label">
+                <span class="checkmark"></span>
+                <span class="checkbox-text">Repetir</span>
+              </label>
+            </div>
+            
+            <div class="checkbox-item">
+              <input 
+                type="checkbox" 
+                id="estandar-checkbox"
+                [(ngModel)]="estandar" 
+                name="estandar"
+                class="custom-checkbox"
+              />
+              <label for="estandar-checkbox" class="checkbox-label">
+                <span class="checkmark"></span>
+                <span class="checkbox-text">Estándar</span>
+              </label>
+            </div>
+          </div>
         </div>
 
         <div class="submit-btn">

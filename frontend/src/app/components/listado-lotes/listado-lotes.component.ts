@@ -4,14 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { DialogModule } from 'primeng/dialog';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/AuthService';
+import { LoteDto } from '../../../models/Lote.dto';
 
 
 @Component({
   selector: 'app-listado-lotes.component',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule],
   templateUrl: './listado-lotes.component.html',
   styleUrl: './listado-lotes.component.scss'
 })
@@ -27,6 +29,17 @@ export class ListadoLotesComponent {
     selectedMes: string = '';
     selectedAnio: string = '';
     searchText: string = '';
+
+    // Variables para el modal
+    mostrarModal: boolean = false;
+    modalNombre: string = '';
+    modalDescripcion: string = '';
+    modalLoading: boolean = false;
+    modalError: string = '';
+    modalTitulo: string = 'Crear Lote';
+    modalBotonTexto: string = 'Crear Lote';
+    itemEditando: any = null;
+    itemEditandoId: number | null = null;
 
     meses = [
       { label: 'Enero', id: 1 },
@@ -94,5 +107,77 @@ export class ListadoLotesComponent {
 
     goToHome() {
       this.router.navigate(['/home']);
+    }
+
+    abrirModal() {
+      this.modalNombre = '';
+      this.modalDescripcion = '';
+      this.modalError = '';
+      this.modalTitulo = 'Crear Lote';
+      this.modalBotonTexto = 'Crear Lote';
+      this.itemEditando = null;
+      this.itemEditandoId = null;
+      this.mostrarModal = true;
+    }
+
+    abrirModalEdicion(item: any) {
+      this.modalNombre = item.nombre;
+      this.modalDescripcion = item.descripcion || '';
+      this.modalError = '';
+      this.modalTitulo = 'Editar Lote';
+      this.modalBotonTexto = 'Actualizar Lote';
+      this.itemEditando = item;
+      this.itemEditandoId = item.id;
+      this.mostrarModal = true;
+    }
+
+    cerrarModal() {
+      this.mostrarModal = false;
+    }
+
+    onSubmitModal(form: any) {
+      if (form.invalid || this.modalLoading) return;
+      
+      this.modalLoading = true;
+      this.modalError = '';
+
+      const lote = { 
+        id: this.itemEditandoId,
+        nombre: this.modalNombre,
+        descripcion: this.modalDescripcion,
+        estado: 'Pendiente',
+        fecha: new Date().toLocaleDateString('es-ES'),
+        autor: 'Usuario Actual' // Esto debería venir del servicio de autenticación
+      };
+
+      if (this.itemEditando) {
+        // Editar lote existente
+        const index = this.items.findIndex(item => item.nombre === this.itemEditando.nombre);
+        if (index !== -1) {
+          this.items[index] = { ...this.items[index], ...lote };
+        }
+        console.log('Lote editado:', lote);
+      } else {
+        // Crear nuevo lote
+        this.items.push(lote);
+        console.log('Nuevo lote creado:', lote);
+      }
+
+      this.modalLoading = false;
+      this.cerrarModal();
+    }
+
+    editarItemModal(lote: any) {
+      this.abrirModalEdicion(lote);
+    }
+
+    eliminarItem(lote: any) {
+      if (confirm(`¿Estás seguro de que deseas eliminar el lote "${lote.nombre}"?`)) {
+        const index = this.items.findIndex(item => item.nombre === lote.nombre);
+        if (index !== -1) {
+          this.items.splice(index, 1);
+        }
+        console.log('Lote eliminado:', lote);
+      }
     }
 }

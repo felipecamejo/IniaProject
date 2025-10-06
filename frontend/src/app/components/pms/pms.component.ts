@@ -8,6 +8,14 @@ import { PMSDto } from '../../../models/PMS.dto';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { TableModule } from 'primeng/table';
+
+// Interface para manejar las repeticiones en PMS
+export interface RepeticionPMS {
+  numero: number;
+  gramos: number;
+}
 
 @Component({
   selector: 'app-pms',
@@ -16,7 +24,9 @@ import { ButtonModule } from 'primeng/button';
       FormsModule,
       CardModule,
       InputTextModule,
-      ButtonModule
+      ButtonModule,
+      InputNumberModule,
+      TableModule
   ],
   templateUrl: './pms.component.html',
   styleUrls: ['./pms.component.scss']
@@ -25,6 +35,11 @@ import { ButtonModule } from 'primeng/button';
 export class PmsComponent implements OnInit {
     isEditing: boolean = false;
     editingId: number | null = null;
+
+    // Tabla de repeticiones PMS
+    repeticiones: RepeticionPMS[] = [
+        { numero: 1, gramos: 0 }
+    ];
 
     // Campos del nuevo DTO
     gramosPorRepeticiones: number[] = [];
@@ -37,8 +52,14 @@ export class PmsComponent implements OnInit {
     activo: boolean = true;
     repetido: boolean = false;
     reciboId: number | null = null;
+    estandar: boolean = false;
     fechaCreacion: string | null = null;
     fechaRepeticion: string | null = null;
+
+    // Properties referenced in template
+    humedadPorcentual: number | null = null;
+    fechaMedicion: string = '';
+    selectedMetodo: string = '';
 
     constructor(
         private route: ActivatedRoute,
@@ -59,7 +80,26 @@ export class PmsComponent implements OnInit {
         });
     }
 
+    // Métodos para manejar las repeticiones
+    agregarRepeticion() {
+        this.repeticiones.push({
+            numero: this.repeticiones.length + 1,
+            gramos: 0
+        });
+    }
+
+    eliminarRepeticion(index: number) {
+        if (this.repeticiones.length > 1) {
+            this.repeticiones.splice(index, 1);
+            // Re-enumerar
+            this.repeticiones.forEach((r, i) => r.numero = i + 1);
+        }
+    }
+
+
+
     limpiarCampos() {
+      this.repeticiones = [{ numero: 1, gramos: 0 }];
       this.gramosPorRepeticiones = [];
       this.pesoPromedioCienSemillas = null;
       this.pesoMilSemillas = null;
@@ -75,6 +115,9 @@ export class PmsComponent implements OnInit {
     }
 
     onSubmit() {
+      // Convertir repeticiones a array de gramos
+      this.gramosPorRepeticiones = this.repeticiones.map(rep => rep.gramos);
+
       const pmsData: PMSDto = {
         id: this.editingId ?? null,
         gramosPorRepeticiones: this.gramosPorRepeticiones,

@@ -24,6 +24,7 @@ import { ListadoTetrazolioComponent } from './components/listado-tetrazolio/list
 import { ListadoGerminacionComponent } from './components/listado-germinacion/listado-germinacion.component';
 import { PerfilComponent } from './components/perfil/perfil.component';
 import { ListadoSanitarioComponent } from './components/listado-sanitario/listado-sanitario.component';
+import { ListadoDepositosComponent } from './components/listado-depositos/listado-depositos.component';
 
 export const routes: Routes = [
     { path : 'home', component: HomeComponent },
@@ -53,6 +54,7 @@ export const routes: Routes = [
     { path : 'listado-tetrazolio', component: ListadoTetrazolioComponent },
     { path : 'listado-germinacion', component: ListadoGerminacionComponent },
     { path : 'listado-sanitario', component: ListadoSanitarioComponent },
+    { path : 'listado-depositos', component: ListadoDepositosComponent },
 
     //Formularios de creación y edición
     { path : 'pms/crear', component: PmsComponent },

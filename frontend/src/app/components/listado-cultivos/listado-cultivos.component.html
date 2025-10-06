@@ -23,8 +23,8 @@
         <!-- Mensaje cuando no hay elementos -->
         <div class="no-results-message" *ngIf="itemsFiltrados.length === 0">
             <div class="no-results-content">
-                <h3>No se encontraron Malezas</h3>
-                <p>No hay malezas que coincidan con los filtros seleccionados.</p>
+                <h3>No se encontraron Cultivos</h3>
+                <p>No hay cultivos que coincidan con los filtros seleccionados.</p>
                 <p>Intenta ajustar los criterios de búsqueda.</p>
             </div>
         </div>
@@ -75,7 +75,7 @@
 
                 <div class="modal-form-field">
                     <label for="modalDescripcion">Descripción (opcional)</label>
-                    <textarea id="modalDescripcion" [(ngModel)]="modalDescripcion" name="modalDescripcion" pInputTextarea></textarea>
+                    <textarea id="modalDescripcion" [(ngModel)]="modalDescripcion" name="modalDescripcion" pInputText rows="4"></textarea>
                 </div>
             </div>
 
