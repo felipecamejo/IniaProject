@@ -971,4 +971,26 @@ public class MapsDtoEntityService {
         entity.setNumero(dto.getNumero());
         return entity;
     }
+
+    public Deposito mapToEntityDeposito(DepositoDto dto) {
+        if (dto == null) return null;
+
+        Deposito entity = new Deposito();
+        entity.setId(dto.getId());
+        entity.setNombre(dto.getNombre());
+        entity.setActivo(dto.isActivo());
+
+        return entity;
+    }
+
+    public DepositoDto mapToDtoDeposito(Deposito entity) {
+        if (entity == null) return null;
+
+        DepositoDto dto = new DepositoDto();
+        dto.setId(entity.getId());
+        dto.setNombre(entity.getNombre());
+        dto.setActivo(entity.isActivo());
+
+        return dto;
+    }
 }

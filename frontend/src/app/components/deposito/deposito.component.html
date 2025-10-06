@@ -1,0 +1,37 @@
+<div class="container">
+    <!-- Botón de navegación hacia atrás -->
+    <button class="back-button" (click)="goToListado()">
+        <i class="pi pi-arrow-left"></i>
+    </button>
+    
+    <p-card class="card">
+        <ng-template pTemplate="header">
+            <h2 class="title">{{ isEditMode ? 'Editar' : 'Crear' }} Depósito</h2>
+        </ng-template>
+
+        <form>
+            <div class="form-grid">
+                <!-- Campos de texto -->
+                <div class="form-field">
+                    <label for="nombre">Nombre</label>
+                    <input id="nombre" type="text" [(ngModel)]="nombre" name="nombre" pInputText />
+                </div>
+
+
+            </div>
+
+            <div class="submit-btn">
+                <button pButton type="button" 
+                        [label]="isEditMode ? 'Actualizar Depósito' : 'Crear Depósito'" 
+                        class="p-button-success" 
+                        (click)="saveDeposito()">
+                </button>
+                <button pButton type="button" 
+                        label="Cancelar" 
+                        class="p-button-secondary" 
+                        (click)="cancel()">
+                </button>
+            </div>
+        </form>
+    </p-card>
+</div>

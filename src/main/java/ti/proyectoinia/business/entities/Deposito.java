@@ -16,4 +16,7 @@ public class Deposito {
 
     @Column(name = "DEPOSITO_NOMBRE")
     private String nombre;
+
+    @Column(name = "DEPOSITO_ACTIVO")
+    private boolean activo;
 }

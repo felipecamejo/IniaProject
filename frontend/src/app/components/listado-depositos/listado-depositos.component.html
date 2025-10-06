@@ -6,34 +6,16 @@
     
     <p-card class="card">
         <ng-template pTemplate="header">
-            <h2 class="title">Listado de Lotes</h2>
+            <h2 class="title">Listado de Depósitos</h2>
         </ng-template>
 
         <div class="search-section">
             <div class="search-bar">
-                <input type="text" placeholder="Buscar lotes..." class="search-input" [(ngModel)]="searchText" name="search" />
-            </div>
-            <div class="filter-dropdown">
-                <select class="estado-select" [(ngModel)]="selectedMetodo" name="estado">
-                    <option value="">Todos los estados</option>
-                    <option *ngFor="let metodo of metodos" [value]="metodo.id">{{ metodo.label }}</option>
-                </select>
-            </div>
-            <div class="filter-dropdown">
-                <select class="mes-select" [(ngModel)]="selectedMes" name="mes">
-                    <option value="">Todos los meses</option>
-                    <option *ngFor="let mes of meses" [value]="mes.id">{{ mes.label }}</option>
-                </select>
-            </div>
-            <div class="filter-dropdown">
-                <select class="anio-select" [(ngModel)]="selectedAnio" name="anio" (change)="onAnioChange()">
-                    <option value="">Todos los años</option>
-                    <option *ngFor="let anio of anios" [value]="anio.id">{{ anio.label }}</option>
-                </select>
+                <input type="text" placeholder="Buscar Depósitos..." class="search-input" [(ngModel)]="searchText" name="search" />
             </div>
             <div class="filter-dropdown">
                  <div class="submit-btn">
-                    <button pButton type="button" (click)="abrirModal()" label="Crear Lote" class="p-button-primary"></button>
+                    <button pButton type="button" (click)="abrirModal()" label="Crear Depósito" class="p-button-primary"></button>
                 </div>
             </div>
         </div>
@@ -41,35 +23,25 @@
         <!-- Mensaje cuando no hay elementos -->
         <div class="no-results-message" *ngIf="itemsFiltrados.length === 0">
             <div class="no-results-content">
-                <h3>No se encontraron lotes</h3>
-                <p>No hay lotes que coincidan con los filtros seleccionados.</p>
+                <h3>No se encontraron Depósitos</h3>
+                <p>No hay depósitos que coincidan con los filtros seleccionados.</p>
                 <p>Intenta ajustar los criterios de búsqueda.</p>
             </div>
         </div>
 
-        <!-- Lista de lotes filtrados -->
+        <!-- Lista de elementos filtrados -->
         <div class="blue-rectangle" 
              *ngFor="let item of itemsFiltrados"
-             [ngClass]="{
-               'pendiente': item.estado === 'Pendiente',
-               'finalizado': item.estado === 'Finalizado'
-             }">
+             >
             <div class="item-header">
                 <div class="item-info">
                     <h3 class="item-title">{{ item.nombre }}</h3>
-                    <p class="item-author">{{ item.autor }}</p>
-                </div>
-                <div class="item-status">
-                    <span class="status-badge">{{ item.estado }}</span>
                 </div>
             </div>
             <div class="divider-line"></div>
             <div class="item-content">
                 <div class="item-description">
-                    <p>{{ item.descripcion || 'Sin descripción disponible' }}</p>
-                </div>
-                <div class="item-date">
-                    <span>{{ item.fecha }}</span>
+                    <p>Depósito ID: {{ item.id }}</p>
                 </div>
                 <div class="item-actions">
                     <button class="action-button edit-button" (click)="editarItemModal(item)" title="Editar">
@@ -81,8 +53,7 @@
                 </div>
             </div>
         </div>
-
-       
+    
     </p-card>
 
     <p-dialog 
@@ -99,11 +70,6 @@
                 <div class="modal-form-field">
                     <label for="modalNombre">Nombre</label>
                     <input id="modalNombre" type="text" [(ngModel)]="modalNombre" name="modalNombre" pInputText required />
-                </div>
-                
-                <div class="modal-form-field">
-                    <label for="modalDescripcion">Descripción (opcional)</label>
-                    <textarea id="modalDescripcion" [(ngModel)]="modalDescripcion" name="modalDescripcion" pInputText rows="4"></textarea> 
                 </div>
             </div>
 

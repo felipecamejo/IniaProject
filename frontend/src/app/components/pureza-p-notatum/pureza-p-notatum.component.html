@@ -1,7 +1,7 @@
 <div class="container">
   <p-card class="card">
     <ng-template pTemplate="header">
-      <h2 class="title">Pureza P. notatum</h2>
+      <h2 class="title">{{ isEditing ? 'Editar Pureza P. notatum' : 'Crear Pureza P. notatum' }}</h2>
     </ng-template>
     <form>
       <div class="form-grid">
@@ -122,6 +122,40 @@
           </tbody>
         </table>
   <button pButton type="button" label="Agregar repetición" class="btn-agregar-rep" (click)="agregarRepeticion()"></button>
+      </div>
+
+      <!-- Checkboxes -->
+      <div class="checkbox-container" *ngIf="isEditing">
+        <h4 class="checkbox-title">Opciones De Edición</h4>
+        <div class="checkbox-grid">
+          <div class="checkbox-item">
+            <input 
+              type="checkbox" 
+              id="estandar-checkbox"
+              [(ngModel)]="estandar" 
+              name="estandar"
+              class="custom-checkbox"
+            />
+            <label for="estandar-checkbox" class="checkbox-label">
+              <span class="checkmark"></span>
+              <span class="checkbox-text">Estándar</span>
+            </label>
+          </div>
+          
+          <div class="checkbox-item">
+            <input 
+              type="checkbox" 
+              id="repetido-checkbox"
+              [(ngModel)]="repetido" 
+              name="repetido"
+              class="custom-checkbox"
+            />
+            <label for="repetido-checkbox" class="checkbox-label">
+              <span class="checkmark"></span>
+              <span class="checkbox-text">Repetir</span>
+            </label>
+          </div>
+        </div>
       </div>
 
       <div class="submit-btn" style="display: flex; gap: 1rem;">

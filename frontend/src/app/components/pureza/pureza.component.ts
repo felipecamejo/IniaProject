@@ -8,6 +8,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { TableModule } from 'primeng/table';
 
 @Component({
   selector: 'app-pureza.component',
@@ -18,7 +19,8 @@ import { MultiSelectModule } from 'primeng/multiselect';
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-    MultiSelectModule],
+    MultiSelectModule,
+    TableModule],
   templateUrl: './pureza.component.html',
   styleUrl: './pureza.component.scss'
 })
@@ -35,6 +37,9 @@ export class PurezaComponent implements OnInit {
     { id: 2, label: 'Brassica spp.' },
     { id: 3, label: 'Orobanche spp.' }
   ];
+
+  fechaInia: Date | null = null;
+  fechaInase: Date | null = null;
 
   selectedMalezasCero: number[] = [];
 
@@ -210,10 +215,229 @@ export class PurezaComponent implements OnInit {
   malezasPct: number = 0;
   malezasToleradasGr: number = 0;
   malezasToleradasPct: number = 0;
+  malezasToleranciaCeroGr: number = 0;
+  malezasToleranciaCeroPct: number = 0;
   pesoTotalGr: number = 0;
   pesoTotalPct: number = 0;
+  
+  // Variables para porcentajes de redondeo
+  pesoInicialPctRedondeo: number = 0;
+  semillaPuraPctRedondeo: number = 0;
+  materiaInertePctRedondeo: number = 0;
+  otrosCultivosPctRedondeo: number = 0;
+  malezasPctRedondeo: number = 0;
+  malezasToleradasPctRedondeo: number = 0;
+  malezasToleranciaCeroPctRedondeo: number = 0;
+  pesoTotalPctRedondeo: number = 0;
+
+  // Variables para INASE - gramos
+  pesoInicialInaseGr: number = 0;
+  semillaPuraInaseGr: number = 0;
+  materiaInerteInaseGr: number = 0;
+  otrosCultivosInaseGr: number = 0;
+  malezasInaseGr: number = 0;
+  malezasToleradasInaseGr: number = 0;
+  malezasToleranciaCeroInaseGr: number = 0;
+  pesoTotalInaseGr: number = 0;
+
+  // Variables para INASE - porcentajes
+  pesoInicialInasePct: number = 0;
+  semillaPuraInasePct: number = 0;
+  materiaInerteInasePct: number = 0;
+  otrosCultivosInasePct: number = 0;
+  malezasInasePct: number = 0;
+  malezasToleradasInasePct: number = 0;
+  malezasToleranciaCeroInasePct: number = 0;
+  pesoTotalInasePct: number = 0;
+
+  // Variables para INASE - porcentajes de redondeo
+  pesoInicialInasePctRedondeo: number = 0;
+  semillaPuraInasePctRedondeo: number = 0;
+  materiaInerteInasePctRedondeo: number = 0;
+  otrosCultivosInasePctRedondeo: number = 0;
+  malezasInasePctRedondeo: number = 0;
+  malezasToleradasInasePctRedondeo: number = 0;
+  malezasToleranciaCeroInasePctRedondeo: number = 0;
+  pesoTotalInasePctRedondeo: number = 0;
+  
   fechaEstandar: string = '';
   estandar: boolean = false;
+
+  // Datos para la tabla de pureza
+  purezaTableRows = [
+    { label: 'Peso inicial' },
+    { label: 'Semilla pura' },
+    { label: 'Materia inerte' },
+    { label: 'Otros cultivos' },
+    { label: 'Malezas' },
+    { label: 'Malezas toleradas' },
+    { label: 'Malezas tolerancia cero' },
+    { label: 'Peso total' }
+  ];
+
+  // Métodos para manejar los valores de la tabla
+  getGramosValue(rowIndex: number): number {
+    switch(rowIndex) {
+      case 0: return this.pesoInicialGr;
+      case 1: return this.semillaPuraGr;
+      case 2: return this.materiaInerteGr;
+      case 3: return this.otrosCultivosGr;
+      case 4: return this.malezasGr;
+      case 5: return this.malezasToleradasGr;
+      case 6: return this.malezasToleranciaCeroGr;
+      case 7: return this.pesoTotalGr;
+      default: return 0;
+    }
+  }
+
+  setGramosValue(rowIndex: number, value: number): void {
+    switch(rowIndex) {
+      case 0: this.pesoInicialGr = value; break;
+      case 1: this.semillaPuraGr = value; break;
+      case 2: this.materiaInerteGr = value; break;
+      case 3: this.otrosCultivosGr = value; break;
+      case 4: this.malezasGr = value; break;
+      case 5: this.malezasToleradasGr = value; break;
+      case 6: this.malezasToleranciaCeroGr = value; break;
+      case 7: this.pesoTotalGr = value; break;
+    }
+  }
+
+  getPorcentajeValue(rowIndex: number): number {
+    switch(rowIndex) {
+      case 0: return this.pesoInicialPct;
+      case 1: return this.semillaPuraPct;
+      case 2: return this.materiaInertePct;
+      case 3: return this.otrosCultivosPct;
+      case 4: return this.malezasPct;
+      case 5: return this.malezasToleradasPct;
+      case 6: return this.malezasToleranciaCeroPct;
+      case 7: return this.pesoTotalPct;
+      default: return 0;
+    }
+  }
+
+  setPorcentajeValue(rowIndex: number, value: number): void {
+    switch(rowIndex) {
+      case 0: this.pesoInicialPct = value; break;
+      case 1: this.semillaPuraPct = value; break;
+      case 2: this.materiaInertePct = value; break;
+      case 3: this.otrosCultivosPct = value; break;
+      case 4: this.malezasPct = value; break;
+      case 5: this.malezasToleradasPct = value; break;
+      case 6: this.malezasToleranciaCeroPct = value; break;
+      case 7: this.pesoTotalPct = value; break;
+    }
+  }
+
+  getPorcentajeRedondeoValue(rowIndex: number): number {
+    switch(rowIndex) {
+      case 0: return this.pesoInicialPctRedondeo;
+      case 1: return this.semillaPuraPctRedondeo;
+      case 2: return this.materiaInertePctRedondeo;
+      case 3: return this.otrosCultivosPctRedondeo;
+      case 4: return this.malezasPctRedondeo;
+      case 5: return this.malezasToleradasPctRedondeo;
+      case 6: return this.malezasToleranciaCeroPctRedondeo;
+      case 7: return this.pesoTotalPctRedondeo;
+      default: return 0;
+    }
+  }
+
+  setPorcentajeRedondeoValue(rowIndex: number, value: number): void {
+    switch(rowIndex) {
+      case 0: this.pesoInicialPctRedondeo = value; break;
+      case 1: this.semillaPuraPctRedondeo = value; break;
+      case 2: this.materiaInertePctRedondeo = value; break;
+      case 3: this.otrosCultivosPctRedondeo = value; break;
+      case 4: this.malezasPctRedondeo = value; break;
+      case 5: this.malezasToleradasPctRedondeo = value; break;
+      case 6: this.malezasToleranciaCeroPctRedondeo = value; break;
+      case 7: this.pesoTotalPctRedondeo = value; break;
+    }
+  }
+
+  // Métodos para manejar los valores de la tabla INASE
+  getGramosInaseValue(rowIndex: number): number {
+    switch(rowIndex) {
+      case 0: return this.pesoInicialInaseGr;
+      case 1: return this.semillaPuraInaseGr;
+      case 2: return this.materiaInerteInaseGr;
+      case 3: return this.otrosCultivosInaseGr;
+      case 4: return this.malezasInaseGr;
+      case 5: return this.malezasToleradasInaseGr;
+      case 6: return this.malezasToleranciaCeroInaseGr;
+      case 7: return this.pesoTotalInaseGr;
+      default: return 0;
+    }
+  }
+
+  setGramosInaseValue(rowIndex: number, value: number): void {
+    switch(rowIndex) {
+      case 0: this.pesoInicialInaseGr = value; break;
+      case 1: this.semillaPuraInaseGr = value; break;
+      case 2: this.materiaInerteInaseGr = value; break;
+      case 3: this.otrosCultivosInaseGr = value; break;
+      case 4: this.malezasInaseGr = value; break;
+      case 5: this.malezasToleradasInaseGr = value; break;
+      case 6: this.malezasToleranciaCeroInaseGr = value; break;
+      case 7: this.pesoTotalInaseGr = value; break;
+    }
+  }
+
+  getPorcentajeInaseValue(rowIndex: number): number {
+    switch(rowIndex) {
+      case 0: return this.pesoInicialInasePct;
+      case 1: return this.semillaPuraInasePct;
+      case 2: return this.materiaInerteInasePct;
+      case 3: return this.otrosCultivosInasePct;
+      case 4: return this.malezasInasePct;
+      case 5: return this.malezasToleradasInasePct;
+      case 6: return this.malezasToleranciaCeroInasePct;
+      case 7: return this.pesoTotalInasePct;
+      default: return 0;
+    }
+  }
+
+  setPorcentajeInaseValue(rowIndex: number, value: number): void {
+    switch(rowIndex) {
+      case 0: this.pesoInicialInasePct = value; break;
+      case 1: this.semillaPuraInasePct = value; break;
+      case 2: this.materiaInerteInasePct = value; break;
+      case 3: this.otrosCultivosInasePct = value; break;
+      case 4: this.malezasInasePct = value; break;
+      case 5: this.malezasToleradasInasePct = value; break;
+      case 6: this.malezasToleranciaCeroInasePct = value; break;
+      case 7: this.pesoTotalInasePct = value; break;
+    }
+  }
+
+  getPorcentajeRedondeoInaseValue(rowIndex: number): number {
+    switch(rowIndex) {
+      case 0: return this.pesoInicialInasePctRedondeo;
+      case 1: return this.semillaPuraInasePctRedondeo;
+      case 2: return this.materiaInerteInasePctRedondeo;
+      case 3: return this.otrosCultivosInasePctRedondeo;
+      case 4: return this.malezasInasePctRedondeo;
+      case 5: return this.malezasToleradasInasePctRedondeo;
+      case 6: return this.malezasToleranciaCeroInasePctRedondeo;
+      case 7: return this.pesoTotalInasePctRedondeo;
+      default: return 0;
+    }
+  }
+
+  setPorcentajeRedondeoInaseValue(rowIndex: number, value: number): void {
+    switch(rowIndex) {
+      case 0: this.pesoInicialInasePctRedondeo = value; break;
+      case 1: this.semillaPuraInasePctRedondeo = value; break;
+      case 2: this.materiaInerteInasePctRedondeo = value; break;
+      case 3: this.otrosCultivosInasePctRedondeo = value; break;
+      case 4: this.malezasInasePctRedondeo = value; break;
+      case 5: this.malezasToleradasInasePctRedondeo = value; break;
+      case 6: this.malezasToleranciaCeroInasePctRedondeo = value; break;
+      case 7: this.pesoTotalInasePctRedondeo = value; break;
+    }
+  }
 
   // Listados (select múltiple)
   malezasCero: string[] = [];
@@ -370,36 +594,82 @@ export class PurezaComponent implements OnInit {
   private itemsData: PurezaDto[] = [
     {
       id: 1,
-      fecha: '2023-01-15',
+      fechaInase: null,
+      fechaInia: null,
       pesoInicial: 100,
+      pesoInicialInase: null,
+      pesoInicialPorcentajeRedondeo: null,
+      pesoInicialPorcentajeRedondeoInase: null,
       semillaPura: 95,
+      semillaPuraInase: null,
+      semillaPuraPorcentajeRedondeo: null,
+      semillaPuraPorcentajeRedondeoInase: null,
       materialInerte: 2,
+      materialInerteInase: null,
+      materialInertePorcentajeRedondeo: null,
+      materialInertePorcentajeRedondeoInase: null,
       otrosCultivos: 1.5,
+      otrosCultivosInase: null,
+      otrosCultivosPorcentajeRedondeo: null,
+      otrosCultivosPorcentajeRedondeoInase: null,
       malezas: 1,
+      malezasInase: null,
+      malezasPorcentajeRedondeo: null,
+      malezasPorcentajeRedondeoInase: null,
       malezasToleradas: 0.5,
+      malezasToleradasInase: null,
+      malezasToleradasPorcentajeRedondeo: null,
+      malezasToleradasPorcentajeRedondeoInase: null,
+      malezasToleranciaCero: null,
+      malezasToleranciaCeroInase: null,
+      malezasToleranciaCeroPorcentajeRedondeo: null,
+      malezasToleranciaCeroPorcentajeRedondeoInase: null,
       pesoTotal: 100,
-      otrosCultivo: 1.5,
       fechaEstandar: '2023-01-15',
       estandar: true,
       activo: true,
+      reciboId: null,
       repetido: false,
       fechaCreacion: '2023-01-15',
       fechaRepeticion: null
     },
     {
       id: 2,
-      fecha: '2022-02-20',
+      fechaInase: null,
+      fechaInia: null,
       pesoInicial: 90,
+      pesoInicialInase: null,
+      pesoInicialPorcentajeRedondeo: null,
+      pesoInicialPorcentajeRedondeoInase: null,
       semillaPura: 88,
+      semillaPuraInase: null,
+      semillaPuraPorcentajeRedondeo: null,
+      semillaPuraPorcentajeRedondeoInase: null,
       materialInerte: 1.5,
+      materialInerteInase: null,
+      materialInertePorcentajeRedondeo: null,
+      materialInertePorcentajeRedondeoInase: null,
       otrosCultivos: 0.3,
+      otrosCultivosInase: null,
+      otrosCultivosPorcentajeRedondeo: null,
+      otrosCultivosPorcentajeRedondeoInase: null,
       malezas: 0.2,
+      malezasInase: null,
+      malezasPorcentajeRedondeo: null,
+      malezasPorcentajeRedondeoInase: null,
       malezasToleradas: 0,
+      malezasToleradasInase: null,
+      malezasToleradasPorcentajeRedondeo: null,
+      malezasToleradasPorcentajeRedondeoInase: null,
+      malezasToleranciaCero: null,
+      malezasToleranciaCeroInase: null,
+      malezasToleranciaCeroPorcentajeRedondeo: null,
+      malezasToleranciaCeroPorcentajeRedondeoInase: null,
       pesoTotal: 90,
-      otrosCultivo: 0.3,
       fechaEstandar: '2022-02-20',
       estandar: false,
       activo: true,
+      reciboId: null,
       repetido: true,
       fechaCreacion: '2022-02-20',
       fechaRepeticion: '2022-02-22'
@@ -411,13 +681,14 @@ export class PurezaComponent implements OnInit {
     const item = this.itemsData.find(pureza => pureza.id === id);
     if (item) {
       console.log('Cargando datos para edición:', item);
-      this.fecha = item.fecha || '';
+      this.fecha = item.fechaCreacion || '';
       this.pesoInicialGr = item.pesoInicial || 0;
       this.semillaPuraGr = item.semillaPura || 0;
       this.materiaInerteGr = item.materialInerte || 0;
       this.otrosCultivosGr = item.otrosCultivos || 0;
       this.malezasGr = item.malezas || 0;
       this.malezasToleradasGr = item.malezasToleradas || 0;
+      this.malezasToleranciaCeroGr = item.malezasToleranciaCero || 0;
       this.pesoTotalGr = item.pesoTotal || 0;
       this.fechaEstandar = item.fechaEstandar || '';
       this.estandar = item.estandar || false;
@@ -435,6 +706,7 @@ export class PurezaComponent implements OnInit {
     this.otrosCultivosGr = 0;
     this.malezasGr = 0;
     this.malezasToleradasGr = 0;
+    this.malezasToleranciaCeroGr = 0;
     this.pesoTotalGr = 0;
     this.fechaEstandar = '';
     this.estandar = false;
@@ -443,13 +715,14 @@ export class PurezaComponent implements OnInit {
 
   onSubmit() {
     const purezaData: Partial<PurezaDto> = {
-      fecha: this.fecha,
+      fechaCreacion: this.fecha,
       pesoInicial: this.pesoInicialGr,
       semillaPura: this.semillaPuraGr,
       materialInerte: this.materiaInerteGr,
       otrosCultivos: this.otrosCultivosGr,
       malezas: this.malezasGr,
       malezasToleradas: this.malezasToleradasGr,
+      malezasToleranciaCero: this.malezasToleranciaCeroGr,
       pesoTotal: this.pesoTotalGr,
       fechaEstandar: this.fechaEstandar,
       estandar: this.estandar,

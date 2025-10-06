@@ -28,6 +28,10 @@ export class PurezaPNotatumComponent implements OnInit {
   isEditing: boolean = false;
   editingId: number | null = null;
 
+  // Propiedades para checkboxes
+  repetido: boolean = false;
+  estandar: boolean = false;
+
   fecha: string = '';
   pesoInicialGr: number = 0;
   pesoInicialPct: number = 0;

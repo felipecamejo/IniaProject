@@ -56,6 +56,9 @@ export class ReciboComponent {
     const payload: ReciboDto = {
       id: null,
       nroAnalisis: Number(this.nLab) || 0,
+      depositoId: 1, // TODO: Get from form or default value
+      estado: 'PENDIENTE', // TODO: Set appropriate default state
+      HumedadesId: [], // TODO: Get from form if applicable
       especie: this.especie,
       ficha: this.ficha,
       fechaRecibo: this.fechaRecibo || new Date().toISOString(),
@@ -63,19 +66,11 @@ export class ReciboComponent {
       origen: '',
       cultivar: this.selectedCultivar,
       deposito: '',
-      estado: '',
       lote: Number(this.lote) || 0,
       kgLimpios: Number(this.kilos) || 0,
       analisisSolicitados: this.rec,
       articulo: 0,
-      activo: true,
-      dosnAnalisis: [],
-      pmsAnalisis: [],
-      purezaAnalisis: [],
-      germinacionAnalisis: [],
-      purezaPNotatumAnalisis: [],
-      sanitarioAnalisis: [],
-      tetrazolioAnalisis: []
+      activo: true
     };
 
     this.reciboService.crearRecibo(payload).subscribe({

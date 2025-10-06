@@ -1,5 +1,16 @@
 // Los estilos de .form-grid y .submit-btn se importan desde styles.scss
 
+.container {
+  max-width: 800px !important;
+  width: 90% !important;
+  margin: 0 auto !important;
+}
+
+::ng-deep .card {
+  width: 100% !important;
+  max-width: none !important;
+}
+
 .submit-btn {
   ::ng-deep .p-button {
     background: var(--verde) !important;
@@ -109,3 +120,151 @@
     border-color: var(--celeste, #2563eb);
   }
 }
+
+// Estilos mejorados para los checkboxes
+.checkbox-container {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.checkbox-title {
+  margin: 0 0 1rem 0;
+  color: var(--azul);
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.checkbox-grid {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.custom-checkbox {
+  opacity: 0;
+  position: absolute;
+  cursor: pointer;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.checkmark {
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.checkmark::after {
+  content: '';
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform 0.2s ease;
+}
+
+.custom-checkbox:checked + .checkbox-label .checkmark {
+  background: #1746a0;
+  border-color: #1746a0;
+  box-shadow: 0 2px 8px rgba(23, 70, 160, 0.3);
+}
+
+.custom-checkbox:checked + .checkbox-label .checkmark::after {
+  transform: rotate(45deg) scale(1);
+}
+
+.checkbox-label:hover .checkmark {
+  border-color: #1746a0;
+  box-shadow: 0 0 0 3px rgba(23, 70, 160, 0.1);
+}
+
+.checkbox-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.custom-checkbox:checked + .checkbox-label .checkbox-text {
+  color: var(--color-azul);
+  font-weight: 600;
+}
+
+// Estilos para la tabla de pureza
+.table-section {
+  margin: 0rem 0 0rem 0; // Más espacio específicamente arriba y abajo
+  position: relative; // Para asegurar que el margen funcione correctamente
+  
+  .table-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  .table-wrapper {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 40, 85, 0.15);
+    margin-top: 1rem; // Separación específica desde el elemento anterior
+    margin-bottom: 1rem; // Separación específica hacia el siguiente elemento
+    
+    ::ng-deep .p-datatable {
+      border-radius: 12px !important;
+      
+      .p-datatable-wrapper {
+        border-radius: 12px !important;
+        overflow: hidden !important;
+      }
+      
+      table {
+        border-radius: 12px !important;
+        
+        th:first-child {
+          border-top-left-radius: 12px !important;
+        }
+        
+        th:last-child {
+          border-top-right-radius: 12px !important;
+        }
+        
+        tr:last-child {
+          td:first-child {
+            border-bottom-left-radius: 12px !important;
+          }
+          
+          td:last-child {
+            border-bottom-right-radius: 12px !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Los estilos globales de p-datatable ahora están en styles.scss
