@@ -4,7 +4,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/AuthService';
-import { UsuarioService, UsuarioDto } from '../../../services/UsuarioService';
+import { UsuarioService } from '../../../services/UsuarioService'; 
+import { UsuarioDto } from '../../../models/Usuario.dto';
 import { UserRole } from '../../../models/enums';
 import { EnumConverter } from '../../../utils/enum-converter';
 

@@ -1,0 +1,92 @@
+<div class="container">
+  <!-- Botón de navegación hacia atrás -->
+  <button class="back-button" (click)="onCancel()">
+    <i class="pi pi-arrow-left"></i>
+  </button>
+  
+  <p-card class="card">
+    <ng-template pTemplate="header">
+      <h2 class="title">{{ isEditing ? 'Editar Usuario' : 'Crear Usuario' }}</h2>
+    </ng-template>
+
+    <form (ngSubmit)="onSubmit()" #userForm="ngForm">
+
+      <div class="form-grid">
+        <!-- Campo Nombre -->
+        <div class="form-field">
+          <label for="nombre">Nombre *</label>
+          <input 
+            id="nombre" 
+            type="text" 
+            [(ngModel)]="nombre" 
+            name="nombre" 
+            pInputText 
+            required
+            placeholder="Ingrese el nombre completo"
+          />
+        </div>
+
+        <!-- Campo Email -->
+        <div class="form-field">
+          <label for="email">Email *</label>
+          <input 
+            id="email" 
+            type="email" 
+            [(ngModel)]="email" 
+            name="email" 
+            pInputText 
+            required
+            placeholder="usuario@ejemplo.com"
+          />
+        </div>
+
+        <!-- Campo Teléfono -->
+        <div class="form-field">
+          <label for="telefono">Teléfono</label>
+          <input 
+            id="telefono" 
+            type="tel" 
+            [(ngModel)]="telefono" 
+            name="telefono" 
+            pInputText 
+            placeholder="Número de teléfono (opcional)"
+          />
+        </div>
+
+        <!-- Campo Rol -->
+        <div class="form-field">
+          <label for="rol">Rol *</label>
+          <select 
+            id="rol" 
+            [(ngModel)]="rol" 
+            name="rol" 
+            class="form-select" 
+            required
+          >
+            <option *ngFor="let option of rolesOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="submit-btn">
+        <button
+          pButton
+          type="submit"
+          [label]="isEditing ? 'Actualizar Usuario' : 'Crear Usuario'"
+          class="p-button-success"
+          [disabled]="userForm.invalid"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Cancelar"
+          class="p-button-secondary"
+          (click)="onCancel()"
+        ></button>
+      </div>
+    </form>
+  </p-card>
+</div>

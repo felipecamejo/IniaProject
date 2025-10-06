@@ -1,3 +1,4 @@
+
 // Estilos para hacer la card más ancha
 .container {
   max-width: 1000px !important;
@@ -11,23 +12,87 @@
   }
 }
 
-::ng-deep .card {
-  width: 100% !important;
-  max-width: none !important;
+// Estilos para la sección de búsqueda y filtros
+.search-section {
+  display: flex !important;
+  gap: 1rem !important;
+  align-items: center !important;
+  margin-bottom: 1rem !important;
+  flex-wrap: wrap !important;
+
+  @media (max-width: 768px) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+}
+
+.search-bar {
+  flex: 1 !important;
+  min-width: 200px !important;
+  
+  .search-input {
+    width: 100% !important;
+    padding: 0.75rem 1rem !important;
+    border: 2px solid var(--gris) !important;
+    border-radius: 8px !important;
+    font-family: var(--font-main) !important;
+    font-size: 0.9rem !important;
+    outline: none !important;
+    transition: border-color 0.2s ease !important;
+
+    &:focus {
+      border-color: var(--azul) !important;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul) 25%, transparent) !important;
+    }
+
+    &::placeholder {
+      color: var(--gris-oscuro) !important;
+      opacity: 0.7 !important;
+    }
+  }
+}
+
+.filter-dropdown {
+  display: flex !important;
+  align-items: center !important;
+
+  select {
+    padding: 0.75rem 1rem !important;
+    border: 2px solid var(--gris) !important;
+    border-radius: 8px !important;
+    font-family: var(--font-main) !important;
+    font-size: 0.9rem !important;
+    background-color: white !important;
+    outline: none !important;
+    transition: border-color 0.2s ease !important;
+    min-width: 140px !important;
+
+    &:focus {
+      border-color: var(--azul) !important;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul) 25%, transparent) !important;
+    }
+  }
 }
 
 .submit-btn {
+  display: flex !important;
+  align-items: center !important;
+  padding-bottom: 23px !important;
+  
   ::ng-deep .p-button {
     background: var(--verde) !important;
     background-color: var(--verde) !important;
-    border: 1px solid var(--verde) !important;
-    border-radius: 25px !important;
+    border: 2px solid var(--verde) !important;
+    border-radius: 8px !important;
     font-weight: 600 !important;
-    width: 100% !important;
     padding: 0.75rem 1.5rem !important;
     color: white !important;
     font-family: var(--font-main) !important;
     transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+    height: auto !important;
+    min-height: 46px !important; // Misma altura que los selects
 
     &:hover {
       background: var(--verde) !important;
@@ -40,7 +105,7 @@
       background: var(--verde) !important;
       background-color: var(--verde) !important;
       border-color: var(--verde) !important;
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--verde) 25%, transparent) !important;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--verde) 25%, transparent) !important;
     }
 
     &:active {
@@ -65,413 +130,135 @@
   }
 }
 
-// Estilos específicos para la sección de búsqueda
-.search-section {
+::ng-deep .card {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+// Usar los estilos globales pero agregar los específicos para PMS
+.blue-rectangle {
+  // Estados específicos para PMS
+  &.pendiente .status-badge {
+    background-color: var(--naranja) !important;
+    border-color: var(--naranja) !important;
+    color: white !important;
+  }
+  
+  &.repetido .status-badge {
+    background-color: var(--rojo) !important;
+    border-color: var(--rojo) !important;
+    color: white !important;
+  }
+}
+
+// Estilos para el contenido del item
+.item-content {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  align-items: center;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
   
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.75rem;
+    gap: 1rem;
   }
   
-  .search-bar {
+  .item-description {
     flex: 1;
-    min-width: 250px;
     
-    @media (max-width: 768px) {
-      min-width: unset;
-      width: 100%;
-    }
-    
-    .search-input {
-      width: 100%;
-      height: 45px;
-      padding: 0.75rem 1rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-family: var(--font-main);
-      transition: all 0.2s ease;
+    p {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.95rem;
+      line-height: 1.4;
       
-      @media (max-width: 768px) {
-        font-size: 0.9rem;
-        padding: 0.7rem 1rem;
-      }
-      
-      @media (max-width: 480px) {
-        font-size: 0.85rem;
-        padding: 0.65rem 0.75rem;
-        height: 42px;
-      }
-      
-      &:focus {
-        outline: none;
-        border-color: var(--celeste);
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--verde) 25%, transparent);
-      }
-      
-      &::placeholder {
-        color: #9ca3af;
-      }
-    }
-  }
-  
-  .filter-dropdown {
-    .submit-btn {
-      margin: 0;
-      
-      @media (max-width: 768px) {
-        width: 100%;
-      }
-      
-      ::ng-deep .p-button {
-        height: 45px !important;
-        min-height: 45px !important;
-        padding: 0 1.5rem !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        white-space: nowrap !important;
-        border-radius: 8px !important;
-        
-        @media (max-width: 768px) {
-          width: 100% !important;
-          font-size: 0.9rem !important;
-          padding: 0 1rem !important;
-        }
-        
-        @media (max-width: 480px) {
-          font-size: 0.85rem !important;
-          padding: 0 0.75rem !important;
-          height: 42px !important;
-          min-height: 42px !important;
-        }
-      }
-    }
-  }
-}
-
-// Estilos para el header del listado
-.title {
-  color: var(--azul);
-  margin: 0;
-  font-weight: 700;
-  text-align: center;
-  font-family: var(--font-main);
-}
-
-// Estilos para cada elemento de la lista
-.blue-rectangle {
-  background: linear-gradient(135deg, var(--azul) 0%, var(--celeste) 100%);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  }
-  
-  .item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.5rem;
-    
-    @media (max-width: 768px) {
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    
-    .item-info {
-      flex: 1;
-      
-      .item-title {
-        margin: 0 0 0.25rem 0;
-        font-size: 1.25rem;
+      strong {
         font-weight: 600;
-        font-family: var(--font-main);
-      }
-      
-      .item-subtitle {
-        font-size: 0.9rem;
-        opacity: 0.9;
-        font-style: italic;
-      }
-    }
-    
-    .status-badge {
-      padding: 0.25rem 0.75rem;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      
-      &.active {
-        background: rgba(34, 197, 94, 0.2);
-        color: #22c55e;
-        border: 1px solid rgba(34, 197, 94, 0.3);
-      }
-      
-      &.inactive {
-        background: rgba(239, 68, 68, 0.2);
-        color: #ef4444;
-        border: 1px solid rgba(239, 68, 68, 0.3);
-      }
-    }
-  }
-  
-  .divider-line {
-    height: 1px;
-    background: rgba(255, 255, 255, 0.3);
-    margin: 1rem 0;
-  }
-  
-  .item-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    
-    @media (max-width: 768px) {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 1rem;
-    }
-    
-    .item-description {
-      flex: 1;
-      
-      p {
-        margin: 0 0 0.5rem 0;
-        font-size: 0.95rem;
-        line-height: 1.4;
-        
-        strong {
-          font-weight: 600;
-        }
-      }
-    }
-    
-    .item-actions {
-      display: flex;
-      gap: 0.5rem;
-      
-      @media (max-width: 768px) {
-        justify-content: center;
-      }
-      
-      .action-button {
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        font-size: 1.1rem;
-        
-        &.edit-button {
-          background: rgba(59, 130, 246, 0.2);
-          color: #3b82f6;
-          border: 1px solid rgba(59, 130, 246, 0.3);
-          
-          &:hover {
-            background: rgba(59, 130, 246, 0.3);
-            transform: scale(1.05);
-          }
-        }
-        
-        &.delete-button {
-          background: rgba(239, 68, 68, 0.2);
-          color: #ef4444;
-          border: 1px solid rgba(239, 68, 68, 0.3);
-          
-          &:hover {
-            background: rgba(239, 68, 68, 0.3);
-            transform: scale(1.05);
-          }
-        }
       }
     }
   }
 }
 
-// Botón de navegación hacia atrás
-.back-button {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: var(--azul);
-  color: white;
+// Estilos para los botones de acción en el rectángulo azul
+.item-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  margin-top: 1rem;
+  
+  @media (max-width: 768px) {
+    justify-content: center;
+  }
+}
+
+.action-button {
+  background-color: var(--naranja);
   border: none;
+  border-radius: 8px;
+  padding: 0.5rem;
   cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.2s ease;
-  z-index: 1000;
-  
-  &:hover {
-    background: var(--celeste);
-    transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-  }
-}
+  width: 40px;
+  height: 40px;
 
-// Mensaje cuando no hay resultados
-.no-results-message {
-  text-align: center;
-  padding: 3rem 1rem;
-  color: #6b7280;
-  
-  .no-results-content {
-    h3 {
-      margin: 0 0 1rem 0;
-      font-size: 1.5rem;
-      color: var(--azul);
-      font-weight: 600;
-    }
-    
-    p {
-      margin: 0.5rem 0;
-      font-size: 1rem;
-      line-height: 1.5;
-    }
-  }
-}
-
-// Estilos para el modal
-::ng-deep .auth-modal {
-  .p-dialog-header {
-    background: var(--azul);
+  i {
     color: white;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  &:hover {
+    filter: brightness(0.85);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.edit-button {
+    background-color: var(--naranja);
     
-    .p-dialog-title {
-      font-weight: 600;
-      font-size: 1.2rem;
-    }
-    
-    .p-dialog-header-icon {
-      color: white;
-      
-      &:hover {
-        background: rgba(255, 255, 255, 0.1);
-      }
+    &:hover {
+      background-color: var(--naranja);
+      box-shadow: 0 2px 8px rgba(237, 168, 70, 0.4);
     }
   }
-  
-  .p-dialog-content {
-    padding: 1.5rem;
-    background: #f7fbff;
-  }
-  
-  .p-dialog {
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+
+  &.delete-button {
+    background-color: var(--rojo);
+    
+    &:hover {
+      background-color: var(--rojo);
+      box-shadow: 0 2px 8px rgba(218, 105, 106, 0.4);
+    }
   }
 }
 
-// Formulario del modal
-.modal-form-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  
-  .modal-form-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+// Responsive para botones
+@media (max-width: 768px) {
+  .action-button {
+    width: 35px;
+    height: 35px;
     
-    label {
-      font-weight: 600;
-      color: var(--azul);
+    i {
       font-size: 0.9rem;
     }
-    
-    input, select, textarea {
-      padding: 0.75rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-family: var(--font-main);
-      transition: all 0.2s ease;
-      
-      &:focus {
-        outline: none;
-        border-color: var(--celeste);
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--verde) 25%, transparent);
-      }
-    }
-    
-    .form-select {
-      background: white;
-      cursor: pointer;
-    }
-    
-    .checkbox-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      
-      .form-checkbox {
-        width: auto;
-        margin: 0;
-      }
-      
-      .status-label {
-        font-weight: 500;
-        color: var(--azul);
-      }
-    }
   }
 }
 
-.modal-submit-btn {
-  margin-top: 1rem;
+@media (max-width: 480px) {
+  .item-actions {
+    gap: 0.3rem;
+  }
   
-  ::ng-deep .p-button {
-    width: 100% !important;
-    padding: 0.75rem !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    font-size: 1rem !important;
+  .action-button {
+    width: 30px;
+    height: 30px;
+    
+    i {
+      font-size: 0.8rem;
+    }
   }
-}
-
-// Mensaje de error en el modal
-.error {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  padding: 0.75rem;
-  border-radius: 6px;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  text-align: center;
-}
-
-// Sombreado del fondo cuando el modal está abierto
-::ng-deep .p-dialog-mask {
-  background: rgba(0, 0, 0, 0.6) !important;
-  backdrop-filter: blur(4px);
 }
