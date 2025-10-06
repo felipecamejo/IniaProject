@@ -29,6 +29,7 @@ import { ListadoUsuariosComponent } from './components/listado-usuarios/listado-
 import { UsuarioComponent } from './components/usuario/usuario.component';
 
 export const routes: Routes = [
+    //rutas generales
     { path : 'home', component: HomeComponent },
     { path : 'login', component: LoginComponent },
     { path : '', redirectTo: '/login', pathMatch: 'full' },
