@@ -4,88 +4,55 @@
       <h2 class="title">{{ isEditing ? 'Editar Pureza P. notatum' : 'Crear Pureza P. notatum' }}</h2>
     </ng-template>
     <form>
-      <div class="form-grid">
-        <!-- Peso inicial de la muestra (g) -->
-        <div class="form-field">
-          <label for="pesoInicialGr">Peso inicial de la muestra</label>
-          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <div style="flex:1; display: flex; align-items: center;">
-              <input id="pesoInicialGr" type="number" [(ngModel)]="pesoInicialGr" name="pesoInicialGr" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Semilla pura (g y %) -->
-        <div class="form-field">
-          <label>Semilla pura</label>
-          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="semillaPuraGr" name="semillaPuraGr" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
-            </div>
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="semillaPuraPct" name="semillaPuraPct" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Semillas cultivos (g y %) -->
-        <div class="form-field">
-          <label>Semillas cultivos</label>
-          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="semillaCultivosGr" name="semillaCultivosGr" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
-            </div>
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="semillaCultivosPct" name="semillaCultivosPct" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Semillas malezas (g y %) -->
-        <div class="form-field">
-          <label>Semillas malezas</label>
-          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="semillaMalezasGr" name="semillaMalezasGr" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
-            </div>
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="semillaMalezasPct" name="semillaMalezasPct" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Materia inerte (g y %) -->
-        <div class="form-field">
-          <label>Materia inerte</label>
-          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="materiaInerteGr" name="materiaInerteGr" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
-            </div>
-            <div style="flex:1; display: flex; align-items: center;">
-              <input type="number" [(ngModel)]="materiaInertePct" name="materiaInertePct" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">%</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Peso final de la muestra (g) -->
-        <div class="form-field">
-          <label for="pesoFinalGr">Peso final de la muestra</label>
-          <div class="input-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <div style="flex:1; display: flex; align-items: center;">
-              <input id="pesoFinalGr" type="number" [(ngModel)]="pesoFinalGr" name="pesoFinalGr" pInputText style="width: 100%;" />
-              <span style="margin-left: 0.25rem; font-size: 0.9em;">g</span>
-            </div>
-          </div>
-        </div>
+      <div class="table-wrapper" style="margin-bottom:2rem;">
+        <table class="p-table" style="width:100%;">
+          <thead>
+            <tr>
+              <th>Descripción</th>
+              <th>Gramos</th>
+              <th>%</th>
+              <th>Redondeo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Peso inicial de la muestra</td>
+              <td><input type="number" [(ngModel)]="pesoInicialGr" name="pesoInicialGr" pInputText style="width:100%;" /></td>
+              <td></td>
+              <td><input type="number" [(ngModel)]="pesoInicialRedondeo" name="pesoInicialRedondeo" pInputText style="width:100%;" /></td>
+            </tr>
+            <tr>
+              <td>Semilla pura</td>
+              <td><input type="number" [(ngModel)]="semillaPuraGr" name="semillaPuraGr" pInputText style="width:100%;" /></td>
+              <td><input type="number" [(ngModel)]="semillaPuraPct" name="semillaPuraPct" pInputText style="width:100%;" /></td>
+              <td><input type="number" [(ngModel)]="semillaPuraRedondeo" name="semillaPuraRedondeo" pInputText style="width:100%;" /></td>
+            </tr>
+            <tr>
+              <td>Semillas cultivos</td>
+              <td><input type="number" [(ngModel)]="semillaCultivosGr" name="semillaCultivosGr" pInputText style="width:100%;" /></td>
+              <td><input type="number" [(ngModel)]="semillaCultivosPct" name="semillaCultivosPct" pInputText style="width:100%;" /></td>
+              <td><input type="number" [(ngModel)]="semillaCultivosRedondeo" name="semillaCultivosRedondeo" pInputText style="width:100%;" /></td>
+            </tr>
+            <tr>
+              <td>Semillas malezas</td>
+              <td><input type="number" [(ngModel)]="semillaMalezasGr" name="semillaMalezasGr" pInputText style="width:100%;" /></td>
+              <td><input type="number" [(ngModel)]="semillaMalezasPct" name="semillaMalezasPct" pInputText style="width:100%;" /></td>
+              <td><input type="number" [(ngModel)]="semillaMalezasRedondeo" name="semillaMalezasRedondeo" pInputText style="width:100%;" /></td>
+            </tr>
+            <tr>
+              <td>Materia inerte</td>
+              <td><input type="number" [(ngModel)]="materiaInerteGr" name="materiaInerteGr" pInputText style="width:100%;" /></td>
+              <td><input type="number" [(ngModel)]="materiaInertePct" name="materiaInertePct" pInputText style="width:100%;" /></td>
+              <td><input type="number" [(ngModel)]="materiaInerteRedondeo" name="materiaInerteRedondeo" pInputText style="width:100%;" /></td>
+            </tr>
+            <tr>
+              <td>Peso final de la muestra</td>
+              <td><input type="number" [(ngModel)]="pesoFinalGr" name="pesoFinalGr" pInputText style="width:100%;" /></td>
+              <td></td>
+              <td><input type="number" [(ngModel)]="pesoFinalRedondeo" name="pesoFinalRedondeo" pInputText style="width:100%;" /></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Tabla: Examen de semillas pura por corte -->
@@ -114,14 +81,43 @@
               <td><input type="number" [(ngModel)]="rep.semillasSanasPeso" name="semillasSanasPeso{{i}}" pInputText style="width:80px;" /></td>
               <td><input type="number" [(ngModel)]="rep.semillasContaminadasCantidad" name="semillasContaminadasCantidad{{i}}" pInputText style="width:80px;" /></td>
               <td><input type="number" [(ngModel)]="rep.semillasContaminadasPeso" name="semillasContaminadasPeso{{i}}" pInputText style="width:80px;" /></td>
-              <td><input type="number" [(ngModel)]="rep.controlPesos" name="controlPesos{{i}}" pInputText style="width:80px;" /></td>
+              <td>
+                {{ rep.semillasSanasPeso + rep.semillasContaminadasPeso }}
+                <span *ngIf="(rep.semillasSanasPeso + rep.semillasContaminadasPeso) > rep.pesoSemillasPuras" style="color: red; font-size: 0.9em; margin-left: 4px;">
+                  ⚠️
+                </span>
+              </td>
               <td>
                 <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="eliminarRepeticion(i)" [disabled]="repeticiones.length === 1"></button>
               </td>
             </tr>
           </tbody>
         </table>
-  <button pButton type="button" label="Agregar repetición" class="btn-agregar-rep" (click)="agregarRepeticion()"></button>
+        <button pButton type="button" label="Agregar repetición" class="btn-agregar-rep" (click)="agregarRepeticion()"></button>
+        <div class="totales-wrapper" style="margin-top: 1.5rem; display: flex; gap: 3rem; justify-content: flex-start; align-items: center; background: #f6f6f6; border-radius: 8px; padding: 1rem 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-weight: 600; color: #2e7d32; font-size: 1.1em;">Peso total semillas analizadas:</span>
+            <span style="font-size: 1.1em; color: #333;">{{ totalSemillasSanasPeso }} g</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-weight: 600; color: #c62828; font-size: 1.1em;">Peso total semillas contaminadas:</span>
+            <span style="font-size: 1.1em; color: #333;">{{ totalSemillasContaminadasPeso }} g</span>
+          </div>
+        </div>
+        <div class="porcentajes-wrapper" style="margin-top: 1.5rem; display: flex; gap: 3rem; justify-content: flex-start; align-items: center; background: #e3f2fd; border-radius: 8px; padding: 1rem 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-weight: 600; color: #1565c0; font-size: 1.1em;">A%:</span>
+            <span style="font-size: 1.1em; color: #333;">--</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-weight: 600; color: #1565c0; font-size: 1.1em;">A% total:</span>
+            <span style="font-size: 1.1em; color: #333;">--</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-weight: 600; color: #1565c0; font-size: 1.1em;">% semillas llenas y sanas:</span>
+            <span style="font-size: 1.1em; color: #333;">--</span>
+          </div>
+        </div>
       </div>
 
       <!-- Checkboxes -->

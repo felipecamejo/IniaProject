@@ -5,9 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/AuthService';
 import { UsuarioService, UsuarioDto } from '../../../services/UsuarioService';
-import { UserRole } from '../../../models/enums';
-import { EnumConverter } from '../../../utils/enum-converter';
-
+// import { UserRole } from '../../../models/enums';
+// import { EnumConverter } from '../../../utils/enum-converter';
+/*
 @Component({
   selector: 'app-perfil.component',
   standalone: true,
@@ -182,4 +182,4 @@ export class PerfilComponent implements OnInit {
   getRoleDisplayName(role: UserRole | string): string {
     return EnumConverter.getRoleDisplayName(role);
   }
-}
+}*/

@@ -34,17 +34,30 @@ export class PurezaPNotatumComponent implements OnInit {
 
   fecha: string = '';
   pesoInicialGr: number = 0;
+  pesoInicialRedondeo: number = 0;
   pesoInicialPct: number = 0;
   semillaPuraGr: number = 0;
+  semillaPuraRedondeo: number = 0;
   semillaPuraPct: number = 0;
   semillaCultivosGr: number = 0;
+  semillaCultivosRedondeo: number = 0;
   semillaCultivosPct: number = 0;
   semillaMalezasGr: number = 0;
+  semillaMalezasRedondeo: number = 0;
   semillaMalezasPct: number = 0;
   materiaInerteGr: number = 0;
+  materiaInerteRedondeo: number = 0;
   materiaInertePct: number = 0;
   pesoFinalGr: number = 0;
+  pesoFinalRedondeo: number = 0;
   pesoFinalPct: number = 0;
+  // Totales para mostrar en el template
+  get totalSemillasSanasPeso(): number {
+    return this.repeticiones.reduce((acc, rep) => acc + (rep.semillasSanasPeso || 0), 0);
+  }
+  get totalSemillasContaminadasPeso(): number {
+    return this.repeticiones.reduce((acc, rep) => acc + (rep.semillasContaminadasPeso || 0), 0);
+  }
 
   repeticiones: Array<{
     numero: number;
