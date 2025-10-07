@@ -36,7 +36,11 @@ export class SanitarioComponent implements OnInit {
 
   // Variables para manejar navegación
   isEditing: boolean = false;
+  isViewing: boolean = false;
   editingId: number | null = null;
+
+  loteId: string | null = '';
+  reciboId: string | null = '';
 
   metodos = [
       { label: 'Metodo A', id: 1 },
@@ -114,7 +118,6 @@ export class SanitarioComponent implements OnInit {
   nroDias: number | null = null;
   estadoProductoDosis: string = '';
   nroSemillasRepeticion: number | null = null;
-  reciboId: number | null = null;
   activo: boolean = true;
   estandar: boolean = false;
   SanitarioHongoids: number[] | null = null;
@@ -126,15 +129,28 @@ export class SanitarioComponent implements OnInit {
     private router: Router
   ) {}
 
+  // Getter para determinar si está en modo readonly
+  get isReadonly(): boolean {
+    return this.isViewing;
+  }
+
   ngOnInit() {
+    this.loteId = this.route.snapshot.params['loteId'];
+    this.reciboId = this.route.snapshot.params['reciboId'];
+
     // Verificar si estamos en modo edición basado en la ruta
     this.route.params.subscribe(params => {
       if (params['id']) {
-        this.isEditing = true;
         this.editingId = parseInt(params['id']);
+        // Verificar si es modo visualización por query parameter
+        this.route.queryParams.subscribe(queryParams => {
+          this.isViewing = queryParams['view'] === 'true';
+          this.isEditing = !this.isViewing;
+        });
         this.cargarDatosParaEdicion(this.editingId);
       } else {
         this.isEditing = false;
+        this.isViewing = false;
         this.editingId = null;
         this.cargarDatos();
       }
@@ -414,7 +430,7 @@ export class SanitarioComponent implements OnInit {
     this.estadoProductoDosis = 'Activo';
     this.observaciones = 'Ejemplo de sanitario actualizado';
     this.nroSemillasRepeticion = 100;
-    this.reciboId = 1;
+    this.reciboId = '1';
     this.activo = true;
     this.estandar = false;
     this.repetido = false;
@@ -450,8 +466,7 @@ export class SanitarioComponent implements OnInit {
   }
 
   onCancel() {
-    // Navegar de vuelta al listado
-    this.router.navigate(['/listado-sanitario']);
+      this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);
   }
 
 }

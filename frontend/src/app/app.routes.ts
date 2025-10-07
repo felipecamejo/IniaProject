@@ -66,10 +66,13 @@ export const routes: Routes = [
     //formularios asociados a un recibo
     { path : ':loteId/:reciboId/pms/crear', component: PmsComponent },
     { path : ':loteId/:reciboId/pms/editar/:id', component: PmsComponent },
+    { path : ':loteId/:reciboId/pms/:id', component: PmsComponent }, // Para visualización con query param view=true
     { path : ':loteId/:reciboId/sanitario/crear', component: SanitarioComponent },
     { path : ':loteId/:reciboId/sanitario/editar/:id', component: SanitarioComponent },
+    { path : ':loteId/:reciboId/sanitario/:id', component: SanitarioComponent }, // Para visualización con query param view=true
     { path : ':loteId/:reciboId/pureza/crear', component: PurezaComponent },
     { path : ':loteId/:reciboId/pureza/editar/:id', component: PurezaComponent },
+    { path : ':loteId/:reciboId/pureza/:id', component: PurezaComponent }, // Para visualización con query param view=true
     { path : ':loteId/:reciboId/dosn/crear', component: DOSNComponent },
     { path : ':loteId/:reciboId/dosn/editar/:id', component: DOSNComponent },
     { path : ':loteId/:reciboId/pureza-p-notatum/crear', component: PurezaPNotatumComponent },
