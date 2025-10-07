@@ -23,6 +23,8 @@ public class UsuarioDto {
 
     private String password;
 
+    private String telefono;
+
     @NotNull(message = "El rol es obligatorio")
     private RolUsuario rol;
 
@@ -70,6 +72,6 @@ public class UsuarioDto {
 
     @Generated
     public String toString() {
-        return "UsuarioDto(id=" + this.getId() + ", email=" + this.getEmail() + ", nombre=" + this.getNombre() + ", rol=" + this.getRol() + ", activo=" + this.isActivo() + ", lotesId=" + this.getLotesId() + ")";
+        return "UsuarioDto(id=" + this.getId() + ", email=" + this.getEmail() + ", nombre=" + this.getNombre() + ", telefono=" + this.getTelefono() + ", rol=" + this.getRol() + ", activo=" + this.isActivo() + ", lotesId=" + this.getLotesId() + ")";
     }
 }

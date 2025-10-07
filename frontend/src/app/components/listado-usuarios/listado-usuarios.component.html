@@ -1,0 +1,71 @@
+<div class="container">
+    <!-- Botón de navegación hacia atrás -->
+    <button class="back-button" (click)="goToHome()">
+        <i class="pi pi-arrow-left"></i>
+    </button>
+    
+    <p-card class="card">
+        <ng-template pTemplate="header">
+            <h2 class="title">Listado de Usuarios</h2>
+        </ng-template>
+
+        <div class="search-section">
+            <div class="search-bar">
+                <input type="text" placeholder="Buscar usuarios..." class="search-input" [(ngModel)]="searchText" name="search" />
+            </div>
+            <div class="filter-dropdown">
+                <select class="mes-select" [(ngModel)]="selectedRol" name="rol">
+                    <option value="">Todos los roles</option>
+                    <option value="ADMIN">Administrador</option>
+                    <option value="ANALISTA">Analista</option>
+                    <option value="OBSERVADOR">Observador</option>
+                </select>
+            </div>
+            <div class="filter-dropdown">
+                <div class="submit-btn">
+                    <button pButton type="button" (click)="crearUsuario()" label="Crear Usuario" class="p-button-primary"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensaje cuando no hay elementos -->
+        <div class="no-results-message" *ngIf="itemsFiltrados.length === 0">
+            <div class="no-results-content">
+                <h3>No se encontraron Usuarios</h3>
+                <p>No hay usuarios que coincidan con los filtros seleccionados.</p>
+                <p>Intenta ajustar los criterios de búsqueda.</p>
+            </div>
+        </div>
+
+        <!-- Lista de usuarios filtrados -->
+        <div class="blue-rectangle" 
+             *ngFor="let item of itemsFiltrados">
+            <div class="item-header">
+                <div class="item-info">
+                    <h3 class="item-title">{{ item.nombre }}</h3>
+                    <span class="item-subtitle">{{ item.email }}</span>
+                </div>
+                <div class="item-status">
+                    <span class="status-badge" [ngClass]="{'active': item.activo, 'inactive': !item.activo}">
+                        {{ getRolLabel(item.rol) }}
+                    </span>
+                </div>
+            </div>
+            <div class="divider-line"></div>
+            <div class="item-content">
+                <div class="item-description">
+                    
+                </div>
+                <div class="item-actions">
+                    <button class="action-button edit-button" (click)="editarItem(item)" title="Editar">
+                        <i class="pi pi-pencil"></i>
+                    </button>
+                    <button class="action-button delete-button" (click)="eliminarItem(item)" title="Eliminar">
+                        <i class="pi pi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </p-card>
+</div>

@@ -151,12 +151,43 @@
   }
 }
 
+// Estilos para el contenido del item
+.item-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .item-description {
+    flex: 1;
+    
+    p {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      
+      strong {
+        font-weight: 600;
+      }
+    }
+  }
+}
+
 // Estilos para los botones de acción en el rectángulo azul
 .item-actions {
   display: flex;
   gap: 0.5rem;
-  justify-content: flex-end;
-  margin-bottom: 0.5rem;
+  align-items: flex-end;
+  margin-top: 1rem;
+  
+  @media (max-width: 768px) {
+    justify-content: center;
+  }
 }
 
 .action-button {

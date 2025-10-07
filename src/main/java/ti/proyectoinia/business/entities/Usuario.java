@@ -23,6 +23,9 @@ public class Usuario {
     @Column(name = "PASSWORD")
     private String password;
 
+    @Column(name = "TELEFONO")
+    private String telefono;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "ROL")
     private RolUsuario rol;

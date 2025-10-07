@@ -13,7 +13,7 @@ import { DialogModule } from 'primeng/dialog';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TableModule } from 'primeng/table';
 import { MultiSelectModule } from 'primeng/multiselect';
-/*
+
 @Component({
   selector: 'app-sanitario.component',
   imports: [
@@ -359,7 +359,7 @@ export class SanitarioComponent implements OnInit {
       activo: true,
       estandar: true,
       repetido: false,
-  // sanitarioHongoids: [1, 2],
+      SanitarioHongoids: [1, 2],
       fechaCreacion: '2023-01-15',
       fechaRepeticion: null
     },
@@ -379,7 +379,7 @@ export class SanitarioComponent implements OnInit {
       activo: true,
       estandar: false,
       repetido: true,
-  // sanitarioHongoids: [3, 4, 5],
+      SanitarioHongoids: [3, 4, 5],
       fechaCreacion: '2022-02-20',
       fechaRepeticion: '2022-02-22'
     }
@@ -457,4 +457,3 @@ export class SanitarioComponent implements OnInit {
   }
 
 }
-*/
