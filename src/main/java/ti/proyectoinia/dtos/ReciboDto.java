@@ -2,10 +2,7 @@ package ti.proyectoinia.dtos;
 
 import lombok.Data;
 import lombok.Generated;
-import ti.proyectoinia.business.entities.HumedadLugar;
-import ti.proyectoinia.business.entities.ReciboEstado;
 
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -16,7 +13,7 @@ public class ReciboDto {
 
     private Integer depositoId;
 
-    private ReciboEstado estado;
+    private String estado;
 
     private List<Integer> HumedadesId;
 
@@ -24,7 +21,7 @@ public class ReciboDto {
 
     private String ficha;
 
-    private Date fechaRecibo;
+    private String fechaRecibo;
 
     private String remitente;
 

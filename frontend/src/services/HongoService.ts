@@ -2,19 +2,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UrlService } from './url.service';
-import { PurezaDto } from '../models/Pureza.dto';
+import { HongoDto } from '../models/Hongo.dto';
 
-interface ResponseListadoPurezas {
-  purezas: PurezaDto[];
+interface ResponseListadoHongos {
+  hongos: HongoDto[];
 }
 
 @Injectable({ providedIn: 'root' })
-export class PurezaService {
-  private endpoint: string = '/pureza';
+export class HongoService {
+  private endpoint: string = '/hongo';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
-  crear(payload: PurezaDto): Observable<string> {
+  crear(payload: HongoDto): Observable<string> {
     return this.http.post(
       `${this.urlService.baseUrl}${this.endpoint}/crear`,
       payload,
@@ -22,25 +22,19 @@ export class PurezaService {
     );
   }
 
-  listar(): Observable<ResponseListadoPurezas> {
-    return this.http.get<ResponseListadoPurezas>(
+  listar(): Observable<ResponseListadoHongos> {
+    return this.http.get<ResponseListadoHongos>(
       `${this.urlService.baseUrl}${this.endpoint}/listar`
     );
   }
 
-  listarPorRecibo(reciboId: number): Observable<ResponseListadoPurezas> {
-    return this.http.get<ResponseListadoPurezas>(
-      `${this.urlService.baseUrl}${this.endpoint}/listar/recibo/${reciboId}`
-    );
-  }
-
-  obtener(id: number): Observable<PurezaDto> {
-    return this.http.get<PurezaDto>(
+  obtener(id: number): Observable<HongoDto> {
+    return this.http.get<HongoDto>(
       `${this.urlService.baseUrl}${this.endpoint}/${id}`
     );
   }
 
-  editar(payload: PurezaDto): Observable<string> {
+  editar(payload: HongoDto): Observable<string> {
     return this.http.put(
       `${this.urlService.baseUrl}${this.endpoint}/editar`,
       payload,
@@ -56,5 +50,3 @@ export class PurezaService {
     );
   }
 }
-
-

@@ -10,7 +10,7 @@ interface ResponseListadoTetrazolio {
 
 @Injectable({ providedIn: 'root' })
 export class TetrazolioService {
-  private endpoint: string = '/Tetrazolio';
+  private endpoint: string = '/tetrazolio';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
@@ -25,6 +25,12 @@ export class TetrazolioService {
   listar(): Observable<ResponseListadoTetrazolio> {
     return this.http.get<ResponseListadoTetrazolio>(
       `${this.urlService.baseUrl}${this.endpoint}/listar`
+    );
+  }
+
+  listarPorRecibo(reciboId: number): Observable<ResponseListadoTetrazolio> {
+    return this.http.get<ResponseListadoTetrazolio>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar/recibo/${reciboId}`
     );
   }
 

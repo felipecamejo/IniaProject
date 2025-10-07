@@ -26,6 +26,20 @@ public class MapsDtoEntityService {
             .orElse(null);
     }
 
+    private String toIsoString(java.util.Date date) {
+        if (date == null) return null;
+        return java.time.Instant.ofEpochMilli(date.getTime()).toString();
+    }
+
+    private java.util.Date fromIsoString(String iso) {
+        if (iso == null || iso.isBlank()) return null;
+        try {
+            return new java.util.Date(java.time.Instant.parse(iso).toEpochMilli());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public HongoDto mapToDtoHongo(Hongo hongo) {
         if (hongo == null) {
             return null;
@@ -172,13 +186,13 @@ public class MapsDtoEntityService {
         reciboDto.setNroAnalisis(recibo.getNroAnalisis());
         reciboDto.setEspecie(recibo.getEspecie());
         reciboDto.setFicha(recibo.getFicha());
-        reciboDto.setFechaRecibo(recibo.getFechaRecibo());
+        reciboDto.setFechaRecibo(toIsoString(recibo.getFechaRecibo()));
         reciboDto.setRemitente(recibo.getRemitente());
         reciboDto.setOrigen(recibo.getOrigen());
         reciboDto.setCultivar(recibo.getCultivar());
         reciboDto.setDeposito(recibo.getDeposito());
         reciboDto.setDepositoId(recibo.getDepositoId());
-        reciboDto.setEstado(recibo.getEstado());
+        reciboDto.setEstado(recibo.getEstado() != null ? recibo.getEstado().name() : null);
         reciboDto.setLote(recibo.getLote());
         reciboDto.setKgLimpios(recibo.getKgLimpios());
         reciboDto.setAnalisisSolicitados(recibo.getAnalisisSolicitados());
@@ -207,13 +221,17 @@ public class MapsDtoEntityService {
         recibo.setNroAnalisis(reciboDto.getNroAnalisis());
         recibo.setEspecie(reciboDto.getEspecie());
         recibo.setFicha(reciboDto.getFicha());
-        recibo.setFechaRecibo(reciboDto.getFechaRecibo());
+        recibo.setFechaRecibo(fromIsoString(reciboDto.getFechaRecibo()));
         recibo.setRemitente(reciboDto.getRemitente());
         recibo.setOrigen(reciboDto.getOrigen());
         recibo.setCultivar(reciboDto.getCultivar());
         recibo.setDeposito(reciboDto.getDeposito());
         recibo.setDepositoId(reciboDto.getDepositoId());
-        recibo.setEstado(reciboDto.getEstado());
+        try {
+            recibo.setEstado(reciboDto.getEstado() != null ? ReciboEstado.valueOf(reciboDto.getEstado()) : null);
+        } catch (Exception e) {
+            recibo.setEstado(null);
+        }
         recibo.setLote(reciboDto.getLote());
         recibo.setKgLimpios(reciboDto.getKgLimpios());
         recibo.setAnalisisSolicitados(reciboDto.getAnalisisSolicitados());
@@ -498,8 +516,8 @@ public class MapsDtoEntityService {
         loteDto.setNombre(lote.getNombre());
         loteDto.setActivo(lote.isActivo());
         loteDto.setDescripcion(lote.getDescripcion());
-        loteDto.setFechaCreacion(lote.getFechaCreacion());
-        loteDto.setFechaFinalizacion(lote.getFechaFinalizacion());
+        loteDto.setFechaCreacion(toIsoString(lote.getFechaCreacion()));
+        loteDto.setFechaFinalizacion(toIsoString(lote.getFechaFinalizacion()));
 
         if (lote.getUsuarios() != null) {
             loteDto.setUsuariosId(lote.getUsuarios().stream().map(Usuario::getId).collect(Collectors.toList()));
@@ -520,8 +538,8 @@ public class MapsDtoEntityService {
         lote.setNombre(loteDto.getNombre());
         lote.setActivo(loteDto.isActivo());
         lote.setDescripcion(loteDto.getDescripcion());
-        lote.setFechaCreacion(loteDto.getFechaCreacion());
-        lote.setFechaFinalizacion(loteDto.getFechaFinalizacion());
+        lote.setFechaCreacion(fromIsoString(loteDto.getFechaCreacion()));
+        lote.setFechaFinalizacion(fromIsoString(loteDto.getFechaFinalizacion()));
 
         if (loteDto.getUsuariosId() != null) {
             lote.setUsuarios(loteDto.getUsuariosId().stream().map(id -> {

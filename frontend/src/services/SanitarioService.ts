@@ -10,7 +10,7 @@ interface ResponseListadoSanitario {
 
 @Injectable({ providedIn: 'root' })
 export class SanitarioService {
-  private endpoint: string = '/Sanitario';
+  private endpoint: string = '/sanitario';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
@@ -25,6 +25,12 @@ export class SanitarioService {
   listar(): Observable<ResponseListadoSanitario> {
     return this.http.get<ResponseListadoSanitario>(
       `${this.urlService.baseUrl}${this.endpoint}/listar`
+    );
+  }
+
+  listarPorRecibo(reciboId: number): Observable<ResponseListadoSanitario> {
+    return this.http.get<ResponseListadoSanitario>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar/recibo/${reciboId}`
     );
   }
 

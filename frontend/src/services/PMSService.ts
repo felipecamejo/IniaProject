@@ -28,6 +28,12 @@ export class PMSService {
     );
   }
 
+  listarPorRecibo(reciboId: number): Observable<ResponseListadoPMS> {
+    return this.http.get<ResponseListadoPMS>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar/recibo/${reciboId}`
+    );
+  }
+
   obtener(id: number): Observable<PMSDto> {
     return this.http.get<PMSDto>(
       `${this.urlService.baseUrl}${this.endpoint}/${id}`

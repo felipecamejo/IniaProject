@@ -4,9 +4,21 @@ import { Observable } from 'rxjs';
 import { UrlService } from './url.service';
 import { UsuarioDto } from '../models/Usuario.dto';
 
+interface ResponseListadoUsuarios {
+  usuarios: UsuarioDto[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
+  private endpoint: string = '/usuario';
+
   constructor(private http: HttpClient, private url: UrlService) {}
+
+  listarUsuarios(): Observable<ResponseListadoUsuarios> {
+    return this.http.get<ResponseListadoUsuarios>(
+      `${this.url.baseUrl}${this.endpoint}/listar`
+    );
+  }
 
   obtenerPerfilUsuario(email: string): Observable<UsuarioDto> {
     return this.http.get<UsuarioDto>(`${this.url.baseUrl}/usuario/perfil/${email}`);
