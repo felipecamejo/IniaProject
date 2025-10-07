@@ -7,6 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { TabsModule } from 'primeng/tabs';
 
 @Component({
   selector: 'app-pureza-p-notatum',
@@ -18,7 +19,8 @@ import { MultiSelectModule } from 'primeng/multiselect';
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-    MultiSelectModule
+    MultiSelectModule,
+    TabsModule
   ],
   templateUrl: './pureza-p-notatum.component.html',
   styleUrl: './pureza-p-notatum.component.scss'
@@ -51,6 +53,8 @@ export class PurezaPNotatumComponent implements OnInit {
   pesoFinalGr: number = 0;
   pesoFinalRedondeo: number = 0;
   pesoFinalPct: number = 0;
+
+  comentarios: string = '';
   // Totales para mostrar en el template
   get totalSemillasSanasPeso(): number {
     return this.repeticiones.reduce((acc, rep) => acc + (rep.semillasSanasPeso || 0), 0);

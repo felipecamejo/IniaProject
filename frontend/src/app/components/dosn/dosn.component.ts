@@ -7,6 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { TabsModule } from 'primeng/tabs';
 
 @Component({
   selector: 'app-dosn.component',
@@ -17,7 +18,8 @@ import { MultiSelectModule } from 'primeng/multiselect';
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-    MultiSelectModule
+  MultiSelectModule,
+  TabsModule
   ],
   templateUrl: './dosn.component.html',
   styleUrl: './dosn.component.scss'
