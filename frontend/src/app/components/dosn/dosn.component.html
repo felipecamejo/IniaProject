@@ -5,52 +5,49 @@
     </ng-template>
 
     <form>
-      <p-tabs>
-        <p-tab header="INASE">
-          <div class="form-grid">
-            <div class="form-field">
-              <label for="fechaInase">Fecha</label>
-              <input id="fechaInase" type="date" [(ngModel)]="fechaInase" name="fechaInase" pInputText />
-            </div>
-            <div class="form-field">
-              <label for="gramosInase">Gramos analizados</label>
-              <input id="gramosInase" type="number" [(ngModel)]="gramosInase" name="gramosInase" pInputText />
-            </div>
-            <div class="form-field">
-              <label for="tipoAnalisisInase">Tipo de análisis</label>
-              <select id="tipoAnalisisInase" [(ngModel)]="tipoAnalisisInase" name="tipoAnalisisInase" pInputText>
-                <option value="Completo">Completo</option>
-                <option value="Reducido">Reducido</option>
-                <option value="Limitado">Limitado</option>
-                <option value="Reducido - limitado">Reducido - limitado</option>
-              </select>
-            </div>
-          </div>
-          <!-- Aquí puedes agregar las tablas y campos que correspondan a INASE -->
-    </p-tab>
-    <p-tab header="INIA">
-          <div class="form-grid">
-            <div class="form-field">
-              <label for="fechaInia">Fecha</label>
-              <input id="fechaInia" type="date" [(ngModel)]="fechaInia" name="fechaInia" pInputText />
-            </div>
-            <div class="form-field">
-              <label for="gramosInia">Gramos analizados</label>
-              <input id="gramosInia" type="number" [(ngModel)]="gramosInia" name="gramosInia" pInputText />
-            </div>
-            <div class="form-field">
-              <label for="tipoAnalisisInia">Tipo de análisis</label>
-              <select id="tipoAnalisisInia" [(ngModel)]="tipoAnalisisInia" name="tipoAnalisisInia" pInputText>
-                <option value="Completo">Completo</option>
-                <option value="Reducido">Reducido</option>
-                <option value="Limitado">Limitado</option>
-                <option value="Reducido - limitado">Reducido - limitado</option>
-              </select>
-            </div>
-          </div>
-          <!-- Aquí puedes agregar las tablas y campos que correspondan a INIA -->
-        </p-tab>
-      </p-tabs>
+      <!-- INASE Section -->
+      <div class="section-title">INASE</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="fechaInase">Fecha</label>
+          <input id="fechaInase" type="date" [(ngModel)]="fechaInase" name="fechaInase" pInputText />
+        </div>
+        <div class="form-field">
+          <label for="gramosInase">Gramos analizados</label>
+          <input id="gramosInase" type="number" [(ngModel)]="gramosInase" name="gramosInase" pInputText />
+        </div>
+        <div class="form-field">
+          <label for="tipoAnalisisInase">Tipo de análisis</label>
+          <select id="tipoAnalisisInase" [(ngModel)]="tipoAnalisisInase" name="tipoAnalisisInase" pInputText>
+            <option value="Completo">Completo</option>
+            <option value="Reducido">Reducido</option>
+            <option value="Limitado">Limitado</option>
+            <option value="Reducido - limitado">Reducido - limitado</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- INIA Section -->
+      <div class="section-title">INIA</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="fechaInia">Fecha</label>
+          <input id="fechaInia" type="date" [(ngModel)]="fechaInia" name="fechaInia" pInputText />
+        </div>
+        <div class="form-field">
+          <label for="gramosInia">Gramos analizados</label>
+          <input id="gramosInia" type="number" [(ngModel)]="gramosInia" name="gramosInia" pInputText />
+        </div>
+        <div class="form-field">
+          <label for="tipoAnalisisInia">Tipo de análisis</label>
+          <select id="tipoAnalisisInia" [(ngModel)]="tipoAnalisisInia" name="tipoAnalisisInia" pInputText>
+            <option value="Completo">Completo</option>
+            <option value="Reducido">Reducido</option>
+            <option value="Limitado">Limitado</option>
+            <option value="Reducido - limitado">Reducido - limitado</option>
+          </select>
+        </div>
+      </div>
 
       <!-- Listados dinámicos -->
       <div class="section-title">Listados</div>
