@@ -38,7 +38,7 @@ export const routes: Routes = [
     //listados
     { path : 'listado-depositos', component: ListadoDepositosComponent },
     { path : 'listado-usuarios', component: ListadoUsuariosComponent },
-    { path : 'listado-lotes', component: ListadoLotesComponent },
+    { path : 'listado-lotes', component: ListadoLotesComponent }, // para todos los usuarios
     { path : 'listado-malezas', component: ListadoMalezasComponent },
     { path : 'listado-hongos', component: ListadoHongosComponent },
     { path : 'listado-cultivos', component: ListadoCultivosComponent },
