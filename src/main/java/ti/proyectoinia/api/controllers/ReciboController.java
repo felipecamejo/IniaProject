@@ -38,6 +38,15 @@ public class ReciboController {
         }
     }
 
+    @GetMapping({"/listar"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Operation(
+            description = "Lista todos los recibos activos"
+    )
+    public ResponseEntity<ResponseListadoRecibos> getRecibos() {
+        return this.reciboService.listadoRecibos();
+    }
+
     @GetMapping({"/{id}"})
     @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<?> getReciboById(@PathVariable Long id) {
