@@ -119,7 +119,7 @@ export class SanitarioComponent implements OnInit {
   reciboId: number | null = null;
   activo: boolean = true;
   estandar: boolean = false;
-  // SanitarioHongoids: number[] | null = null;
+  SanitarioHongoids: number[] | null = null;
   fechaCreacion: string | null = null;
   fechaRepeticion: string | null = null;
 
