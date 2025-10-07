@@ -79,12 +79,23 @@ if ($null -eq $ver) {
     Write-Info "Node detectado: $($ver.Raw)"
 }
 
-Write-Info 'Instalando dependencias (npm ci)...'
+Write-Info 'Instalando dependencias...'
+$useCi = Test-Path -Path './package-lock.json'
 try {
-    & npm ci | Write-Host
+    if ($useCi) {
+        Write-Info 'Usando npm ci (lockfile encontrado)'
+        & npm ci | Write-Host
+    } else {
+        Write-Warn 'No se encontró package-lock.json. Usando npm install.'
+        & npm install | Write-Host
+    }
 } catch {
-    Write-Err "Fallo instalando dependencias: $($_.Exception.Message)"
-    exit 1
+    Write-Warn "Fallo instalando dependencias: $($_.Exception.Message)"
+    Write-Info 'Intentando recuperación: limpiando instalación parcial y reintentando con npm install...'
+    try { if (Test-Path './node_modules') { Remove-Item -Recurse -Force './node_modules' } } catch {}
+    try { if (Test-Path './package-lock.json') { Remove-Item -Force './package-lock.json' } } catch {}
+    try { & npm cache clean --force | Write-Host } catch {}
+    & npm install | Write-Host
 }
 
 # Preferir CLI local
