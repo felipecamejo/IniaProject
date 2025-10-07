@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LoteDto } from '../../../models/Lote.dto';
+import { Router } from '@angular/router';
 import { LoteService } from '../../../services/LoteService';
 
 // PrimeNG
@@ -36,8 +37,7 @@ export class LoteComponent {
     nombre: string = '';
     descripcion: string = '';
     
-
-    constructor(private loteService: LoteService) {}
+    constructor(private loteService: LoteService, private router: Router) {}
 
     createLote() {
 
@@ -52,7 +52,10 @@ export class LoteComponent {
       };
 
       this.loteService.crearLote(lote).subscribe({
-        next: (msg) => console.log(msg),
+        next: () => {
+          // Navegar a la vista de análisis del lote después de crear
+          this.router.navigate(['/lote-analisis']);
+        },
         error: (err) => console.error('Error creando lote', err)
       });
     }
