@@ -33,9 +33,6 @@ export const routes: Routes = [
     { path : 'home', component: HomeComponent },
     { path : 'login', component: LoginComponent },
     { path : '', redirectTo: '/login', pathMatch: 'full' },
-    { path : 'listado-malezas', component: ListadoMalezasComponent },
-    { path : 'lote', component: LoteComponent },
-    { path : 'lote-analisis', component: LoteAnalisisComponent },
     { path : 'perfil', component: PerfilComponent },
 
     //listados
@@ -47,36 +44,38 @@ export const routes: Routes = [
     { path : 'listado-cultivos', component: ListadoCultivosComponent },
 
     //listados asociados a un recibo
-    { path : ':reciboId/listado-dosn', component: ListadoDosnComponent },
-    { path : ':reciboId/listado-pms', component: ListadoPmsComponent },
-    { path : ':reciboId/listado-pureza', component: ListadoPurezaComponent },
-    { path : ':reciboId/listado-pureza-p-notatum', component: ListadoPurezaPNotatumComponent },
-    { path : ':reciboId/listado-tetrazolio', component: ListadoTetrazolioComponent },
-    { path : ':reciboId/listado-germinacion', component: ListadoGerminacionComponent },
-    { path : ':reciboId/listado-sanitario', component: ListadoSanitarioComponent },
+    { path : ':loteId/:reciboId/listado-dosn', component: ListadoDosnComponent },
+    { path : ':loteId/:reciboId/listado-pms', component: ListadoPmsComponent },
+    { path : ':loteId/:reciboId/listado-pureza', component: ListadoPurezaComponent },
+    { path : ':loteId/:reciboId/listado-pureza-p-notatum', component: ListadoPurezaPNotatumComponent },
+    { path : ':loteId/:reciboId/listado-tetrazolio', component: ListadoTetrazolioComponent },
+    { path : ':loteId/:reciboId/listado-germinacion', component: ListadoGerminacionComponent },
+    { path : ':loteId/:reciboId/listado-sanitario', component: ListadoSanitarioComponent },
+
+    //home asociado a un lote
+    { path : ':loteId/:reciboId/lote-analisis', component: LoteAnalisisComponent },
 
     //formularios de creación y edición
     { path : 'usuario/crear', component: UsuarioComponent },
     { path : 'usuario/editar/:id', component: UsuarioComponent },
-
+    { path : 'lote/crear', component: LoteComponent },
 
     //formularios asociados a un lote
     { path : ':loteId/recibo/crear', component: ReciboComponent },
 
-
     //formularios asociados a un recibo
-    { path : ':reciboId/pms/crear', component: PmsComponent },
-    { path : ':reciboId/pms/editar/:id', component: PmsComponent },
-    { path : ':reciboId/sanitario/crear', component: SanitarioComponent },
-    { path : ':reciboId/sanitario/editar/:id', component: SanitarioComponent },
-    { path : ':reciboId/pureza/crear', component: PurezaComponent },
-    { path : ':reciboId/pureza/editar/:id', component: PurezaComponent },
-    { path : ':reciboId/dosn/crear', component: DOSNComponent },
-    { path : ':reciboId/dosn/editar/:id', component: DOSNComponent },
-    { path : ':reciboId/pureza-p-notatum/crear', component: PurezaPNotatumComponent },
-    { path : ':reciboId/pureza-p-notatum/editar/:id', component: PurezaPNotatumComponent },
-    { path : ':reciboId/germinacion/crear', component: GerminacionComponent },
-    { path : ':reciboId/germinacion/editar/:id', component: GerminacionComponent },
-    { path : ':reciboId/tetrazolio/crear', component: TetrazolioComponent },
-    { path : ':reciboId/tetrazolio/editar/:id', component: TetrazolioComponent },
+    { path : ':loteId/:reciboId/pms/crear', component: PmsComponent },
+    { path : ':loteId/:reciboId/pms/editar/:id', component: PmsComponent },
+    { path : ':loteId/:reciboId/sanitario/crear', component: SanitarioComponent },
+    { path : ':loteId/:reciboId/sanitario/editar/:id', component: SanitarioComponent },
+    { path : ':loteId/:reciboId/pureza/crear', component: PurezaComponent },
+    { path : ':loteId/:reciboId/pureza/editar/:id', component: PurezaComponent },
+    { path : ':loteId/:reciboId/dosn/crear', component: DOSNComponent },
+    { path : ':loteId/:reciboId/dosn/editar/:id', component: DOSNComponent },
+    { path : ':loteId/:reciboId/pureza-p-notatum/crear', component: PurezaPNotatumComponent },
+    { path : ':loteId/:reciboId/pureza-p-notatum/editar/:id', component: PurezaPNotatumComponent },
+    { path : ':loteId/:reciboId/germinacion/crear', component: GerminacionComponent },
+    { path : ':loteId/:reciboId/germinacion/editar/:id', component: GerminacionComponent },
+    { path : ':loteId/:reciboId/tetrazolio/crear', component: TetrazolioComponent },
+    { path : ':loteId/:reciboId/tetrazolio/editar/:id', component: TetrazolioComponent },
 ];
