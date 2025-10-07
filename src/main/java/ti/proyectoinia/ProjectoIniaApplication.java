@@ -7,12 +7,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import jakarta.annotation.PostConstruct;
 import java.util.TimeZone;
-import lombok.extern.slf4j.Slf4j;
 
 @SpringBootApplication
 @EnableScheduling
 @EnableAsync
-@Slf4j
 public class ProjectoIniaApplication {
 
 	@PostConstruct
