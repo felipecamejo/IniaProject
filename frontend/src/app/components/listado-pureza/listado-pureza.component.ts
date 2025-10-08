@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { PurezaDto } from '../../../models/Pureza.dto';
 
 
@@ -15,12 +15,23 @@ import { PurezaDto } from '../../../models/Pureza.dto';
   templateUrl: './listado-pureza.component.html',
   styleUrl: './listado-pureza.component.scss'
 })
-export class ListadoPurezaComponent {
-    constructor(private router: Router) {}
+export class ListadoPurezaComponent implements OnInit {
+    constructor(private router: Router, private route: ActivatedRoute) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
     searchText: string = '';
+
+    loteId: string = '';
+    private _reciboId: string = '';
+    
+    get reciboId(): string {
+        return this._reciboId;
+    }
+    
+    set reciboId(value: string) {
+        this._reciboId = value;
+    }
 
     meses = [
       { label: 'Enero', id: 1 },
@@ -171,7 +182,15 @@ export class ListadoPurezaComponent {
       }
     ];
 
+    navegarAVer(item: PurezaDto) {
+          console.log('Navegando para ver Pureza:', item);
+          this.router.navigate([this.loteId, this.reciboId, 'pureza', item.id], { queryParams: { view: 'true' } });
+    }  
 
+    ngOnInit() {
+       this.loteId = this.route.snapshot.params['loteId'];
+       this.reciboId = this.route.snapshot.params['reciboId'];
+    }
 
     get itemsFiltrados() {
       return this.items.filter(item => {
@@ -218,17 +237,17 @@ export class ListadoPurezaComponent {
     }
 
     goToHome() {
-      this.router.navigate(['/home']);
+      this.router.navigate([this.loteId, this.reciboId, 'lote-analisis']);
     }
 
     crearPureza() {
       console.log('Navegando para crear nueva Pureza');
-      this.router.navigate(['/pureza/crear']);
+      this.router.navigate([this.loteId, this.reciboId, 'pureza', 'crear']);
     }
 
     navegarAEditar(item: PurezaDto) {
       console.log('Navegando para editar Pureza:', item);
-      this.router.navigate(['/pureza/editar', item.id]);
+      this.router.navigate([this.loteId, this.reciboId, 'pureza', 'editar', item.id]);
     }
 
     eliminarPureza(item: PurezaDto) {

@@ -1,7 +1,7 @@
 <div class="container">
   <p-card class="card">
     <ng-template pTemplate="header">
-      <h2 class="title">{{ isEditing ? 'Editar Pureza' : 'Crear Pureza' }}</h2>
+      <h2 class="title">{{ isViewing ? 'Ver Pureza' : (isEditing ? 'Editar Pureza' : 'Crear Pureza') }}</h2>
     </ng-template>
 
     <form>
@@ -10,7 +10,7 @@
         <!-- Fecha -->
         <div class="form-field">
           <label for="fecha">Fecha Inia</label>
-          <input id="fecha" type="date" [(ngModel)]="fechaInia" name="fecha" pInputText />
+          <input id="fecha" type="date" [(ngModel)]="fechaInia" name="fecha" pInputText [readonly]="isReadonly" />
         </div>
       </div>
 
@@ -41,6 +41,7 @@
                     (ngModelChange)="setGramosValue(rowIndex, $event)"
                     [name]="'gramos_' + rowIndex" 
                     pInputText 
+                    [readonly]="isReadonly"
                   />
                   <span>g</span>
                 </div>
@@ -53,6 +54,7 @@
                     (ngModelChange)="setPorcentajeValue(rowIndex, $event)"
                     [name]="'porcentaje_' + rowIndex" 
                     pInputText 
+                    [readonly]="isReadonly"
                   />
                   <span>%</span>
                 </div>
@@ -65,6 +67,7 @@
                     (ngModelChange)="setPorcentajeRedondeoValue(rowIndex, $event)"
                     [name]="'porcentajeRedondeo_' + rowIndex" 
                     pInputText 
+                    [readonly]="isReadonly"
                   />
                   <span>%</span>
                 </div>
@@ -79,7 +82,7 @@
         <!-- Fecha -->
         <div class="form-field">
           <label for="fecha">Fecha Inase</label>
-          <input id="fecha" type="date" [(ngModel)]="fechaInase" name="fecha" pInputText />
+          <input id="fecha" type="date" [(ngModel)]="fechaInase" name="fecha" pInputText [readonly]="isReadonly" />
         </div>
       </div>
 
@@ -110,6 +113,7 @@
                     (ngModelChange)="setGramosInaseValue(rowIndex, $event)"
                     [name]="'gramosInase_' + rowIndex" 
                     pInputText 
+                    [readonly]="isReadonly"
                   />
                   <span>g</span>
                 </div>
@@ -122,6 +126,7 @@
                     (ngModelChange)="setPorcentajeInaseValue(rowIndex, $event)"
                     [name]="'porcentajeInase_' + rowIndex" 
                     pInputText 
+                    [readonly]="isReadonly"
                   />
                   <span>%</span>
                 </div>
@@ -134,6 +139,7 @@
                     (ngModelChange)="setPorcentajeRedondeoInaseValue(rowIndex, $event)"
                     [name]="'porcentajeRedondeoInase_' + rowIndex" 
                     pInputText 
+                    [readonly]="isReadonly"
                   />
                   <span>%</span>
                 </div>
@@ -149,15 +155,15 @@
         <!-- Fecha estándar -->
         <div class="form-field">
           <label for="fechaEstandar">Fecha estándar</label>
-          <input id="fechaEstandar" type="date" [(ngModel)]="fechaEstandar" name="fechaEstandar" pInputText />
+          <input id="fechaEstandar" type="date" [(ngModel)]="fechaEstandar" name="fechaEstandar" pInputText [readonly]="isReadonly" />
         </div>
 
 
         <!-- Multiselect Malezas tolerancia cero -->
         <div class="form-field">
           <label>Malezas tolerancia cero</label>
-          <div class="custom-multiselect" [class.open]="isMalezasCeroDropdownOpen">
-            <div class="multiselect-trigger" (click)="toggleMalezasCeroDropdown()">
+          <div class="custom-multiselect" [class.open]="isMalezasCeroDropdownOpen" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleMalezasCeroDropdown()">
               <span class="selected-text">
                 {{ getSelectedMalezasCeroText() }}
               </span>
@@ -182,8 +188,8 @@
         <!-- Multiselect Malezas comunes -->
         <div class="form-field">
           <label>Malezas comunes</label>
-          <div class="custom-multiselect" [class.open]="isMalezasComunesDropdownOpen">
-            <div class="multiselect-trigger" (click)="toggleMalezasComunesDropdown()">
+          <div class="custom-multiselect" [class.open]="isMalezasComunesDropdownOpen" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleMalezasComunesDropdown()">
               <span class="selected-text">
                 {{ getSelectedMalezasComunesText() }}
               </span>
@@ -207,8 +213,8 @@
         <!-- Multiselect Malezas toleradas -->
         <div class="form-field">
           <label>Malezas toleradas</label>
-          <div class="custom-multiselect" [class.open]="isMalezasToleradasDropdownOpen">
-            <div class="multiselect-trigger" (click)="toggleMalezasToleradasDropdown()">
+          <div class="custom-multiselect" [class.open]="isMalezasToleradasDropdownOpen" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleMalezasToleradasDropdown()">
               <span class="selected-text">
                 {{ getSelectedMalezasToleradasText() }}
               </span>
@@ -232,8 +238,8 @@
         <!-- Multiselect Otros cultivos -->
         <div class="form-field">
           <label>Otros cultivos</label>
-          <div class="custom-multiselect" [class.open]="isCultivosDropdownOpen">
-            <div class="multiselect-trigger" (click)="toggleCultivosDropdown()">
+          <div class="custom-multiselect" [class.open]="isCultivosDropdownOpen" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleCultivosDropdown()">
               <span class="selected-text">
                 {{ getSelectedCultivosText() }}
               </span>
@@ -257,8 +263,8 @@
       </div>
 
       <!-- Checkboxes mejorados -->
-      <div class="checkbox-container" *ngIf="isEditing">
-        <h4 class="checkbox-title">Opciones De Edición</h4>
+      <div class="checkbox-container" *ngIf="isEditing || isViewing">
+        <h4 class="checkbox-title">{{ isViewing ? 'Opciones' : 'Opciones De Edición' }}</h4>
         <div class="checkbox-grid">
           <div class="checkbox-item">
             <input 
@@ -267,6 +273,7 @@
               [(ngModel)]="estandar" 
               name="estandar"
               class="custom-checkbox"
+              [disabled]="isReadonly"
             />
             <label for="estandar-checkbox" class="checkbox-label">
               <span class="checkmark"></span>
@@ -281,6 +288,7 @@
               [(ngModel)]="repetido" 
               name="repetido"
               class="custom-checkbox"
+              [disabled]="isReadonly"
             />
             <label for="repetido-checkbox" class="checkbox-label">
               <span class="checkmark"></span>
@@ -292,6 +300,7 @@
 
       <div class="submit-btn">
         <button
+          *ngIf="!isViewing"
           pButton
           type="button"
           (click)="onSubmit()"
@@ -303,7 +312,7 @@
           pButton
           type="button"
           (click)="onCancel()"
-          label="Cancelar"
+          [label]="isViewing ? 'Volver' : 'Cancelar'"
           class="p-button-secondary"
           style="margin-left: 10px;"
         ></button>

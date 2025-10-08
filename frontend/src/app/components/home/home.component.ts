@@ -15,6 +15,6 @@ export class HomeComponent {
   }
 
   goToCrearLote() {
-    this.router.navigate(['/lote']);
+    this.router.navigate(['/lote/crear']);
   }
 }

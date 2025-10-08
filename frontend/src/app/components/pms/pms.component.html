@@ -6,7 +6,7 @@
   
   <p-card class="card">
     <ng-template pTemplate="header">
-      <h2 class="title">{{ isEditing ? 'Editar PMS' : 'Crear PMS' }}</h2>
+      <h2 class="title">{{ isViewing ? 'Ver PMS' : (isEditing ? 'Editar PMS' : 'Crear PMS') }}</h2>
     </ng-template>
 
     <form (ngSubmit)="onSubmit()">
@@ -20,7 +20,7 @@
               <tr>
                 <th>Repetición</th>
                 <th>Gramos</th>
-                <th style="width: 100px;">Acciones</th>
+                <th *ngIf="!isViewing" style="width: 100px;">Acciones</th>
               </tr>
             </ng-template>
             <ng-template pTemplate="body" let-rep let-i="rowIndex">
@@ -36,12 +36,13 @@
                       [maxFractionDigits]="4"
                       [step]="0.0001"
                       [showButtons]="false"
+                      [readonly]="isReadonly"
                       styleClass="w-full">
                     </p-inputNumber>
                     <span>g</span>
                   </div>
                 </td>
-                <td>
+                <td *ngIf="!isViewing">
                   <button 
                     pButton 
                     type="button" 
@@ -57,7 +58,7 @@
           </p-table>
         </div>
         
-        <div class="add-repeticion-container">
+        <div class="add-repeticion-container" *ngIf="!isViewing">
           <button pButton type="button" label="Agregar repetición" icon="pi pi-plus" 
                   class="p-button-outlined" (click)="agregarRepeticion()">
           </button>
@@ -68,38 +69,38 @@
         <!-- Campos de texto -->
         <div class="form-field">
           <label for="pesoMilSemillas">Peso Mil Semillas</label>
-          <input id="pesoMilSemillas" type="number" [(ngModel)]="pesoMilSemillas" name="pesoMilSemillas" pInputText step="0.0001" />
+          <input id="pesoMilSemillas" type="number" [(ngModel)]="pesoMilSemillas" name="pesoMilSemillas" pInputText step="0.0001" [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">
           <label for="pesoPromedioCienSemillas">Peso Promedio Cien Semillas</label>
-          <input id="pesoPromedioCienSemillas" type="number" [(ngModel)]="pesoPromedioCienSemillas" name="pesoPromedioCienSemillas" pInputText step="0.0001" />
+          <input id="pesoPromedioCienSemillas" type="number" [(ngModel)]="pesoPromedioCienSemillas" name="pesoPromedioCienSemillas" pInputText step="0.0001" [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">
           <label for="pesoPromedioMilSemillas">Peso Promedio Mil Semillas</label>
-          <input id="pesoPromedioMilSemillas" type="number" [(ngModel)]="pesoPromedioMilSemillas" name="pesoPromedioMilSemillas" pInputText step="0.0001" />
+          <input id="pesoPromedioMilSemillas" type="number" [(ngModel)]="pesoPromedioMilSemillas" name="pesoPromedioMilSemillas" pInputText step="0.0001" [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">
           <label for="desvioEstandar">Desvío Estándar</label>
-          <input id="desvioEstandar" type="number" [(ngModel)]="desvioEstandar" name="desvioEstandar" pInputText step="0.0001" />
+          <input id="desvioEstandar" type="number" [(ngModel)]="desvioEstandar" name="desvioEstandar" pInputText step="0.0001" [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">
           <label for="coeficienteVariacion">Coeficiente de Variación</label>
-          <input id="coeficienteVariacion" type="number" [(ngModel)]="coeficienteVariacion" name="coeficienteVariacion" pInputText step="0.0001" />
+          <input id="coeficienteVariacion" type="number" [(ngModel)]="coeficienteVariacion" name="coeficienteVariacion" pInputText step="0.0001" [readonly]="isReadonly" />
         </div>
 
 
         <div class="form-field">
           <label for="humedadPorcentual">% Humedad</label>
-          <input id="humedadPorcentual" type="number" [(ngModel)]="humedadPorcentual" name="humedadPorcentual" pInputText />
+          <input id="humedadPorcentual" type="number" [(ngModel)]="humedadPorcentual" name="humedadPorcentual" pInputText [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">
           <label for="fechaMedicion">Fecha Medicion</label>
-          <input id="fechaMedicion" type="date" [(ngModel)]="fechaMedicion" name="fechaMedicion" pInputText />
+          <input id="fechaMedicion" type="date" [(ngModel)]="fechaMedicion" name="fechaMedicion" pInputText [readonly]="isReadonly" />
         </div> 
 
          <div class="form-field">
@@ -110,12 +111,13 @@
             [(ngModel)]="comentarios"
             name="comentarios"
             pInputText
+            [readonly]="isReadonly"
           ></textarea>
         </div>
 
-        <!-- Checkboxes - solo visible al editar -->
-        <div class="checkbox-container" *ngIf="isEditing">
-          <h4 class="checkbox-title">Opciones De Edición</h4>
+        <!-- Checkboxes - visible al editar y ver -->
+        <div class="checkbox-container" *ngIf="isEditing || isViewing">
+          <h4 class="checkbox-title">{{ isViewing ? 'Opciones' : 'Opciones De Edición' }}</h4>
           <div class="checkbox-grid">
             <div class="checkbox-item">
               <input 
@@ -124,6 +126,7 @@
                 [(ngModel)]="repetido" 
                 name="repetido"
                 class="custom-checkbox"
+                [disabled]="isReadonly"
               />
               <label for="repetido-checkbox" class="checkbox-label">
                 <span class="checkmark"></span>
@@ -138,6 +141,7 @@
                 [(ngModel)]="estandar" 
                 name="estandar"
                 class="custom-checkbox"
+                [disabled]="isReadonly"
               />
               <label for="estandar-checkbox" class="checkbox-label">
                 <span class="checkmark"></span>
@@ -151,6 +155,7 @@
 
       <div class="submit-btn">
         <button
+          *ngIf="!isViewing"
           pButton
           type="submit"
           [label]="isEditing ? 'Actualizar PMS' : 'Crear PMS'"
@@ -159,7 +164,7 @@
         <button
           pButton
           type="button"
-          label="Cancelar"
+          [label]="isViewing ? 'Volver' : 'Cancelar'"
           class="p-button-secondary"
           (click)="onCancel()"
         ></button>

@@ -34,7 +34,11 @@ export interface RepeticionPMS {
 
 export class PmsComponent implements OnInit {
     isEditing: boolean = false;
+    isViewing: boolean = false;
     editingId: number | null = null;
+
+    loteId: string | null = '';
+    reciboId: string | null = '';
 
     // Tabla de repeticiones PMS
     repeticiones: RepeticionPMS[] = [
@@ -51,7 +55,6 @@ export class PmsComponent implements OnInit {
     comentarios: string = '';
     activo: boolean = true;
     repetido: boolean = false;
-    reciboId: number | null = null;
     estandar: boolean = false;
     fechaCreacion: string | null = null;
     fechaRepeticion: string | null = null;
@@ -67,17 +70,30 @@ export class PmsComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        this.loteId = this.route.snapshot.params['loteId'];
+        this.reciboId = this.route.snapshot.params['reciboId'];
+
         this.route.params.subscribe(params => {
             if (params['id']) {
-                this.isEditing = true;
                 this.editingId = parseInt(params['id']);
+                // Verificar si es modo visualización por query parameter
+                this.route.queryParams.subscribe(queryParams => {
+                    this.isViewing = queryParams['view'] === 'true';
+                    this.isEditing = !this.isViewing;
+                });
                 // Aquí deberías cargar los datos reales desde el servicio
             } else {
                 this.isEditing = false;
+                this.isViewing = false;
                 this.editingId = null;
                 this.limpiarCampos();
             }
         });
+    }
+
+    // Getter para determinar si está en modo readonly
+    get isReadonly(): boolean {
+        return this.isViewing;
     }
 
     // Métodos para manejar las repeticiones
@@ -129,7 +145,7 @@ export class PmsComponent implements OnInit {
         comentarios: this.comentarios,
         activo: this.activo,
         repetido: this.repetido,
-        reciboId: this.reciboId,
+        reciboId: this.reciboId !== null ? Number(this.reciboId) : null,
         fechaCreacion: this.fechaCreacion,
         fechaRepeticion: this.fechaRepeticion
       };
@@ -144,6 +160,6 @@ export class PmsComponent implements OnInit {
     }
 
     onCancel() {
-      this.router.navigate(['/listado-pms']);
+      this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pms"]);
     }
 }

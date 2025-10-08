@@ -6,7 +6,7 @@
   
   <p-card class="card">
     <ng-template pTemplate="header">
-      <h2 class="title">{{ isEditing ? 'Editar Sanitario' : 'Crear Sanitario' }}</h2>
+      <h2 class="title">{{ isViewing ? 'Ver Sanitario' : (isEditing ? 'Editar Sanitario' : 'Crear Sanitario') }}</h2>
     </ng-template>
 
     <form>
@@ -15,17 +15,17 @@
 
         <div class="form-field">
           <label for="fechaSiembra">Fecha Siembra</label>
-          <input id="fechaSiembra" type="date" [(ngModel)]="fechaSiembra" name="fechaSiembra" pInputText />
+          <input id="fechaSiembra" type="date" [(ngModel)]="fechaSiembra" name="fechaSiembra" pInputText [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">
           <label for="fecha">Fecha</label>
-          <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" pInputText />
+          <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" pInputText [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">
           <label for="ficha">Metodo</label>
-          <select id="metodos" [(ngModel)]="selectedMetodo" name="metodo">
+          <select id="metodos" [(ngModel)]="selectedMetodo" name="metodo" [disabled]="isReadonly">
             <option value="" >Seleccionar Método</option>
             <option *ngFor="let m of metodos" [value]="m.id">{{ m.label }}</option>
           </select>
@@ -33,22 +33,22 @@
 
         <div class="form-field">
           <label for="temperatura">Temperatura</label>
-          <input id="temperatura" type="number" [(ngModel)]="temperatura" name="temperatura" pInputText />
+          <input id="temperatura" type="number" [(ngModel)]="temperatura" name="temperatura" pInputText [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">
           <label for="horasLuzOscuridad">Horas Luz/Oscuridad</label>
-          <input id="horasLuzOscuridad" type="number" [(ngModel)]="horasLuzOscuridad" name="horasLuzOscuridad" pInputText />
+          <input id="horasLuzOscuridad" type="number" [(ngModel)]="horasLuzOscuridad" name="horasLuzOscuridad" pInputText [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">
           <label for="numeroDias">Numero de Dias</label>
-          <input id="numeroDias" type="number" [(ngModel)]="numeroDias" name="numeroDias" pInputText />
+          <input id="numeroDias" type="number" [(ngModel)]="numeroDias" name="numeroDias" pInputText [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">
           <label for="estados">Estado</label>
-          <select id="estados" [(ngModel)]="selectedEstado" name="estado">
+          <select id="estados" [(ngModel)]="selectedEstado" name="estado" [disabled]="isReadonly">
             <option value="" >Seleccionar Estado</option>
             <option *ngFor="let e of estados" [value]="e.id">{{ e.label }}</option>
           </select>
@@ -56,18 +56,18 @@
 
         <div class="form-field">
           <label for="observaciones">Observaciones</label>
-          <textarea id="observaciones" rows="3" [(ngModel)]="observaciones" name="observaciones" pInputText></textarea>
+          <textarea id="observaciones" rows="3" [(ngModel)]="observaciones" name="observaciones" pInputText [readonly]="isReadonly"></textarea>
         </div>
 
         <div class="form-field">
           <label for="numeroSemillasRepeticion">Numero de Semillas por Repeticion</label>
-          <input id="numeroSemillasRepeticion" type="number" [(ngModel)]="numeroSemillasRepeticion" name="numeroSemillasRepeticion" pInputText />
+          <input id="numeroSemillasRepeticion" type="number" [(ngModel)]="numeroSemillasRepeticion" name="numeroSemillasRepeticion" pInputText [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">
           <label for="hongosSelect">Hongos Patógenos</label>
-          <div class="custom-multiselect" [class.open]="isHongosDropdownOpen">
-            <div class="multiselect-trigger" (click)="toggleHongosDropdown()">
+          <div class="custom-multiselect" [class.open]="isHongosDropdownOpen" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleHongosDropdown()">
               <span class="selected-text">
                 {{ getSelectedHongosText() }}
               </span>
@@ -124,6 +124,7 @@
                     name="repeticion_{{i}}"
                     pInputText 
                     style="width: 80px;"
+                    [readonly]="isReadonly"
                   />
                 </td>
                 <td>
@@ -133,6 +134,7 @@
                     name="valor_{{i}}"
                     pInputText 
                     style="width: 80px;"
+                    [readonly]="isReadonly"
                   />
                 </td>
                 <td>
@@ -144,6 +146,7 @@
                     style="width: 80px;"
                     min="0" 
                     max="100"
+                    [readonly]="isReadonly"
                   />
                 </td>
               </tr>
@@ -154,8 +157,8 @@
         <!-- Hongos Contaminantes Campo -->
         <div class="form-field">
           <label for="hongosCampoSelect">Hongos Contaminantes Campo</label>
-          <div class="custom-multiselect" [class.open]="isHongosCampoDropdownOpen">
-            <div class="multiselect-trigger" (click)="toggleHongosCampoDropdown()">
+          <div class="custom-multiselect" [class.open]="isHongosCampoDropdownOpen" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleHongosCampoDropdown()">
               <span class="selected-text">
                 {{ getSelectedHongosCampoText() }}
               </span>
@@ -212,6 +215,7 @@
                     name="repeticionCampo_{{i}}"
                     pInputText 
                     style="width: 80px;"
+                    [readonly]="isReadonly"
                   />
                 </td>
                 <td>
@@ -221,6 +225,7 @@
                     name="valorCampo_{{i}}"
                     pInputText 
                     style="width: 80px;"
+                    [readonly]="isReadonly"
                   />
                 </td>
                 <td>
@@ -232,6 +237,7 @@
                     style="width: 80px;"
                     min="0" 
                     max="100"
+                    [readonly]="isReadonly"
                   />
                 </td>
               </tr>
@@ -242,8 +248,8 @@
         <!-- Hongos Almacenaje -->
         <div class="form-field">
           <label for="hongosAlmacenajeSelect">Hongos Almacenaje</label>
-          <div class="custom-multiselect" [class.open]="isHongosAlmacenajeDropdownOpen">
-            <div class="multiselect-trigger" (click)="toggleHongosAlmacenajeDropdown()">
+          <div class="custom-multiselect" [class.open]="isHongosAlmacenajeDropdownOpen" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleHongosAlmacenajeDropdown()">
               <span class="selected-text">
                 {{ getSelectedHongosAlmacenajeText() }}
               </span>
@@ -300,6 +306,7 @@
                     name="repeticionAlmacenaje_{{i}}"
                     pInputText 
                     style="width: 80px;"
+                    [readonly]="isReadonly"
                   />
                 </td>
                 <td>
@@ -309,6 +316,7 @@
                     name="valorAlmacenaje_{{i}}"
                     pInputText 
                     style="width: 80px;"
+                    [readonly]="isReadonly"
                   />
                 </td>
                 <td>
@@ -320,6 +328,7 @@
                     style="width: 80px;"
                     min="0" 
                     max="100"
+                    [readonly]="isReadonly"
                   />
                 </td>
               </tr>
@@ -327,9 +336,9 @@
           </p-table>
         </div>
 
-        <!-- Checkboxes - solo visible al editar -->
-        <div class="checkbox-container" *ngIf="isEditing">
-          <h4 class="checkbox-title">Opciones De Edición</h4>
+        <!-- Checkboxes - visible al editar y ver -->
+        <div class="checkbox-container" *ngIf="isEditing || isViewing">
+          <h4 class="checkbox-title">{{ isViewing ? 'Opciones' : 'Opciones De Edición' }}</h4>
           <div class="checkbox-grid">
             <div class="checkbox-item">
               <input 
@@ -338,6 +347,7 @@
                 [(ngModel)]="repetido" 
                 name="repetido"
                 class="custom-checkbox"
+                [disabled]="isReadonly"
               />
               <label for="repetido-checkbox" class="checkbox-label">
                 <span class="checkmark"></span>
@@ -352,6 +362,7 @@
                 [(ngModel)]="estandar" 
                 name="estandar"
                 class="custom-checkbox"
+                [disabled]="isReadonly"
               />
               <label for="estandar-checkbox" class="checkbox-label">
                 <span class="checkmark"></span>
@@ -363,6 +374,7 @@
 
         <div class="submit-btn">
             <button
+            *ngIf="!isViewing"
             pButton
             type="button"
             (click)="onSubmit()"
@@ -374,7 +386,7 @@
             pButton
             type="button"
             (click)="onCancel()"
-            label="Cancelar"
+            [label]="isViewing ? 'Volver' : 'Cancelar'"
             class="p-button-secondary"
             style="margin-left: 10px;"
             ></button>
