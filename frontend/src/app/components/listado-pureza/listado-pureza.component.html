@@ -64,10 +64,13 @@
                     <p>Semilla pura: {{ item.semillaPura }}% - Material inerte: {{ item.materialInerte }}%</p>
                 </div>
                 <div class="item-actions">
-                    <button class="action-button edit-button" (click)="navegarAEditar(item)">
+                    <button class="action-button view-button" (click)="navegarAVer(item)">
+                        <i class="pi pi-eye"></i>
+                    </button>
+                    <button *ngIf="!item.repetido" class="action-button edit-button" (click)="navegarAEditar(item)">
                         <i class="pi pi-pencil"></i>
                     </button>
-                    <button class="action-button delete-button" (click)="eliminarPureza(item)">
+                    <button *ngIf="!item.repetido" class="action-button delete-button" (click)="eliminarPureza(item)">
                         <i class="pi pi-trash"></i>
                     </button>
                 </div>

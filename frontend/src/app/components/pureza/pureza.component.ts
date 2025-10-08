@@ -28,8 +28,12 @@ export class PurezaComponent implements OnInit {
 
   // Variables para manejar navegación
   isEditing: boolean = false;
+  isViewing: boolean = false;
   editingId: number | null = null;
   repetido: boolean = false;
+
+   loteId: string | null = '';
+    reciboId: string | null = '';
 
   // --- Multiselect Malezas tolerancia cero ---
   malezasCeroOptions = [
@@ -499,15 +503,28 @@ export class PurezaComponent implements OnInit {
     private router: Router
   ) {}
 
+  // Getter para determinar si está en modo readonly
+  get isReadonly(): boolean {
+    return this.isViewing;
+  }
+
   ngOnInit() {
+    this.loteId = this.route.snapshot.paramMap.get('loteId');
+    this.reciboId = this.route.snapshot.paramMap.get('reciboId');
+
     // Verificar si estamos en modo edición basado en la ruta
     this.route.params.subscribe(params => {
       if (params['id']) {
-        this.isEditing = true;
         this.editingId = parseInt(params['id']);
+        // Verificar si es modo visualización por query parameter
+        this.route.queryParams.subscribe(queryParams => {
+          this.isViewing = queryParams['view'] === 'true';
+          this.isEditing = !this.isViewing;
+        });
         this.cargarDatosParaEdicion(this.editingId);
       } else {
         this.isEditing = false;
+        this.isViewing = false;
         this.editingId = null;
         this.cargarDatos();
       }
@@ -743,8 +760,7 @@ export class PurezaComponent implements OnInit {
   }
 
   onCancel() {
-    // Navegar de vuelta al listado
-    this.router.navigate(['/listado-pureza']);
+    this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);
   }
 
 }

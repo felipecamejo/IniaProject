@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { PMSDto } from '../../../models/PMS.dto';
 
 
@@ -15,12 +15,27 @@ import { PMSDto } from '../../../models/PMS.dto';
   templateUrl: './listado-pms.component.html',
   styleUrl: './listado-pms.component.scss'
 })
-export class ListadoPmsComponent {
-    constructor(private router: Router) {}
+export class ListadoPmsComponent implements OnInit {
+    constructor(private router: Router, private route: ActivatedRoute) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
     searchText: string = '';
+    loteId: string = '';
+    private _reciboId: string = '';
+    
+    get reciboId(): string {
+        return this._reciboId;
+    }
+    
+    set reciboId(value: string) {
+        this._reciboId = value;
+    }
+
+    ngOnInit() {
+        this.loteId = this.route.snapshot.params['loteId'];
+        this.reciboId = this.route.snapshot.params['reciboId'];
+    }
 
     meses = [
       { label: 'Enero', id: 1 },
@@ -138,17 +153,22 @@ export class ListadoPmsComponent {
     }
 
     goToHome() {
-      this.router.navigate(['/home']);
+      this.router.navigate([this.loteId, this.reciboId, 'lote-analisis']);
     }
 
     crearPMS() {
       console.log('Navegando para crear nuevo PMS');
-      this.router.navigate(['/pms/crear']);
+      this.router.navigate([this.loteId, this.reciboId, 'pms', 'crear']);
+    }
+
+    navegarAVer(item: PMSDto) {
+      console.log('Navegando para ver PMS:', item);
+      this.router.navigate([this.loteId, this.reciboId, 'pms', item.id], { queryParams: { view: 'true' } });
     }
 
     navegarAEditar(item: PMSDto) {
       console.log('Navegando para editar PMS:', item);
-      this.router.navigate(['/pms/editar', item.id]);
+      this.router.navigate([this.loteId, this.reciboId, 'pms', 'editar', item.id]);
     }
 
     eliminarPMS(item: PMSDto) {

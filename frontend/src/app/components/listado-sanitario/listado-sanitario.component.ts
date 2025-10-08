@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { Router } from '@angular/router';
 import { SanitarioDto } from '../../../models/Sanitario.dto';
+import { ActivatedRoute } from '@angular/router';
 
 
 @Component({
@@ -15,22 +16,23 @@ import { SanitarioDto } from '../../../models/Sanitario.dto';
   templateUrl: './listado-sanitario.component.html',
   styleUrls: ['./listado-sanitario.component.scss']
 })
-export class ListadoSanitarioComponent {
-    crearItem() {
-      this.router.navigate(['/sanitario/crear']);
-    }
-
-    eliminarItem(item: SanitarioDto) {
-      if (confirm(`¿Estás seguro de que quieres eliminar el Sanitario #${item.id}?`)) {
-        this.items = this.items.filter(sanitario => sanitario.id !== item.id);
-        console.log('Sanitario eliminado');
-      }
-    }
-    constructor(private router: Router) {}
+export class ListadoSanitarioComponent implements OnInit {
+    constructor(private router: Router, private route: ActivatedRoute) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
     searchText: string = '';
+
+    loteId: string = '';
+    private _reciboId: string = '';
+    
+    get reciboId(): string {
+        return this._reciboId;
+    }
+    
+    set reciboId(value: string) {
+        this._reciboId = value;
+    }
 
     meses = [
       { label: 'Enero', id: 1 },
@@ -141,7 +143,15 @@ export class ListadoSanitarioComponent {
       });
     }
 
+    ngOnInit() {
+       this.loteId = this.route.snapshot.params['loteId'];
+       this.reciboId = this.route.snapshot.params['reciboId'];
+    }
 
+    navegarAVer(item: SanitarioDto) {
+          console.log('Navegando para ver Sanitario:', item);
+          this.router.navigate([this.loteId, this.reciboId, 'sanitario', item.id], { queryParams: { view: 'true' } });
+    }
 
     getFechaConTipo(item: SanitarioDto): { fecha: string, tipo: string } {
       if (item.repetido && item.fechaRepeticion) {
@@ -165,20 +175,22 @@ export class ListadoSanitarioComponent {
     }
 
     goToHome() {
-      this.router.navigate(['/home']);
+      this.router.navigate([this.loteId, this.reciboId, 'lote-analisis']);
     }
 
-    crearSanitario() {
+    crearItem() {
       console.log('Navegando para crear nuevo Sanitario');
-      this.router.navigate(['/sanitario/crear']);
+      console.log('LoteId:', this.loteId);
+      console.log('ReciboId:', this.reciboId);
+      this.router.navigate([this.loteId, this.reciboId, 'sanitario', 'crear']);
     }
 
     navegarAEditar(item: SanitarioDto) {
       console.log('Navegando para editar Sanitario:', item);
-      this.router.navigate(['/sanitario/editar', item.id]);
+      this.router.navigate([this.loteId, this.reciboId, 'sanitario', 'editar', item.id]);
     }
 
-    eliminarSanitario(item: SanitarioDto) {
+    eliminarItem(item: SanitarioDto) {
       console.log('Eliminar Sanitario:', item);
       // Aquí puedes implementar la lógica para eliminar el Sanitario
       // Por ejemplo, mostrar un modal de confirmación
