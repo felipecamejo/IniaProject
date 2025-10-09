@@ -33,4 +33,16 @@ export class UsuarioService {
       responseType: 'text' as 'json'
     });
   }
+
+  crearUsuario(usuario: UsuarioDto): Observable<UsuarioDto> {
+    return this.http.post<UsuarioDto>(`${this.url.baseUrl}${this.endpoint}/crear`, usuario);
+  }
+
+  obtenerUsuarioPorId(id: number): Observable<UsuarioDto> {
+    return this.http.get<UsuarioDto>(`${this.url.baseUrl}${this.endpoint}/${id}`);
+  }
+
+  actualizarUsuarioPorId(id: number, usuario: UsuarioDto): Observable<UsuarioDto> {
+    return this.http.put<UsuarioDto>(`${this.url.baseUrl}${this.endpoint}/${id}`, usuario);
+  }
 }

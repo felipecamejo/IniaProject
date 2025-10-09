@@ -1,11 +1,12 @@
-import { Component, ViewEncapsulation, OnInit } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { UsuarioService } from '../../../services/UsuarioService';
 import { UsuarioDto} from '../../../models/Usuario.dto';
@@ -24,7 +25,7 @@ import { UserRole } from '../../../models/enums';
   templateUrl: './listado-usuarios.component.html',
   styleUrls: ['./listado-usuarios.component.scss']
 })
-export class ListadoUsuariosComponent implements OnInit {
+export class ListadoUsuariosComponent implements OnInit, OnDestroy {
     constructor(
         private router: Router, 
         private authService: AuthService,
@@ -34,8 +35,28 @@ export class ListadoUsuariosComponent implements OnInit {
     searchText: string = '';
     selectedRol: string = '';
     items: UsuarioDto[] = [];
+    private navigationSubscription: any;
 
     ngOnInit(): void {
+        this.cargarUsuarios();
+        
+        // Suscribirse a cambios de navegación para recargar cuando se regrese de crear/editar
+        this.navigationSubscription = this.router.events
+            .pipe(filter(event => event instanceof NavigationEnd))
+            .subscribe((event: NavigationEnd) => {
+                if (event.url === '/listado-usuarios') {
+                    this.cargarUsuarios();
+                }
+            });
+    }
+
+    ngOnDestroy(): void {
+        if (this.navigationSubscription) {
+            this.navigationSubscription.unsubscribe();
+        }
+    }
+
+    cargarUsuarios(): void {
         this.usuarioService.listarUsuarios().subscribe({
             next: (response) => {
                 this.items = response?.usuarios ?? [];

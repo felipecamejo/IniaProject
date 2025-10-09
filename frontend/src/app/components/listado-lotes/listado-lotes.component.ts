@@ -1,13 +1,15 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { LoteDto } from '../../../models/Lote.dto';
+import { LoteService } from '../../../services/LoteService';
 
 
 @Component({
@@ -17,8 +19,8 @@ import { LoteDto } from '../../../models/Lote.dto';
   templateUrl: './listado-lotes.component.html',
   styleUrl: './listado-lotes.component.scss'
 })
-export class ListadoLotesComponent {
-    constructor(private router: Router, private authService: AuthService) {}
+export class ListadoLotesComponent implements OnInit, OnDestroy {
+    constructor(private router: Router, private authService: AuthService, private loteService: LoteService) {}
 
     metodos = [
       { label: 'Pendiente', id: 1 },
@@ -29,6 +31,7 @@ export class ListadoLotesComponent {
     selectedMes: string = '';
     selectedAnio: string = '';
     searchText: string = '';
+    private navigationSubscription: any;
 
     // Variables para el modal
     mostrarModal: boolean = false;
@@ -64,11 +67,38 @@ export class ListadoLotesComponent {
       { label: '2024', id: 2024 }
     ];
 
-    items = [
-      { nombre: 'Lote 1', estado: 'Pendiente', fecha: '15-01-2023', descripcion: '', autor: 'Juan Perez' },
-      { nombre: 'Lote 2', estado: 'Finalizado', fecha: '20-02-2022', descripcion: 'Lote especial', autor: 'Maria Gomez' },
-      { nombre: 'Lote 3', estado: 'Finalizado', fecha: '10-03-2023', descripcion: '', autor: 'Carlos Ruiz' }
-    ];
+    items: LoteDto[] = [];
+
+    ngOnInit(): void {
+        this.cargarLotes();
+        
+        // Suscribirse a cambios de navegación para recargar cuando se regrese
+        this.navigationSubscription = this.router.events
+            .pipe(filter(event => event instanceof NavigationEnd))
+            .subscribe((event: NavigationEnd) => {
+                if (event.url === '/listado-lotes') {
+                    this.cargarLotes();
+                }
+            });
+    }
+
+    ngOnDestroy(): void {
+        if (this.navigationSubscription) {
+            this.navigationSubscription.unsubscribe();
+        }
+    }
+
+    cargarLotes(): void {
+        this.loteService.listarLotes().subscribe({
+            next: (response) => {
+                this.items = response?.lotes ?? [];
+            },
+            error: (error) => {
+                console.error('Error al listar lotes', error);
+                this.items = [];
+            }
+        });
+    }
 
     get itemsFiltrados() {
       return this.items.filter(item => {
@@ -78,9 +108,9 @@ export class ListadoLotesComponent {
         
         const cumpleEstado = !this.selectedMetodo || item.estado === this.getEstadoLabel(this.selectedMetodo);
         
-        const cumpleMes = !this.selectedMes || this.getMesFromFecha(item.fecha) === parseInt(this.selectedMes);
+        const cumpleMes = !this.selectedMes || this.getMesFromFecha(item.fechaCreacion) === parseInt(this.selectedMes);
         
-        const cumpleAnio = !this.selectedAnio || this.getAnioFromFecha(item.fecha) === parseInt(this.selectedAnio);
+        const cumpleAnio = !this.selectedAnio || this.getAnioFromFecha(item.fechaCreacion) === parseInt(this.selectedAnio);
         
         return cumpleNombre && cumpleEstado && cumpleMes && cumpleAnio;
       });
@@ -141,30 +171,47 @@ export class ListadoLotesComponent {
       this.modalLoading = true;
       this.modalError = '';
 
-      const lote = { 
-        id: this.itemEditandoId,
+      const lote: LoteDto = { 
+        id: this.itemEditandoId ?? 0,
         nombre: this.modalNombre,
         descripcion: this.modalDescripcion,
         estado: 'Pendiente',
-        fecha: new Date().toLocaleDateString('es-ES'),
-        autor: 'Usuario Actual' // Esto debería venir del servicio de autenticación
+        fechaCreacion: new Date().toISOString().split('T')[0],
+        autor: this.authService.userData?.nombre || 'Usuario Actual',
+        activo: true
       };
 
       if (this.itemEditando) {
         // Editar lote existente
-        const index = this.items.findIndex(item => item.nombre === this.itemEditando.nombre);
-        if (index !== -1) {
-          this.items[index] = { ...this.items[index], ...lote };
-        }
-        console.log('Lote editado:', lote);
+        this.loteService.editarLote(lote).subscribe({
+          next: (response) => {
+            console.log('Lote editado:', response);
+            this.modalLoading = false;
+            this.cerrarModal();
+            this.cargarLotes();
+          },
+          error: (error) => {
+            console.error('Error al editar lote:', error);
+            this.modalError = 'Error al actualizar el lote';
+            this.modalLoading = false;
+          }
+        });
       } else {
         // Crear nuevo lote
-        this.items.push(lote);
-        console.log('Nuevo lote creado:', lote);
+        this.loteService.crearLote(lote).subscribe({
+          next: (response) => {
+            console.log('Nuevo lote creado:', response);
+            this.modalLoading = false;
+            this.cerrarModal();
+            this.cargarLotes();
+          },
+          error: (error) => {
+            console.error('Error al crear lote:', error);
+            this.modalError = 'Error al crear el lote';
+            this.modalLoading = false;
+          }
+        });
       }
-
-      this.modalLoading = false;
-      this.cerrarModal();
     }
 
     editarItemModal(lote: any) {
@@ -173,11 +220,16 @@ export class ListadoLotesComponent {
 
     eliminarItem(lote: any) {
       if (confirm(`¿Estás seguro de que deseas eliminar el lote "${lote.nombre}"?`)) {
-        const index = this.items.findIndex(item => item.nombre === lote.nombre);
-        if (index !== -1) {
-          this.items.splice(index, 1);
-        }
-        console.log('Lote eliminado:', lote);
+        this.loteService.eliminarLote(lote.id).subscribe({
+          next: (response) => {
+            console.log('Lote eliminado:', response);
+            this.cargarLotes();
+          },
+          error: (error) => {
+            console.error('Error al eliminar lote:', error);
+            alert('Error al eliminar el lote');
+          }
+        });
       }
     }
 }

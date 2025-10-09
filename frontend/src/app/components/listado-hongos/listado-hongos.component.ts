@@ -1,13 +1,15 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { HongoDto } from '../../../models/Hongo.dto';
+import { HongoService } from '../../../services/HongoService';
 
 @Component({
   selector: 'app-listado-hongos.component',
@@ -15,10 +17,11 @@ import { HongoDto } from '../../../models/Hongo.dto';
   templateUrl: './listado-hongos.component.html',
   styleUrls: ['./listado-hongos.component.scss']
 })
-export class ListadoHongosComponent {
-    constructor(private router: Router, private authService: AuthService) {}
+export class ListadoHongosComponent implements OnInit, OnDestroy {
+    constructor(private router: Router, private authService: AuthService, private hongoService: HongoService) {}
 
     searchText: string = '';
+    private navigationSubscription: any;
 
     // Variables para el modal
     mostrarModal: boolean = false;
@@ -31,11 +34,38 @@ export class ListadoHongosComponent {
     itemEditando: any = null;
     itemEditandoId: number | null = null;
 
-    items: HongoDto[] = [
-      { id: 1, nombre: 'Hongo A', descripcion: 'Descripción de Hongo A', activo: true },
-      { id: 2, nombre: 'Hongo B', descripcion: 'Descripción de Hongo B', activo: true },
-      { id: 3, nombre: 'Hongo C', descripcion: 'Descripción de Hongo C', activo: true },
-    ];
+    items: HongoDto[] = [];
+
+    ngOnInit(): void {
+        this.cargarHongos();
+        
+        // Suscribirse a cambios de navegación para recargar cuando se regrese
+        this.navigationSubscription = this.router.events
+            .pipe(filter(event => event instanceof NavigationEnd))
+            .subscribe((event: NavigationEnd) => {
+                if (event.url === '/listado-hongos') {
+                    this.cargarHongos();
+                }
+            });
+    }
+
+    ngOnDestroy(): void {
+        if (this.navigationSubscription) {
+            this.navigationSubscription.unsubscribe();
+        }
+    }
+
+    cargarHongos(): void {
+        this.hongoService.listar().subscribe({
+            next: (response) => {
+                this.items = response?.hongos ?? [];
+            },
+            error: (error) => {
+                console.error('Error al listar hongos', error);
+                this.items = [];
+            }
+        });
+    }
 
     get itemsFiltrados() {
       return this.items.filter(item => {
@@ -49,12 +79,19 @@ export class ListadoHongosComponent {
     }
 
     crearItem() {
-      
       const dto: HongoDto = { 
-        id: null, nombre: this.modalNombre, descripcion: this.modalDescripcion, activo: true
+        id: 0, nombre: this.modalNombre, descripcion: this.modalDescripcion, activo: true
       };
-      console.log('Crear nuevo hongo', dto);
-
+      
+      this.hongoService.crear(dto).subscribe({
+        next: (response) => {
+          console.log('Hongo creado:', response);
+          this.cargarHongos();
+        },
+        error: (error) => {
+          console.error('Error al crear hongo:', error);
+        }
+      });
     }
 
     abrirModal() {
@@ -89,12 +126,44 @@ export class ListadoHongosComponent {
       this.modalLoading = true;
       this.modalError = '';
 
-      //(reemplaza esto con tu lógica real)
-      
-        
-      this.modalLoading = false;
-      this.cerrarModal();
-    
+      const hongo: HongoDto = { 
+        id: this.itemEditandoId ?? 0,
+        nombre: this.modalNombre,
+        descripcion: this.modalDescripcion,
+        activo: true
+      };
+
+      if (this.itemEditando) {
+        // Editar hongo existente
+        this.hongoService.editar(hongo).subscribe({
+          next: (response) => {
+            console.log('Hongo editado:', response);
+            this.modalLoading = false;
+            this.cerrarModal();
+            this.cargarHongos();
+          },
+          error: (error) => {
+            console.error('Error al editar hongo:', error);
+            this.modalError = 'Error al actualizar el hongo';
+            this.modalLoading = false;
+          }
+        });
+      } else {
+        // Crear nuevo hongo
+        this.hongoService.crear(hongo).subscribe({
+          next: (response) => {
+            console.log('Hongo creado:', response);
+            this.modalLoading = false;
+            this.cerrarModal();
+            this.cargarHongos();
+          },
+          error: (error) => {
+            console.error('Error al crear hongo:', error);
+            this.modalError = 'Error al crear el hongo';
+            this.modalLoading = false;
+          }
+        });
+      }
     }
 
     goToHome() {
@@ -106,12 +175,17 @@ export class ListadoHongosComponent {
     }
 
     eliminarItem(hongo: any) {
-      // Función para eliminar hongo
-      console.log('Eliminar Hongo:', hongo);
-      // Aquí puedes agregar la lógica para eliminar el hongo
-      // Por ejemplo, mostrar un diálogo de confirmación
       if (confirm(`¿Estás seguro de que deseas eliminar el hongo "${hongo.nombre}"?`)) {
-
+        this.hongoService.eliminar(hongo.id).subscribe({
+          next: (response) => {
+            console.log('Hongo eliminado:', response);
+            this.cargarHongos();
+          },
+          error: (error) => {
+            console.error('Error al eliminar hongo:', error);
+            alert('Error al eliminar el hongo');
+          }
+        });
       }
     }
 }

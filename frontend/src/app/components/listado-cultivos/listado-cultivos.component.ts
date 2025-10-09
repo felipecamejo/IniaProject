@@ -1,13 +1,15 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { CultivoDto } from '../../../models/Cultivo.dto';
+import { CultivoService } from '../../../services/CultivoService';
 
 @Component({
   selector: 'app-listado-cultivos.component',
@@ -15,10 +17,11 @@ import { CultivoDto } from '../../../models/Cultivo.dto';
   templateUrl: './listado-cultivos.component.html',
   styleUrls: ['./listado-cultivos.component.scss']
 })
-export class ListadoCultivosComponent {
-    constructor(private router: Router, private authService: AuthService) {}
+export class ListadoCultivosComponent implements OnInit, OnDestroy {
+    constructor(private router: Router, private authService: AuthService, private cultivoService: CultivoService) {}
 
     searchText: string = '';
+    private navigationSubscription: any;
 
     // Variables para el modal
     mostrarModal: boolean = false;
@@ -31,11 +34,38 @@ export class ListadoCultivosComponent {
     itemEditando: any = null;
     itemEditandoId: number | null = null;
 
-    items: CultivoDto[] = [
-      { id: 1, nombre: 'Cultivo A', descripcion: 'Descripción de Cultivo A', activo: true },
-      { id: 2, nombre: 'Cultivo B', descripcion: 'Descripción de Cultivo B', activo: true },
-      { id: 3, nombre: 'Cultivo C', descripcion: 'Descripción de Cultivo C', activo: true },
-    ];
+    items: CultivoDto[] = [];
+
+    ngOnInit(): void {
+        this.cargarCultivos();
+        
+        // Suscribirse a cambios de navegación para recargar cuando se regrese
+        this.navigationSubscription = this.router.events
+            .pipe(filter(event => event instanceof NavigationEnd))
+            .subscribe((event: NavigationEnd) => {
+                if (event.url === '/listado-cultivos') {
+                    this.cargarCultivos();
+                }
+            });
+    }
+
+    ngOnDestroy(): void {
+        if (this.navigationSubscription) {
+            this.navigationSubscription.unsubscribe();
+        }
+    }
+
+    cargarCultivos(): void {
+        this.cultivoService.listar().subscribe({
+            next: (response) => {
+                this.items = response?.cultivos ?? [];
+            },
+            error: (error) => {
+                console.error('Error al listar cultivos', error);
+                this.items = [];
+            }
+        });
+    }
 
     get itemsFiltrados() {
       return this.items.filter(item => {
@@ -49,12 +79,19 @@ export class ListadoCultivosComponent {
     }
 
     crearItem() {
-
       const dto: CultivoDto = {
-        id: null, nombre: this.modalNombre, descripcion: this.modalDescripcion, activo: true
+        id: 0, nombre: this.modalNombre, descripcion: this.modalDescripcion, activo: true
       };
-      console.log('Crear nuevo cultivo', dto);
-
+      
+      this.cultivoService.crear(dto).subscribe({
+        next: (response) => {
+          console.log('Cultivo creado:', response);
+          this.cargarCultivos();
+        },
+        error: (error) => {
+          console.error('Error al crear cultivo:', error);
+        }
+      });
     }
 
     abrirModal() {
@@ -89,12 +126,44 @@ export class ListadoCultivosComponent {
       this.modalLoading = true;
       this.modalError = '';
 
-      //(reemplaza esto con tu lógica real)
-      
-        
-      this.modalLoading = false;
-      this.cerrarModal();
-    
+      const cultivo: CultivoDto = { 
+        id: this.itemEditandoId ?? 0,
+        nombre: this.modalNombre,
+        descripcion: this.modalDescripcion,
+        activo: true
+      };
+
+      if (this.itemEditando) {
+        // Editar cultivo existente
+        this.cultivoService.editar(cultivo).subscribe({
+          next: (response) => {
+            console.log('Cultivo editado:', response);
+            this.modalLoading = false;
+            this.cerrarModal();
+            this.cargarCultivos();
+          },
+          error: (error) => {
+            console.error('Error al editar cultivo:', error);
+            this.modalError = 'Error al actualizar el cultivo';
+            this.modalLoading = false;
+          }
+        });
+      } else {
+        // Crear nuevo cultivo
+        this.cultivoService.crear(cultivo).subscribe({
+          next: (response) => {
+            console.log('Cultivo creado:', response);
+            this.modalLoading = false;
+            this.cerrarModal();
+            this.cargarCultivos();
+          },
+          error: (error) => {
+            console.error('Error al crear cultivo:', error);
+            this.modalError = 'Error al crear el cultivo';
+            this.modalLoading = false;
+          }
+        });
+      }
     }
 
     goToHome() {
@@ -106,12 +175,17 @@ export class ListadoCultivosComponent {
     }
 
     eliminarItem(cultivo: any) {
-      // Función para eliminar cultivo
-      console.log('Eliminar Cultivo:', cultivo);
-      // Aquí puedes agregar la lógica para eliminar el cultivo
-      // Por ejemplo, mostrar un diálogo de confirmación
       if (confirm(`¿Estás seguro de que deseas eliminar el Cultivo "${cultivo.nombre}"?`)) {
-
+        this.cultivoService.eliminar(cultivo.id).subscribe({
+          next: (response) => {
+            console.log('Cultivo eliminado:', response);
+            this.cargarCultivos();
+          },
+          error: (error) => {
+            console.error('Error al eliminar cultivo:', error);
+            alert('Error al eliminar el cultivo');
+          }
+        });
       }
     }
 }

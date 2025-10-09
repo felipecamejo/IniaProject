@@ -77,64 +77,21 @@ export class UsuarioComponent implements OnInit {
     cargarUsuario(id: number) {
         console.log('Cargando usuario con ID:', id);
         
-        // Simulación temporal con los mismos datos del listado-usuarios
-        const usuariosSimulados: UsuarioDto[] = [
-            { 
-                id: 1, 
-                nombre: 'Juan Pérez', 
-                email: 'juan.perez@example.com', 
-                telefono: '+598 99 123 456',
-                rol: UserRole.ADMIN, 
-                activo: true,
-                lotesId: [1, 2, 3]
+        this.usuarioService.obtenerUsuarioPorId(id).subscribe({
+            next: (usuario) => {
+                this.nombre = usuario.nombre;
+                this.email = usuario.email;
+                this.telefono = usuario.telefono || '';
+                this.rol = usuario.rol;
+                console.log('Usuario cargado:', usuario);
             },
-            { 
-                id: 2, 
-                nombre: 'María García', 
-                email: 'maria.garcia@example.com', 
-                telefono: '+598 99 654 321',
-                rol: UserRole.OBSERVADOR, 
-                activo: true,
-                lotesId: [4, 5]
-            },
-            { 
-                id: 3, 
-                nombre: 'Carlos López', 
-                email: 'carlos.lopez@example.com', 
-                telefono: '',
-                rol: UserRole.OBSERVADOR, 
-                activo: false,
-                lotesId: []
-            },
-        ];
-
-        const usuario = usuariosSimulados.find(u => u.id === id);
-        
-        if (usuario) {
-            this.nombre = usuario.nombre;
-            this.email = usuario.email;
-            this.telefono = usuario.telefono || '';
-            this.rol = usuario.rol;
-            console.log('Usuario cargado:', usuario);
-        } else {
-            console.error('Usuario no encontrado con ID:', id);
-            // En caso de no encontrar el usuario, limpiar campos
-            this.limpiarCampos();
-        }
-
-        // Cuando tengas el servicio real, reemplaza por:
-        // this.usuarioService.obtenerPerfilUsuario(email).subscribe({
-        //     next: (usuario) => {
-        //         this.nombre = usuario.nombre;
-        //         this.email = usuario.email;
-        //         this.telefono = usuario.telefono || '';
-        //         this.rol = usuario.rol;
-        //     },
-        //     error: (error) => {
-        //         console.error('Error al cargar usuario:', error);
-        //         this.limpiarCampos();
-        //     }
-        // });
+            error: (error) => {
+                console.error('Error al cargar usuario:', error);
+                alert('Error al cargar el usuario. Verifique que el usuario existe.');
+                this.limpiarCampos();
+                this.router.navigate(['/listado-usuarios']);
+            }
+        });
     }
 
 
@@ -172,29 +129,56 @@ export class UsuarioComponent implements OnInit {
         return;
       }
 
+      // Validación de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(this.email)) {
+        alert('Por favor ingrese un email válido');
+        return;
+      }
+
       const usuarioData: UsuarioDto = {
-        id: this.editingId ?? 0, // Se asigna en el backend para nuevos usuarios
+        id: this.editingId ?? 0, 
         nombre: this.nombre,
         email: this.email,
         telefono: this.telefono,
         rol: this.rol,
-        activo: true, // Por defecto activo (se excluye del formulario pero se envía)
-        lotesId: [] // Por defecto sin lotes (se excluye del formulario pero se envía)
+        activo: true, 
+        lotesId: []
       };
 
       if (this.isEditing && this.editingId) {
         // Actualizar usuario existente
         console.log('Actualizando Usuario ID:', this.editingId, 'con datos:', usuarioData);
-        // Aquí deberías llamar al servicio:
-        // this.usuarioService.actualizarUsuario(usuarioData).subscribe(...)
+        this.usuarioService.actualizarUsuarioPorId(this.editingId, usuarioData).subscribe({
+          next: (usuarioActualizado) => {
+            console.log('Usuario actualizado exitosamente:', usuarioActualizado);
+            alert('Usuario actualizado exitosamente');
+            this.router.navigate(['/listado-usuarios']);
+          },
+          error: (error) => {
+            console.error('Error al actualizar usuario:', error);
+            alert('Error al actualizar el usuario. Verifique los datos e intente nuevamente.');
+          }
+        });
       } else {
         // Crear nuevo usuario
         console.log('Creando nuevo Usuario:', usuarioData);
-        // Aquí deberías llamar al servicio:
-        // this.usuarioService.crearUsuario(usuarioData).subscribe(...)
+        this.usuarioService.crearUsuario(usuarioData).subscribe({
+          next: (nuevoUsuario) => {
+            console.log('Usuario creado exitosamente:', nuevoUsuario);
+            alert('Usuario creado exitosamente');
+            this.router.navigate(['/listado-usuarios']);
+          },
+          error: (error) => {
+            console.error('Error al crear usuario:', error);
+            if (error.status === 409) {
+              alert('Ya existe un usuario con ese email. Por favor use un email diferente.');
+            } else {
+              alert('Error al crear el usuario. Verifique los datos e intente nuevamente.');
+            }
+          }
+        });
       }
-      
-      this.router.navigate(['/listado-usuarios']);
     }
 
     onCancel() {
