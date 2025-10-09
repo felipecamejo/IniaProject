@@ -29,8 +29,6 @@ public class ReciboDto {
 
     private String cultivar;
 
-    private String deposito;
-
     private Integer lote;
 
     private Float kgLimpios;
@@ -54,7 +52,6 @@ public class ReciboDto {
                 java.util.Objects.equals(remitente, that.remitente) &&
                 java.util.Objects.equals(origen, that.origen) &&
                 java.util.Objects.equals(cultivar, that.cultivar) &&
-                java.util.Objects.equals(deposito, that.deposito) &&
                 java.util.Objects.equals(estado, that.estado) &&
                 lote == that.lote &&
                 Float.compare(kgLimpios, that.kgLimpios) == 0 &&
@@ -86,8 +83,6 @@ public class ReciboDto {
         result = result * 59 + ($origen == null ? 43 : $origen.hashCode());
         Object $cultivar = this.getCultivar();
         result = result * 59 + ($cultivar == null ? 43 : $cultivar.hashCode());
-        Object $deposito = this.getDeposito();
-        result = result * 59 + ($deposito == null ? 43 : $deposito.hashCode());
         Object $estado = this.getEstado();
         result = result * 59 + ($estado == null ? 43 : $estado.hashCode());
         result = result * 59 + this.getLote();

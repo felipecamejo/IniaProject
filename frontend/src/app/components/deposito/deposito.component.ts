@@ -13,6 +13,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-deposito',
+  standalone: true,
   imports: [
       CommonModule,
       FormsModule,

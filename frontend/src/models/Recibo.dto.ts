@@ -1,19 +1,18 @@
 export interface ReciboDto {
   id: number | null;
   nroAnalisis: number;
-  depositoId: number;
-  estado: string; // Si existe un enum ReciboEstado en el frontend, reemplazar por ese tipo
-  HumedadesId: number[];
-  especie: string;
-  ficha: string;
+  estado: string | null;
+  HumedadesId: number[] | null;
+  especie: string | null;
+  ficha: string | null;
   fechaRecibo: string; // Si se maneja como Date en el frontend, cambiar a Date
-  remitente: string;
-  origen: string;
-  cultivar: string;
-  deposito: string;
-  lote: number;
-  kgLimpios: number;
-  analisisSolicitados: string;
-  articulo: number;
+  remitente: string | null;
+  origen: string | null;
+  cultivar: string | null;
+  depositoId: number | null;
+  lote: number | null;
+  kgLimpios: number | null;
+  analisisSolicitados: string | null;
+  articulo: number | null;
   activo: boolean;
 }

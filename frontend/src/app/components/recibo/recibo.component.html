@@ -4,11 +4,11 @@
             <h2 class="title">Recibo</h2>
         </ng-template>
 
-        <form (ngSubmit)="crearRecibo()">
+        <form (ngSubmit)="guardarRecibo()">
             <div class="form-grid">
                 <!-- Campos de texto -->
                 <div class="form-field">
-                    <label for="nLab">N Lab</label>
+                    <label for="nLab">N° Analisis</label>
                     <input id="nLab" type="text" [(ngModel)]="nLab" name="nLab" pInputText />
                 </div>
 
@@ -21,7 +21,7 @@
                     <label for="cultivar">Cultivar</label>
                     <select id="cultivar" [(ngModel)]="selectedCultivar" name="cultivar">
             <option value="">Seleccionar cultivar</option>
-            <option *ngFor="let c of cultivares" [value]="c.value">{{ c.label }}</option>
+            <option *ngFor="let c of cultivares || []" [value]="c.value">{{ c.label }}</option>
           </select>
                 </div>
 
@@ -54,10 +54,18 @@
                     <label for="observaciones">Observaciones</label>
                     <textarea id="observaciones" rows="3" [(ngModel)]="observaciones" name="observaciones" pInputText></textarea>
                 </div>
+
+                <div class="form-field">
+                    <label for="deposito">Depósito</label>
+                    <select id="deposito" [(ngModel)]="selectedDepositoId" name="deposito" class="mes-select">
+                        <option value="">Seleccionar depósito</option>
+                        <option *ngFor="let d of depositos || []" [value]="d.id">{{ d.nombre }}</option>
+                    </select>
+                </div>
             </div>
 
             <div class="submit-btn">
-                <button pButton type="submit" label="Realizar Recibo" class="p-button-success"></button>
+                <button pButton type="submit" [label]="isEditing ? 'Actualizar' : 'Realizar Recibo'" class="p-button-success"></button>
             </div>
         </form>
     </p-card>

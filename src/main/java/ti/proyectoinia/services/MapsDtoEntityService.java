@@ -190,7 +190,6 @@ public class MapsDtoEntityService {
         reciboDto.setRemitente(recibo.getRemitente());
         reciboDto.setOrigen(recibo.getOrigen());
         reciboDto.setCultivar(recibo.getCultivar());
-        reciboDto.setDeposito(recibo.getDeposito());
         reciboDto.setDepositoId(recibo.getDepositoId());
         reciboDto.setEstado(recibo.getEstado() != null ? recibo.getEstado().name() : null);
         reciboDto.setLote(recibo.getLote());
@@ -225,7 +224,6 @@ public class MapsDtoEntityService {
         recibo.setRemitente(reciboDto.getRemitente());
         recibo.setOrigen(reciboDto.getOrigen());
         recibo.setCultivar(reciboDto.getCultivar());
-        recibo.setDeposito(reciboDto.getDeposito());
         recibo.setDepositoId(reciboDto.getDepositoId());
         try {
             recibo.setEstado(reciboDto.getEstado() != null ? ReciboEstado.valueOf(reciboDto.getEstado()) : null);

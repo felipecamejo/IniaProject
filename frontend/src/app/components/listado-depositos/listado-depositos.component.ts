@@ -12,6 +12,7 @@ import { DepositoService } from '../../../services/DepositoService';
 
 @Component({
   selector: 'app-listado-depositos.component',
+  standalone: true,
   imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule],
   templateUrl: './listado-depositos.component.html',
   styleUrls: ['./listado-depositos.component.scss']
