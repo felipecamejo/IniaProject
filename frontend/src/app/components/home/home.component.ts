@@ -17,4 +17,29 @@ export class HomeComponent {
   goToCrearLote() {
     this.router.navigate(['/lote/crear']);
   }
+
+  // Admin panel - Listados
+  goToCrearUsuario() {
+    this.router.navigate(['/usuario/crear']);
+  }
+
+  goToListadoUsuarios() {
+    this.router.navigate(['/listado-usuarios']);
+  }
+
+  goToListadoDepositos() {
+    this.router.navigate(['/listado-depositos']);
+  }
+
+  goToListadoCultivos() {
+    this.router.navigate(['/listado-cultivos']);
+  }
+
+  goToListadoMalezas() {
+    this.router.navigate(['/listado-malezas']);
+  }
+
+  goToListadoHongos() {
+    this.router.navigate(['/listado-hongos']);
+  }
 }

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { LoteDto } from '../../../models/Lote.dto';
 import { LoteService } from '../../../services/LoteService';
 
@@ -37,7 +38,10 @@ export class LoteComponent {
     descripcion: string = '';
     
 
-    constructor(private loteService: LoteService) {}
+    constructor(
+      private loteService: LoteService,
+      private router: Router
+    ) {}
 
     createLote() {
 
@@ -52,7 +56,16 @@ export class LoteComponent {
       };
 
       this.loteService.crearLote(lote).subscribe({
-        next: (msg) => console.log(msg),
+        next: (msg) => {
+          console.log(msg);
+          // Extraer el ID del mensaje de respuesta
+          const match = msg.match(/ID:(\d+)/);
+          if (match) {
+            const loteId = match[1];
+            // Navegar a lote-analisis sin reciboId (se creará uno nuevo)
+            this.router.navigate([`/${loteId}/lote-analisis`]);
+          }
+        },
         error: (err) => console.error('Error creando lote', err)
       });
     }

@@ -15,11 +15,24 @@
 
   <!-- Admin Panel -->
   <section class="section">
-    <h2 class="section-title">Admin panel</h2>
+    <h2 class="section-title">Listados Admin panel</h2>
     <div class="button-grid">
-      <button pButton type="button" label="Listar Usuario" class="btn-secondary">Listar Usuario</button>
-      <button pButton type="button" label="Listar Análisis" class="btn-secondary">Listar Análisis</button>
-      <button pButton type="button" label="Mis Análisis" class="btn-secondary">Mis Análisis</button>
+      <button pButton type="button" label="Listar Usuario" class="btn-secondary" (click)="goToListadoUsuarios()">Listar Usuario</button>
+      <button pButton type="button" label="Listar Análisis" class="btn-secondary" (click)="goToListadoLotes()">Listar Análisis</button>
+      <button pButton type="button" label="Listar Depositos" class="btn-secondary" (click)="goToListadoDepositos()">Listar Depósitos</button>
+      <button pButton type="button" label="Listar Cultivos" class="btn-secondary" (click)="goToListadoCultivos()">Listar Cultivos</button>
+      <button pButton type="button" label="Listar Malezas" class="btn-secondary" (click)="goToListadoMalezas()">Listar Malezas</button>
+      <button pButton type="button" label="Listar Hongos" class="btn-secondary" (click)="goToListadoHongos()">Listar Hongos</button>
+
+    </div>
+    <h2 class="section-title">Crear Admin panel</h2>
+    <div class="button-grid">
+      <button pButton type="button" label="Crear Usuario" class="btn-secondary" (click)="goToCrearUsuario()">Crear Usuario</button>
+      <button pButton type="button" label="Crear Depositos" class="btn-secondary">Crear Depósitos</button>
+      <button pButton type="button" label="Crear Cultivos" class="btn-secondary">Crear Cultivos</button>
+      <button pButton type="button" label="Crear Malezas" class="btn-secondary">Crear Malezas</button>
+      <button pButton type="button" label="Crear Hongos" class="btn-secondary">Crear Hongos</button>
+
     </div>
   </section>
 

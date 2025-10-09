@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
@@ -24,7 +24,7 @@ import { UserRole } from '../../../models/enums';
   templateUrl: './listado-usuarios.component.html',
   styleUrls: ['./listado-usuarios.component.scss']
 })
-export class ListadoUsuariosComponent {
+export class ListadoUsuariosComponent implements OnInit {
     constructor(
         private router: Router, 
         private authService: AuthService,
@@ -33,34 +33,19 @@ export class ListadoUsuariosComponent {
 
     searchText: string = '';
     selectedRol: string = '';
+    items: UsuarioDto[] = [];
 
-    // Datos de ejemplo - reemplaza con datos reales del servicio
-    items: UsuarioDto[] = [
-        { 
-            id: 1, 
-            nombre: 'Juan Pérez', 
-            email: 'juan.perez@example.com', 
-            rol: UserRole.ADMIN, 
-            activo: true,
-            lotesId: [1, 2, 3]
-        },
-        { 
-            id: 2, 
-            nombre: 'María García', 
-            email: 'maria.garcia@example.com', 
-            rol: UserRole.OBSERVADOR, 
-            activo: true,
-            lotesId: [4, 5]
-        },
-        { 
-            id: 3, 
-            nombre: 'Carlos López', 
-            email: 'carlos.lopez@example.com', 
-            rol: UserRole.OBSERVADOR, 
-            activo: false,
-            lotesId: []
-        },
-    ];
+    ngOnInit(): void {
+        this.usuarioService.listarUsuarios().subscribe({
+            next: (response) => {
+                this.items = response?.usuarios ?? [];
+            },
+            error: (error) => {
+                console.error('Error al listar usuarios', error);
+                this.items = [];
+            }
+        });
+    }
 
     get itemsFiltrados() {
         return this.items.filter(item => {
