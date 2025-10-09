@@ -61,7 +61,7 @@ export const routes: Routes = [
     { path : 'lote/crear', component: LoteComponent },
 
     //formularios asociados a un lote
-    { path : ':loteId/recibo/crear', component: ReciboComponent },
+    { path : ':loteId/:reciboId/recibo', component: ReciboComponent },
 
     //formularios asociados a un recibo
     { path : ':loteId/:reciboId/pms/crear', component: PmsComponent },

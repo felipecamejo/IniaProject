@@ -18,12 +18,6 @@ export class ReciboService {
     );
   }
 
-  listarRecibos(): Observable<{ recibos: ReciboDto[] }> {
-    return this.http.get<{ recibos: ReciboDto[] }>(
-      `${this.urlService.baseUrl}${this.endpoint}/listar`
-    );
-  }
-
   obtenerRecibo(id: number): Observable<ReciboDto> {
     return this.http.get<ReciboDto>(
       `${this.urlService.baseUrl}${this.endpoint}/${id}`
