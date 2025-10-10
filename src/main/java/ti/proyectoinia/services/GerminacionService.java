@@ -22,8 +22,7 @@ public class GerminacionService {
     }
 
     public String crearGerminacion(GerminacionDto germinacionDto) {
-        this.germinacionRepository.save(mapsDtoEntityService.mapToEntityGerminacion(germinacionDto));
-        return "Germinacion creada correctamente ID:" + germinacionDto.getId();
+        return "Germinacion creada correctamente ID:" + this.germinacionRepository.save(mapsDtoEntityService.mapToEntityGerminacion(germinacionDto)).getId();
     }
 
     public GerminacionDto obtenerGerminacionPorId(Long id) {

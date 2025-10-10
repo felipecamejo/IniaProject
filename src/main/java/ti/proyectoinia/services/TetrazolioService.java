@@ -21,8 +21,7 @@ public class TetrazolioService {
     }
 
     public String crearTetrazolio(TetrazolioDto tetrazolioDto) {
-        this.tetrazolioRepository.save(mapsDtoEntityService.mapToEntityTetrazolio(tetrazolioDto));
-        return "Tetrazolio creada correctamente ID:" + tetrazolioDto.getId();
+        return "Tetrazolio creada correctamente ID:" + this.tetrazolioRepository.save(mapsDtoEntityService.mapToEntityTetrazolio(tetrazolioDto)).getId();
     }
 
     public TetrazolioDto obtenerTetrazolioPorId(Long id) {

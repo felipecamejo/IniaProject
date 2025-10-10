@@ -19,9 +19,7 @@ public class DepositoService {
     }
 
     public String crearDeposito(DepositoDto depositoDto) {
-
-        this.depositoRepository.save(mapsDtoEntityService.mapToEntityDeposito(depositoDto));
-        return "Deposito creado correctamente ID:" + depositoDto.getId();
+        return "Deposito creado correctamente ID:" + this.depositoRepository.save(mapsDtoEntityService.mapToEntityDeposito(depositoDto)).getId();
     }
 
     public DepositoDto obtenerDepositoPorId(Long id) {

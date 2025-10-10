@@ -23,8 +23,7 @@ public class PurezaPNotatumService {
     }
 
     public String crearPurezaPNotatum(PurezaPNotatumDto purezaPNotatumDto) {
-        this.purezaPNotatumRepository.save(mapsDtoEntityService.mapToEntityPurezaPNotatum(purezaPNotatumDto));
-        return "PurezaPNotatum creada correctamente ID:" + purezaPNotatumDto.getId();
+        return "PurezaPNotatum creada correctamente ID:" + this.purezaPNotatumRepository.save(mapsDtoEntityService.mapToEntityPurezaPNotatum(purezaPNotatumDto)).getId();
     }
 
     public PurezaPNotatumDto obtenerPurezaPNotatumPorId(Long id) {

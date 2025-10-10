@@ -21,8 +21,7 @@ public class SanitarioService {
     }
 
     public String crearSanitario(SanitarioDto sanitarioDto) {
-        this.sanitarioRepository.save(mapsDtoEntityService.mapToEntitySanitario(sanitarioDto));
-        return "Sanitario creado correctamente ID:" + sanitarioDto.getId();
+        return "Sanitario creado correctamente ID:" + this.sanitarioRepository.save(mapsDtoEntityService.mapToEntitySanitario(sanitarioDto)).getId();
     }
 
     public SanitarioDto obtenerSanitarioPorId(Long id) {

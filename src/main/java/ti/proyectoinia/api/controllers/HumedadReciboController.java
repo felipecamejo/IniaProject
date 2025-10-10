@@ -21,25 +21,6 @@ public class HumedadReciboController {
         this.humedadReciboService = humedadReciboService;
     }
 
-    @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
-    @Operation(description = "Crea una nueva HumedadRecibo")
-    public ResponseEntity<String> crearHumedadRecibo(@RequestBody HumedadReciboDto dto) {
-        if (dto.getLugar() == null || dto.getNumero() == null) {
-            return new ResponseEntity<>("Lugar y número son obligatorios", HttpStatus.BAD_REQUEST);
-        }
-        dto.setId(null);
-        String response = humedadReciboService.crearHumedadRecibo(dto);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
-    @GetMapping({"/listar"})
-    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
-    public ResponseEntity<List<HumedadReciboDto>> listarHumedades() {
-        List<HumedadReciboDto> lista = humedadReciboService.listarHumedades();
-        return new ResponseEntity<>(lista, HttpStatus.OK);
-    }
-
     @GetMapping("/recibo/{reciboId}")
     @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(description = "Obtiene todas las humedades asociadas a un recibo")
@@ -77,21 +58,6 @@ public class HumedadReciboController {
         response.put("errors", errores);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
-    @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
-    @Operation(description = "Edita una HumedadRecibo existente")
-    public ResponseEntity<String> editarHumedadRecibo(@RequestBody HumedadReciboDto dto) {
-        if (dto.getId() == null) {
-            return new ResponseEntity<>("El id de la HumedadRecibo es obligatorio para editar", HttpStatus.BAD_REQUEST);
-        }
-        String response = humedadReciboService.editarHumedadRecibo(dto);
-        if (response.contains("correctamente")) {
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
     }
 
     @PutMapping("/editar-multiple")

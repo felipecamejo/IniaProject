@@ -20,10 +20,6 @@ public class PMS {
     @Column(name = "PESO_MIL_SEMILLAS")
     private Float pesoMilSemillas; // en gramos
 
-    @ElementCollection
-    @CollectionTable(name = "PMS_GRAMOS_REPETICIONES", joinColumns = @JoinColumn(name = "PMS_ID"))
-    @Column(name = "GRAMOS_POR_REPETICION")
-    private java.util.List<Float> gramosPorRepeticiones;
 
     @Column(name = "PESO_PROM_CIEN_SEMILLAS")
     private Float pesoPromedioCienSemillas;

@@ -37,8 +37,7 @@ public class DOSNService {
                 }
             }
         }
-        this.dosnRepository.save(mapsDtoEntityService.mapToEntityDOSN(dosnDto));
-        return "DOSN creada correctamente ID:" + dosnDto.getId();
+        return "DOSN creada correctamente ID:" + this.dosnRepository.save(mapsDtoEntityService.mapToEntityDOSN(dosnDto)).getId();
     }
 
     public DOSNDto obtenerDOSNPorId(Long id) {
