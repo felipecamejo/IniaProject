@@ -34,8 +34,12 @@ export class UsuarioService {
     });
   }
 
-  crearUsuario(usuario: UsuarioDto): Observable<UsuarioDto> {
-    return this.http.post<UsuarioDto>(`${this.url.baseUrl}${this.endpoint}/crear`, usuario);
+  crearUsuario(usuario: UsuarioDto): Observable<string> {
+    return this.http.post<string>(
+      `${this.url.baseUrl}${this.endpoint}/crear`,
+      usuario,
+      { responseType: 'text' as 'json' }
+    );
   }
 
   obtenerUsuarioPorId(id: number): Observable<UsuarioDto> {

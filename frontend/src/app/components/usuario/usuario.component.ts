@@ -10,18 +10,23 @@ import { UsuarioService } from '../../../services/UsuarioService';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-usuario',
+  standalone: true,
   imports: [
       CommonModule,
       FormsModule,
       CardModule,
       InputTextModule,
-      ButtonModule
+      ButtonModule,
+      ToastModule
   ],
   templateUrl: './usuario.component.html',
-  styleUrls: ['./usuario.component.scss']
+  styleUrls: ['./usuario.component.scss'],
+  providers: [MessageService]
 })
 
 export class UsuarioComponent implements OnInit {
@@ -48,7 +53,8 @@ export class UsuarioComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private usuarioService: UsuarioService
+        private usuarioService: UsuarioService,
+        private messageService: MessageService
     ) {}
 
     ngOnInit() {
@@ -193,15 +199,13 @@ export class UsuarioComponent implements OnInit {
         // Crear nuevo usuario
         console.log('Creando nuevo Usuario:', usuarioData);
         this.usuarioService.crearUsuario(usuarioData).subscribe({
-          next: (response) => {
-            console.log('Usuario creado exitosamente:', response);
-            alert('Usuario creado exitosamente');
-            this.router.navigate(['/listado-usuarios']);
+          next: () => {
+            // Mostrar toast de éxito y redirigir tras breve delay
+            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Usuario creado correctamente' });
+            setTimeout(() => this.router.navigate(['/listado-usuarios']), 800);
           },
           error: (error) => {
-            console.error('Error al crear usuario:', error);
-            console.error('Error completo:', JSON.stringify(error));
-            
+            // Manejo de errores reales
             if (error.status === 409) {
               alert('Ya existe un usuario con ese email. Por favor use un email diferente.');
             } else if (error.status === 400) {
