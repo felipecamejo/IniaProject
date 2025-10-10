@@ -20,8 +20,26 @@
             </div>
         </div>
 
+        <!-- Indicador de carga -->
+        <div class="loading-message" *ngIf="loading">
+            <div class="loading-content">
+                <i class="pi pi-spin pi-spinner"></i>
+                <p>Cargando cultivos...</p>
+            </div>
+        </div>
+
+        <!-- Mensaje de error -->
+        <div class="error-message" *ngIf="error && !loading">
+            <div class="error-content">
+                <i class="pi pi-exclamation-triangle"></i>
+                <h3>Error al cargar</h3>
+                <p>{{ error }}</p>
+                <button pButton type="button" label="Reintentar" class="p-button-secondary" (click)="cargarCultivos()"></button>
+            </div>
+        </div>
+
         <!-- Mensaje cuando no hay elementos -->
-        <div class="no-results-message" *ngIf="itemsFiltrados.length === 0">
+        <div class="no-results-message" *ngIf="!loading && !error && itemsFiltrados.length === 0">
             <div class="no-results-content">
                 <h3>No se encontraron Cultivos</h3>
                 <p>No hay cultivos que coincidan con los filtros seleccionados.</p>
@@ -30,9 +48,10 @@
         </div>
 
         <!-- Lista de elementos filtrados -->
-        <div class="blue-rectangle" 
-             *ngFor="let item of itemsFiltrados"
-             >
+        <ng-container *ngIf="!loading && !error">
+            <div class="blue-rectangle" 
+                 *ngFor="let item of itemsFiltrados"
+                 >
             <div class="item-header">
                 <div class="item-info">
                     <h3 class="item-title">{{ item.nombre }}</h3>
@@ -53,6 +72,7 @@
                 </div>
             </div>
         </div>
+        </ng-container>
     
     </p-card>
 

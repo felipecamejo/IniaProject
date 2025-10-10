@@ -724,7 +724,7 @@ public class MapsDtoEntityService {
         return dosn;
     }
 
-    private CultivoDto mapToDtoCultivo(Cultivo cultivo) {
+    public CultivoDto mapToDtoCultivo(Cultivo cultivo) {
         if (cultivo == null) return null;
 
         CultivoDto dto = new CultivoDto();
@@ -735,7 +735,7 @@ public class MapsDtoEntityService {
 
         return dto;
     }
-    private Cultivo mapToEntityCultivo(CultivoDto dto) {
+    public Cultivo mapToEntityCultivo(CultivoDto dto) {
         if (dto == null) return null;
 
         Cultivo cultivo = new Cultivo();

@@ -35,6 +35,8 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
     itemEditandoId: number | null = null;
 
     items: CultivoDto[] = [];
+    loading: boolean = false;
+    error: string = '';
 
     ngOnInit(): void {
         this.cargarCultivos();
@@ -56,13 +58,18 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
     }
 
     cargarCultivos(): void {
-        this.cultivoService.listar().subscribe({
-            next: (response) => {
-                this.items = response?.cultivos ?? [];
+        this.loading = true;
+        this.error = '';
+        this.cultivoService.listarCultivos().subscribe({
+            next: (data) => {
+                this.items = data || [];
+                this.loading = false;
             },
             error: (error) => {
                 console.error('Error al listar cultivos', error);
+                this.error = 'No se pudo cargar el listado de cultivos';
                 this.items = [];
+                this.loading = false;
             }
         });
     }
@@ -83,7 +90,7 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
         id: 0, nombre: this.modalNombre, descripcion: this.modalDescripcion, activo: true
       };
       
-      this.cultivoService.crear(dto).subscribe({
+      this.cultivoService.crearCultivo(dto).subscribe({
         next: (response) => {
           console.log('Cultivo creado:', response);
           this.cargarCultivos();
@@ -135,7 +142,7 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
 
       if (this.itemEditando) {
         // Editar cultivo existente
-        this.cultivoService.editar(cultivo).subscribe({
+        this.cultivoService.editarCultivo(cultivo).subscribe({
           next: (response) => {
             console.log('Cultivo editado:', response);
             this.modalLoading = false;
@@ -150,7 +157,7 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
         });
       } else {
         // Crear nuevo cultivo
-        this.cultivoService.crear(cultivo).subscribe({
+        this.cultivoService.crearCultivo(cultivo).subscribe({
           next: (response) => {
             console.log('Cultivo creado:', response);
             this.modalLoading = false;
@@ -176,7 +183,7 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
 
     eliminarItem(cultivo: any) {
       if (confirm(`¿Estás seguro de que deseas eliminar el Cultivo "${cultivo.nombre}"?`)) {
-        this.cultivoService.eliminar(cultivo.id).subscribe({
+        this.cultivoService.eliminarCultivo(cultivo.id).subscribe({
           next: (response) => {
             console.log('Cultivo eliminado:', response);
             this.cargarCultivos();

@@ -722,3 +722,16 @@ Crear previamente con `POST` `/api/v1/deposito/crear`:
 ```
 
 Luego listar con `GET` `/api/v1/deposito/listar`.
+
+### Cultivo - GET `/api/v1/cultivo/listar`
+Crear previamente con `POST` `/api/v1/cultivo/crear`:
+
+```json
+[
+  {"id": 0, "nombre": "Trigo Pan", "descripcion": "Cultivo de trigo para panificación", "activo": true},
+  {"id": 0, "nombre": "Maíz Híbrido 101", "descripcion": "Cultivo de maíz de alto rendimiento", "activo": true},
+  {"id": 0, "nombre": "Soja Grupo IV", "descripcion": "Cultivar de soja grupo de madurez IV", "activo": true},
+  {"id": 0, "nombre": "Cebada Cervecera", "descripcion": "Cebada destinada a maltería", "activo": false},
+  {"id": 0, "nombre": "Avena Forrajera", "descripcion": "Avena para producción de forraje", "activo": true}
+]
+```
