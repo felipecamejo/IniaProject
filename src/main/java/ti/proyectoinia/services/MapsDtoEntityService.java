@@ -8,6 +8,10 @@ import ti.proyectoinia.dtos.*;
 import ti.proyectoinia.business.repositories.ReciboRepository;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class MapsDtoEntityService {
@@ -15,6 +19,25 @@ public class MapsDtoEntityService {
     private ReciboRepository reciboRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    // Formato ISO simple para fechas tipo "2024-01-15T10:30:00"
+    private static final DateTimeFormatter ISO_LOCAL_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+    private String formatDate(Date date) {
+        if (date == null) {
+            return null;
+        }
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        return ISO_LOCAL_DATE_TIME.format(localDateTime);
+    }
+
+    private Date parseDate(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        LocalDateTime localDateTime = LocalDateTime.parse(value, ISO_LOCAL_DATE_TIME);
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
 
     public Recibo getValidRecibo(Long reciboId) {
         if (reciboId == null) {
@@ -228,7 +251,7 @@ public class MapsDtoEntityService {
         MalezaDto malezaDto = new MalezaDto();
         malezaDto.setId(maleza.getId());
         malezaDto.setNombre(maleza.getNombre());
-        malezaDto.setDescripcion(malezaDto.getDescripcion());
+        malezaDto.setDescripcion(maleza.getDescripcion());
         malezaDto.setActivo(maleza.isActivo());
         return malezaDto;
 
@@ -480,8 +503,8 @@ public class MapsDtoEntityService {
         loteDto.setNombre(lote.getNombre());
         loteDto.setActivo(lote.isActivo());
         loteDto.setDescripcion(lote.getDescripcion());
-        loteDto.setFechaCreacion(lote.getFechaCreacion());
-        loteDto.setFechaFinalizacion(lote.getFechaFinalizacion());
+        loteDto.setFechaCreacion(formatDate(lote.getFechaCreacion()));
+        loteDto.setFechaFinalizacion(formatDate(lote.getFechaFinalizacion()));
 
         if (lote.getUsuarios() != null) {
             loteDto.setUsuariosId(lote.getUsuarios().stream().map(Usuario::getId).collect(Collectors.toList()));
@@ -502,8 +525,8 @@ public class MapsDtoEntityService {
         lote.setNombre(loteDto.getNombre());
         lote.setActivo(loteDto.isActivo());
         lote.setDescripcion(loteDto.getDescripcion());
-        lote.setFechaCreacion(loteDto.getFechaCreacion());
-        lote.setFechaFinalizacion(loteDto.getFechaFinalizacion());
+        lote.setFechaCreacion(parseDate(loteDto.getFechaCreacion()));
+        lote.setFechaFinalizacion(parseDate(loteDto.getFechaFinalizacion()));
 
         if (loteDto.getUsuariosId() != null) {
             lote.setUsuarios(loteDto.getUsuariosId().stream().map(id -> {
