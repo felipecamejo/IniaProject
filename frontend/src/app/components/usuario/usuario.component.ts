@@ -33,6 +33,10 @@ export class UsuarioComponent implements OnInit {
     email: string = '';
     telefono: string = '';
     rol: UserRole = UserRole.OBSERVADOR;
+    
+    // Campos de contraseña (solo para creación)
+    password: string = '';
+    confirmPassword: string = '';
 
     // Opciones para el dropdown de roles
     rolesOptions = [
@@ -102,6 +106,8 @@ export class UsuarioComponent implements OnInit {
       this.email = '';
       this.telefono = '';
       this.rol = UserRole.OBSERVADOR;
+      this.password = '';
+      this.confirmPassword = '';
     }
 
     getRolLabel(rol: UserRole): string {
@@ -136,6 +142,24 @@ export class UsuarioComponent implements OnInit {
         return;
       }
 
+      // Validaciones de contraseña solo para creación
+      if (!this.isEditing) {
+        if (!this.password.trim()) {
+          alert('La contraseña es requerida');
+          return;
+        }
+
+        if (this.password.length < 6) {
+          alert('La contraseña debe tener al menos 6 caracteres');
+          return;
+        }
+
+        if (this.password !== this.confirmPassword) {
+          alert('Las contraseñas no coinciden');
+          return;
+        }
+      }
+
       const usuarioData: UsuarioDto = {
         id: this.editingId ?? 0, 
         nombre: this.nombre,
@@ -145,6 +169,11 @@ export class UsuarioComponent implements OnInit {
         activo: true, 
         lotesId: []
       };
+
+      // Solo incluir contraseña para creación
+      if (!this.isEditing) {
+        usuarioData.password = this.password;
+      }
 
       if (this.isEditing && this.editingId) {
         // Actualizar usuario existente
@@ -164,17 +193,25 @@ export class UsuarioComponent implements OnInit {
         // Crear nuevo usuario
         console.log('Creando nuevo Usuario:', usuarioData);
         this.usuarioService.crearUsuario(usuarioData).subscribe({
-          next: (nuevoUsuario) => {
-            console.log('Usuario creado exitosamente:', nuevoUsuario);
+          next: (response) => {
+            console.log('Usuario creado exitosamente:', response);
             alert('Usuario creado exitosamente');
             this.router.navigate(['/listado-usuarios']);
           },
           error: (error) => {
             console.error('Error al crear usuario:', error);
+            console.error('Error completo:', JSON.stringify(error));
+            
             if (error.status === 409) {
               alert('Ya existe un usuario con ese email. Por favor use un email diferente.');
+            } else if (error.status === 400) {
+              alert('Datos inválidos. Verifique que todos los campos requeridos estén completos.');
+            } else if (error.status === 403) {
+              alert('No tiene permisos para crear usuarios. Contacte al administrador.');
+            } else if (error.status === 0) {
+              alert('Error de conexión. Verifique que el servidor esté ejecutándose.');
             } else {
-              alert('Error al crear el usuario. Verifique los datos e intente nuevamente.');
+              alert(`Error al crear el usuario: ${error.error?.message || error.message || 'Error desconocido'}`);
             }
           }
         });
