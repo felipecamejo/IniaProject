@@ -7,7 +7,7 @@ import { HumedadReciboDto } from '../models/HumedadRecibo.dto';
 
 @Injectable({ providedIn: 'root' })
 export class GramosPmsService {
-  private endpoint: string = '/api/gramos-pms';
+  private endpoint: string = '/gramos-pms';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
   

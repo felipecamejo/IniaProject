@@ -45,12 +45,10 @@ export class PmsComponent implements OnInit {
     reciboId: string | null = '';
 
     // Tabla de repeticiones PMS
-    repeticiones: RepeticionPMS[] = [
-        { numero: 1, gramos: 0 }
-    ];
+    repeticiones: RepeticionPMS[] = [];
 
   // Mantener ids de GramosPms (si existen) para edición
-  gramosEntries: Array<{ id?: number | null; gramos: number }> = [ { id: null, gramos: 0 } ];
+  gramosEntries: GramosPmsDto[] = [];
   // IDs de gramos marcados para eliminación en edición
   deletedGramosIds: number[] = [];
 
@@ -81,8 +79,6 @@ export class PmsComponent implements OnInit {
   ) {}
 
     ngOnInit() {
-        this.loteId = this.route.snapshot.params['loteId'];
-        this.reciboId = this.route.snapshot.params['reciboId'];
 
         this.route.params.subscribe(params => {
             if (params['id']) {
@@ -106,25 +102,35 @@ export class PmsComponent implements OnInit {
               this.comentarios = data.comentarios || '';
               this.activo = data.activo ?? true;
               this.repetido = data.repetido ?? false;
-              this.reciboId = data.reciboId != null ? String(data.reciboId) : this.reciboId;
+              this.reciboId = this.route.snapshot.params['reciboId'];
               this.fechaCreacion = data.fechaCreacion || null;
               this.fechaRepeticion = data.fechaRepeticion || null;
               // Cargar los gramos asociados a este PMS (entidad separada)
               this.gramosPmsService.listarGramosPorPms(this.editingId!).subscribe({
-                next: (grams) => {
+                next: (grams: GramosPmsDto[]) => {
+                  console.log('Gramos cargados para edición:', grams);
                   if (grams && grams.length > 0) {
-                    this.gramosEntries = grams.map(g => ({ id: g.id ?? null, gramos: g.gramos ?? 0 }));
-                    this.repeticiones = this.gramosEntries.map((g, i) => ({ numero: i + 1, gramos: g.gramos }));
+                    this.gramosEntries = grams.map((g, index) => ({ 
+                      id: g.id ?? null, 
+                      pmsId: g.pmsId ?? null,
+                      gramos: g.gramos ?? 0, 
+                      activo: g.activo ?? true
+                    } as GramosPmsDto));
+                    this.repeticiones = this.gramosEntries.map((g, index) => ({ numero: index + 1, gramos: g.gramos! }));
+                    console.log('Gramos del backend:', grams);
+                    console.log('GramosEntries mapeados:', this.gramosEntries);
+                    console.log('Repeticiones mapeadas:', this.repeticiones);
                   } else {
-                    // fallback a lo local si no hay registros
-                    this.gramosEntries = [{ id: null, gramos: 0 }];
-                    this.repeticiones = [{ numero: 1, gramos: 0 }];
+                    // fallback a lo local si no hay registros - sin repeticiones por defecto
+                    this.gramosEntries = [];
+                    this.repeticiones = [];
                   }
                 },
                 error: (err) => {
                   console.error('Error cargando gramos PMS:', err);
-                  this.gramosEntries = [{ id: null, gramos: 0 }];
-                  this.repeticiones = [{ numero: 1, gramos: 0 }];
+                  // Sin repeticiones por defecto en caso de error
+                  this.gramosEntries = [];
+                  this.repeticiones = [];
                 }
               });
             },
@@ -150,32 +156,60 @@ export class PmsComponent implements OnInit {
 
     // Métodos para manejar las repeticiones
     agregarRepeticion() {
+        const nuevoNumero = this.repeticiones.length + 1;
         this.repeticiones.push({
-            numero: this.repeticiones.length + 1,
+            numero: nuevoNumero,
             gramos: 0
         });
-    this.gramosEntries.push({ id: null, gramos: 0 });
+        this.gramosEntries.push({ 
+            id: null, 
+            pmsId: null, 
+            gramos: 0, 
+            activo: true
+        } as GramosPmsDto);
+        console.log('Repetición agregada. Total repeticiones:', this.repeticiones.length);
     }
 
     eliminarRepeticion(index: number) {
-        if (this.repeticiones.length > 1) {
+        if (this.repeticiones.length > 0) {
             this.repeticiones.splice(index, 1);
-            // Re-enumerar
+            // Re-enumerar repeticiones
             this.repeticiones.forEach((r, i) => r.numero = i + 1);
-      // sincronizar gramosEntries
-      const removed = this.gramosEntries.splice(index, 1);
-      if (removed && removed.length > 0 && removed[0].id) {
-        this.deletedGramosIds.push(removed[0].id as number);
-      }
+            
+            // sincronizar gramosEntries (GramosPmsDto[])
+            const removed: GramosPmsDto[] = this.gramosEntries.splice(index, 1);
+            if (removed && removed.length > 0 && removed[0].id) {
+                this.deletedGramosIds.push(removed[0].id as number);
+            }
+            
+            // Los gramosEntries se mantienen sincronizados por índice con las repeticiones
+            console.log('Repetición eliminada. Total repeticiones:', this.repeticiones.length);
+            console.log('GramosEntries después de eliminar (GramosPmsDto[]):', this.gramosEntries);
         }
     }
 
+    // Método para sincronizar cambios de gramos desde el input
+    onGramosChange(index: number, value: any) {
+        const numericValue = parseFloat(value) || 0;
+        console.log(`Cambiando gramos en índice ${index} a valor ${numericValue}`);
+        
+        // Actualizar tanto repeticiones como gramosEntries
+        if (this.repeticiones[index]) {
+            this.repeticiones[index].gramos = numericValue;
+        }
+        if (this.gramosEntries[index]) {
+            this.gramosEntries[index].gramos = numericValue;
+            // Los gramosEntries se mantienen sincronizados por índice
+        }
+        console.log('Repeticiones actualizadas:', this.repeticiones);
+        console.log('GramosEntries actualizados (GramosPmsDto[]):', this.gramosEntries);
+    }
 
 
     limpiarCampos() {
-      this.repeticiones = [{ numero: 1, gramos: 0 }];
+      this.repeticiones = [];
       this.gramosPorRepeticiones = [];
-      this.gramosEntries = [{ id: null, gramos: 0 }];
+      this.gramosEntries = [];
       this.deletedGramosIds = [];
       this.pesoPromedioCienSemillas = null;
       this.pesoMilSemillas = null;
@@ -205,22 +239,26 @@ export class PmsComponent implements OnInit {
         comentarios: this.comentarios,
         activo: this.activo,
         repetido: this.repetido,
-        reciboId: this.reciboId !== null ? Number(this.reciboId) : null,
+        reciboId: this.route.snapshot.params['reciboId'] ? Number(this.route.snapshot.params['reciboId']) : null,
         fechaCreacion: this.fechaCreacion,
         fechaRepeticion: this.fechaRepeticion
       };
       if (this.isEditing && this.editingId) {
         // Actualizar PMS existente
+        if(this.repetido && (!pmsData.repetido || pmsData.fechaRepeticion == null)) {
+          pmsData.repetido = true;
+          pmsData.fechaRepeticion = new Date().toISOString().split('T')[0]; // Asignar fecha actual si es repetido sin fecha
+        }
         console.log('Actualizando PMS ID:', this.editingId, 'con datos:', pmsData);
         this.pmsService.editar(pmsData).subscribe({
           next: (res) => {
             console.log('PMS actualizado correctamente:', res);
             // Ahora procesar los gramos relacionados (editar/crear/eliminar)
             this.procesarGramosDespuesDeGuardar(this.editingId!).then(() => {
-              this.router.navigate([this.loteId, this.reciboId, 'listado-pms']);
+              this.safeNavigateToListadoPms();
             }).catch(err => {
               console.error('Error procesando gramos después de editar PMS:', err);
-              this.router.navigate([this.loteId, this.reciboId, 'listado-pms']);
+              this.safeNavigateToListadoPms();
             });
           },
           error: (err) => {
@@ -231,11 +269,15 @@ export class PmsComponent implements OnInit {
       } else {
         // Crear nuevo PMS
         console.log('Creando nuevo PMS:', pmsData);
+        pmsData.fechaRepeticion = null;
+        pmsData.repetido = false;
+        pmsData.fechaCreacion = new Date().toISOString().split('T')[0];
+        pmsData.reciboId = this.route.snapshot.params['reciboId'] ? Number(this.route.snapshot.params['reciboId']) : null;
         this.pmsService.crear(pmsData).subscribe({
           next: (res) => {
             console.log('PMS creado correctamente:', res);
             // El endpoint crear devuelve texto; para obtener el PMS creado, listamos por recibo
-            const reciboIdNum = this.reciboId ? Number(this.reciboId) : null;
+            const reciboIdNum = this.route.snapshot.params['reciboId'] ? Number(this.route.snapshot.params['reciboId']) : null;
             if (reciboIdNum) {
               this.pmsService.listar(reciboIdNum).subscribe({
                 next: (lista) => {
@@ -245,24 +287,24 @@ export class PmsComponent implements OnInit {
                     const nuevoId = max?.id ? Number(max.id) : null;
                     if (nuevoId) {
                       this.procesarGramosDespuesDeCrear(nuevoId).then(() => {
-                        this.router.navigate([this.loteId, this.reciboId, 'listado-pms']);
+                        this.safeNavigateToListadoPms();
                       }).catch(err => {
                         console.error('Error creando gramos después de crear PMS:', err);
-                        this.router.navigate([this.loteId, this.reciboId, 'listado-pms']);
+                        this.safeNavigateToListadoPms();
                       });
                       return;
                     }
                   }
                   // Si no logramos determinar id, redirigir
-                  this.router.navigate([this.loteId, this.reciboId, 'listado-pms']);
+                      this.safeNavigateToListadoPms();
                 },
                 error: (err) => {
                   console.error('Error listando PMS después de crear:', err);
-                  this.router.navigate([this.loteId, this.reciboId, 'listado-pms']);
+                  this.safeNavigateToListadoPms();
                 }
               });
             } else {
-              this.router.navigate([this.loteId, this.reciboId, 'listado-pms']);
+              this.safeNavigateToListadoPms();
             }
           },
           error: (err) => {
@@ -274,12 +316,22 @@ export class PmsComponent implements OnInit {
     }
 
     private async procesarGramosDespuesDeCrear(pmsId: number): Promise<void> {
-      // Crear todos los gramosEntries (id == null)
-      const payload: GramosPmsDto[] = this.gramosEntries.map(g => ({ id: g.id ?? null, activo: true, pmsId: pmsId, gramos: g.gramos } as GramosPmsDto));
+      // Crear todos los gramosEntries (GramosPmsDto[])
+      const payload: GramosPmsDto[] = this.gramosEntries.map((g: GramosPmsDto, index: number) => ({ 
+        id: g.id ?? null, 
+        activo: g.activo ?? true, 
+        pmsId: pmsId, 
+        gramos: g.gramos
+      } as GramosPmsDto));
+      console.log('GramosEntries antes del mapeo:', this.gramosEntries);
+      console.log('Payload GramosPmsDto[] a crear después de crear PMS:', payload);
+      console.log('PmsId asignado:', pmsId);
+      console.log('Verificando payload:', payload.map(p => ({ id: p.id, gramos: p.gramos })));
       return new Promise((resolve, reject) => {
         if (!payload || payload.length === 0) return resolve();
         this.gramosPmsService.crearMultiplesGramos(payload).subscribe({
           next: (resp) => {
+            console.log('Gramos creados exitosamente:', resp);
             resolve();
           },
           error: (err) => reject(err)
@@ -289,7 +341,17 @@ export class PmsComponent implements OnInit {
 
     private async procesarGramosDespuesDeGuardar(pmsId: number): Promise<void> {
       // Preparar payload: los que tienen id se consideran edición, los que no tienen id se crean
-      const toSend: GramosPmsDto[] = this.gramosEntries.map(g => ({ id: g.id ?? null, activo: true, pmsId: pmsId, gramos: g.gramos } as GramosPmsDto));
+      const toSend: GramosPmsDto[] = this.gramosEntries.map((g: GramosPmsDto, index: number) => ({ 
+        id: g.id ?? null, 
+        activo: g.activo ?? true, 
+        pmsId: pmsId, 
+        gramos: g.gramos
+      } as GramosPmsDto));
+      console.log('GramosEntries antes del mapeo (edición):', this.gramosEntries);
+      console.log('Payload GramosPmsDto[] a editar/crear después de guardar PMS:', toSend);
+      console.log('PmsId asignado:', pmsId);
+      console.log('Verificando payload (edición):', toSend.map(p => ({ id: p.id, gramos: p.gramos })));
+      console.log('IDs de gramos a eliminar:', this.deletedGramosIds);
       return new Promise((resolve, reject) => {
         if (toSend.length === 0 && this.deletedGramosIds.length === 0) return resolve();
 
@@ -297,10 +359,14 @@ export class PmsComponent implements OnInit {
         if (toSend.length > 0) {
           this.gramosPmsService.editarMultiplesGramos(toSend).subscribe({
             next: (resp) => {
+              console.log('Gramos editados/creados exitosamente:', resp);
               // Luego eliminar los marcados
               if (this.deletedGramosIds && this.deletedGramosIds.length > 0) {
                 this.gramosPmsService.eliminarMultiplesGramos(this.deletedGramosIds).subscribe({
-                  next: () => resolve(),
+                  next: () => {
+                    console.log('Gramos eliminados exitosamente');
+                    resolve();
+                  },
                   error: (err) => reject(err)
                 });
               } else {
@@ -312,7 +378,10 @@ export class PmsComponent implements OnInit {
         } else {
           // Solo eliminaciones pendientes
           this.gramosPmsService.eliminarMultiplesGramos(this.deletedGramosIds).subscribe({
-            next: () => resolve(),
+            next: () => {
+              console.log('Gramos eliminados exitosamente (solo eliminaciones)');
+              resolve();
+            },
             error: (err) => reject(err)
           });
         }
@@ -320,6 +389,18 @@ export class PmsComponent implements OnInit {
     }
 
     onCancel() {
-      this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pms"]);
+      this.safeNavigateToListadoPms();
+    }
+
+    private safeNavigateToListadoPms() {
+      const lote = this.route.snapshot.params['loteId'];
+      const recibo = this.route.snapshot.params['reciboId'];
+      // Build path segments only when present to avoid null segments
+      const segments = [] as string[];
+      if (lote) segments.push(lote);
+      if (recibo) segments.push(recibo);
+      segments.push('listado-pms');
+      console.log('Navegando a listado PMS con segmentos:', segments);
+      this.router.navigate(segments);
     }
 }

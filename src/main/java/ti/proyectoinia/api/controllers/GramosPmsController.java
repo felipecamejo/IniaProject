@@ -20,7 +20,7 @@ import ti.proyectoinia.dtos.GramosPmsDto;
 import ti.proyectoinia.services.GramosPmsService;
 
 @RestController
-@RequestMapping("/api/gramos-pms")
+@RequestMapping("api/v1/gramos-pms")
 public class GramosPmsController {
 
     @Autowired

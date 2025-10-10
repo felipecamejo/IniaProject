@@ -22,13 +22,19 @@
               </tr>
             </thead>
             <tbody>
+              <tr *ngIf="repeticiones.length === 0">
+                <td [attr.colspan]="isViewing ? 2 : 3" class="no-repeticiones">
+                  No hay repeticiones agregadas. Haz clic en "Agregar repetición" para comenzar.
+                </td>
+              </tr>
               <tr *ngFor="let rep of repeticiones; let i = index">
                 <td>{{ rep.numero }}</td>
                 <td>
                   <div class="gramos-cell">
                     <input
                       type="number"
-                      [(ngModel)]="rep.gramos"
+                      [value]="rep.gramos"
+                      (input)="onGramosChange(i, $event.target.value)"
                       [name]="'gramos' + i"
                       step="0.0001"
                       [readonly]="isReadonly"
@@ -40,7 +46,6 @@
                           icon="pi pi-trash"
                           class="p-button-danger p-button-sm"
                           (click)="eliminarRepeticion(i)"
-                          [disabled]="repeticiones.length === 1"
                           title="Eliminar">
                   </button>
                 </td>

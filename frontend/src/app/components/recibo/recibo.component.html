@@ -101,6 +101,11 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <tr *ngIf="humedades.length === 0">
+                            <td colspan="3" class="no-humedades">
+                                No hay humedades agregadas. Haz clic en "Agregar Humedad" para comenzar.
+                            </td>
+                        </tr>
                         <tr *ngFor="let humedad of humedades; let i = index">
                             <td>
                                 <select [(ngModel)]="humedad.lugar" 
@@ -124,7 +129,6 @@
                                         icon="pi pi-trash" 
                                         class="p-button-danger p-button-sm" 
                                         (click)="eliminarHumedad(i)" 
-                                        [disabled]="humedades.length === 1" 
                                         title="Eliminar">
                                 </button>
                             </td>
