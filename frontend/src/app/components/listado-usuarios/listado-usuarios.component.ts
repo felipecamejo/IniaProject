@@ -37,6 +37,26 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
     items: UsuarioDto[] = [];
     private navigationSubscription: any;
 
+    // Variables para el modal
+    mostrarModal: boolean = false;
+    modalNombre: string = '';
+    modalEmail: string = '';
+    modalTelefono: string = '';
+    modalRol: UserRole = UserRole.OBSERVADOR;
+    modalLoading: boolean = false;
+    modalError: string = '';
+    modalTitulo: string = 'Crear Usuario';
+    modalBotonTexto: string = 'Crear Usuario';
+    itemEditando: any = null;
+    itemEditandoId: number | null = null;
+
+    // Opciones para el dropdown de roles
+    rolesOptions = [
+        { label: 'Analista', value: UserRole.ANALISTA }, 
+        { label: 'Observador', value: UserRole.OBSERVADOR },
+        { label: 'Administrador', value: UserRole.ADMIN }
+    ];
+
     ngOnInit(): void {
         this.cargarUsuarios();
         
@@ -96,14 +116,91 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
         }
     }
 
+    abrirModal() {
+        this.modalNombre = '';
+        this.modalEmail = '';
+        this.modalTelefono = '';
+        this.modalRol = UserRole.OBSERVADOR;
+        this.modalError = '';
+        this.modalTitulo = 'Crear Usuario';
+        this.modalBotonTexto = 'Crear Usuario';
+        this.itemEditando = null;
+        this.itemEditandoId = null;
+        this.mostrarModal = true;
+    }
+
+    abrirModalEdicion(item: any) {
+        this.modalNombre = item.nombre;
+        this.modalEmail = item.email;
+        this.modalTelefono = item.telefono || '';
+        this.modalRol = item.rol;
+        this.modalError = '';
+        this.modalTitulo = 'Editar Usuario';
+        this.modalBotonTexto = 'Actualizar Usuario';
+        this.itemEditando = item;
+        this.itemEditandoId = item.id;
+        this.mostrarModal = true;
+    }
+
+    cerrarModal() {
+        this.mostrarModal = false;
+    }
+
+    onSubmitModal(form: any) {
+        if (form.invalid || this.modalLoading) return;
+        
+        this.modalLoading = true;
+        this.modalError = '';
+
+        const usuario: UsuarioDto = { 
+            id: this.itemEditandoId ?? 0,
+            nombre: this.modalNombre,
+            email: this.modalEmail,
+            telefono: this.modalTelefono,
+            rol: this.modalRol,
+            activo: true,
+            lotesId: []
+        };
+
+        if (this.itemEditando) {
+            // Editar usuario existente
+            this.usuarioService.actualizarUsuarioPorId(this.itemEditandoId!, usuario).subscribe({
+                next: (response) => {
+                    console.log('Usuario editado:', response);
+                    this.modalLoading = false;
+                    this.cerrarModal();
+                    this.cargarUsuarios();
+                },
+                error: (error) => {
+                    console.error('Error al editar usuario:', error);
+                    this.modalError = 'Error al actualizar el usuario';
+                    this.modalLoading = false;
+                }
+            });
+        } else {
+            // Crear nuevo usuario
+            this.usuarioService.crearUsuario(usuario).subscribe({
+                next: (response) => {
+                    console.log('Usuario creado:', response);
+                    this.modalLoading = false;
+                    this.cerrarModal();
+                    this.cargarUsuarios();
+                },
+                error: (error) => {
+                    console.error('Error al crear usuario:', error);
+                    this.modalError = 'Error al crear el usuario';
+                    this.modalLoading = false;
+                }
+            });
+        }
+    }
+
     crearUsuario() {
-        // Navegar al componente usuario para crear nuevo usuario
-        this.router.navigate(['/usuario/crear']);
+        this.abrirModal();
     }
 
     editarItem(usuario: UsuarioDto) {
-        // Navegar al componente usuario con el ID para edición
-        this.router.navigate(['/usuario/editar', usuario.id]);
+        this.abrirModalEdicion(usuario);
     }
 
     goToHome() {

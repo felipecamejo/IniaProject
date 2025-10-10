@@ -39,9 +39,13 @@ export class UsuarioComponent implements OnInit {
     telefono: string = '';
     rol: UserRole = UserRole.OBSERVADOR;
     
-    // Campos de contraseña (solo para creación)
+    // Campos de contraseña
     password: string = '';
     confirmPassword: string = '';
+    
+    // Variables para mostrar/ocultar contraseña
+    showPassword: boolean = false;
+    showConfirmPassword: boolean = false;
 
     // Opciones para el dropdown de roles
     rolesOptions = [
@@ -114,6 +118,16 @@ export class UsuarioComponent implements OnInit {
       this.rol = UserRole.OBSERVADOR;
       this.password = '';
       this.confirmPassword = '';
+      this.showPassword = false;
+      this.showConfirmPassword = false;
+    }
+
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
+    }
+
+    toggleConfirmPasswordVisibility() {
+      this.showConfirmPassword = !this.showConfirmPassword;
     }
 
     getRolLabel(rol: UserRole): string {
@@ -148,22 +162,20 @@ export class UsuarioComponent implements OnInit {
         return;
       }
 
-      // Validaciones de contraseña solo para creación
-      if (!this.isEditing) {
-        if (!this.password.trim()) {
-          alert('La contraseña es requerida');
-          return;
-        }
+      // Validaciones de contraseña (siempre requerida)
+      if (!this.password.trim()) {
+        alert(this.isEditing ? 'La nueva contraseña es requerida' : 'La contraseña es requerida');
+        return;
+      }
 
-        if (this.password.length < 6) {
-          alert('La contraseña debe tener al menos 6 caracteres');
-          return;
-        }
+      if (this.password.length < 6) {
+        alert('La contraseña debe tener al menos 6 caracteres');
+        return;
+      }
 
-        if (this.password !== this.confirmPassword) {
-          alert('Las contraseñas no coinciden');
-          return;
-        }
+      if (this.password !== this.confirmPassword) {
+        alert('Las contraseñas no coinciden');
+        return;
       }
 
       const usuarioData: UsuarioDto = {
@@ -173,13 +185,9 @@ export class UsuarioComponent implements OnInit {
         telefono: this.telefono,
         rol: this.rol,
         activo: true, 
-        lotesId: []
+        lotesId: [],
+        password: this.password // Siempre incluir contraseña
       };
-
-      // Solo incluir contraseña para creación
-      if (!this.isEditing) {
-        usuarioData.password = this.password;
-      }
 
       if (this.isEditing && this.editingId) {
         // Actualizar usuario existente
