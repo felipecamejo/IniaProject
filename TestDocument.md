@@ -606,3 +606,104 @@ Content-Type: application/json
 ---
 
 *Este documento debe actualizarse cuando se agreguen nuevos endpoints o se modifiquen los existentes.*
+
+---
+
+## Parámetros y datos de prueba para listados (no análisis)
+
+Las siguientes secciones proveen datos de prueba para crear 5 registros por entidad y luego validar los endpoints de listado que no corresponden a análisis. Crea primero estos registros con los endpoints de creación y luego utiliza los endpoints `GET .../listar` o equivalentes.
+
+### Usuario - GET `/api/v1/usuario/listar`
+Crear previamente con `POST` `/api/v1/usuario/crear`:
+
+```json
+[
+  {"email": "ana.garcia@inia.com", "nombre": "Ana Garcia", "password": "Ana12345", "rol": "ANALISTA", "activo": true},
+  {"email": "bruno.perez@inia.com", "nombre": "Bruno Perez", "password": "Bruno12345", "rol": "ANALISTA", "activo": true},
+  {"email": "carla.lopez@inia.com", "nombre": "Carla Lopez", "password": "Carla12345", "rol": "ANALISTA", "activo": true},
+  {"email": "diego.rios@inia.com", "nombre": "Diego Rios", "password": "Diego12345", "rol": "ANALISTA", "activo": false},
+  {"email": "elena.soto@inia.com", "nombre": "Elena Soto", "password": "Elena12345", "rol": "ANALISTA", "activo": true}
+]
+```
+
+Luego listar con `GET` `/api/v1/usuario/listar`.
+
+### Lote - GET `/api/v1/lote/listar`
+Crear previamente con `POST` `/api/v1/lote/crear` (asegúrate de tener al menos un `usuario` creado; usa `usuariosId: [1]` o IDs existentes):
+
+```json
+[
+  {
+    "nombre": "Lote Trigo Norte",
+    "descripcion": "Semillas de trigo zona norte",
+    "fechaCreacion": "2024-02-01T09:00:00",
+    "fechaFinalizacion": "2024-12-15T18:00:00",
+    "activo": true,
+    "usuariosId": [1]
+  },
+  {
+    "nombre": "Lote Maiz Centro",
+    "descripcion": "Semillas de maíz híbrido",
+    "fechaCreacion": "2024-03-05T10:30:00",
+    "fechaFinalizacion": "2024-11-30T17:00:00",
+    "activo": true,
+    "usuariosId": [1]
+  },
+  {
+    "nombre": "Lote Soja Sur",
+    "descripcion": "Semillas de soja grupo IV",
+    "fechaCreacion": "2024-04-10T08:15:00",
+    "fechaFinalizacion": "2024-10-31T23:59:59",
+    "activo": false,
+    "usuariosId": [1]
+  },
+  {
+    "nombre": "Lote Cebada Este",
+    "descripcion": "Semillas de cebada cervecera",
+    "fechaCreacion": "2024-05-12T11:45:00",
+    "fechaFinalizacion": "2024-12-01T20:00:00",
+    "activo": true,
+    "usuariosId": [1]
+  },
+  {
+    "nombre": "Lote Avena Andina",
+    "descripcion": "Semillas de avena forrajera",
+    "fechaCreacion": "2024-06-20T14:00:00",
+    "fechaFinalizacion": "2024-12-20T12:00:00",
+    "activo": true,
+    "usuariosId": [1]
+  }
+]
+```
+
+Luego listar con `GET` `/api/v1/lote/listar`.
+
+### Hongo (catálogo) - GET `/api/v1/hongo/listar`
+Crear previamente con `POST` `/api/v1/hongo/crear`:
+
+```json
+[
+  {"nombre": "Fusarium graminearum", "descripcion": "Patógeno en cereales", "activo": true},
+  {"nombre": "Aspergillus flavus", "descripcion": "Producción de aflatoxinas", "activo": true},
+  {"nombre": "Alternaria alternata", "descripcion": "Afecta semillas almacenadas", "activo": true},
+  {"nombre": "Penicillium spp.", "descripcion": "Contaminante postcosecha", "activo": false},
+  {"nombre": "Rhizoctonia solani", "descripcion": "Patógeno del suelo", "activo": true}
+]
+```
+
+Luego listar con `GET` `/api/v1/hongo/listar`.
+
+### Maleza (catálogo) - GET `/api/v1/maleza/listar`
+Crear previamente con `POST` `/api/v1/maleza/crear`:
+
+```json
+[
+  {"nombre": "Amaranthus retroflexus", "descripcion": "Yuyo colorado", "activo": true},
+  {"nombre": "Sorghum halepense", "descripcion": "Sorgo de Alepo", "activo": true},
+  {"nombre": "Echinochloa crus-galli", "descripcion": "Pasto cuaresma", "activo": true},
+  {"nombre": "Cuscuta campestris", "descripcion": "Cuscuta (tolerancia cero)", "activo": false},
+  {"nombre": "Brassica rapa", "descripcion": "Nabo (otros cultivos)", "activo": true}
+]
+```
+
+Luego listar con `GET` `/api/v1/maleza/listar`.
