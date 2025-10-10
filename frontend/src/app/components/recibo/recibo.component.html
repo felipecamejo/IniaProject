@@ -48,7 +48,7 @@
 
                 <div class="form-field">
                     <label for="lote">Lote</label>
-                    <input id="lote" type="text" [(ngModel)]="lote" name="lote" readonly pInputText />
+                    <input id="lote" type="text" [(ngModel)]="lote2" name="lote" readonly pInputText />
                 </div>
 
                 <div class="form-field">
@@ -78,6 +78,15 @@
                         <option *ngFor="let d of depositos || []" [value]="d.id">{{ d.nombre }}</option>
                     </select>
                 </div>
+
+                <div class="form-field">
+                    <label for="estado">Estado</label>
+                    <select id="estado" [(ngModel)]="selectedEstado" name="estado" class="mes-select">
+                        <option *ngFor="let e of estadosOptions || []" [value]="e.value">{{ e.label }}</option>
+                    </select>
+                </div>
+
+                
             </div>
 
             <!-- Tabla de Humedades -->

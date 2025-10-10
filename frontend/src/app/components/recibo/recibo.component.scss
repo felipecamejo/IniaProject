@@ -1,5 +1,16 @@
 // Los estilos de .form-grid y .submit-btn se importan desde styles.scss
 
+.container {
+  max-width: 800px !important;
+  width: 90% !important;
+  margin: 0 auto !important;
+}
+
+::ng-deep .card {
+  width: 100% !important;
+  max-width: none !important;
+}
+
 .submit-btn {
   ::ng-deep .p-button {
     background: var(--verde) !important;

@@ -26,15 +26,16 @@ public class ReciboController {
     @Operation(
             description = "Esta Funcion crea un nuevo Recibo"
     )
-    public ResponseEntity<ReciboDto> crearRecibo(@RequestBody ReciboDto reciboDto) {
+    public ResponseEntity<?> crearRecibo(@RequestBody ReciboDto reciboDto) {
         try {
             reciboDto.setId((Long) null);
             ReciboDto response = this.reciboService.crearRecibo(reciboDto);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            // Return the validation message to help debugging client errors
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Error interno: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

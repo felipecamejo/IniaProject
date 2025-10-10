@@ -79,12 +79,4 @@ public class Recibo {
 
     @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Tetrazolio> tetrazolioAnalisis;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "RECIBO_HUMEDADES",
-        joinColumns = @JoinColumn(name = "RECIBO_ID"),
-        inverseJoinColumns = @JoinColumn(name = "HUMEDAD_RECIBO_ID")
-    )
-    private List<HumedadRecibo> humedades;
 }

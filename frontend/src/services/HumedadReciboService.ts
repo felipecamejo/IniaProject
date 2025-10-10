@@ -10,13 +10,6 @@ export class HumedadReciboService {
   private endpoint: string = '/humedadRecibo';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
-
-  crearHumedadRecibo(payload: HumedadReciboDto): Observable<HumedadReciboDto> {
-    return this.http.post<HumedadReciboDto>(
-      `${this.urlService.baseUrl}${this.endpoint}/crear`,
-      payload
-    );
-  }
   
   /**
    * Crea múltiples humedades y devuelve un objeto con created[] y errors[]
@@ -28,15 +21,9 @@ export class HumedadReciboService {
     );
   }
 
-  obtenerHumedadRecibo(id: number): Observable<ReciboDto> {
-    return this.http.get<ReciboDto>(
-      `${this.urlService.baseUrl}${this.endpoint}/${id}`
-    );
-  }
-
-  editarHumedadRecibo(payload: ReciboDto): Observable<string> {
+  editarHumedadesRecibo(payload: HumedadReciboDto []): Observable<string> {
     return this.http.put(
-      `${this.urlService.baseUrl}${this.endpoint}/editar`,
+      `${this.urlService.baseUrl}${this.endpoint}/editar-multiple`,
       payload,
       { responseType: 'text' }
     );
@@ -48,6 +35,14 @@ export class HumedadReciboService {
       {},
       { responseType: 'text' }
     );
+  }
+
+  /**
+   * Elimina múltiples humedades por id. Backend debe implementar /eliminar-multiple
+   * y aceptar un array de ids en el body.
+   */
+  eliminarHumedadesRecibo(ids: number[]): Observable<string> {
+    return this.http.request('put', `${this.urlService.baseUrl}${this.endpoint}/eliminar-multiple`, { body: ids, responseType: 'text' });
   }
 
   /**
