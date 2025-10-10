@@ -119,4 +119,34 @@ public class HumedadReciboService {
         result.put("errors", errors);
         return result;
     }
+
+        /**
+         * Elimina (soft-delete) múltiples humedades por id: marca activo = false.
+         * Retorna lista de ids eliminados y lista de ids no encontrados.
+         */
+        public java.util.Map<String, Object> eliminarMultiplesHumedades(java.util.List<Long> ids) {
+            java.util.List<Long> deleted = new java.util.ArrayList<>();
+            java.util.List<Long> notFound = new java.util.ArrayList<>();
+
+            for (Long id : ids) {
+                if (id == null) continue;
+                if (!humedadReciboRepository.existsById(id)) {
+                    notFound.add(id);
+                    continue;
+                }
+                HumedadRecibo h = humedadReciboRepository.findById(id).orElse(null);
+                if (h == null) {
+                    notFound.add(id);
+                    continue;
+                }
+                h.setActivo(false);
+                humedadReciboRepository.save(h);
+                deleted.add(id);
+            }
+
+            java.util.Map<String, Object> resp = new java.util.HashMap<>();
+            resp.put("deleted", deleted);
+            resp.put("notFound", notFound);
+            return resp;
+        }
 }

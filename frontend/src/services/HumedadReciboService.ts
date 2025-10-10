@@ -38,6 +38,14 @@ export class HumedadReciboService {
   }
 
   /**
+   * Elimina múltiples humedades por id. Backend debe implementar /eliminar-multiple
+   * y aceptar un array de ids en el body.
+   */
+  eliminarHumedadesRecibo(ids: number[]): Observable<string> {
+    return this.http.request('put', `${this.urlService.baseUrl}${this.endpoint}/eliminar-multiple`, { body: ids, responseType: 'text' });
+  }
+
+  /**
    * Lista humedades asociadas a un recibo (endpoint: /recibo/{reciboId})
    */
   listarHumedadesPorRecibo(reciboId: number): Observable<HumedadReciboDto[]> {

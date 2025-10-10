@@ -78,6 +78,15 @@
                         <option *ngFor="let d of depositos || []" [value]="d.id">{{ d.nombre }}</option>
                     </select>
                 </div>
+
+                <div class="form-field">
+                    <label for="estado">Estado</label>
+                    <select id="estado" [(ngModel)]="selectedEstado" name="estado" class="mes-select">
+                        <option *ngFor="let e of estadosOptions || []" [value]="e.value">{{ e.label }}</option>
+                    </select>
+                </div>
+
+                
             </div>
 
             <!-- Tabla de Humedades -->

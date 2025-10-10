@@ -42,6 +42,14 @@ export class ReciboComponent implements OnInit {
 
   // Propiedades enlazadas con ngModel
   selectedCultivar: string = '';
+  // Estado del recibo
+  estadosOptions: Array<{label: string, value: string | null}> = [
+    { label: 'Seleccionar estado', value: null },
+    { label: 'L', value: ReciboEstado.L },
+    { label: 'C', value: ReciboEstado.C },
+    { label: 'S', value: ReciboEstado.S }
+  ];
+  selectedEstado: ReciboEstado | null = null;
 
   kilos: number = 0;
   fechaRecibo: string = '';
@@ -74,6 +82,9 @@ export class ReciboComponent implements OnInit {
   tetrazolioAnalisisId: number[] | null = null;
   humedadesId: number[] | null = null;
 
+  // Guardar el recibo cargado para fusionar en edición y no sobrescribir campos no editados
+  originalRecibo: ReciboDto | null = null;
+
   // Nuevas propiedades para depósitos
   depositos: DepositoDto[] = [];
   selectedDepositoId: number | null = null;
@@ -82,6 +93,9 @@ export class ReciboComponent implements OnInit {
   humedades: Array<{id: number | null, numero: number | null, lugar: HumedadLugarDto | null}> = [
     { id: null, numero: null, lugar: null }
   ];
+
+  // Acumula IDs de humedades eliminadas durante la edición
+  deletedHumedadesIds: number[] = [];
 
   // Opciones para el dropdown de lugares de humedad
   lugaresHumedad = [
@@ -156,7 +170,8 @@ export class ReciboComponent implements OnInit {
     this.saleFrio = '';
     this.observacion = '';
     this.selectedDepositoId = null;
-    
+  // Estado por defecto: ninguna selección (opción "Seleccionar estado")
+  this.selectedEstado = null;
     // Inicializar análisis como null para recibos nuevos
     this.dosnAnalisisId = null;
     this.pmsAnalisisId = null;
@@ -173,6 +188,8 @@ export class ReciboComponent implements OnInit {
 
   cargarRecibo(id: number) {
     this.reciboService.obtenerRecibo(id).subscribe((recibo: ReciboDto) => {
+      // Guardar el recibo original tal como vino del backend
+      this.originalRecibo = recibo;
       this.nLab = recibo.nroAnalisis?.toString() || '';
       this.articulo = recibo.articulo;
       this.selectedCultivar = recibo.cultivar || '';
@@ -198,6 +215,14 @@ export class ReciboComponent implements OnInit {
       this.saleFrio = ''; // This property doesn't exist in ReciboDto
       this.observacion = ''; // This property doesn't exist in ReciboDto
       this.selectedDepositoId = recibo.depositoId || null;
+
+      // Cargar estado existente si está presente
+      if (recibo.estado) {
+        this.selectedEstado = recibo.estado as ReciboEstado;
+      } else {
+          // Mantener null si el recibo no tiene estado
+          this.selectedEstado = null;
+      }
 
       // Cargar análisis existentes para mantener sus valores al editar
       this.dosnAnalisisId = recibo.dosnAnalisisId || null;
@@ -242,7 +267,8 @@ export class ReciboComponent implements OnInit {
       id: null,
       nroAnalisis: Number(this.nLab) || null,
       depositoId: Number(this.selectedDepositoId) || null,
-      estado: ReciboEstado.S,
+      // Si la opción por defecto está seleccionada, enviar null como estado
+      estado: this.selectedEstado ?? null,
       // Análisis inicializados como null para recibos nuevos
       dosnAnalisisId: null,
       pmsAnalisisId: null,
@@ -291,39 +317,76 @@ export class ReciboComponent implements OnInit {
       return;
     }
 
+    // Construir payload a partir del recibo original si está disponible
+    const base: ReciboDto = this.originalRecibo ? { ...this.originalRecibo } : { id: this.reciboId } as ReciboDto;
+
     const payload: ReciboDto = {
+      ...base,
       id: this.reciboId,
-      nroAnalisis: Number(this.nLab) || null,
-      depositoId: Number(this.selectedDepositoId) || null,
-      estado: ReciboEstado.S,
-      // Análisis mantienen sus valores existentes al editar
-      dosnAnalisisId: this.dosnAnalisisId,
-      pmsAnalisisId: this.pmsAnalisisId,
-      purezaAnalisisId: this.purezaAnalisisId,
-      germinacionAnalisisId: this.germinacionAnalisisId,
-      purezaPNotatumAnalisisId: this.purezaPNotatumAnalisisId,
-      sanitarioAnalisisId: this.sanitarioAnalisisId,
-      tetrazolioAnalisisId: this.tetrazolioAnalisisId,
-      especie: this.especie || null,
-      ficha: this.ficha || null,
-      fechaRecibo: this.fechaRecibo ? new Date(this.fechaRecibo).toISOString() : new Date().toISOString(),
-      remitente: this.remite || null,
-      origen: this.origen || null,
-      cultivar: this.selectedCultivar || null,
-      lote: Number(this.lote) || null,
-      kgLimpios: Number(this.kilos) || null,
-      analisisSolicitados: this.rec || null,
-      articulo: this.articulo,
-      activo: true
+      nroAnalisis: Number(this.nLab) || base.nroAnalisis || null,
+      depositoId: Number(this.selectedDepositoId) ?? base.depositoId ?? null,
+      // Si la opción por defecto está seleccionada, enviar null como estado
+      estado: this.selectedEstado ?? base.estado ?? null,
+      // Mantener arrays existentes si no se reemplazan (usar null por defecto si ninguno existe)
+      dosnAnalisisId: (this.dosnAnalisisId ?? base.dosnAnalisisId) ?? null,
+      pmsAnalisisId: (this.pmsAnalisisId ?? base.pmsAnalisisId) ?? null,
+      purezaAnalisisId: (this.purezaAnalisisId ?? base.purezaAnalisisId) ?? null,
+      germinacionAnalisisId: (this.germinacionAnalisisId ?? base.germinacionAnalisisId) ?? null,
+      purezaPNotatumAnalisisId: (this.purezaPNotatumAnalisisId ?? base.purezaPNotatumAnalisisId) ?? null,
+      sanitarioAnalisisId: (this.sanitarioAnalisisId ?? base.sanitarioAnalisisId) ?? null,
+      tetrazolioAnalisisId: (this.tetrazolioAnalisisId ?? base.tetrazolioAnalisisId) ?? null,
+      especie: this.especie || base.especie || null,
+      ficha: this.ficha || base.ficha || null,
+      fechaRecibo: this.fechaRecibo ? new Date(this.fechaRecibo).toISOString() : (base.fechaRecibo ?? new Date().toISOString()),
+      remitente: this.remite || base.remitente || null,
+      origen: this.origen || base.origen || null,
+      cultivar: this.selectedCultivar || base.cultivar || null,
+      lote: Number(this.lote) || base.lote || null,
+      kgLimpios: Number(this.kilos) || base.kgLimpios || null,
+      analisisSolicitados: this.rec || base.analisisSolicitados || null,
+      articulo: this.articulo ?? base.articulo ?? null,
+      activo: base.activo ?? true
     };
 
     console.log('Payload para editar recibo:', payload);
 
-    this.reciboService.editarRecibo(payload).subscribe({
+    // Normalizar arrays: muchos endpoints esperan [] en lugar de null
+    const normalizeArrays = (p: ReciboDto) => {
+      p.dosnAnalisisId = p.dosnAnalisisId ?? [];
+      p.pmsAnalisisId = p.pmsAnalisisId ?? [];
+      p.purezaAnalisisId = p.purezaAnalisisId ?? [];
+      p.germinacionAnalisisId = p.germinacionAnalisisId ?? [];
+      p.purezaPNotatumAnalisisId = p.purezaPNotatumAnalisisId ?? [];
+      p.sanitarioAnalisisId = p.sanitarioAnalisisId ?? [];
+      p.tetrazolioAnalisisId = p.tetrazolioAnalisisId ?? [];
+      return p;
+    };
+
+    const finalPayload = normalizeArrays({ ...payload });
+    console.log('Final payload (after normalization):', finalPayload);
+
+    this.reciboService.editarRecibo(finalPayload).subscribe({
       next: (msg) => {
         console.log('Recibo editado exitosamente:', msg);
         // Guardar las humedades actualizadas
         this.guardarHumedades(this.reciboId);
+        // Si hay humedades marcadas para borrar, enviarlas en una sola llamada
+        (() => {
+          if (this.deletedHumedadesIds && this.deletedHumedadesIds.length > 0) {
+            const ids = [...this.deletedHumedadesIds];
+            this.humedadReciboService.eliminarHumedadesRecibo(ids).subscribe({
+              next: (r) => {
+                console.log('Eliminación múltiple de humedades OK:', r);
+                // limpiar lista local
+                this.deletedHumedadesIds = [];
+              },
+              error: (err) => {
+                console.error('Error en eliminación múltiple de humedades:', err);
+                // no limpiar para reintento manual si se desea
+              }
+            });
+          }
+        })();
       },
       error: (err: any) => {
         console.error('Error editando recibo:', err);
@@ -407,6 +470,11 @@ export class ReciboComponent implements OnInit {
 
   eliminarHumedad(index: number) {
     if (this.humedades.length > 1) {
+      const h = this.humedades[index];
+      if (this.isEditing && h && h.id) {
+        this.deletedHumedadesIds.push(h.id);
+        console.log('Registrada humedad para eliminación al actualizar:', h.id);
+      }
       this.humedades.splice(index, 1);
     }
   }

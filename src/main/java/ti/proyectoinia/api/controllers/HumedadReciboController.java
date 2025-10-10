@@ -137,4 +137,16 @@ public class HumedadReciboController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @PutMapping("/eliminar-multiple")
+    @Secured({"ADMIN"})
+    @Operation(description = "Elimina múltiples HumedadRecibo (soft-delete) en una sola llamada")
+    public ResponseEntity<Object> eliminarMultiples(@RequestBody List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return new ResponseEntity<>(java.util.Collections.singletonMap("message", "No se recibieron ids"), HttpStatus.BAD_REQUEST);
+        }
+
+        java.util.Map<String, Object> result = humedadReciboService.eliminarMultiplesHumedades(ids);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 }
