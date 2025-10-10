@@ -4,6 +4,9 @@ import { Observable } from 'rxjs';
 import { UrlService } from './url.service';
 import { PMSDto } from '../models/PMS.dto';
 
+interface ResponseListadoPMS {
+  pms: PMSDto[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class PMSService {
