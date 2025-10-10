@@ -43,12 +43,18 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
     modalEmail: string = '';
     modalTelefono: string = '';
     modalRol: UserRole = UserRole.OBSERVADOR;
+    modalPassword: string = '';
+    modalConfirmPassword: string = '';
     modalLoading: boolean = false;
     modalError: string = '';
     modalTitulo: string = 'Crear Usuario';
     modalBotonTexto: string = 'Crear Usuario';
     itemEditando: any = null;
     itemEditandoId: number | null = null;
+
+    // Variables para mostrar/ocultar contraseña en el modal
+    showModalPassword: boolean = false;
+    showModalConfirmPassword: boolean = false;
 
     // Opciones para el dropdown de roles
     rolesOptions = [
@@ -121,11 +127,15 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
         this.modalEmail = '';
         this.modalTelefono = '';
         this.modalRol = UserRole.OBSERVADOR;
+        this.modalPassword = '';
+        this.modalConfirmPassword = '';
         this.modalError = '';
         this.modalTitulo = 'Crear Usuario';
         this.modalBotonTexto = 'Crear Usuario';
         this.itemEditando = null;
         this.itemEditandoId = null;
+        this.showModalPassword = false;
+        this.showModalConfirmPassword = false;
         this.mostrarModal = true;
     }
 
@@ -134,11 +144,15 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
         this.modalEmail = item.email;
         this.modalTelefono = item.telefono || '';
         this.modalRol = item.rol;
+        this.modalPassword = '';
+        this.modalConfirmPassword = '';
         this.modalError = '';
         this.modalTitulo = 'Editar Usuario';
         this.modalBotonTexto = 'Actualizar Usuario';
         this.itemEditando = item;
         this.itemEditandoId = item.id;
+        this.showModalPassword = false;
+        this.showModalConfirmPassword = false;
         this.mostrarModal = true;
     }
 
@@ -146,8 +160,32 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
         this.mostrarModal = false;
     }
 
+    toggleModalPasswordVisibility() {
+        this.showModalPassword = !this.showModalPassword;
+    }
+
+    toggleModalConfirmPasswordVisibility() {
+        this.showModalConfirmPassword = !this.showModalConfirmPassword;
+    }
+
     onSubmitModal(form: any) {
         if (form.invalid || this.modalLoading) return;
+        
+        // Validaciones de contraseña
+        if (!this.modalPassword.trim()) {
+            this.modalError = this.itemEditando ? 'La nueva contraseña es requerida' : 'La contraseña es requerida';
+            return;
+        }
+
+        if (this.modalPassword.length < 6) {
+            this.modalError = 'La contraseña debe tener al menos 6 caracteres';
+            return;
+        }
+
+        if (this.modalPassword !== this.modalConfirmPassword) {
+            this.modalError = 'Las contraseñas no coinciden';
+            return;
+        }
         
         this.modalLoading = true;
         this.modalError = '';
@@ -159,7 +197,8 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
             telefono: this.modalTelefono,
             rol: this.modalRol,
             activo: true,
-            lotesId: []
+            lotesId: [],
+            password: this.modalPassword
         };
 
         if (this.itemEditando) {

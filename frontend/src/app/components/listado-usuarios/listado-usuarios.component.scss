@@ -428,3 +428,58 @@
   border-radius: 8px;
   border: 1px solid rgba(218, 105, 106, 0.3);
 }
+
+// Estilos para campos de contraseña en el modal
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-container input {
+  padding-right: 45px; // Espacio para el botón del ojo
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+
+  &:focus {
+    border-color: var(--verde);
+    box-shadow: 0 0 0 2px rgba(21, 177, 109, 0.25);
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+  }
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #64748b;
+  transition: color 0.2s ease;
+  z-index: 10;
+}
+
+.password-toggle-btn:hover {
+  color: var(--verde);
+}
+
+.password-toggle-btn:focus {
+  outline: none;
+  color: var(--verde);
+}
+
+.password-toggle-btn i {
+  font-size: 16px;
+}

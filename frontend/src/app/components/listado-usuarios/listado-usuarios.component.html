@@ -103,6 +103,54 @@
                         </option>
                     </select>
                 </div>
+
+                <div class="modal-form-field">
+                    <label for="modalPassword">{{ itemEditando ? 'Nueva Contraseña' : 'Contraseña' }} *</label>
+                    <div class="password-input-container">
+                        <input 
+                            id="modalPassword" 
+                            [type]="showModalPassword ? 'text' : 'password'" 
+                            [(ngModel)]="modalPassword" 
+                            name="modalPassword" 
+                            pInputText 
+                            required
+                            [placeholder]="itemEditando ? 'Ingrese la nueva contraseña' : 'Ingrese la contraseña'"
+                            minlength="6"
+                        />
+                        <button 
+                            type="button" 
+                            class="password-toggle-btn" 
+                            (click)="toggleModalPasswordVisibility()"
+                            title="{{ showModalPassword ? 'Ocultar contraseña' : 'Mostrar contraseña' }}"
+                        >
+                            <i [class]="showModalPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="modal-form-field">
+                    <label for="modalConfirmPassword">{{ itemEditando ? 'Confirmar Nueva Contraseña' : 'Confirmar Contraseña' }} *</label>
+                    <div class="password-input-container">
+                        <input 
+                            id="modalConfirmPassword" 
+                            [type]="showModalConfirmPassword ? 'text' : 'password'" 
+                            [(ngModel)]="modalConfirmPassword" 
+                            name="modalConfirmPassword" 
+                            pInputText 
+                            required
+                            [placeholder]="itemEditando ? 'Confirme la nueva contraseña' : 'Confirme la contraseña'"
+                            minlength="6"
+                        />
+                        <button 
+                            type="button" 
+                            class="password-toggle-btn" 
+                            (click)="toggleModalConfirmPasswordVisibility()"
+                            title="{{ showModalConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña' }}"
+                        >
+                            <i [class]="showModalConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="modal-submit-btn">
