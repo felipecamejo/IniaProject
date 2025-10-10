@@ -104,14 +104,10 @@ export class ListadoDepositosComponent implements OnInit {
         // Editar depósito existente
         this.depositoService.editarDeposito(deposito).subscribe({
           next: (msg) => {
-            console.log(msg);
+            console.log('Depósito editado:', msg);
             this.modalLoading = false;
             this.cerrarModal();
-            // Actualizar la lista local
-            const index = this.items.findIndex(item => item.id === deposito.id);
-            if (index !== -1) {
-              this.items[index] = deposito;
-            }
+            this.cargarListado(); // Recargar la lista completa
           },
           error: (err) => {
             console.error('Error editando depósito', err);
@@ -123,11 +119,10 @@ export class ListadoDepositosComponent implements OnInit {
         // Crear nuevo depósito
         this.depositoService.crearDeposito(deposito).subscribe({
           next: (response) => {
-            console.log(response);
+            console.log('Depósito creado:', response);
             this.modalLoading = false;
             this.cerrarModal();
-            // Agregar a la lista local
-            this.items.push({ ...deposito, id: this.items.length + 1 });
+            this.cargarListado(); // Recargar la lista completa
           },
           error: (err) => {
             console.error('Error creando depósito', err);
@@ -149,13 +144,18 @@ export class ListadoDepositosComponent implements OnInit {
 
     eliminarItem(deposito: any) {
       if (confirm(`¿Estás seguro de que deseas eliminar el depósito "${deposito.nombre}"?`)) {
-        // Aquí puedes agregar la lógica para eliminar el depósito
         console.log('Eliminar Depósito:', deposito);
-        // Ejemplo de eliminación local
-        const index = this.items.findIndex(item => item.id === deposito.id);
-        if (index !== -1) {
-          this.items.splice(index, 1);
-        }
+        
+        this.depositoService.eliminarDeposito(deposito.id).subscribe({
+          next: (response: string) => {
+            console.log('Depósito eliminado:', response);
+            this.cargarListado(); // Recargar la lista
+          },
+          error: (error: any) => {
+            console.error('Error al eliminar depósito:', error);
+            alert('Error al eliminar el depósito. Por favor, inténtalo de nuevo.');
+          }
+        });
       }
     }
 }

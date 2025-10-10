@@ -55,6 +55,7 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
     // Variables para mostrar/ocultar contraseña en el modal
     showModalPassword: boolean = false;
     showModalConfirmPassword: boolean = false;
+    cambiarPassword: boolean = false;
 
     // Opciones para el dropdown de roles
     rolesOptions = [
@@ -136,6 +137,7 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
         this.itemEditandoId = null;
         this.showModalPassword = false;
         this.showModalConfirmPassword = false;
+        this.cambiarPassword = true; // Para crear siempre se requiere contraseña
         this.mostrarModal = true;
     }
 
@@ -153,6 +155,7 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
         this.itemEditandoId = item.id;
         this.showModalPassword = false;
         this.showModalConfirmPassword = false;
+        this.cambiarPassword = false; // Por defecto no cambiar contraseña al editar
         this.mostrarModal = true;
     }
 
@@ -172,19 +175,21 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
         if (form.invalid || this.modalLoading) return;
         
         // Validaciones de contraseña
-        if (!this.modalPassword.trim()) {
-            this.modalError = this.itemEditando ? 'La nueva contraseña es requerida' : 'La contraseña es requerida';
-            return;
-        }
+        if (this.cambiarPassword || !this.itemEditando) {
+            if (!this.modalPassword.trim()) {
+                this.modalError = this.itemEditando ? 'La nueva contraseña es requerida' : 'La contraseña es requerida';
+                return;
+            }
 
-        if (this.modalPassword.length < 6) {
-            this.modalError = 'La contraseña debe tener al menos 6 caracteres';
-            return;
-        }
+            if (this.modalPassword.length < 6) {
+                this.modalError = 'La contraseña debe tener al menos 6 caracteres';
+                return;
+            }
 
-        if (this.modalPassword !== this.modalConfirmPassword) {
-            this.modalError = 'Las contraseñas no coinciden';
-            return;
+            if (this.modalPassword !== this.modalConfirmPassword) {
+                this.modalError = 'Las contraseñas no coinciden';
+                return;
+            }
         }
         
         this.modalLoading = true;
@@ -198,19 +203,19 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
             rol: this.modalRol,
             activo: true,
             lotesId: [],
-            password: this.modalPassword
+            password: this.cambiarPassword ? this.modalPassword : undefined
         };
 
         if (this.itemEditando) {
             // Editar usuario existente
-            this.usuarioService.actualizarUsuarioPorId(this.itemEditandoId!, usuario).subscribe({
-                next: (response) => {
+            this.usuarioService.actualizarUsuario(usuario).subscribe({
+                next: (response: string) => {
                     console.log('Usuario editado:', response);
                     this.modalLoading = false;
                     this.cerrarModal();
                     this.cargarUsuarios();
                 },
-                error: (error) => {
+                error: (error: any) => {
                     console.error('Error al editar usuario:', error);
                     this.modalError = 'Error al actualizar el usuario';
                     this.modalLoading = false;
@@ -250,19 +255,17 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
         if (confirm(`¿Estás seguro de que deseas eliminar el usuario "${usuario.nombre}"?`)) {
             console.log('Eliminar usuario:', usuario);
             
-            // Aquí puedes agregar la llamada al servicio
-            // this.usuarioService.eliminarUsuario(usuario.id).subscribe({
-            //     next: (response) => {
-            //         // Remover de la lista
-            //         this.items = this.items.filter(i => i.id !== usuario.id);
-            //     },
-            //     error: (error) => {
-            //         console.error('Error al eliminar usuario:', error);
-            //     }
-            // });
-
-            // Simulación temporal
-            this.items = this.items.filter(i => i.id !== usuario.id);
+            this.usuarioService.eliminarUsuario(usuario.id).subscribe({
+                next: (response: string) => {
+                    console.log('Usuario eliminado:', response);
+                    // Remover de la lista
+                    this.items = this.items.filter(i => i.id !== usuario.id);
+                },
+                error: (error: any) => {
+                    console.error('Error al eliminar usuario:', error);
+                    alert('Error al eliminar el usuario. Por favor, inténtalo de nuevo.');
+                }
+            });
         }
     }
 }

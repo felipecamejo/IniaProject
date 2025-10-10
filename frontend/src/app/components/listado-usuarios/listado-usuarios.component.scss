@@ -483,3 +483,23 @@
 .password-toggle-btn i {
   font-size: 16px;
 }
+
+// Estilos para el checkbox
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.checkbox-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.checkbox-text {
+  user-select: none;
+}

@@ -35,7 +35,19 @@ public class MapsDtoEntityService {
         if (value == null || value.isBlank()) {
             return null;
         }
-        LocalDateTime localDateTime = LocalDateTime.parse(value, ISO_LOCAL_DATE_TIME);
+        
+        // Remover milisegundos y zona horaria para evitar problemas de parsing
+        String cleanValue = value;
+        if (cleanValue.contains(".")) {
+            // Remover milisegundos (ej: .917)
+            cleanValue = cleanValue.substring(0, cleanValue.indexOf("."));
+        }
+        if (cleanValue.endsWith("Z")) {
+            // Remover Z de zona horaria UTC
+            cleanValue = cleanValue.substring(0, cleanValue.length() - 1);
+        }
+        
+        LocalDateTime localDateTime = LocalDateTime.parse(cleanValue, ISO_LOCAL_DATE_TIME);
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 

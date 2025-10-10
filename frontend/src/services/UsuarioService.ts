@@ -29,6 +29,12 @@ export class UsuarioService {
   }
 
   actualizarUsuario(usuario: UsuarioDto): Observable<string> {
+    return this.http.put<string>(`${this.url.baseUrl}${this.endpoint}/editar`, usuario, {
+      responseType: 'text' as 'json'
+    });
+  }
+
+  actualizarPerfilUsuario(usuario: UsuarioDto): Observable<string> {
     return this.http.put<string>(`${this.url.baseUrl}/usuario/perfil/actualizar`, usuario, {
       responseType: 'text' as 'json'
     });
@@ -48,5 +54,11 @@ export class UsuarioService {
 
   actualizarUsuarioPorId(id: number, usuario: UsuarioDto): Observable<UsuarioDto> {
     return this.http.put<UsuarioDto>(`${this.url.baseUrl}${this.endpoint}/${id}`, usuario);
+  }
+
+  eliminarUsuario(id: number): Observable<string> {
+    return this.http.delete<string>(`${this.url.baseUrl}${this.endpoint}/eliminar/${id}`, {
+      responseType: 'text' as 'json'
+    });
   }
 }

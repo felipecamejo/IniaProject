@@ -104,7 +104,20 @@
                     </select>
                 </div>
 
-                <div class="modal-form-field">
+                <!-- Checkbox para cambiar contraseña (solo en edición) -->
+                <div class="modal-form-field" *ngIf="itemEditando">
+                    <label class="checkbox-label">
+                        <input 
+                            type="checkbox" 
+                            [(ngModel)]="cambiarPassword" 
+                            name="cambiarPassword"
+                            class="checkbox-input"
+                        />
+                        <span class="checkbox-text">Cambiar contraseña</span>
+                    </label>
+                </div>
+
+                <div class="modal-form-field" *ngIf="cambiarPassword || !itemEditando">
                     <label for="modalPassword">{{ itemEditando ? 'Nueva Contraseña' : 'Contraseña' }} *</label>
                     <div class="password-input-container">
                         <input 
@@ -113,7 +126,7 @@
                             [(ngModel)]="modalPassword" 
                             name="modalPassword" 
                             pInputText 
-                            required
+                            [required]="cambiarPassword || !itemEditando"
                             [placeholder]="itemEditando ? 'Ingrese la nueva contraseña' : 'Ingrese la contraseña'"
                             minlength="6"
                         />
@@ -128,7 +141,7 @@
                     </div>
                 </div>
 
-                <div class="modal-form-field">
+                <div class="modal-form-field" *ngIf="cambiarPassword || !itemEditando">
                     <label for="modalConfirmPassword">{{ itemEditando ? 'Confirmar Nueva Contraseña' : 'Confirmar Contraseña' }} *</label>
                     <div class="password-input-container">
                         <input 
@@ -137,7 +150,7 @@
                             [(ngModel)]="modalConfirmPassword" 
                             name="modalConfirmPassword" 
                             pInputText 
-                            required
+                            [required]="cambiarPassword || !itemEditando"
                             [placeholder]="itemEditando ? 'Confirme la nueva contraseña' : 'Confirme la contraseña'"
                             minlength="6"
                         />
