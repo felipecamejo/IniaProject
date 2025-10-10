@@ -99,7 +99,7 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   verificarRecibosDelLote(): void {
     if (this.loteId) {
       this.reciboService.listarPorLote(this.loteId).subscribe({
-        next: (response) => {
+        next: (response: any) => {
           this.recibos = response?.recibos ?? [];
           this.tieneRecibo = this.recibos.length > 0;
           
@@ -111,7 +111,7 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
           
           console.log('Recibos del lote:', this.recibos);
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error al verificar recibos del lote:', error);
           this.tieneRecibo = false;
           this.recibos = [];

@@ -6,4 +6,7 @@ export interface LoteDto {
     fechaFinalizacion: string | null;
     activo: boolean;
     usuariosId: number[] | null;
+    estado?: string;
+    autor?: string;
+    fecha?: string;
 }

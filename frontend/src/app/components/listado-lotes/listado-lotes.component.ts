@@ -106,11 +106,11 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
         const cumpleNombre = !this.searchText || 
           item.nombre.toLowerCase().includes(this.searchText.toLowerCase());
         
-        const cumpleEstado = !this.selectedMetodo || item.estado === this.getEstadoLabel(this.selectedMetodo);
+        const cumpleEstado = !this.selectedMetodo || (item.estado && item.estado === this.getEstadoLabel(this.selectedMetodo));
         
-        const cumpleMes = !this.selectedMes || this.getMesFromFecha(item.fechaCreacion) === parseInt(this.selectedMes);
+        const cumpleMes = !this.selectedMes || (item.fechaCreacion && this.getMesFromFecha(item.fechaCreacion) === parseInt(this.selectedMes));
         
-        const cumpleAnio = !this.selectedAnio || this.getAnioFromFecha(item.fechaCreacion) === parseInt(this.selectedAnio);
+        const cumpleAnio = !this.selectedAnio || (item.fechaCreacion && this.getAnioFromFecha(item.fechaCreacion) === parseInt(this.selectedAnio));
         
         return cumpleNombre && cumpleEstado && cumpleMes && cumpleAnio;
       });
@@ -175,10 +175,13 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
         id: this.itemEditandoId ?? 0,
         nombre: this.modalNombre,
         descripcion: this.modalDescripcion,
-        estado: 'Pendiente',
         fechaCreacion: new Date().toISOString().split('T')[0],
+        fechaFinalizacion: null,
+        usuariosId: null,
+        activo: true,
+        estado: 'Pendiente',
         autor: this.authService.userData?.nombre || 'Usuario Actual',
-        activo: true
+        fecha: new Date().toISOString().split('T')[0]
       };
 
       if (this.itemEditando) {

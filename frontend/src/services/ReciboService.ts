@@ -40,5 +40,10 @@ export class ReciboService {
     );
   }
 
+  listarPorLote(loteId: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar-por-lote/${loteId}`
+    );
+  }
 
 }
