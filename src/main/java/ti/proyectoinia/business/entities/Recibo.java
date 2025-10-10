@@ -36,11 +36,8 @@ public class Recibo {
     @Column(name = "CULTIVAR")
     private String cultivar;
 
-    @Column(name = "DEPOSITO")
-    private String deposito;
-
     @Column(name = "DEPOSITO_ID")
-    private Integer depositoId;
+    private Long depositoId;
 
     @Column(name = "ESTADO_ENUM")
     @Enumerated(EnumType.STRING)

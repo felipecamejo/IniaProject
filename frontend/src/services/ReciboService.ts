@@ -10,11 +10,11 @@ export class ReciboService {
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
-  crearRecibo(payload: ReciboDto): Observable<string> {
-    return this.http.post(
+  crearRecibo(payload: ReciboDto): Observable<ReciboDto> {
+    // El backend devuelve el ReciboDto creado (JSON). No usar responseType 'text'.
+    return this.http.post<ReciboDto>(
       `${this.urlService.baseUrl}${this.endpoint}/crear`,
-      payload,
-      { responseType: 'text' }
+      payload
     );
   }
 

@@ -26,15 +26,15 @@ public class ReciboController {
     @Operation(
             description = "Esta Funcion crea un nuevo Recibo"
     )
-    public ResponseEntity<String> crearRecibo(@RequestBody ReciboDto reciboDto) {
+    public ResponseEntity<ReciboDto> crearRecibo(@RequestBody ReciboDto reciboDto) {
         try {
             reciboDto.setId((Long) null);
-            String response = this.reciboService.crearRecibo(reciboDto);
+            ReciboDto response = this.reciboService.crearRecibo(reciboDto);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return new ResponseEntity<>("Error al crear el recibo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -76,5 +76,3 @@ public class ReciboController {
         }
     }
 }
-
-

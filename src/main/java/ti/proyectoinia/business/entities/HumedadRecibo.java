@@ -19,4 +19,11 @@ public class HumedadRecibo {
     @Column(name = "HUMEDAD_NUMERO")
     private Integer numero;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "RECIBO_ID")
+    private Recibo recibo;
+
+    @Column(name = "HUMEDAD_RECIBO_ACTIVO")
+    private boolean activo;
+
 }

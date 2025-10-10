@@ -26,20 +26,6 @@ public class MapsDtoEntityService {
             .orElse(null);
     }
 
-    private String toIsoString(java.util.Date date) {
-        if (date == null) return null;
-        return java.time.Instant.ofEpochMilli(date.getTime()).toString();
-    }
-
-    private java.util.Date fromIsoString(String iso) {
-        if (iso == null || iso.isBlank()) return null;
-        try {
-            return new java.util.Date(java.time.Instant.parse(iso).toEpochMilli());
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     public HongoDto mapToDtoHongo(Hongo hongo) {
         if (hongo == null) {
             return null;
@@ -180,77 +166,57 @@ public class MapsDtoEntityService {
         if (recibo == null) {
             return null;
         }
-
-        ti.proyectoinia.dtos.ReciboDto reciboDto = new ti.proyectoinia.dtos.ReciboDto();
-        reciboDto.setId(recibo.getId());
-        reciboDto.setNroAnalisis(recibo.getNroAnalisis());
-        reciboDto.setEspecie(recibo.getEspecie());
-        reciboDto.setFicha(recibo.getFicha());
-        reciboDto.setFechaRecibo(toIsoString(recibo.getFechaRecibo()));
-        reciboDto.setRemitente(recibo.getRemitente());
-        reciboDto.setOrigen(recibo.getOrigen());
-        reciboDto.setCultivar(recibo.getCultivar());
-        reciboDto.setDepositoId(recibo.getDepositoId());
-        reciboDto.setEstado(recibo.getEstado() != null ? recibo.getEstado().name() : null);
-        reciboDto.setLote(recibo.getLote());
-        reciboDto.setKgLimpios(recibo.getKgLimpios());
-        reciboDto.setAnalisisSolicitados(recibo.getAnalisisSolicitados());
-        reciboDto.setArticulo(recibo.getArticulo());
-        reciboDto.setActivo(recibo.isActivo());
-
-        // Mapear humedades a lista de IDs
-        if (recibo.getHumedades() != null) {
-            reciboDto.setHumedadesId(recibo.getHumedades().stream().map(h -> h.getId().intValue()).collect(Collectors.toList()));
-        } else {
-            reciboDto.setHumedadesId(null);
-        }
-        return reciboDto;
+        ReciboDto dto = new ReciboDto();
+        dto.setId(recibo.getId());
+        dto.setNroAnalisis(recibo.getNroAnalisis());
+        dto.setDepositoId(recibo.getDepositoId());
+        dto.setEstado(recibo.getEstado());
+        dto.setEspecie(recibo.getEspecie());
+        dto.setFicha(recibo.getFicha());
+        dto.setFechaRecibo(recibo.getFechaRecibo());
+        dto.setRemitente(recibo.getRemitente());
+        dto.setOrigen(recibo.getOrigen());
+        dto.setCultivar(recibo.getCultivar());
+        dto.setLote(recibo.getLote());
+        dto.setKgLimpios(recibo.getKgLimpios());
+        dto.setAnalisisSolicitados(recibo.getAnalisisSolicitados());
+        dto.setArticulo(recibo.getArticulo());
+        dto.setActivo(recibo.isActivo());
+        // Mapear listas de entidades a listas de IDs
+        dto.setDosnAnalisisId(recibo.getDosnAnalisis() != null ? recibo.getDosnAnalisis().stream().map(DOSN::getId).collect(Collectors.toList()) : null);
+        dto.setPmsAnalisisId(recibo.getPmsAnalisis() != null ? recibo.getPmsAnalisis().stream().map(PMS::getId).collect(Collectors.toList()) : null);
+        dto.setPurezaAnalisisId(recibo.getPurezaAnalisis() != null ? recibo.getPurezaAnalisis().stream().map(Pureza::getId).collect(Collectors.toList()) : null);
+        dto.setGerminacionAnalisisId(recibo.getGerminacionAnalisis() != null ? recibo.getGerminacionAnalisis().stream().map(Germinacion::getId).collect(Collectors.toList()) : null);
+        dto.setPurezaPNotatumAnalisisId(recibo.getPurezaPNotatumAnalisis() != null ? recibo.getPurezaPNotatumAnalisis().stream().map(PurezaPNotatum::getId).collect(Collectors.toList()) : null);
+        dto.setSanitarioAnalisisId(recibo.getSanitarioAnalisis() != null ? recibo.getSanitarioAnalisis().stream().map(Sanitario::getId).collect(Collectors.toList()) : null);
+        dto.setTetrazolioAnalisisId(recibo.getTetrazolioAnalisis() != null ? recibo.getTetrazolioAnalisis().stream().map(Tetrazolio::getId).collect(Collectors.toList()) : null);
+        return dto;
     }
 
-    public ti.proyectoinia.business.entities.Recibo mapToEntityRecibo(ti.proyectoinia.dtos.ReciboDto reciboDto) {
-        if (reciboDto == null) {
+    public ti.proyectoinia.business.entities.Recibo mapToEntityRecibo(ti.proyectoinia.dtos.ReciboDto dto) {
+        if (dto == null) {
             return null;
         }
-
-        ti.proyectoinia.business.entities.Recibo recibo = new ti.proyectoinia.business.entities.Recibo();
-        if (reciboDto.getId() != null) {
-            recibo.setId(reciboDto.getId());
-        }
-
-        recibo.setNroAnalisis(reciboDto.getNroAnalisis());
-        recibo.setEspecie(reciboDto.getEspecie());
-        recibo.setFicha(reciboDto.getFicha());
-        recibo.setFechaRecibo(fromIsoString(reciboDto.getFechaRecibo()));
-        recibo.setRemitente(reciboDto.getRemitente());
-        recibo.setOrigen(reciboDto.getOrigen());
-        recibo.setCultivar(reciboDto.getCultivar());
-        recibo.setDepositoId(reciboDto.getDepositoId());
-        try {
-            recibo.setEstado(reciboDto.getEstado() != null ? ReciboEstado.valueOf(reciboDto.getEstado()) : null);
-        } catch (Exception e) {
-            recibo.setEstado(null);
-        }
-        recibo.setLote(reciboDto.getLote());
-        recibo.setKgLimpios(reciboDto.getKgLimpios());
-        recibo.setAnalisisSolicitados(reciboDto.getAnalisisSolicitados());
-        recibo.setArticulo(reciboDto.getArticulo());
-        recibo.setActivo(reciboDto.isActivo());
-
-        // Mapear lista de IDs a entidades HumedadRecibo (solo con id)
-        if (reciboDto.getHumedadesId() != null && !reciboDto.getHumedadesId().isEmpty()) {
-            List<HumedadRecibo> humedadesValidas = reciboDto.getHumedadesId().stream()
-                .filter(id -> id != null && id > 0) // Filtrar IDs nulos o cero
-                .map(id -> {
-                    HumedadRecibo h = new HumedadRecibo();
-                    h.setId(Long.valueOf(id));
-                    return h;
-                }).collect(Collectors.toList());
-            
-            // Solo establecer humedades si hay IDs válidos
-            recibo.setHumedades(humedadesValidas.isEmpty() ? null : humedadesValidas);
-        } else {
-            recibo.setHumedades(null);
-        }
+        Recibo recibo = new Recibo();
+        recibo.setId(dto.getId());
+        recibo.setNroAnalisis(dto.getNroAnalisis());
+        recibo.setDepositoId(dto.getDepositoId());
+        recibo.setEstado(dto.getEstado());
+        recibo.setEspecie(dto.getEspecie());
+        recibo.setFicha(dto.getFicha());
+        recibo.setFechaRecibo(dto.getFechaRecibo());
+        recibo.setRemitente(dto.getRemitente());
+        recibo.setOrigen(dto.getOrigen());
+        recibo.setCultivar(dto.getCultivar());
+        recibo.setLote(dto.getLote());
+        recibo.setKgLimpios(dto.getKgLimpios());
+        recibo.setAnalisisSolicitados(dto.getAnalisisSolicitados());
+        recibo.setArticulo(dto.getArticulo());
+        recibo.setActivo(dto.isActivo());
+        // Mapear listas de IDs a listas de entidades (requiere repositorios para cada entidad)
+        // Ejemplo: recibo.setDosnAnalisis(dto.getDosnAnalisisId() != null ? dto.getDosnAnalisisId().stream().map(id -> dosnRepository.findById(id).orElse(null)).filter(Objects::nonNull).collect(Collectors.toList()) : null);
+        // Repetir para cada lista de análisis y humedades
+        // ...
         return recibo;
     }
 
@@ -514,8 +480,8 @@ public class MapsDtoEntityService {
         loteDto.setNombre(lote.getNombre());
         loteDto.setActivo(lote.isActivo());
         loteDto.setDescripcion(lote.getDescripcion());
-        loteDto.setFechaCreacion(toIsoString(lote.getFechaCreacion()));
-        loteDto.setFechaFinalizacion(toIsoString(lote.getFechaFinalizacion()));
+        loteDto.setFechaCreacion(lote.getFechaCreacion());
+        loteDto.setFechaFinalizacion(lote.getFechaFinalizacion());
 
         if (lote.getUsuarios() != null) {
             loteDto.setUsuariosId(lote.getUsuarios().stream().map(Usuario::getId).collect(Collectors.toList()));
@@ -536,8 +502,8 @@ public class MapsDtoEntityService {
         lote.setNombre(loteDto.getNombre());
         lote.setActivo(loteDto.isActivo());
         lote.setDescripcion(loteDto.getDescripcion());
-        lote.setFechaCreacion(fromIsoString(loteDto.getFechaCreacion()));
-        lote.setFechaFinalizacion(fromIsoString(loteDto.getFechaFinalizacion()));
+        lote.setFechaCreacion(loteDto.getFechaCreacion());
+        lote.setFechaFinalizacion(loteDto.getFechaFinalizacion());
 
         if (loteDto.getUsuariosId() != null) {
             lote.setUsuarios(loteDto.getUsuariosId().stream().map(id -> {
@@ -973,12 +939,16 @@ public class MapsDtoEntityService {
         return entity;
     }
 
-    public HumedadReciboDto mapToDtoHumedadRecibo(HumedadRecibo entity) {
-        if (entity == null) return null;
+    public HumedadReciboDto mapToDtoHumedadRecibo(HumedadRecibo humedadRecibo) {
+        if (humedadRecibo == null) {
+            return null;
+        }
         HumedadReciboDto dto = new HumedadReciboDto();
-        dto.setId(entity.getId());
-        dto.setLugar(entity.getLugar());
-        dto.setNumero(entity.getNumero());
+        dto.setId(humedadRecibo.getId());
+        dto.setLugar(humedadRecibo.getLugar());
+        dto.setNumero(humedadRecibo.getNumero());
+        dto.setReciboId(humedadRecibo.getRecibo() != null ? humedadRecibo.getRecibo().getId() : null);
+        dto.setActivo(humedadRecibo.isActivo());
         return dto;
     }
 
@@ -988,6 +958,14 @@ public class MapsDtoEntityService {
         entity.setId(dto.getId());
         entity.setLugar(dto.getLugar());
         entity.setNumero(dto.getNumero());
+        entity.setActivo(dto.isActivo());
+        // Asignar la relación Recibo si reciboId está presente
+        if (dto.getReciboId() != null) {
+            Recibo recibo = getValidRecibo(dto.getReciboId());
+            entity.setRecibo(recibo);
+        } else {
+            entity.setRecibo(null);
+        }
         return entity;
     }
 
