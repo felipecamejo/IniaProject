@@ -57,4 +57,66 @@ public class HumedadReciboService {
                 .map(mapsDtoEntityService::mapToDtoHumedadRecibo)
                 .collect(Collectors.toList());
     }
+
+    public java.util.Map<String, Object> editarMultiplesHumedades(List<HumedadReciboDto> dtos) {
+        java.util.List<HumedadReciboDto> edited = new java.util.ArrayList<>();
+        java.util.List<HumedadReciboDto> created = new java.util.ArrayList<>();
+        java.util.List<java.util.Map<String, Object>> errors = new java.util.ArrayList<>();
+
+        // Collect those that must be created (id == null or id not found)
+        java.util.List<HumedadReciboDto> toCreate = new java.util.ArrayList<>();
+
+        for (int i = 0; i < dtos.size(); i++) {
+            HumedadReciboDto dto = dtos.get(i);
+
+            // If id is null -> treat as new
+            if (dto.getId() == null) {
+                // ensure id is null for creation
+                dto.setId(null);
+                toCreate.add(dto);
+                continue;
+            }
+
+            // If id provided but not present in DB -> treat as new (create)
+            if (!humedadReciboRepository.existsById(dto.getId())) {
+                dto.setId(null);
+                toCreate.add(dto);
+                continue;
+            }
+
+            // Otherwise try to edit
+            try {
+                HumedadRecibo entity = mapsDtoEntityService.mapToEntityHumedadRecibo(dto);
+                HumedadRecibo saved = humedadReciboRepository.save(entity);
+                HumedadReciboDto savedDto = mapsDtoEntityService.mapToDtoHumedadRecibo(saved);
+                edited.add(savedDto);
+            } catch (Exception ex) {
+                java.util.Map<String, Object> err = new java.util.HashMap<>();
+                err.put("index", i);
+                err.put("message", "Error al editar: " + ex.getMessage());
+                err.put("dto", dto);
+                errors.add(err);
+            }
+        }
+
+        // If there are items to create, call crearMultiplesHumedades
+        if (!toCreate.isEmpty()) {
+            try {
+                List<HumedadReciboDto> creadas = crearMultiplesHumedades(toCreate);
+                if (creadas != null && !creadas.isEmpty()) {
+                    created.addAll(creadas);
+                }
+            } catch (Exception ex) {
+                java.util.Map<String, Object> err = new java.util.HashMap<>();
+                err.put("message", "Error al crear elementos durante la edición múltiple: " + ex.getMessage());
+                errors.add(err);
+            }
+        }
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("edited", edited);
+        result.put("created", created);
+        result.put("errors", errors);
+        return result;
+    }
 }

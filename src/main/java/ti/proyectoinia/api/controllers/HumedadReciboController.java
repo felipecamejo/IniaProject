@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
-import ti.proyectoinia.dtos.HongoDto;
 import ti.proyectoinia.dtos.HumedadReciboDto;
 import ti.proyectoinia.services.HumedadReciboService;
 import java.util.List;
@@ -93,5 +92,49 @@ public class HumedadReciboController {
         } else {
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
+    }
+
+    @PutMapping("/editar-multiple")
+    @Secured({"ADMIN"})
+    @Operation(description = "Edita múltiples HumedadRecibo en una sola llamada")
+    public ResponseEntity<Object> editarMultiplesHumedades(@RequestBody List<HumedadReciboDto> dtos) {
+        // Validación previa: cada dto debe tener lugar y numero.
+        // No exigimos id: si viene null, el servicio lo tratará como creación.
+        List<HumedadReciboDto> validos = new java.util.ArrayList<>();
+        List<java.util.Map<String, Object>> errores = new java.util.ArrayList<>();
+
+        for (int i = 0; i < dtos.size(); i++) {
+            HumedadReciboDto dto = dtos.get(i);
+            if (dto.getLugar() == null || dto.getNumero() == null) {
+                java.util.Map<String, Object> err = new java.util.HashMap<>();
+                err.put("index", i);
+                err.put("message", "Lugar y número son obligatorios");
+                err.put("dto", dto);
+                errores.add(err);
+            } else {
+                // Aceptar el DTO aunque su id sea null; el servicio decidirá crear o editar
+                validos.add(dto);
+            }
+        }
+
+        // Llamar al servicio para procesar los válidos
+        java.util.Map<String, Object> serviceResult = humedadReciboService.editarMultiplesHumedades(validos);
+
+        // Obtener listas devueltas por el servicio
+        java.util.List<HumedadReciboDto> editadas = (java.util.List<HumedadReciboDto>) serviceResult.getOrDefault("edited", new java.util.ArrayList<>());
+        java.util.List<HumedadReciboDto> creadas = (java.util.List<HumedadReciboDto>) serviceResult.getOrDefault("created", new java.util.ArrayList<>());
+        java.util.List<java.util.Map<String, Object>> serviceErrors = (java.util.List<java.util.Map<String, Object>>) serviceResult.getOrDefault("errors", new java.util.ArrayList<>());
+
+        // Combinar errores de validación y errores devueltos por el servicio
+        java.util.List<Object> allErrors = new java.util.ArrayList<>();
+        allErrors.addAll(errores);
+        allErrors.addAll(serviceErrors);
+
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("edited", editadas);
+        response.put("created", creadas);
+        response.put("errors", allErrors);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
