@@ -13,8 +13,8 @@
     </div>
   </section>
 
-  <!-- Admin Panel -->
-  <section class="section">
+  <!-- Admin Panel - Solo visible para ADMIN -->
+  <section class="section" *ngIf="isAdmin">
     <h2 class="section-title">Listar/Crear Admin panel</h2>
     <div class="button-grid">
       <button pButton type="button" label="Listar Usuario" class="btn-secondary" (click)="goToListadoUsuarios()">Listar Usuario</button>
