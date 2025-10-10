@@ -1,56 +1,26 @@
 package ti.proyectoinia.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ti.proyectoinia.api.responses.ResponseListadoHongos;
 import ti.proyectoinia.api.responses.ResponseListadoLotes;
 import ti.proyectoinia.business.entities.Lote;
 import ti.proyectoinia.business.repositories.LoteRepository;
-import ti.proyectoinia.business.repositories.UsuarioRepository;
 import ti.proyectoinia.dtos.LoteDto;
-import ti.proyectoinia.utils.SecurityUtils;
-
-import java.util.List;
 
 @Service
 public class LoteService {
 
     private final LoteRepository loteRepository;
     private final MapsDtoEntityService mapsDtoEntityService;
-    private final UsuarioRepository usuarioRepository;
-    
-    @Autowired
-    private SecurityUtils securityUtils;
 
-    public LoteService(LoteRepository loteRepository, MapsDtoEntityService mapsDtoEntityService, UsuarioRepository usuarioRepository) {
+    public LoteService(LoteRepository loteRepository, MapsDtoEntityService mapsDtoEntityService) {
         this.mapsDtoEntityService = mapsDtoEntityService;
         this.loteRepository = loteRepository;
-        this.usuarioRepository = usuarioRepository;
     }
 
     public String crearLote(LoteDto loteDto) {
-        // Auto-asignar el usuario logueado al lote
-        autoAsignarUsuarioAlLote(loteDto);
-        
-        Lote lote = mapsDtoEntityService.mapToEntityLote(loteDto);
-        Lote loteGuardado = this.loteRepository.save(lote);
-        
-        return "Lote creado correctamente ID:" + loteGuardado.getId();
-    }
-
-    /**
-     * Auto-asigna el usuario autenticado al lote si no hay usuarios asignados
-     */
-    private void autoAsignarUsuarioAlLote(LoteDto loteDto) {
-        // Solo auto-asignar si no hay usuarios ya asignados
-        if (loteDto.getUsuariosId() == null || loteDto.getUsuariosId().isEmpty()) {
-            String emailUsuario = securityUtils.getCurrentUserEmail();
-            if (emailUsuario != null) {
-                usuarioRepository.findByEmail(emailUsuario).ifPresent(usuario -> {
-                    loteDto.setUsuariosId(List.of(usuario.getId()));
-                });
-            }
-        }
+        return "Lote creado correctamente ID:" + this.loteRepository.save(mapsDtoEntityService.mapToEntityLote(loteDto)).getId();
     }
 
     public LoteDto obtenerLotePorId(Long id) {

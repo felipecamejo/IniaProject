@@ -89,10 +89,8 @@ export class ReciboComponent implements OnInit {
   depositos: DepositoDto[] = [];
   selectedDepositoId: number | null = null;
 
-  // Propiedades para tabla de humedades (ahora conservamos el id para edición)
-  humedades: Array<{id: number | null, numero: number | null, lugar: HumedadLugarDto | null}> = [
-    { id: null, numero: null, lugar: null }
-  ];
+  // Propiedades para tabla de humedades usando HumedadReciboDto[]
+  humedades: HumedadReciboDto[] = [];
 
   // Acumula IDs de humedades eliminadas durante la edición
   deletedHumedadesIds: number[] = [];
@@ -182,8 +180,8 @@ export class ReciboComponent implements OnInit {
     this.tetrazolioAnalisisId = null;
     this.humedadesId = null;
 
-  // Inicializar tabla de humedades con una fila vacía
-  this.humedades = [{ id: null, numero: null, lugar: null }];
+  // Inicializar tabla de humedades vacía (sin filas por defecto)
+  this.humedades = [];
   }
 
   cargarRecibo(id: number) {
@@ -243,21 +241,23 @@ export class ReciboComponent implements OnInit {
     this.humedadReciboService.listarHumedadesPorRecibo(reciboId).subscribe({
       next: (humedades: HumedadReciboDto[]) => {
         if (humedades && humedades.length > 0) {
-          // Mapear al formato usado en el componente y conservar el id
+          // Usar HumedadReciboDto[] directamente
           this.humedades = humedades.map(h => ({
             id: h.id ?? null,
+            reciboId: h.reciboId ?? null,
             numero: h.numero ?? null,
-            lugar: (h.lugar as HumedadLugarDto) ?? null
-          }));
+            lugar: (h.lugar as HumedadLugarDto) ?? null,
+            activo: h.activo ?? true
+          } as HumedadReciboDto));
         } else {
-          // Si no hay humedades, inicializar con una fila vacía
-          this.humedades = [{ id: null, numero: null, lugar: null }];
+          // Si no hay humedades, inicializar sin filas por defecto
+          this.humedades = [];
         }
       },
       error: (error: any) => {
         console.error('Error cargando humedades:', error);
-  // Mantener al menos una fila vacía para el UI
-  this.humedades = [{ id: null, numero: null, lugar: null }];
+        // Sin filas por defecto en caso de error
+        this.humedades = [];
       }
     });
   }
@@ -416,12 +416,12 @@ export class ReciboComponent implements OnInit {
 
     // Preparar DTOs para el backend: conservar id si existe (para edición)
     const humedadesDtos: HumedadReciboDto[] = humedadesValidas.map(h => ({
-      id: (h as any).id ?? null,
+      id: h.id ?? null,
       reciboId: reciboId,
       numero: h.numero ?? null,
       lugar: h.lugar ?? null,
-      activo: true
-    }));
+      activo: h.activo ?? true
+    } as HumedadReciboDto));
 
     // Enviar al backend: crear o editar en función de si estamos en modo edición
     console.log('Humedades a guardar (preparadas):', humedadesDtos);
@@ -465,17 +465,25 @@ export class ReciboComponent implements OnInit {
 
   // Métodos para manejo de tabla de humedades
   agregarHumedad() {
-    this.humedades.push({ id: null, numero: null, lugar: null });
+    this.humedades.push({ 
+      id: null, 
+      reciboId: null, 
+      numero: null, 
+      lugar: null,
+      activo: true
+    } as HumedadReciboDto);
+    console.log('Humedad agregada. Total humedades:', this.humedades.length);
   }
 
   eliminarHumedad(index: number) {
-    if (this.humedades.length > 1) {
+    if (this.humedades.length > 0) { // Permitir eliminar hasta la última
       const h = this.humedades[index];
       if (this.isEditing && h && h.id) {
         this.deletedHumedadesIds.push(h.id);
         console.log('Registrada humedad para eliminación al actualizar:', h.id);
       }
       this.humedades.splice(index, 1);
+      console.log('Humedad eliminada. Total humedades:', this.humedades.length);
     }
   }
 }

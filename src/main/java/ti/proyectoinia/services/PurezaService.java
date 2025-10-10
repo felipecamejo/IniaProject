@@ -20,8 +20,8 @@ public class PurezaService {
     }
 
     public String crearPureza(PurezaDto dto) {
-        this.purezaRepository.save(mapsDtoEntityService.mapToEntityPureza(dto));
-        return "Pureza creada correctamente ID:" + dto.getId();
+
+        return "Pureza creada correctamente ID:" + this.purezaRepository.save(mapsDtoEntityService.mapToEntityPureza(dto)).getId();
     }
 
     public PurezaDto obtenerPurezaPorId(Long id) {

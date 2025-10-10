@@ -20,8 +20,7 @@ public class PMSService {
     }
 
     public String crearPMS(PMSDto pmsDto) {
-        this.pmsRepository.save(mapsDtoEntityService.mapToEntityPMS(pmsDto));
-        return "PMS creado correctamente ID:" + pmsDto.getId();
+        return "PMS creado correctamente ID:" + this.pmsRepository.save(mapsDtoEntityService.mapToEntityPMS(pmsDto)).getId();
     }
 
     public PMSDto obtenerPMSPorId(Long id) {

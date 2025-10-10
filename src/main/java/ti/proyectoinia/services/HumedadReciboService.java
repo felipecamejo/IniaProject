@@ -16,31 +16,6 @@ public class HumedadReciboService {
     @Autowired
     private MapsDtoEntityService mapsDtoEntityService;
 
-    public String crearHumedadRecibo(HumedadReciboDto dto) {
-        HumedadRecibo entity = mapsDtoEntityService.mapToEntityHumedadRecibo(dto);
-        humedadReciboRepository.save(entity);
-        return "HumedadRecibo creada correctamente";
-    }
-
-    public List<HumedadReciboDto> listarHumedades() {
-        List<HumedadRecibo> lista = humedadReciboRepository.findAll();
-        return lista.stream()
-                .map(mapsDtoEntityService::mapToDtoHumedadRecibo)
-                .collect(Collectors.toList());
-    }
-
-    public String editarHumedadRecibo(HumedadReciboDto dto) {
-        if (dto.getId() == null) {
-            return "El id de la HumedadRecibo es obligatorio para editar";
-        }
-        HumedadRecibo entity = mapsDtoEntityService.mapToEntityHumedadRecibo(dto);
-        if (!humedadReciboRepository.existsById(dto.getId())) {
-            return "No existe una HumedadRecibo con ese id";
-        }
-        humedadReciboRepository.save(entity);
-        return "HumedadRecibo editada correctamente";
-    }
-
     public List<HumedadReciboDto> obtenerHumedadesPorRecibo(Long reciboId) {
         List<HumedadRecibo> lista = humedadReciboRepository.findByActivoTrueAndReciboId(reciboId);
         return lista.stream()

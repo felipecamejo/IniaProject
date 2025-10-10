@@ -4,9 +4,6 @@ import { Observable } from 'rxjs';
 import { UrlService } from './url.service';
 import { PMSDto } from '../models/PMS.dto';
 
-interface ResponseListadoPMS {
-  pms: PMSDto[];
-}
 
 @Injectable({ providedIn: 'root' })
 export class PMSService {
@@ -22,9 +19,9 @@ export class PMSService {
     );
   }
 
-  listar(): Observable<ResponseListadoPMS> {
-    return this.http.get<ResponseListadoPMS>(
-      `${this.urlService.baseUrl}${this.endpoint}/listar`
+  listar(reciboId: number): Observable<PMSDto[]> {
+    return this.http.get<PMSDto[]>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar/recibo/${reciboId}`
     );
   }
 

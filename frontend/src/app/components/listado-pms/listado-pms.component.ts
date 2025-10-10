@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PMSDto } from '../../../models/PMS.dto';
+import { PMSService } from '../../../services/PMSService';
 
 
 @Component({
@@ -16,26 +17,20 @@ import { PMSDto } from '../../../models/PMS.dto';
   styleUrl: './listado-pms.component.scss'
 })
 export class ListadoPmsComponent implements OnInit {
-    constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(private router: Router, private route: ActivatedRoute, private pmsService: PMSService) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
-    searchText: string = '';
-    loteId: string = '';
-    private _reciboId: string = '';
-    
-    get reciboId(): string {
-        return this._reciboId;
-    }
-    
-    set reciboId(value: string) {
-        this._reciboId = value;
-    }
+  searchText: string = '';
+  loteId: string = '';
+  reciboId: number | null = null;
 
-    ngOnInit() {
-        this.loteId = this.route.snapshot.params['loteId'];
-        this.reciboId = this.route.snapshot.params['reciboId'];
-    }
+  ngOnInit() {
+    this.loteId = this.route.snapshot.params['loteId'];
+    const reciboParam = this.route.snapshot.params['reciboId'];
+    this.reciboId = reciboParam != null ? Number(reciboParam) : null;
+    this.cargarItems();
+  }
 
     meses = [
       { label: 'Enero', id: 1 },
@@ -57,56 +52,46 @@ export class ListadoPmsComponent implements OnInit {
       { label: '2021', id: 2021 },
       { label: '2022', id: 2022 },
       { label: '2023', id: 2023 },
-      { label: '2024', id: 2024 }
+      { label: '2024', id: 2024 },
+      { label: '2025', id: 2025 }
     ];
 
-    items: PMSDto[] = [
-      {
-        id: 1,
-        gramosPorRepeticiones: [2.5, 2.6, 2.4],
-        pesoPromedioCienSemillas: 2.5,
-        pesoMilSemillas: 25.5,
-        pesoPromedioMilSemillas: 25.0,
-        desvioEstandar: 0.1,
-        coeficienteVariacion: 0.4,
-        comentarios: 'Control de calidad mensual - Muestra estándar',
-        activo: true,
-        repetido: false,
-        reciboId: 101,
-        fechaCreacion: '2023-01-15',
-        fechaRepeticion: null
-      },
-      {
-        id: 2,
-        gramosPorRepeticiones: [2.3, 2.4, 2.2],
-        pesoPromedioCienSemillas: 2.3,
-        pesoMilSemillas: 23.8,
-        pesoPromedioMilSemillas: 23.5,
-        desvioEstandar: 0.15,
-        coeficienteVariacion: 0.6,
-        comentarios: 'Lote especial - Requiere repetición',
-        activo: true,
-        repetido: true,
-        reciboId: 102,
-        fechaCreacion: '2022-02-20',
-        fechaRepeticion: '2022-02-22'
-      },
-      {
-        id: 3,
-        gramosPorRepeticiones: [2.6, 2.7, 2.5],
-        pesoPromedioCienSemillas: 2.6,
-        pesoMilSemillas: 26.1,
-        pesoPromedioMilSemillas: 25.8,
-        desvioEstandar: 0.12,
-        coeficienteVariacion: 0.5,
-        comentarios: 'Inspección rutinaria de equipos - Repetir análisis',
-        activo: true,
-        repetido: true,
-        reciboId: 103,
-        fechaCreacion: '2023-03-10',
-        fechaRepeticion: '2023-03-12'
+    items: PMSDto[] = [];
+
+    cargarItems() {
+      if (this.reciboId == null || isNaN(this.reciboId)) {
+        console.warn('No hay reciboId para listar PMS');
+        this.items = [];
+        return;
       }
-    ];
+      this.pmsService.listar(this.reciboId).subscribe({
+        next: (data: PMSDto[]) => {
+          // Algunos endpoints devuelven { pms: [...] } en lugar de [...] directamente.
+          // Aceptamos cualquiera de los dos formatos y defensivamente asignamos un array.
+          let resolved: any = data;
+          if (resolved == null) {
+            this.items = [];
+          } else if (Array.isArray(resolved)) {
+            this.items = resolved;
+          } else if (Array.isArray(resolved.pms)) {
+            this.items = resolved.pms;
+          } else if (Array.isArray(resolved.data)) {
+            // otro posible envoltorio común
+            this.items = resolved.data;
+          } else {
+            // No es un array: vaciamos y logueamos para depuración
+            console.warn('Respuesta inesperada al listar PMS, se esperaba un array o {pms: []}:', resolved);
+            this.items = [];
+          }
+          console.log('PMS cargados:', this.items);
+        },
+        error: (err) => {
+          console.error('Error cargando PMS:', err);
+          // En caso de error, mantener lista vacía o mostrar feedback al usuario
+          this.items = [];
+        }
+      });
+    }
 
     get itemsFiltrados() {
       return this.items.filter(item => {
@@ -148,6 +133,30 @@ export class ListadoPmsComponent implements OnInit {
       return parseInt(partes[0]); // El año está en la posición 0 (YYYY-MM-DD)
     }
 
+    /**
+     * Formatea una fecha (posiblemente en ISO o YYYY-MM-DD[T...] ) a DD/MM/YYYY.
+     * Devuelve cadena vacía si la fecha es inválida o no está presente.
+     */
+    formatFecha(fecha: string | null | undefined): string {
+      if (!fecha) return '';
+      // Extraer la parte de fecha si viene con hora
+      const fechaSolo = fecha.split('T')[0];
+      const partes = fechaSolo.split('-');
+      if (partes.length >= 3 && partes[0].length === 4) {
+        const year = partes[0];
+        const month = partes[1];
+        const day = partes[2];
+        return `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
+      }
+      // Intentar parsear con Date como fallback
+      const d = new Date(fecha);
+      if (isNaN(d.getTime())) return '';
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}-${mm}-${yyyy}`;
+    }
+
     onAnioChange() {
       this.selectedMes = '';
     }
@@ -176,8 +185,21 @@ export class ListadoPmsComponent implements OnInit {
       // Aquí puedes implementar la lógica para eliminar el PMS
       // Por ejemplo, mostrar un modal de confirmación
       if (confirm(`¿Estás seguro de que quieres eliminar el PMS #${item.id}?`)) {
-        this.items = this.items.filter(pms => pms.id !== item.id);
-        console.log('PMS eliminado');
+        if (item.id == null) {
+          console.warn('Item no tiene id, no se puede eliminar');
+          return;
+        }
+        this.pmsService.eliminar(item.id).subscribe({
+          next: (res) => {
+            console.log('PMS eliminado en backend:', res);
+            // Actualizar lista localmente
+            this.items = this.items.filter(pms => pms.id !== item.id);
+          },
+          error: (err) => {
+            console.error('Error eliminando PMS:', err);
+            // Aquí podrías mostrar un mensaje de error al usuario
+          }
+        });
       }
     }
 }

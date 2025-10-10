@@ -26,9 +26,8 @@ public class UsuarioService {
         if (usuarioExistente != null) {
             throw new IllegalArgumentException("Ya existe un usuario activo con el email: " + usuarioDto.getEmail());
         }
-        
-        this.usuarioRepository.save(mapsDtoEntityService.mapToEntityUsuario(usuarioDto));
-        return "Usuario creado correctamente ID:" + usuarioDto.getId();
+
+        return "Usuario creado correctamente ID:" + this.usuarioRepository.save(mapsDtoEntityService.mapToEntityUsuario(usuarioDto)).getId();
     }
 
     public UsuarioDto obtenerUsuarioPorId(Long id) {
