@@ -2,8 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { GramosPmsDto } from '../models/GramosPms.dto';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { UrlService } from '../services/url.service';
 import { HumedadReciboDto } from '../models/HumedadRecibo.dto';
+
+interface ResponseListadoGramosPms {
+  gramosPms: GramosPmsDto[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class GramosPmsService {
@@ -39,7 +44,23 @@ export class GramosPmsService {
    * Lista gramos asociados a un PMS (endpoint: /pms/{pmsId})
    */
   listarGramosPorPms(pmsId: number): Observable<GramosPmsDto[]> {
-    return this.http.get<GramosPmsDto[]>(`${this.urlService.baseUrl}${this.endpoint}/pms/${pmsId}`);
+    return this.http.get<ResponseListadoGramosPms>(
+      `${this.urlService.baseUrl}${this.endpoint}/pms/${pmsId}`
+    ).pipe(
+      map((response: ResponseListadoGramosPms) => {
+        return response.gramosPms || [];
+      })
+    );
+  }
+
+  listar(): Observable<GramosPmsDto[]> {
+    return this.http.get<ResponseListadoGramosPms>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar`
+    ).pipe(
+      map((response: ResponseListadoGramosPms) => {
+        return response.gramosPms || [];
+      })
+    );
   }
 
 

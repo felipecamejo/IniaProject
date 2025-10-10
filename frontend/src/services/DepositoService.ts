@@ -5,6 +5,10 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { UrlService } from '../services/url.service';
 
+interface ResponseListadoDepositos {
+  depositos: DepositoDto[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class DepositoService {
   private endpoint: string = '/deposito';
@@ -42,21 +46,11 @@ export class DepositoService {
   }
 
   listarDepositos(): Observable<DepositoDto[]> {
-    return this.http.get<any>(
+    return this.http.get<ResponseListadoDepositos>(
       `${this.urlService.baseUrl}${this.endpoint}/listar`
     ).pipe(
-      map((response: any) => {
-        // Si la respuesta tiene la estructura {depositos: Array}
-        if (response && response.depositos && Array.isArray(response.depositos)) {
-          return response.depositos;
-        }
-        // Si la respuesta es directamente un array
-        if (Array.isArray(response)) {
-          return response;
-        }
-        // Fallback a array vacío si la estructura es inesperada
-        console.warn('Estructura de respuesta inesperada en listarDepositos:', response);
-        return [];
+      map((response: ResponseListadoDepositos) => {
+        return response.depositos || [];
       })
     );
   }

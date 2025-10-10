@@ -2,8 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ReciboDto } from '../models/Recibo.dto';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { UrlService } from '../services/url.service';
 import { HumedadReciboDto } from '../models/HumedadRecibo.dto';
+
+interface ResponseListadoHumedadRecibo {
+  humedadRecibo: HumedadReciboDto[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class HumedadReciboService {
@@ -49,8 +54,22 @@ export class HumedadReciboService {
    * Lista humedades asociadas a un recibo (endpoint: /recibo/{reciboId})
    */
   listarHumedadesPorRecibo(reciboId: number): Observable<HumedadReciboDto[]> {
-    return this.http.get<HumedadReciboDto[]>(
+    return this.http.get<ResponseListadoHumedadRecibo>(
       `${this.urlService.baseUrl}${this.endpoint}/recibo/${reciboId}`
+    ).pipe(
+      map((response: ResponseListadoHumedadRecibo) => {
+        return response.humedadRecibo || [];
+      })
+    );
+  }
+
+  listar(): Observable<HumedadReciboDto[]> {
+    return this.http.get<ResponseListadoHumedadRecibo>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar`
+    ).pipe(
+      map((response: ResponseListadoHumedadRecibo) => {
+        return response.humedadRecibo || [];
+      })
     );
   }
 
