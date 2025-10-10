@@ -683,11 +683,11 @@ Crear previamente con `POST` `/api/v1/hongo/crear`:
 
 ```json
 [
-  {"nombre": "Fusarium graminearum", "descripcion": "Patógeno en cereales", "activo": true},
-  {"nombre": "Aspergillus flavus", "descripcion": "Producción de aflatoxinas", "activo": true},
-  {"nombre": "Alternaria alternata", "descripcion": "Afecta semillas almacenadas", "activo": true},
-  {"nombre": "Penicillium spp.", "descripcion": "Contaminante postcosecha", "activo": false},
-  {"nombre": "Rhizoctonia solani", "descripcion": "Patógeno del suelo", "activo": true}
+  {"id": 0, "nombre": "Fusarium graminearum", "descripcion": "Patógeno en cereales", "activo": true},
+  {"id": 0, "nombre": "Aspergillus flavus", "descripcion": "Producción de aflatoxinas", "activo": true},
+  {"id": 0, "nombre": "Alternaria alternata", "descripcion": "Afecta semillas almacenadas", "activo": true},
+  {"id": 0, "nombre": "Penicillium spp.", "descripcion": "Contaminante postcosecha", "activo": false},
+  {"id": 0, "nombre": "Rhizoctonia solani", "descripcion": "Patógeno del suelo", "activo": true}
 ]
 ```
 
@@ -698,12 +698,27 @@ Crear previamente con `POST` `/api/v1/maleza/crear`:
 
 ```json
 [
-  {"nombre": "Amaranthus retroflexus", "descripcion": "Yuyo colorado", "activo": true},
-  {"nombre": "Sorghum halepense", "descripcion": "Sorgo de Alepo", "activo": true},
-  {"nombre": "Echinochloa crus-galli", "descripcion": "Pasto cuaresma", "activo": true},
-  {"nombre": "Cuscuta campestris", "descripcion": "Cuscuta (tolerancia cero)", "activo": false},
-  {"nombre": "Brassica rapa", "descripcion": "Nabo (otros cultivos)", "activo": true}
+  {"id": 0, "nombre": "Amaranthus retroflexus", "descripcion": "Yuyo colorado", "activo": true},
+  {"id": 0, "nombre": "Sorghum halepense", "descripcion": "Sorgo de Alepo", "activo": true},
+  {"id": 0, "nombre": "Echinochloa crus-galli", "descripcion": "Pasto cuaresma", "activo": true},
+  {"id": 0, "nombre": "Cuscuta campestris", "descripcion": "Cuscuta (tolerancia cero)", "activo": false},
+  {"id": 0, "nombre": "Brassica rapa", "descripcion": "Nabo (otros cultivos)", "activo": true}
 ]
 ```
 
 Luego listar con `GET` `/api/v1/maleza/listar`.
+
+### Depósito (catálogo) - GET `/api/v1/deposito/listar`
+Crear previamente con `POST` `/api/v1/deposito/crear`:
+
+```json
+[
+  {"id": 0, "nombre": "Almacén Central", "activo": true},
+  {"id": 0, "nombre": "Depósito Norte", "activo": true},
+  {"id": 0, "nombre": "Depósito Sur", "activo": false},
+  {"id": 0, "nombre": "Bodega Semillas 1", "activo": true},
+  {"id": 0, "nombre": "Bodega Semillas 2", "activo": true}
+]
+```
+
+Luego listar con `GET` `/api/v1/deposito/listar`.

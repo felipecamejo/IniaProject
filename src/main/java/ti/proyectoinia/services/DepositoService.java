@@ -49,10 +49,10 @@ public class DepositoService {
 
     public ResponseEntity<ResponseListadoDepositos> listadoDepositos() {
         var depositosActivos = this.depositoRepository.findByActivoTrue();
-        var depostioDto = depositosActivos.stream()
+        var depositosDto = depositosActivos.stream()
                 .map(mapsDtoEntityService::mapToDtoDeposito)
                 .toList();
-        ResponseListadoDepositos responseListadoDepositos = new ResponseListadoDepositos(depostioDto);
+        ResponseListadoDepositos responseListadoDepositos = new ResponseListadoDepositos(depositosDto);
         return ResponseEntity.ok(responseListadoDepositos);
     }
 }

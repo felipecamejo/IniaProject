@@ -18,7 +18,7 @@ public class ResponseListadoDepositos {
         return depositos;
     }
 
-    public void setHongos(List<DepositoDto> depositos) {
+    public void setDepositos(List<DepositoDto> depositos) {
         this.depositos = depositos;
     }
 
