@@ -14,7 +14,7 @@ public class ResponseListadoDepositos {
         this.depositos = depositos;
     }
 
-    public List<DepositoDto> getHongos() {
+    public List<DepositoDto> getDepositos() {
         return depositos;
     }
 

@@ -62,7 +62,7 @@ public class DepositoController {
 
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
-    public ResponseEntity<String> editarMaleza(@RequestBody DepositoDto depositoDto) {
+    public ResponseEntity<String> editarDeposito(@RequestBody DepositoDto depositoDto) {
         if (depositoDto.getNombre() != null && !depositoDto.getNombre().trim().isEmpty()) {
             String result = this.depositoService.editarDeposito(depositoDto);
             return ResponseEntity.ok(result);
