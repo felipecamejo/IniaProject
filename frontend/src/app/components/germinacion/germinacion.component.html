@@ -4,42 +4,51 @@
       <h2 class="title">Germinacion</h2>
     </ng-template>
     <form>
-      <!-- Tabla de fechas de conteo (solo una al inicio) -->
-      <div class="table-wrapper" style="margin-bottom:2rem;">
-        <table class="p-table" style="width:100%; margin-bottom:1rem;">
-          <thead>
-            <tr>
-              <th>Inicio</th>
-              <th>Primer conteo</th>
-              <th>Segundo conteo</th>
-              <th>Tercer conteo</th>
-              <th>Cuarto conteo</th>
-              <th>Quinto conteo</th>
-              <th>Total de días</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><input type="date" [(ngModel)]="fechas.inicio" name="fechaInicio" pInputText style="width:130px;" /></td>
-              <td><input type="date" [(ngModel)]="fechas.primerConteo" name="fechaPrimerConteo" pInputText style="width:130px;" /></td>
-              <td><input type="date" [(ngModel)]="fechas.segundoConteo" name="fechaSegundoConteo" pInputText style="width:130px;" /></td>
-              <td><input type="date" [(ngModel)]="fechas.tercerConteo" name="fechaTercerConteo" pInputText style="width:130px;" /></td>
-              <td><input type="date" [(ngModel)]="fechas.cuartoConteo" name="fechaCuartoConteo" pInputText style="width:130px;" /></td>
-              <td><input type="date" [(ngModel)]="fechas.quintoConteo" name="fechaQuintoConteo" pInputText style="width:130px;" /></td>
-              <td><input type="number" [value]="fechas.totalDias" readonly pInputText style="width:100px; background:#f0f0f0;" /></td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Tabla de fechas de conteo (solo una al inicio) adaptada a PrimeNG -->
+      <div class="table-section" style="margin: 2.5rem 0 3rem 0;">
+        <h3 style="margin-bottom: 1rem; color: var(--azul); font-weight: 600;">Fechas de conteo</h3>
+  <div class="table-wrapper conteos-scroll" style="overflow-x:auto; min-width:400px;">
+            <p-table [value]="[fechas]" [tableStyle]="{'min-width': (160 * (fechas.conteos.length + 3)) + 'px'}" styleClass="p-datatable-gridlines rounded-table conteos-min-width">
+            <ng-template pTemplate="header">
+              <tr>
+                <th class="col-fecha">Inicio</th>
+                <th *ngFor="let conteo of fechas.conteos; let i = index" class="col-fecha">Conteo {{i+1}}</th>
+                <th class="col-fecha">Total de días</th>
+                <th class="col-fecha">Acciones</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-row>
+              <tr>
+                <td class="col-fecha">
+                  <input type="date" [(ngModel)]="fechas.inicio" name="fechaInicio" pInputText />
+                </td>
+                <ng-container *ngFor="let conteo of fechas.conteos; let i = index">
+                  <td class="col-fecha">
+                    <div class="col-fecha-flex">
+                      <input type="date" [(ngModel)]="fechas.conteos[i]" [name]="'fechaConteo'+i" pInputText />
+                      <button type="button" (click)="removeConteo(i)" style="margin-left:4px; color:#e11d48; background:none; border:none; font-size:1.2em; cursor:pointer;" *ngIf="fechas.conteos.length > 1">✕</button>
+                    </div>
+                  </td>
+                </ng-container>
+                <td class="col-fecha"><input type="number" [value]="fechas.totalDias" readonly pInputText style="background:#f0f0f0;" /></td>
+                <td class="col-fecha">
+                  <button type="button" (click)="addConteo()" style="color:#2563eb; background:none; border:none; font-size:1.2em; cursor:pointer;">+ Agregar conteo</button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
       </div>
 
       <!-- Select Tratamiento de semillas -->
-      <div class="form-field" style="margin-bottom: 1.5rem;">
-        <label for="tratamientoSemillas" style="font-weight:600; margin-right:1rem;">Tratamiento de semillas:</label>
-        <select id="tratamientoSemillas" [(ngModel)]="tratamientoSemillas" name="tratamientoSemillas" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
+      <div class="form-field" style="margin-bottom: 2.5rem; display: flex; flex-direction: column; align-items: flex-start;">
+        <label for="tratamientoSemillas" style="font-weight:700; font-size:1.2em; margin-bottom:0.7rem; color:#1746a0; letter-spacing:0.5px;">Tipo de tratamiento de semillas</label>
+        <select id="tratamientoSemillas" [(ngModel)]="tratamientoSemillas" (change)="onTratamientoChange()" name="tratamientoSemillas"
+          style="padding:0.7rem 1.5rem; border-radius:12px; border:2px solid #2563eb; background:#f7fbff; font-size:1.15em; font-weight:600; color:#1746a0; box-shadow:0 2px 8px rgba(38,99,235,0.08); transition:border 0.2s;">
           <option value="sin curar">Sin curar</option>
           <option value="curada en planta">Curada en planta</option>
           <option value="curada en laboratorio">Curada en Laboratorio</option>
         </select>
+        <span style="margin-top:0.7rem; color:#2563eb; font-weight:500; font-size:1em;">Elige el tratamiento para mostrar y editar su tabla correspondiente.</span>
       </div>
 
       <!-- Producto y dosis -->
@@ -86,6 +95,12 @@
             <option value="No">No</option>
             <option *ngFor="let d of diasPreFrio" [value]="d">{{d}}</option>
           </select>
+            <div *ngIf="fechaSalidaPreFrio" style="margin-top:0.5rem; font-weight:600; color:#2563eb;">
+              Fecha de salida de pre-frío: {{ fechaSalidaPreFrio }}
+            </div>
+                <div style="margin-top:0.5rem; font-weight:600; color:#1746a0;">
+                  N° de Días: {{ numeroDias }}
+                </div>
         </div>
         <div class="form-field" style="margin-bottom: 0;">
           <label for="preTratamiento" style="font-weight:600; margin-right:0.5rem;">Pre-tratamiento:</label>
@@ -98,103 +113,158 @@
           </select>
         </div>
       </div>
-      <!-- Tabla de repeticiones para germinación -->
-      <h3 style="margin-top:2rem;">Tabla de repeticiones - Germinación</h3>
-      <div class="table-wrapper">
-        <table class="p-table" style="width:100%; margin-bottom:1rem;">
-          <thead>
-            <tr>
-              <th>Repetición</th>
-              <th *ngFor="let n of [1,2,3,4,5]">Normales {{n}}</th>
-              <th>Anormales</th>
-              <th>Duras</th>
-              <th>Frescas</th>
-              <th>Muertas</th>
-              <th>Total</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let rep of repeticiones; let i = index">
-              <td>{{ rep.numero }}</td>
-              <td *ngFor="let n of [0,1,2,3,4]">
-                <input type="number" [(ngModel)]="rep.normales[n]" name="normales{{i}}_{{n}}" pInputText style="width:70px;" />
-              </td>
-              <td><input type="number" [(ngModel)]="rep.anormales" name="anormales{{i}}" pInputText style="width:70px;" /></td>
-              <td><input type="number" [(ngModel)]="rep.duras" name="duras{{i}}" pInputText style="width:70px;" /></td>
-              <td><input type="number" [(ngModel)]="rep.frescas" name="frescas{{i}}" pInputText style="width:70px;" /></td>
-              <td><input type="number" [(ngModel)]="rep.muertas" name="muertas{{i}}" pInputText style="width:70px;" /></td>
-              <td>
-                <input type="number" [value]="getTotal(rep)" readonly pInputText style="width:70px; background:#f0f0f0;" />
-              </td>
-              <td>
-                <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="eliminarRepeticion(i)" [disabled]="repeticiones.length === 1"></button>
-              </td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td style="font-weight:bold; background:#f0f0f0;">Promedio</td>
-              <td *ngFor="let n of [0,1,2,3,4]">
-                <input type="number" [value]="getPromedioNormales(n)" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
-              </td>
-              <td>
-                <input type="number" [value]="getPromedioAnormales()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
-              </td>
-              <td>
-                <input type="number" [value]="getPromedioDuras()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
-              </td>
-              <td>
-                <input type="number" [value]="getPromedioFrescas()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
-              </td>
-              <td>
-                <input type="number" [value]="getPromedioMuertas()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
-              </td>
-              <td>
-                <input type="number" [value]="getPromedioTotal()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
-              </td>
-              <td style="background:#f0f0f0;"></td>
-            </tr>
-          </tfoot>
-        </table>
+      <!-- Tabla de repeticiones para germinación adaptada a PrimeNG -->
+      <div class="table-section" style="margin: 2.5rem 0 3rem 0;">
+        <h3 style="margin-bottom: 1rem; color: var(--azul); font-weight: 600;">Repeticiones - Germinación</h3>
+        <div class="table-wrapper conteos-scroll">
+            <p-table [value]="repeticiones" [tableStyle]="{'min-width': '1000px'}" styleClass="p-datatable-gridlines rounded-table conteos-min-width">
+            <ng-template pTemplate="header">
+              <tr>
+                  <th style="min-width:160px; width:160px;">Repetición</th>
+                  <th *ngFor="let conteo of fechas.conteos; let i = index" style="min-width:160px; width:160px;">Normales {{i+1}}</th>
+                  <th style="min-width:160px; width:160px;">Anormales</th>
+                  <th style="min-width:160px; width:160px;">Duras</th>
+                  <th style="min-width:160px; width:160px;">Frescas</th>
+                  <th style="min-width:160px; width:160px;">Muertas</th>
+                  <th style="min-width:160px; width:160px;">Total</th>
+                  <th style="min-width:160px; width:160px;">Acciones</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-rep let-rowIndex="rowIndex">
+              <tr>
+                <td style="min-width:160px; width:160px;">{{ rep.numero }}</td>
+                <td *ngFor="let conteo of fechas.conteos; let n = index" style="min-width:160px; width:160px;">
+                  <input type="number" [(ngModel)]="rep.normales[n]" [name]="'normales'+rowIndex+'_'+n" pInputText style="width:70px;" />
+                </td>
+                <td style="min-width:160px; width:160px;"><input type="number" [(ngModel)]="rep.anormales" [name]="'anormales'+rowIndex" pInputText style="width:70px;" /></td>
+                <td style="min-width:160px; width:160px;"><input type="number" [(ngModel)]="rep.duras" [name]="'duras'+rowIndex" pInputText style="width:70px;" /></td>
+                <td style="min-width:160px; width:160px;"><input type="number" [(ngModel)]="rep.frescas" [name]="'frescas'+rowIndex" pInputText style="width:70px;" /></td>
+                <td style="min-width:160px; width:160px;"><input type="number" [(ngModel)]="rep.muertas" [name]="'muertas'+rowIndex" pInputText style="width:70px;" /></td>
+                <td style="min-width:160px; width:160px;">
+                  <input type="number" [value]="getTotal(rep)" readonly pInputText style="width:70px; background:#f0f0f0;" />
+                </td>
+                <td style="min-width:160px; width:160px;">
+                  <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="eliminarRepeticion(rowIndex)" [disabled]="repeticiones.length === 1"></button>
+                </td>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="footer">
+              <tr>
+                <td style="font-weight:bold; background:#f0f0f0;">Promedio sin redondeo</td>
+                <td *ngFor="let conteo of fechas.conteos; let n = index">
+                  <input type="number" [value]="getPromedioNormales(n)" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [value]="getPromedioAnormales()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [value]="getPromedioDuras()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [value]="getPromedioFrescas()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [value]="getPromedioMuertas()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [value]="getPromedioTotal()" readonly pInputText style="width:70px; background:#f0f0f0; font-weight:bold;" />
+                </td>
+                <td style="background:#f0f0f0;"></td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; background:#e0e7ff;">Promedio sin redondeo global</td>
+                <td [attr.colspan]="fechas.conteos.length">
+                  <input type="number" [value]="getPromedioNormalesGlobal()" readonly pInputText style="width:120px; background:#e0e7ff; font-weight:bold;" />
+                </td>
+                <td colspan="6" style="background:#e0e7ff;"></td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; background:#fffbe6;">Promedio redondeado</td>
+                <td *ngFor="let conteo of fechas.conteos; let n = index">
+                  <input type="number" [(ngModel)]="promedioManualNormales[n]" [name]="'promedioManualNormales'+n" pInputText style="width:70px; background:#fffbe6; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="promedioManualAnormales" name="promedioManualAnormales" pInputText style="width:70px; background:#fffbe6; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="promedioManualDuras" name="promedioManualDuras" pInputText style="width:70px; background:#fffbe6; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="promedioManualFrescas" name="promedioManualFrescas" pInputText style="width:70px; background:#fffbe6; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="promedioManualMuertas" name="promedioManualMuertas" pInputText style="width:70px; background:#fffbe6; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="promedioManualTotal" name="promedioManualTotal" pInputText style="width:70px; background:#fffbe6; font-weight:bold;" />
+                </td>
+                <td style="background:#fffbe6;"></td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; background:#fef9c3;">%</td>
+                <td [attr.colspan]="fechas.conteos.length">
+                  <input type="number" [value]="''" readonly pInputText style="width:120px; background:#fef9c3; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [value]="''" readonly pInputText style="width:70px; background:#fef9c3; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [value]="''" readonly pInputText style="width:70px; background:#fef9c3; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [value]="''" readonly pInputText style="width:70px; background:#fef9c3; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [value]="''" readonly pInputText style="width:70px; background:#fef9c3; font-weight:bold;" />
+                </td>
+                <td>
+                  <input type="number" [value]="''" readonly pInputText style="width:70px; background:#fef9c3; font-weight:bold;" />
+                </td>
+                <td style="background:#fef9c3;"></td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
         <button pButton type="button" label="Agregar repetición" class="btn-agregar-rep" (click)="agregarRepeticion()"></button>
       </div>
 
-      <!-- Tabla INIA/INASE -->
-      <div class="table-wrapper" style="margin-top:2rem;">
-        <table class="p-table" style="width:100%; margin-bottom:1rem;">
-          <thead>
-            <tr>
-              <th></th>
-              <th>P.Normales</th>
-              <th>P.Anormales</th>
-              <th>Duras</th>
-              <th>Frescas</th>
-              <th>Muertas</th>
-              <th>Germinacion</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="font-weight:bold;">INIA</td>
-              <td><input type="number" [(ngModel)]="inia.pNormales" name="iniaPNormales" pInputText style="width:90px;" /></td>
-              <td><input type="number" [(ngModel)]="inia.pAnormales" name="iniaPAnormales" pInputText style="width:90px;" /></td>
-              <td><input type="number" [(ngModel)]="inia.duras" name="iniaDuras" pInputText style="width:90px;" /></td>
-              <td><input type="number" [(ngModel)]="inia.frescas" name="iniaFrescas" pInputText style="width:90px;" /></td>
-              <td><input type="number" [(ngModel)]="inia.muertas" name="iniaMuertas" pInputText style="width:90px;" /></td>
-              <td><input type="number" [(ngModel)]="inia.germinacion" name="iniaGerminacion" pInputText style="width:90px;" /></td>
-            </tr>
-            <tr>
-              <td style="font-weight:bold;">INASE</td>
-              <td><input type="number" [(ngModel)]="inase.pNormales" name="inasePNormales" pInputText style="width:90px;" /></td>
-              <td><input type="number" [(ngModel)]="inase.pAnormales" name="inasePAnormales" pInputText style="width:90px;" /></td>
-              <td><input type="number" [(ngModel)]="inase.duras" name="inaseDuras" pInputText style="width:90px;" /></td>
-              <td><input type="number" [(ngModel)]="inase.frescas" name="inaseFrescas" pInputText style="width:90px;" /></td>
-              <td><input type="number" [(ngModel)]="inase.muertas" name="inaseMuertas" pInputText style="width:90px;" /></td>
-              <td><input type="number" [(ngModel)]="inase.germinacion" name="inaseGerminacion" pInputText style="width:90px;" /></td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Tabla INIA/INASE adaptada a PrimeNG, sin ngFor ni expresiones en ngModel -->
+      <div class="table-section" style="margin: 2.5rem 0 3rem 0;">
+        <h3 style="margin-bottom: 1rem; color: var(--azul); font-weight: 600;">Análisis INIA / INASE</h3>
+        <div class="table-wrapper">
+          <p-table [value]="[1,2]" [tableStyle]="{'width': '100%'}" styleClass="p-datatable-gridlines rounded-table">
+            <ng-template pTemplate="header">
+              <tr>
+                <th></th>
+                <th>P.Normales</th>
+                <th>P.Anormales</th>
+                <th>Duras</th>
+                <th>Frescas</th>
+                <th>Muertas</th>
+                <th>Germinacion</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-row>
+              <tr *ngIf="row === 1">
+                <td style="font-weight:bold;">INIA</td>
+                <td><input type="number" [(ngModel)]="inia.pNormales" name="iniaPNormales" pInputText style="width:90px;" /></td>
+                <td><input type="number" [(ngModel)]="inia.pAnormales" name="iniaPAnormales" pInputText style="width:90px;" /></td>
+                <td><input type="number" [(ngModel)]="inia.duras" name="iniaDuras" pInputText style="width:90px;" /></td>
+                <td><input type="number" [(ngModel)]="inia.frescas" name="iniaFrescas" pInputText style="width:90px;" /></td>
+                <td><input type="number" [(ngModel)]="inia.muertas" name="iniaMuertas" pInputText style="width:90px;" /></td>
+                <td><input type="number" [(ngModel)]="inia.germinacion" name="iniaGerminacion" pInputText style="width:90px;" /></td>
+              </tr>
+              <tr *ngIf="row === 2">
+                <td style="font-weight:bold;">INASE</td>
+                <td><input type="number" [(ngModel)]="inase.pNormales" name="inasePNormales" pInputText style="width:90px;" /></td>
+                <td><input type="number" [(ngModel)]="inase.pAnormales" name="inasePAnormales" pInputText style="width:90px;" /></td>
+                <td><input type="number" [(ngModel)]="inase.duras" name="inaseDuras" pInputText style="width:90px;" /></td>
+                <td><input type="number" [(ngModel)]="inase.frescas" name="inaseFrescas" pInputText style="width:90px;" /></td>
+                <td><input type="number" [(ngModel)]="inase.muertas" name="inaseMuertas" pInputText style="width:90px;" /></td>
+                <td><input type="number" [(ngModel)]="inase.germinacion" name="inaseGerminacion" pInputText style="width:90px;" /></td>
+              </tr>
+            </ng-template>
+          </p-table>
       </div>
 
 
@@ -221,7 +291,7 @@
         ></button>
       </div>
 
-    </form>
-  </p-card>
+  <!-- cierre correcto del form, sin duplicados -->
+  <!-- cierre correcto del p-card, sin duplicados -->
 </div>
 

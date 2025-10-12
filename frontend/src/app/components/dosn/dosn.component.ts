@@ -26,6 +26,10 @@ import { TabsModule } from 'primeng/tabs';
 })
 // ...existing code...
 export class DOSNComponent implements OnInit {
+  brassicaCuscuta = [
+    { label: 'Brassica spp.', contiene: false, gramos: 0 },
+    { label: 'Cuscuta spp.', contiene: false, gramos: 0 }
+  ];
   onSubmit() {
     // Implementar lógica de guardado o edición aquí
     console.log('Formulario DOSN enviado');

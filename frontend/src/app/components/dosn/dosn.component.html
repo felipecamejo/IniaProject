@@ -243,39 +243,32 @@
         </div>
   </div>
 
-      <!-- Determinación de brassica spp. -->
+      <!-- Tabla de brassica y cuscuta spp. -->
       <div class="form-field">
-        <label>Determinación de brassica spp.</label>
-        <div class="chips-list">
-          <select [(ngModel)]="selectedBrassicaSimple" name="selectedBrassicaSimple">
-            <option [ngValue]="null">Seleccionar...</option>
-            <option *ngFor="let b of brassicaOptions" [ngValue]="b.id">{{ b.label }}</option>
-          </select>
-          <button type="button" (click)="addBrassica()">Agregar</button>
-        </div>
-        <div class="chips-list">
-          <span *ngFor="let b of brassica" class="chip">
-            {{ getBrassicaLabel(b) }}
-            <button type="button" (click)="removeBrassica(b)">&times;</button>
-          </span>
-        </div>
-      </div>
-      <!-- Determinación de cuscuta spp. -->
-      <div class="form-field">
-        <label>Determinación de cuscuta spp.</label>
-        <div class="chips-list">
-          <select [(ngModel)]="selectedCuscutaSimple" name="selectedCuscutaSimple">
-            <option [ngValue]="null">Seleccionar...</option>
-            <option *ngFor="let cu of cuscutaOptions" [ngValue]="cu.id">{{ cu.label }}</option>
-          </select>
-          <button type="button" (click)="addCuscuta()">Agregar</button>
-        </div>
-        <div class="chips-list">
-          <span *ngFor="let cu of cuscuta" class="chip">
-            {{ getCuscutaLabel(cu) }}
-            <button type="button" (click)="removeCuscuta(cu)">&times;</button>
-          </span>
-        </div>
+        <label>Determinación de brassica y cuscuta spp.</label>
+        <table class="brassica-cuscuta-table">
+          <thead>
+            <tr>
+              <th>Especie</th>
+              <th>¿Contiene?</th>
+              <th *ngIf="brassicaCuscuta[0].contiene || brassicaCuscuta[1].contiene">Gramos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of brassicaCuscuta">
+              <td>{{ item.label }}</td>
+              <td>
+                <select [(ngModel)]="item.contiene" [name]="'contiene_' + item.label">
+                  <option [ngValue]="false">No contiene</option>
+                  <option [ngValue]="true">Contiene</option>
+                </select>
+              </td>
+              <td *ngIf="item.contiene">
+                <input type="number" [(ngModel)]="item.gramos" [name]="'gramos_' + item.label" min="0" placeholder="Gramos" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div class="submit-btn" style="display: flex; gap: 1rem;">
         <button

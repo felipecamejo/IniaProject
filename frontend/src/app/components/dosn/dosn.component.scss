@@ -1,3 +1,39 @@
+// Card principal del formulario DOSN
+.container {
+  max-width: 750px !important;
+  width: 92% !important;
+  margin: 0 auto !important;
+}
+
+::ng-deep .card {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+// Estilos para la tabla de brassica y cuscuta
+.brassica-cuscuta-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+.brassica-cuscuta-table th, .brassica-cuscuta-table td {
+  border: 1px solid #cfd8dc;
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+.brassica-cuscuta-table th {
+  background: #e6f0ff;
+  color: var(--azul, #2563eb);
+  font-weight: 600;
+}
+.brassica-cuscuta-table td select, .brassica-cuscuta-table td input {
+  width: 100%;
+  padding: 0.3rem;
+  font-size: 1em;
+  border-radius: 6px;
+  border: 1px solid #b0bec5;
+}
 // Diferenciación visual para INIA e INASE
 .inia-section {
   background: #e6f0ff;
