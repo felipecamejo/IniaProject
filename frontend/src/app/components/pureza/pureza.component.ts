@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PurezaDto } from '../../../models/Pureza.dto';
+import { PurezaService } from '../../../services/PurezaService';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -34,6 +35,9 @@ export class PurezaComponent implements OnInit {
 
    loteId: string | null = '';
     reciboId: string | null = '';
+    
+  // Campo para mantener fechaCreacion original durante edición
+  fechaCreacionOriginal: string | null = null;
 
   // --- Multiselect Malezas tolerancia cero ---
   malezasCeroOptions = [
@@ -42,8 +46,8 @@ export class PurezaComponent implements OnInit {
     { id: 3, label: 'Orobanche spp.' }
   ];
 
-  fechaInia: Date | null = null;
-  fechaInase: Date | null = null;
+  fechaInia: string | null = null;
+  fechaInase: string | null = null;
 
   selectedMalezasCero: number[] = [];
 
@@ -234,6 +238,9 @@ export class PurezaComponent implements OnInit {
   malezasToleranciaCeroPctRedondeo: number = 0;
   pesoTotalPctRedondeo: number = 0;
 
+  // Campo adicional del DTO
+  otrosCultivoField: number = 0;
+
   // Variables para INASE - gramos
   pesoInicialInaseGr: number = 0;
   semillaPuraInaseGr: number = 0;
@@ -266,6 +273,7 @@ export class PurezaComponent implements OnInit {
   
   fechaEstandar: string = '';
   estandar: boolean = false;
+  activo: boolean = true;
 
   // Datos para la tabla de pureza
   purezaTableRows = [
@@ -462,33 +470,51 @@ export class PurezaComponent implements OnInit {
     fechaInia: null,
     pesoInicial: 0,
     pesoInicialInase: 0,
+    pesoInicialPorcentaje: 0,
+    pesoInicialPorcentajeInase: 0,
     pesoInicialPorcentajeRedondeo: 0,
     pesoInicialPorcentajeRedondeoInase: 0,
     semillaPura: 0,
     semillaPuraInase: 0,
+    semillaPuraPorcentaje: 0,
+    semillaPuraPorcentajeInase: 0,
     semillaPuraPorcentajeRedondeo: 0,
     semillaPuraPorcentajeRedondeoInase: 0,
     materialInerte: 0,
     materialInerteInase: 0,
+    materialInertePorcentaje: 0,
+    materialInertePorcentajeInase: 0,
     materialInertePorcentajeRedondeo: 0,
     materialInertePorcentajeRedondeoInase: 0,
     otrosCultivos: 0,
     otrosCultivosInase: 0,
+    otrosCultivosPorcentaje: 0,
+    otrosCultivosPorcentajeInase: 0,
     otrosCultivosPorcentajeRedondeo: 0,
     otrosCultivosPorcentajeRedondeoInase: 0,
     malezas: 0,
     malezasInase: 0,
+    malezasPorcentaje: 0,
+    malezasPorcentajeInase: 0,
     malezasPorcentajeRedondeo: 0,
     malezasPorcentajeRedondeoInase: 0,
     malezasToleradas: 0,
     malezasToleradasInase: 0,
+    malezasToleradasPorcentaje: 0,
+    malezasToleradasPorcentajeInase: 0,
     malezasToleradasPorcentajeRedondeo: 0,
     malezasToleradasPorcentajeRedondeoInase: 0,
     malezasToleranciaCero: 0,
     malezasToleranciaCeroInase: 0,
+    malezasToleranciaCeroPorcentaje: 0,
+    malezasToleranciaCeroPorcentajeInase: 0,
     malezasToleranciaCeroPorcentajeRedondeo: 0,
     malezasToleranciaCeroPorcentajeRedondeoInase: 0,
     pesoTotal: 0,
+    pesoTotalInase: 0,
+    pesoTotalPorcentaje: 0,
+    pesoTotalPorcentajeInase: 0,
+    otrosCultivo: 0,
     fechaEstandar: null,
     estandar: false,
     activo: true,
@@ -500,7 +526,8 @@ export class PurezaComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private purezaService: PurezaService
   ) {}
 
   // Getter para determinar si está en modo readonly
@@ -607,110 +634,93 @@ export class PurezaComponent implements OnInit {
     { id: 'oc4', label: 'Maíz' }
   ];
 
-  // Datos de prueba (deberían venir de un servicio)
-  private itemsData: PurezaDto[] = [
-    {
-      id: 1,
-      fechaInase: null,
-      fechaInia: null,
-      pesoInicial: 100,
-      pesoInicialInase: null,
-      pesoInicialPorcentajeRedondeo: null,
-      pesoInicialPorcentajeRedondeoInase: null,
-      semillaPura: 95,
-      semillaPuraInase: null,
-      semillaPuraPorcentajeRedondeo: null,
-      semillaPuraPorcentajeRedondeoInase: null,
-      materialInerte: 2,
-      materialInerteInase: null,
-      materialInertePorcentajeRedondeo: null,
-      materialInertePorcentajeRedondeoInase: null,
-      otrosCultivos: 1.5,
-      otrosCultivosInase: null,
-      otrosCultivosPorcentajeRedondeo: null,
-      otrosCultivosPorcentajeRedondeoInase: null,
-      malezas: 1,
-      malezasInase: null,
-      malezasPorcentajeRedondeo: null,
-      malezasPorcentajeRedondeoInase: null,
-      malezasToleradas: 0.5,
-      malezasToleradasInase: null,
-      malezasToleradasPorcentajeRedondeo: null,
-      malezasToleradasPorcentajeRedondeoInase: null,
-      malezasToleranciaCero: null,
-      malezasToleranciaCeroInase: null,
-      malezasToleranciaCeroPorcentajeRedondeo: null,
-      malezasToleranciaCeroPorcentajeRedondeoInase: null,
-      pesoTotal: 100,
-      fechaEstandar: '2023-01-15',
-      estandar: true,
-      activo: true,
-      reciboId: null,
-      repetido: false,
-      fechaCreacion: '2023-01-15',
-      fechaRepeticion: null
-    },
-    {
-      id: 2,
-      fechaInase: null,
-      fechaInia: null,
-      pesoInicial: 90,
-      pesoInicialInase: null,
-      pesoInicialPorcentajeRedondeo: null,
-      pesoInicialPorcentajeRedondeoInase: null,
-      semillaPura: 88,
-      semillaPuraInase: null,
-      semillaPuraPorcentajeRedondeo: null,
-      semillaPuraPorcentajeRedondeoInase: null,
-      materialInerte: 1.5,
-      materialInerteInase: null,
-      materialInertePorcentajeRedondeo: null,
-      materialInertePorcentajeRedondeoInase: null,
-      otrosCultivos: 0.3,
-      otrosCultivosInase: null,
-      otrosCultivosPorcentajeRedondeo: null,
-      otrosCultivosPorcentajeRedondeoInase: null,
-      malezas: 0.2,
-      malezasInase: null,
-      malezasPorcentajeRedondeo: null,
-      malezasPorcentajeRedondeoInase: null,
-      malezasToleradas: 0,
-      malezasToleradasInase: null,
-      malezasToleradasPorcentajeRedondeo: null,
-      malezasToleradasPorcentajeRedondeoInase: null,
-      malezasToleranciaCero: null,
-      malezasToleranciaCeroInase: null,
-      malezasToleranciaCeroPorcentajeRedondeo: null,
-      malezasToleranciaCeroPorcentajeRedondeoInase: null,
-      pesoTotal: 90,
-      fechaEstandar: '2022-02-20',
-      estandar: false,
-      activo: true,
-      reciboId: null,
-      repetido: true,
-      fechaCreacion: '2022-02-20',
-      fechaRepeticion: '2022-02-22'
-    }
-  ];
 
   private cargarDatosParaEdicion(id: number) {
-    // En un escenario real, esto vendría de un servicio
-    const item = this.itemsData.find(pureza => pureza.id === id);
-    if (item) {
-      console.log('Cargando datos para edición:', item);
-      this.fecha = item.fechaCreacion || '';
-      this.pesoInicialGr = item.pesoInicial || 0;
-      this.semillaPuraGr = item.semillaPura || 0;
-      this.materiaInerteGr = item.materialInerte || 0;
-      this.otrosCultivosGr = item.otrosCultivos || 0;
-      this.malezasGr = item.malezas || 0;
-      this.malezasToleradasGr = item.malezasToleradas || 0;
-      this.malezasToleranciaCeroGr = item.malezasToleranciaCero || 0;
-      this.pesoTotalGr = item.pesoTotal || 0;
-      this.fechaEstandar = item.fechaEstandar || '';
-      this.estandar = item.estandar || false;
-      this.repetido = item.repetido || false;
-    }
+    // Obtener datos reales del backend
+    this.purezaService.obtener(id).subscribe({
+      next: (item: PurezaDto) => {
+        console.log('Cargando datos para edición:', item);
+        
+        // Fechas
+        this.fechaInia = item.fechaInia ? item.fechaInia.split('T')[0] : null;
+        this.fechaInase = item.fechaInase ? item.fechaInase.split('T')[0] : null;
+        this.fechaEstandar = item.fechaEstandar ? item.fechaEstandar.split('T')[0] : '';
+        
+        // Campos INIA - Gramos
+        this.pesoInicialGr = item.pesoInicial || 0;
+        this.semillaPuraGr = item.semillaPura || 0;
+        this.materiaInerteGr = item.materialInerte || 0;
+        this.otrosCultivosGr = item.otrosCultivos || 0;
+        this.malezasGr = item.malezas || 0;
+        this.malezasToleradasGr = item.malezasToleradas || 0;
+        this.malezasToleranciaCeroGr = item.malezasToleranciaCero || 0;
+        this.pesoTotalGr = item.pesoTotal || 0;
+        
+        // Campos INIA - Porcentajes normales
+        this.pesoInicialPct = item.pesoInicialPorcentaje || 0;
+        this.semillaPuraPct = item.semillaPuraPorcentaje || 0;
+        this.materiaInertePct = item.materialInertePorcentaje || 0;
+        this.otrosCultivosPct = item.otrosCultivosPorcentaje || 0;
+        this.malezasPct = item.malezasPorcentaje || 0;
+        this.malezasToleradasPct = item.malezasToleradasPorcentaje || 0;
+        this.malezasToleranciaCeroPct = item.malezasToleranciaCeroPorcentaje || 0;
+        this.pesoTotalPct = item.pesoTotalPorcentaje || 0;
+        
+        // Campos INIA - Porcentajes redondeo
+        this.pesoInicialPctRedondeo = item.pesoInicialPorcentajeRedondeo || 0;
+        this.semillaPuraPctRedondeo = item.semillaPuraPorcentajeRedondeo || 0;
+        this.materiaInertePctRedondeo = item.materialInertePorcentajeRedondeo || 0;
+        this.otrosCultivosPctRedondeo = item.otrosCultivosPorcentajeRedondeo || 0;
+        this.malezasPctRedondeo = item.malezasPorcentajeRedondeo || 0;
+        this.malezasToleradasPctRedondeo = item.malezasToleradasPorcentajeRedondeo || 0;
+        this.malezasToleranciaCeroPctRedondeo = item.malezasToleranciaCeroPorcentajeRedondeo || 0;
+        // Nota: pesoTotalPctRedondeo no existe en el DTO, se calcula localmente
+        
+        // Campos INASE - Gramos
+        this.pesoInicialInaseGr = item.pesoInicialInase || 0;
+        this.semillaPuraInaseGr = item.semillaPuraInase || 0;
+        this.materiaInerteInaseGr = item.materialInerteInase || 0;
+        this.otrosCultivosInaseGr = item.otrosCultivosInase || 0;
+        this.malezasInaseGr = item.malezasInase || 0;
+        this.malezasToleradasInaseGr = item.malezasToleradasInase || 0;
+        this.malezasToleranciaCeroInaseGr = item.malezasToleranciaCeroInase || 0;
+        this.pesoTotalInaseGr = item.pesoTotalInase || 0;
+        
+        // Campos INASE - Porcentajes normales
+        this.pesoInicialInasePct = item.pesoInicialPorcentajeInase || 0;
+        this.semillaPuraInasePct = item.semillaPuraPorcentajeInase || 0;
+        this.materiaInerteInasePct = item.materialInertePorcentajeInase || 0;
+        this.otrosCultivosInasePct = item.otrosCultivosPorcentajeInase || 0;
+        this.malezasInasePct = item.malezasPorcentajeInase || 0;
+        this.malezasToleradasInasePct = item.malezasToleradasPorcentajeInase || 0;
+        this.malezasToleranciaCeroInasePct = item.malezasToleranciaCeroPorcentajeInase || 0;
+        this.pesoTotalInasePct = item.pesoTotalPorcentajeInase || 0;
+        
+        // Campos INASE - Porcentajes redondeo
+        this.pesoInicialInasePctRedondeo = item.pesoInicialPorcentajeRedondeoInase || 0;
+        this.semillaPuraInasePctRedondeo = item.semillaPuraPorcentajeRedondeoInase || 0;
+        this.materiaInerteInasePctRedondeo = item.materialInertePorcentajeRedondeoInase || 0;
+        this.otrosCultivosInasePctRedondeo = item.otrosCultivosPorcentajeRedondeoInase || 0;
+        this.malezasInasePctRedondeo = item.malezasPorcentajeRedondeoInase || 0;
+        this.malezasToleradasInasePctRedondeo = item.malezasToleradasPorcentajeRedondeoInase || 0;
+        this.malezasToleranciaCeroInasePctRedondeo = item.malezasToleranciaCeroPorcentajeRedondeoInase || 0;
+        // Nota: pesoTotalInasePctRedondeo no existe en el DTO, se calcula localmente
+        
+        // Campo adicional otrosCultivo
+        this.otrosCultivoField = (item as any).otrosCultivo || 0;
+        
+        // Otros campos
+        this.estandar = item.estandar || false;
+        this.activo = item.activo !== undefined ? item.activo : true;
+        this.repetido = item.repetido || false;
+        
+        // Guardar fecha de creación original para no perderla en la edición
+        this.fechaCreacionOriginal = item.fechaCreacion;
+      },
+      error: (error) => {
+        console.error('Error al cargar datos para edición:', error);
+      }
+    });
   }
 
   private cargarDatos() {
@@ -725,38 +735,145 @@ export class PurezaComponent implements OnInit {
     this.malezasToleradasGr = 0;
     this.malezasToleranciaCeroGr = 0;
     this.pesoTotalGr = 0;
+    this.otrosCultivoField = 0;
     this.fechaEstandar = '';
     this.estandar = false;
     this.repetido = false;
+    this.fechaCreacionOriginal = null;
   }
 
   onSubmit() {
-    const purezaData: Partial<PurezaDto> = {
-      fechaCreacion: this.fecha,
-      pesoInicial: this.pesoInicialGr,
-      semillaPura: this.semillaPuraGr,
-      materialInerte: this.materiaInerteGr,
-      otrosCultivos: this.otrosCultivosGr,
-      malezas: this.malezasGr,
-      malezasToleradas: this.malezasToleradasGr,
-      malezasToleranciaCero: this.malezasToleranciaCeroGr,
-      pesoTotal: this.pesoTotalGr,
-      fechaEstandar: this.fechaEstandar,
-      estandar: this.estandar,
-      repetido: this.repetido,
-      activo: true
-    };
+    let purezaData: PurezaDto = this.buildPurezaDto();
+
+    // Debugging: mostrar exactamente qué datos se están enviando
+    console.log('=== DATOS ENVIADOS AL BACKEND ===');
+    console.log('isEditing:', this.isEditing);
+    console.log('editingId:', this.editingId);
 
     if (this.isEditing && this.editingId) {
-      // Actualizar Pureza existente
-      console.log('Actualizando Pureza ID:', this.editingId, 'con datos:', purezaData);
+      // Actualizar Pureza existente - mantener valores no editables
+      // El fechaCreacion y otros campos críticos ya vienen del buildPurezaDto()
+      console.log('Editando pureza existente con ID:', this.editingId);
+      console.log('purezaData:', JSON.stringify(purezaData, null, 2));
+      
+      this.purezaService.editar(purezaData).subscribe({
+        next: (response) => {
+          console.log('Pureza actualizada exitosamente:', response);
+          this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);
+        },
+        error: (error) => {
+          console.error('Error al actualizar la pureza:', error);
+        }
+      });
     } else {
-      // Crear nueva Pureza
-      console.log('Creando nueva Pureza:', purezaData);
+      // Crear nueva Pureza - establecer valores por defecto para creación
+      purezaData.id = 0; // Según la estructura que me mostraste
+      purezaData.activo = true; 
+      purezaData.repetido = false; 
+      purezaData.fechaCreacion = new Date().toISOString();
+      purezaData.fechaRepeticion = null;
+      
+      console.log('Creando nueva pureza');
+      console.log('purezaData:', JSON.stringify(purezaData, null, 2));
+      
+      this.purezaService.crear(purezaData).subscribe({
+        next: (response) => {
+          console.log('Pureza creada exitosamente:', response);
+          this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);
+        },
+        error: (error) => {
+          console.error('Error al crear la pureza:', error);
+        }
+      });
     }
+  }
 
-    // Navegar de vuelta al listado
-    this.router.navigate(['/listado-pureza']);
+  private buildPurezaDto(): PurezaDto {
+    return {
+      id: this.isEditing && this.editingId ? this.editingId : 0,
+      fechaInase: this.fechaInase ? this.convertirFechaAISO(this.fechaInase) : null,
+      fechaInia: this.fechaInia ? this.convertirFechaAISO(this.fechaInia) : null,
+      
+      pesoInicial: this.pesoInicialGr || 0,
+      pesoInicialInase: this.pesoInicialInaseGr || 0,
+      pesoInicialPorcentaje: this.pesoInicialPct || 0,
+      pesoInicialPorcentajeInase: this.pesoInicialInasePct || 0,
+      pesoInicialPorcentajeRedondeo: this.pesoInicialPctRedondeo || 0,
+      pesoInicialPorcentajeRedondeoInase: this.pesoInicialInasePctRedondeo || 0,
+
+      semillaPura: this.semillaPuraGr || 0,
+      semillaPuraInase: this.semillaPuraInaseGr || 0,
+      semillaPuraPorcentaje: this.semillaPuraPct || 0,
+      semillaPuraPorcentajeInase: this.semillaPuraInasePct || 0,
+      semillaPuraPorcentajeRedondeo: this.semillaPuraPctRedondeo || 0,
+      semillaPuraPorcentajeRedondeoInase: this.semillaPuraInasePctRedondeo || 0,
+
+      materialInerte: this.materiaInerteGr || 0,
+      materialInerteInase: this.materiaInerteInaseGr || 0,
+      materialInertePorcentaje: this.materiaInertePct || 0,
+      materialInertePorcentajeInase: this.materiaInerteInasePct || 0,
+      materialInertePorcentajeRedondeo: this.materiaInertePctRedondeo || 0,
+      materialInertePorcentajeRedondeoInase: this.materiaInerteInasePctRedondeo || 0,
+
+      otrosCultivos: this.otrosCultivosGr || 0,
+      otrosCultivosInase: this.otrosCultivosInaseGr || 0,
+      otrosCultivosPorcentaje: this.otrosCultivosPct || 0,
+      otrosCultivosPorcentajeInase: this.otrosCultivosInasePct || 0,
+      otrosCultivosPorcentajeRedondeo: this.otrosCultivosPctRedondeo || 0,
+      otrosCultivosPorcentajeRedondeoInase: this.otrosCultivosInasePctRedondeo || 0,
+
+      malezas: this.malezasGr || 0,
+      malezasInase: this.malezasInaseGr || 0,
+      malezasPorcentaje: this.malezasPct || 0,
+      malezasPorcentajeInase: this.malezasInasePct || 0,
+      malezasPorcentajeRedondeo: this.malezasPctRedondeo || 0,
+      malezasPorcentajeRedondeoInase: this.malezasInasePctRedondeo || 0,
+
+      malezasToleradas: this.malezasToleradasGr || 0,
+      malezasToleradasInase: this.malezasToleradasInaseGr || 0,
+      malezasToleradasPorcentaje: this.malezasToleradasPct || 0,
+      malezasToleradasPorcentajeInase: this.malezasToleradasInasePct || 0,
+      malezasToleradasPorcentajeRedondeo: this.malezasToleradasPctRedondeo || 0,
+      malezasToleradasPorcentajeRedondeoInase: this.malezasToleradasInasePctRedondeo || 0,
+
+      malezasToleranciaCero: this.malezasToleranciaCeroGr || 0,
+      malezasToleranciaCeroInase: this.malezasToleranciaCeroInaseGr || 0,
+      malezasToleranciaCeroPorcentaje: this.malezasToleranciaCeroPct || 0,
+      malezasToleranciaCeroPorcentajeInase: this.malezasToleranciaCeroInasePct || 0,
+      malezasToleranciaCeroPorcentajeRedondeo: this.malezasToleranciaCeroPctRedondeo || 0,
+      malezasToleranciaCeroPorcentajeRedondeoInase: this.malezasToleranciaCeroInasePctRedondeo || 0,
+
+      pesoTotal: this.pesoTotalGr || 0,
+      pesoTotalInase: this.pesoTotalInaseGr || 0,
+      pesoTotalPorcentaje: this.pesoTotalPct || 0,
+      pesoTotalPorcentajeInase: this.pesoTotalInasePct || 0,
+      
+      // Campo adicional del DTO
+      otrosCultivo: this.otrosCultivoField || 0,
+
+      fechaEstandar: this.fechaEstandar ? this.convertirFechaAISO(this.fechaEstandar) : null,
+      estandar: this.estandar || false,
+      activo: this.activo !== undefined ? this.activo : true,
+      reciboId: this.reciboId ? parseInt(this.reciboId) : 0,
+      repetido: this.repetido || false,
+      // En edición mantener valores originales, en creación serán establecidos en onSubmit
+      fechaCreacion: this.isEditing ? this.fechaCreacionOriginal : null,
+      fechaRepeticion: this.repetido ? new Date().toISOString() : null
+    };
+  }
+
+  private convertirFechaAISO(fecha: string): string {
+    // Si la fecha ya tiene formato ISO completo, la devolvemos tal como está
+    if (fecha.includes('T')) {
+      return fecha;
+    }
+    // Si es solo fecha (YYYY-MM-DD), le agregamos tiempo por defecto
+    return new Date(fecha + 'T00:00:00.000Z').toISOString();
+  }
+
+  private convertirNumeroONull(valor: number): number | null {
+    // Para esta API, 0 es un valor válido, solo convertimos null/undefined
+    return valor !== null && valor !== undefined ? valor : null;
   }
 
   onCancel() {

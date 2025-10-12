@@ -47,14 +47,7 @@ export class ListadoPmsComponent implements OnInit {
       { label: 'Diciembre', id: 12 }
     ];
 
-    anios = [
-      { label: '2020', id: 2020 },
-      { label: '2021', id: 2021 },
-      { label: '2022', id: 2022 },
-      { label: '2023', id: 2023 },
-      { label: '2024', id: 2024 },
-      { label: '2025', id: 2025 }
-    ];
+    anios: { label: string, id: number }[] = [];
 
     items: PMSDto[] = [];
 
@@ -84,6 +77,7 @@ export class ListadoPmsComponent implements OnInit {
             this.items = [];
           }
           console.log('PMS cargados:', this.items);
+          this.actualizarAniosDisponibles();
         },
         error: (err) => {
           console.error('Error cargando PMS:', err);
@@ -163,6 +157,34 @@ export class ListadoPmsComponent implements OnInit {
 
     goToHome() {
       this.router.navigate([this.loteId, this.reciboId, 'lote-analisis']);
+    }
+
+    /**
+     * Genera la lista de años disponibles basándose en los items cargados
+     */
+    actualizarAniosDisponibles() {
+        const aniosSet = new Set<number>();
+        
+        this.items.forEach(item => {
+            const fechaConTipo = this.getFechaConTipo(item);
+            if (fechaConTipo.fecha) {
+                const anio = this.getAnioFromFecha(fechaConTipo.fecha);
+                if (!isNaN(anio)) {
+                    aniosSet.add(anio);
+                }
+            }
+        });
+
+        // Convertir Set a array y ordenar de menor a mayor (más antiguos primero)
+        const aniosArray = Array.from(aniosSet).sort((a, b) => a - b);
+        
+        // Crear el array de objetos con label e id
+        this.anios = aniosArray.map(anio => ({
+            label: anio.toString(),
+            id: anio
+        }));
+
+        console.log('Años disponibles:', this.anios);
     }
 
     crearPMS() {

@@ -61,7 +61,7 @@
             <div class="divider-line"></div>
             <div class="item-content">
                 <div class="item-description">
-                    <p>Semilla pura: {{ item.semillaPura }}% - Material inerte: {{ item.materialInerte }}%</p>
+                    <p></p>
                 </div>
                 <div class="item-actions">
                     <button class="action-button view-button" (click)="navegarAVer(item)">
@@ -75,7 +75,7 @@
                     </button>
                 </div>
                 <div class="item-date">
-                    <span class="fecha">{{ getFechaConTipo(item).fecha }} ({{ getFechaConTipo(item).tipo }})</span>
+                    <span class="fecha">{{ getFechaFormateada(item) }} ({{ getFechaConTipo(item).tipo }})</span>
                 </div>
             </div>
         </div>
