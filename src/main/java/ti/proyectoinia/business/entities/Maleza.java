@@ -19,6 +19,6 @@ public class Maleza {
     @Column(name = "MALEZA_DESCRIPCION")
     private String descripcion;
 
-    @Column(name = "MAlEZA_ACTIVO")
+    @Column(name = "MALEZA_ACTIVO")
     private boolean activo;
 }

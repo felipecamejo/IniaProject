@@ -14,10 +14,12 @@ except Exception:
 from MassiveInsertFiles import (
     create_engine, sessionmaker, text,
     build_connection_string,
-    Lote, Maleza, Semilla, Usuario, Recibo,
+    Lote, Maleza, Semilla, Usuario, Recibo, Deposito,
     Dosn as DOSN, Cultivo, Germinacion, Pms as PMS, Pureza,
     PurezaPnotatum as PurezaPNotatum, Sanitario, Hongo, Tetrazolio,
-    UsuarioLote, SanitarioHongo,
+    UsuarioLote, SanitarioHongo, GramosPms, HumedadRecibo,
+    SanitarioHongoIds,
+    PurezaMalezaNormal, PurezaMalezaTolerada, PurezaMalezaToleranciaCero,
     GREEN, RED, CYAN, RESET, logger, logging
 )
 
@@ -40,10 +42,12 @@ MODELS = {
     "semilla": Semilla,
     "usuario": Usuario,
     "recibo": Recibo,
+    "deposito": Deposito,
     "dosn": DOSN,
     "cultivo": Cultivo,
     "germinacion": Germinacion,
     "pms": PMS,
+    "gramos_pms": GramosPms,
     "pureza": Pureza,
     "pureza_pnotatum": PurezaPNotatum,
     "sanitario": Sanitario,
@@ -51,6 +55,11 @@ MODELS = {
     "tetrazolio": Tetrazolio,
     "usuario_lote": UsuarioLote,
     "sanitario_hongo": SanitarioHongo,
+    "humedad_recibo": HumedadRecibo,
+    "sanitario_hongo_ids": SanitarioHongoIds,
+    "pureza_maleza_normal": PurezaMalezaNormal,
+    "pureza_maleza_tolerada": PurezaMalezaTolerada,
+    "pureza_maleza_tolerancia_cero": PurezaMalezaToleranciaCero,
 }
 
 

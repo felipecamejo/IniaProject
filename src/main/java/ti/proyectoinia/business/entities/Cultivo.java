@@ -21,4 +21,8 @@ public class Cultivo {
 
     @Column(name = "CULTIVO_ACTIVO")
     private boolean activo;
+
+    @ManyToOne
+    @JoinColumn(name = "DOSN_ID")
+    private DOSN dosn;
 }
