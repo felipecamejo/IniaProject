@@ -57,8 +57,16 @@ export interface PurezaDto {
   pesoTotalInase: number | null;
   pesoTotalPorcentaje: number | null;
   pesoTotalPorcentajeInase: number | null;
+  pesoTotalPorcentajeRedondeo: number | null;
+  pesoTotalPorcentajeRedondeoInase: number | null;
 
   otrosCultivo: number | null;
+
+  malezasNormalesId: number[] | null;
+  malezasToleradasId: number[] | null;
+  malezasToleranciaCeroId: number[] | null;
+  cultivosId: number[] | null;
+
 
   fechaEstandar: string | null;
   estandar: boolean;

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Data
@@ -119,6 +120,10 @@ public class Pureza {
     private Float pesoTotalPorcentaje;
     @Column(name = "PESO_TOTAL_PORCENTAJE_INASE")
     private Float pesoTotalPorcentajeInase;
+    @Column(name = "PESO_TOTAL_PORCENTAJE_REDONDEO")
+    private Float pesoTotalPorcentajeRedondeo;
+    @Column(name = "PESO_TOTAL_PORCENTAJE_REDONDEO_INASE")
+    private Float pesoTotalPorcentajeRedondeoInase;
 
     @Column(name = "OTROS_CULTIVO")
     private Float otrosCultivo;
@@ -144,4 +149,33 @@ public class Pureza {
 
     @Column(name = "PUREZA_FECHA_REPETICION")
     private Date fechaRepeticion;
+
+    @OneToMany
+    @JoinColumn(name = "PUREZA_ID")
+    private List<Cultivo> cultivos;
+
+    @ManyToMany
+    @JoinTable(
+            name = "PUREZA_MALEZA_NORMAL",
+            joinColumns = @JoinColumn(name = "PUREZA_ID"),
+            inverseJoinColumns = @JoinColumn(name = "MALEZA_ID")
+    )
+    private List<Maleza> malezasNormales;
+
+    @ManyToMany
+    @JoinTable(
+            name = "PUREZA_MALEZA_TOLERADA",
+            joinColumns = @JoinColumn(name = "PUREZA_ID"),
+            inverseJoinColumns = @JoinColumn(name = "MALEZA_ID")
+    )
+    private List<Maleza> ListamalezasToleradas;
+
+    @ManyToMany
+    @JoinTable(
+            name = "PUREZA_MALEZA_TOLERANCIA_CERO",
+            joinColumns = @JoinColumn(name = "PUREZA_ID"),
+            inverseJoinColumns = @JoinColumn(name = "MALEZA_ID")
+    )
+    private List<Maleza> ListamalezasToleranciaCero;
+
 }

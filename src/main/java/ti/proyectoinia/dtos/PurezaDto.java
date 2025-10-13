@@ -1,8 +1,10 @@
 package ti.proyectoinia.dtos;
 
+import jakarta.persistence.Column;
 import lombok.Data;
 import lombok.Generated;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class PurezaDto {
@@ -65,6 +67,8 @@ public class PurezaDto {
     private Float pesoTotalInase;
     private Float pesoTotalPorcentaje;
     private Float pesoTotalPorcentajeInase;
+    private Float pesoTotalPorcentajeRedondeo;
+    private Float pesoTotalPorcentajeRedondeoInase;
 
     private Float otrosCultivo;
 
@@ -81,6 +85,12 @@ public class PurezaDto {
     private Date fechaCreacion;
 
     private Date fechaRepeticion;
+
+    // Listas de malezas
+    private List<Long> malezasNormalesId;
+    private List<Long> malezasToleradasId;
+    private List<Long> malezasToleranciaCeroId;
+    private List<Long> cultivosId;
 
     @Generated
     public boolean equals(final Object o) {

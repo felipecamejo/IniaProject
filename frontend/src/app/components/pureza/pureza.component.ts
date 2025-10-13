@@ -4,6 +4,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PurezaDto } from '../../../models/Pureza.dto';
 import { PurezaService } from '../../../services/PurezaService';
+import { MalezaService } from '../../../services/MalezaService';
+import { CultivoService } from '../../../services/CultivoService';
+import { MalezaDto } from '../../../models/Maleza.dto';
+import { CultivoDto } from '../../../models/Cultivo.dto';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -32,6 +36,9 @@ export class PurezaComponent implements OnInit {
   isViewing: boolean = false;
   editingId: number | null = null;
   repetido: boolean = false;
+  
+  // Variable para prevenir múltiples envíos
+  isSubmitting: boolean = false;
 
    loteId: string | null = '';
     reciboId: string | null = '';
@@ -39,34 +46,44 @@ export class PurezaComponent implements OnInit {
   // Campo para mantener fechaCreacion original durante edición
   fechaCreacionOriginal: string | null = null;
 
-  // --- Multiselect Malezas tolerancia cero ---
-  malezasCeroOptions = [
-    { id: 1, label: 'Cuscuta spp.' },
-    { id: 2, label: 'Brassica spp.' },
-    { id: 3, label: 'Orobanche spp.' }
-  ];
+  // --- Listas dinámicas desde servicios ---
+  malezas: any[] = []; // Lista única de todas las malezas
+  cultivos: any[] = []; // Lista de cultivos
 
   fechaInia: string | null = null;
   fechaInase: string | null = null;
 
+  // --- Selecciones de usuario para cada tipo de maleza ---
   selectedMalezasCero: number[] = [];
+  selectedMalezasComunes: number[] = [];
+  selectedMalezasToleradas: number[] = [];
+  selectedCultivos: number[] = [];
 
+  // --- Estados de dropdowns ---
   isMalezasCeroDropdownOpen: boolean = false;
+  isMalezasComunesDropdownOpen: boolean = false;
+  isMalezasToleradasDropdownOpen: boolean = false;
+  isCultivosDropdownOpen: boolean = false;
 
+  // --- Textos de búsqueda ---
   malezasCeroSearchText: string = '';
+  malezasComunesSearchText: string = '';
+  malezasToleradasSearchText: string = '';
+  cultivosSearchText: string = '';
 
+  // === MÉTODOS PARA MALEZAS TOLERANCIA CERO ===
   toggleMalezasCeroDropdown() { this.isMalezasCeroDropdownOpen = !this.isMalezasCeroDropdownOpen; }
 
   getFilteredMalezasCero() {
     const search = this.malezasCeroSearchText.toLowerCase();
-    return this.malezasCeroOptions.filter(mc => mc.label.toLowerCase().includes(search));
+    return this.malezas.filter(maleza => maleza.nombre?.toLowerCase().includes(search) || maleza.id.toString().includes(search));
   }
 
   isMalezaCeroSelected(id: number) {
     return this.selectedMalezasCero.includes(id);
   }
 
-  toggleMalezaCeroSelection(maleza: {id: number, label: string}) {
+  toggleMalezaCeroSelection(maleza: {id: number, nombre: string}) {
     if (this.isMalezaCeroSelected(maleza.id)) {
       this.selectedMalezasCero = this.selectedMalezasCero.filter(id => id !== maleza.id);
     } else {
@@ -77,108 +94,82 @@ export class PurezaComponent implements OnInit {
   getSelectedMalezasCeroText() {
     if (this.selectedMalezasCero.length === 0) return 'Seleccionar malezas tolerancia cero...';
     return this.selectedMalezasCero.map(id => {
-      const item = this.malezasCeroOptions.find(mc => mc.id === id);
-      return item ? item.label : '';
+      const item = this.malezas.find(m => m.id === id);
+      return item ? item.nombre : '';
     }).join(', ');
   }
 
-  // --- Multiselect Malezas comunes ---
-  malezasComunesOptions = [
-    { id: 1, label: 'Amaranthus retroflexus' },
-    { id: 2, label: 'Chenopodium album' },
-    { id: 3, label: 'Echinochloa crus-galli' },
-    { id: 4, label: 'Solanum nigrum' }
-  ];
-
-  selectedMalezasComunes: number[] = [];
-
-  isMalezasComunesDropdownOpen: boolean = false;
-
-  malezasComunesSearchText: string = '';
-
+  // === MÉTODOS PARA MALEZAS COMUNES ===
   toggleMalezasComunesDropdown() {
     this.isMalezasComunesDropdownOpen = !this.isMalezasComunesDropdownOpen;
   }
 
   getFilteredMalezasComunes() {
     const search = this.malezasComunesSearchText.toLowerCase();
-    return this.malezasComunesOptions.filter(m => m.label.toLowerCase().includes(search));
+    return this.malezas.filter(maleza => maleza.nombre?.toLowerCase().includes(search) || maleza.id.toString().includes(search));
   }
 
   isMalezaComunSelected(id: number) {
     return this.selectedMalezasComunes.includes(id);
   }
 
-  toggleMalezaComunSelection(maleza: {id: number, label: string}) {
+  toggleMalezaComunSelection(maleza: {id: number, nombre: string}) {
     if (this.isMalezaComunSelected(maleza.id)) {
       this.selectedMalezasComunes = this.selectedMalezasComunes.filter(id => id !== maleza.id);
     } else {
       this.selectedMalezasComunes = [...this.selectedMalezasComunes, maleza.id];
     }
   }
+
   getSelectedMalezasComunesText() {
     if (this.selectedMalezasComunes.length === 0) return 'Seleccionar malezas comunes...';
     return this.selectedMalezasComunes.map(id => {
-      const item = this.malezasComunesOptions.find(m => m.id === id);
-      return item ? item.label : '';
+      const item = this.malezas.find(m => m.id === id);
+      return item ? item.nombre : '';
     }).join(', ');
   }
 
-  // --- Multiselect Malezas toleradas ---
-  malezasToleradasOptions = [
-    { id: 1, label: 'Lolium perenne' },
-    { id: 2, label: 'Poa annua' },
-    { id: 3, label: 'Capsella bursa-pastoris' }
-  ];
-  selectedMalezasToleradas: number[] = [];
-  isMalezasToleradasDropdownOpen: boolean = false;
-  malezasToleradasSearchText: string = '';
+  // === MÉTODOS PARA MALEZAS TOLERADAS ===
   toggleMalezasToleradasDropdown() { this.isMalezasToleradasDropdownOpen = !this.isMalezasToleradasDropdownOpen; }
+  
   getFilteredMalezasToleradas() {
     const search = this.malezasToleradasSearchText.toLowerCase();
-    return this.malezasToleradasOptions.filter(mt => mt.label.toLowerCase().includes(search));
+    return this.malezas.filter(maleza => maleza.nombre?.toLowerCase().includes(search) || maleza.id.toString().includes(search));
   }
-  isMalezaToleradaSelected(id: number) { return this.selectedMalezasToleradas.includes(id); }
-  toggleMalezaToleradaSelection(maleza: {id: number, label: string}) {
+  
+  isMalezaToleradaSelected(id: number) { 
+    return this.selectedMalezasToleradas.includes(id); 
+  }
+  
+  toggleMalezaToleradaSelection(maleza: {id: number, nombre: string}) {
     if (this.isMalezaToleradaSelected(maleza.id)) {
       this.selectedMalezasToleradas = this.selectedMalezasToleradas.filter(id => id !== maleza.id);
     } else {
       this.selectedMalezasToleradas = [...this.selectedMalezasToleradas, maleza.id];
     }
   }
+  
   getSelectedMalezasToleradasText() {
     if (this.selectedMalezasToleradas.length === 0) return 'Seleccionar malezas toleradas...';
     return this.selectedMalezasToleradas.map(id => {
-      const item = this.malezasToleradasOptions.find(mt => mt.id === id);
-      return item ? item.label : '';
+      const item = this.malezas.find(m => m.id === id);
+      return item ? item.nombre : '';
     }).join(', ');
   }
 
-  // --- Multiselect Otros cultivos ---
-  cultivosOptions = [
-    { id: 1, label: 'Trigo' },
-    { id: 2, label: 'Cebada' },
-    { id: 3, label: 'Avena' },
-    { id: 4, label: 'Centeno' }
-  ];
-  selectedCultivos: number[] = [];
-
-  isCultivosDropdownOpen: boolean = false;
-
-  cultivosSearchText: string = '';
-
+  // === MÉTODOS PARA CULTIVOS ===
   toggleCultivosDropdown() { this.isCultivosDropdownOpen = !this.isCultivosDropdownOpen; }
 
   getFilteredCultivos() {
     const search = this.cultivosSearchText.toLowerCase();
-    return this.cultivosOptions.filter(c => c.label.toLowerCase().includes(search));
+    return this.cultivos.filter(cultivo => cultivo.nombre?.toLowerCase().includes(search) || cultivo.id.toString().includes(search));
   }
 
   isCultivoSelected(id: number) {
     return this.selectedCultivos.includes(id);
   }
 
-  toggleCultivoSelection(cultivo: {id: number, label: string}) {
+  toggleCultivoSelection(cultivo: {id: number, nombre: string}) {
     if (this.isCultivoSelected(cultivo.id)) {
       this.selectedCultivos = this.selectedCultivos.filter(id => id !== cultivo.id);
     } else {
@@ -189,8 +180,8 @@ export class PurezaComponent implements OnInit {
   getSelectedCultivosText() {
     if (this.selectedCultivos.length === 0) return 'Seleccionar cultivos...';
     return this.selectedCultivos.map(id => {
-      const item = this.cultivosOptions.find(c => c.id === id);
-      return item ? item.label : '';
+      const item = this.cultivos.find(c => c.id === id);
+      return item ? item.nombre : '';
     }).join(', ');
   }
 
@@ -514,6 +505,8 @@ export class PurezaComponent implements OnInit {
     pesoTotalInase: 0,
     pesoTotalPorcentaje: 0,
     pesoTotalPorcentajeInase: 0,
+    pesoTotalPorcentajeRedondeo: 0,
+    pesoTotalPorcentajeRedondeoInase: 0,
     otrosCultivo: 0,
     fechaEstandar: null,
     estandar: false,
@@ -521,13 +514,19 @@ export class PurezaComponent implements OnInit {
     reciboId: null,
     repetido: false,
     fechaCreacion: null,
-    fechaRepeticion: null
+    fechaRepeticion: null,
+    malezasNormalesId: null,
+    malezasToleradasId: null,
+    malezasToleranciaCeroId: null,
+    cultivosId: null,
   };
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private purezaService: PurezaService
+    private purezaService: PurezaService,
+    private malezaService: MalezaService,
+    private cultivoService: CultivoService
   ) {}
 
   // Getter para determinar si está en modo readonly
@@ -538,6 +537,10 @@ export class PurezaComponent implements OnInit {
   ngOnInit() {
     this.loteId = this.route.snapshot.paramMap.get('loteId');
     this.reciboId = this.route.snapshot.paramMap.get('reciboId');
+
+    // Cargar listas de malezas y cultivos
+    this.cargarMalezas();
+    this.cargarCultivos();
 
     // Verificar si estamos en modo edición basado en la ruta
     this.route.params.subscribe(params => {
@@ -600,6 +603,33 @@ export class PurezaComponent implements OnInit {
 
   eliminarCultivo(idx: number) {
     this.otrosCultivosListado.splice(idx, 1);
+  }
+
+  // === MÉTODOS PARA CARGAR DATOS DESDE SERVICIOS ===
+  cargarMalezas() {
+    this.malezaService.listar().subscribe({
+      next: (response) => {
+        this.malezas = response.malezas || [];
+        console.log('Malezas cargadas:', this.malezas);
+      },
+      error: (error) => {
+        console.error('Error al cargar malezas:', error);
+        this.malezas = [];
+      }
+    });
+  }
+
+  cargarCultivos() {
+    this.cultivoService.listarCultivos().subscribe({
+      next: (cultivos) => {
+        this.cultivos = cultivos || [];
+        console.log('Cultivos cargados:', this.cultivos);
+      },
+      error: (error) => {
+        console.error('Error al cargar cultivos:', error);
+        this.cultivos = [];
+      }
+    });
   }
 
   obtenerLabel(id: string, lista: { id: string, label: string }[]): string {
@@ -674,7 +704,7 @@ export class PurezaComponent implements OnInit {
         this.malezasPctRedondeo = item.malezasPorcentajeRedondeo || 0;
         this.malezasToleradasPctRedondeo = item.malezasToleradasPorcentajeRedondeo || 0;
         this.malezasToleranciaCeroPctRedondeo = item.malezasToleranciaCeroPorcentajeRedondeo || 0;
-        // Nota: pesoTotalPctRedondeo no existe en el DTO, se calcula localmente
+        this.pesoTotalPctRedondeo = item.pesoTotalPorcentajeRedondeo || 0;
         
         // Campos INASE - Gramos
         this.pesoInicialInaseGr = item.pesoInicialInase || 0;
@@ -704,7 +734,7 @@ export class PurezaComponent implements OnInit {
         this.malezasInasePctRedondeo = item.malezasPorcentajeRedondeoInase || 0;
         this.malezasToleradasInasePctRedondeo = item.malezasToleradasPorcentajeRedondeoInase || 0;
         this.malezasToleranciaCeroInasePctRedondeo = item.malezasToleranciaCeroPorcentajeRedondeoInase || 0;
-        // Nota: pesoTotalInasePctRedondeo no existe en el DTO, se calcula localmente
+        this.pesoTotalInasePctRedondeo = item.pesoTotalPorcentajeRedondeoInase || 0;
         
         // Campo adicional otrosCultivo
         this.otrosCultivoField = (item as any).otrosCultivo || 0;
@@ -714,10 +744,26 @@ export class PurezaComponent implements OnInit {
         this.activo = item.activo !== undefined ? item.activo : true;
         this.repetido = item.repetido || false;
         
+        // === CARGAR SELECCIONES DE MALEZAS Y CULTIVOS ===
+        this.selectedMalezasComunes = item.malezasNormalesId || [];
+        this.selectedMalezasToleradas = item.malezasToleradasId || [];
+        this.selectedMalezasCero = item.malezasToleranciaCeroId || [];
+        this.selectedCultivos = item.cultivosId || [];
+        
         // Guardar fecha de creación original para no perderla en la edición
         this.fechaCreacionOriginal = item.fechaCreacion;
+        
+        // === ASEGURAR QUE RECIBO_ID SE MANTENGA DESDE LOS PARÁMETROS ===
+        // Si el item no tiene reciboId o es null, tomarlo de los parámetros de la ruta
+        if (!item.reciboId && this.reciboId) {
+          console.log('reciboId era null, tomándolo de parámetros:', this.reciboId);
+        } else if (item.reciboId) {
+          // Si viene del backend, actualizar la variable local
+          this.reciboId = item.reciboId.toString();
+          console.log('reciboId cargado desde backend:', this.reciboId);
+        }
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error al cargar datos para edición:', error);
       }
     });
@@ -726,7 +772,10 @@ export class PurezaComponent implements OnInit {
   private cargarDatos() {
     console.log('Modo creación - limpiando campos');
     // Limpiar campos para creación
+    this.isSubmitting = false; // Resetear estado de envío
     this.fecha = '';
+    
+    // Campos INIA - Gramos
     this.pesoInicialGr = 0;
     this.semillaPuraGr = 0;
     this.materiaInerteGr = 0;
@@ -735,14 +784,79 @@ export class PurezaComponent implements OnInit {
     this.malezasToleradasGr = 0;
     this.malezasToleranciaCeroGr = 0;
     this.pesoTotalGr = 0;
+    
+    // Campos INIA - Porcentajes
+    this.pesoInicialPct = 0;
+    this.semillaPuraPct = 0;
+    this.materiaInertePct = 0;
+    this.otrosCultivosPct = 0;
+    this.malezasPct = 0;
+    this.malezasToleradasPct = 0;
+    this.malezasToleranciaCeroPct = 0;
+    this.pesoTotalPct = 0;
+    
+    // Campos INIA - Porcentajes de redondeo
+    this.pesoInicialPctRedondeo = 0;
+    this.semillaPuraPctRedondeo = 0;
+    this.materiaInertePctRedondeo = 0;
+    this.otrosCultivosPctRedondeo = 0;
+    this.malezasPctRedondeo = 0;
+    this.malezasToleradasPctRedondeo = 0;
+    this.malezasToleranciaCeroPctRedondeo = 0;
+    this.pesoTotalPctRedondeo = 0;
+    
+    // Campos INASE - Gramos
+    this.pesoInicialInaseGr = 0;
+    this.semillaPuraInaseGr = 0;
+    this.materiaInerteInaseGr = 0;
+    this.otrosCultivosInaseGr = 0;
+    this.malezasInaseGr = 0;
+    this.malezasToleradasInaseGr = 0;
+    this.malezasToleranciaCeroInaseGr = 0;
+    this.pesoTotalInaseGr = 0;
+    
+    // Campos INASE - Porcentajes
+    this.pesoInicialInasePct = 0;
+    this.semillaPuraInasePct = 0;
+    this.materiaInerteInasePct = 0;
+    this.otrosCultivosInasePct = 0;
+    this.malezasInasePct = 0;
+    this.malezasToleradasInasePct = 0;
+    this.malezasToleranciaCeroInasePct = 0;
+    this.pesoTotalInasePct = 0;
+    
+    // Campos INASE - Porcentajes de redondeo
+    this.pesoInicialInasePctRedondeo = 0;
+    this.semillaPuraInasePctRedondeo = 0;
+    this.materiaInerteInasePctRedondeo = 0;
+    this.otrosCultivosInasePctRedondeo = 0;
+    this.malezasInasePctRedondeo = 0;
+    this.malezasToleradasInasePctRedondeo = 0;
+    this.malezasToleranciaCeroInasePctRedondeo = 0;
+    this.pesoTotalInasePctRedondeo = 0;
+    
+    // Otros campos
     this.otrosCultivoField = 0;
     this.fechaEstandar = '';
     this.estandar = false;
     this.repetido = false;
     this.fechaCreacionOriginal = null;
+    
+    // === LIMPIAR SELECCIONES DE MALEZAS Y CULTIVOS ===
+    this.selectedMalezasComunes = [];
+    this.selectedMalezasToleradas = [];
+    this.selectedMalezasCero = [];
+    this.selectedCultivos = [];
   }
 
   onSubmit() {
+    // Prevenir múltiples envíos
+    if (this.isSubmitting) {
+      console.log('Ya se está enviando el formulario, ignorando nueva llamada');
+      return;
+    }
+    
+    this.isSubmitting = true;
     let purezaData: PurezaDto = this.buildPurezaDto();
 
     // Debugging: mostrar exactamente qué datos se están enviando
@@ -755,14 +869,19 @@ export class PurezaComponent implements OnInit {
       // El fechaCreacion y otros campos críticos ya vienen del buildPurezaDto()
       console.log('Editando pureza existente con ID:', this.editingId);
       console.log('purezaData:', JSON.stringify(purezaData, null, 2));
-      
+
+      purezaData.fechaCreacion = this.fechaCreacionOriginal ? this.convertirFechaAISO(this.fechaCreacionOriginal) : null;
+      console.log("id:", this.getReciboId())
+      purezaData.reciboId = this.getReciboId();
       this.purezaService.editar(purezaData).subscribe({
-        next: (response) => {
+        next: (response: any) => {
           console.log('Pureza actualizada exitosamente:', response);
+          this.isSubmitting = false;
           this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error al actualizar la pureza:', error);
+          this.isSubmitting = false;
         }
       });
     } else {
@@ -777,12 +896,14 @@ export class PurezaComponent implements OnInit {
       console.log('purezaData:', JSON.stringify(purezaData, null, 2));
       
       this.purezaService.crear(purezaData).subscribe({
-        next: (response) => {
+        next: (response: any) => {
           console.log('Pureza creada exitosamente:', response);
+          this.isSubmitting = false;
           this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error al crear la pureza:', error);
+          this.isSubmitting = false;
         }
       });
     }
@@ -847,14 +968,22 @@ export class PurezaComponent implements OnInit {
       pesoTotalInase: this.pesoTotalInaseGr || 0,
       pesoTotalPorcentaje: this.pesoTotalPct || 0,
       pesoTotalPorcentajeInase: this.pesoTotalInasePct || 0,
+      pesoTotalPorcentajeRedondeo: this.pesoTotalPctRedondeo || 0,
+      pesoTotalPorcentajeRedondeoInase: this.pesoTotalInasePctRedondeo || 0,
       
       // Campo adicional del DTO
       otrosCultivo: this.otrosCultivoField || 0,
 
+      // === NUEVOS CAMPOS PARA IDS DE SELECCIONES ===
+      malezasNormalesId: this.selectedMalezasComunes.length > 0 ? this.selectedMalezasComunes : null,
+      malezasToleradasId: this.selectedMalezasToleradas.length > 0 ? this.selectedMalezasToleradas : null,
+      malezasToleranciaCeroId: this.selectedMalezasCero.length > 0 ? this.selectedMalezasCero : null,
+      cultivosId: this.selectedCultivos.length > 0 ? this.selectedCultivos : null,
+
       fechaEstandar: this.fechaEstandar ? this.convertirFechaAISO(this.fechaEstandar) : null,
       estandar: this.estandar || false,
       activo: this.activo !== undefined ? this.activo : true,
-      reciboId: this.reciboId ? parseInt(this.reciboId) : 0,
+      reciboId: this.getReciboId(),
       repetido: this.repetido || false,
       // En edición mantener valores originales, en creación serán establecidos en onSubmit
       fechaCreacion: this.isEditing ? this.fechaCreacionOriginal : null,
@@ -874,6 +1003,21 @@ export class PurezaComponent implements OnInit {
   private convertirNumeroONull(valor: number): number | null {
     // Para esta API, 0 es un valor válido, solo convertimos null/undefined
     return valor !== null && valor !== undefined ? valor : null;
+  }
+
+  private getReciboId(): number {
+    // Prioridad: 1) reciboId de la instancia, 2) parámetro de ruta, 3) valor por defecto
+    if (this.reciboId) {
+      return parseInt(this.reciboId);
+    }
+    
+    const reciboIdParam = this.route.snapshot.paramMap.get('reciboId');
+    if (reciboIdParam) {
+      return parseInt(reciboIdParam);
+    }
+    
+    console.warn('No se pudo obtener reciboId, usando 0 por defecto');
+    return 0;
   }
 
   onCancel() {

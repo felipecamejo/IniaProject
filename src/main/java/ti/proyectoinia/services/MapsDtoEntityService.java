@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import ti.proyectoinia.business.entities.*;
 import ti.proyectoinia.dtos.*;
 import ti.proyectoinia.business.repositories.ReciboRepository;
+import ti.proyectoinia.business.repositories.CultivoRepository;
+import ti.proyectoinia.business.repositories.MalezaRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Date;
@@ -19,6 +21,10 @@ public class MapsDtoEntityService {
     private ReciboRepository reciboRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private CultivoRepository cultivoRepository;
+    @Autowired
+    private MalezaRepository malezaRepository;
 
     // Formato ISO simple para fechas tipo "2024-01-15T10:30:00"
     private static final DateTimeFormatter ISO_LOCAL_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -58,6 +64,24 @@ public class MapsDtoEntityService {
         
         return reciboRepository.findById(reciboId)
             .filter(Recibo::isActivo)
+            .orElse(null);
+    }
+
+    public Cultivo getValidCultivo(Long cultivoId) {
+        if (cultivoId == null) {
+            return null;
+        }
+        return cultivoRepository.findById(cultivoId)
+            .filter(Cultivo::isActivo)
+            .orElse(null);
+    }
+
+    public Maleza getValidMaleza(Long malezaId) {
+        if (malezaId == null) {
+            return null;
+        }
+        return malezaRepository.findById(malezaId)
+            .filter(Maleza::isActivo)
             .orElse(null);
     }
 
@@ -456,11 +480,37 @@ public class MapsDtoEntityService {
         dto.setRepetido(pureza.isRepetido());
         dto.setFechaCreacion(pureza.getFechaCreacion());
         dto.setFechaRepeticion(pureza.getFechaRepeticion());
+        dto.setPesoTotalPorcentajeRedondeo(pureza.getPesoTotalPorcentajeRedondeo());
+        dto.setPesoTotalPorcentajeRedondeoInase(pureza.getPesoTotalPorcentajeRedondeoInase());
+
+        // Mapeo de cultivos
+        if (pureza.getCultivos() != null) {
+            dto.setCultivosId(pureza.getCultivos().stream().map(Cultivo::getId).collect(Collectors.toList()));
+        } else {
+            dto.setCultivosId(null);
+        }
+        // Mapeo de malezas normales
+        if (pureza.getMalezasNormales() != null) {
+            dto.setMalezasNormalesId(pureza.getMalezasNormales().stream().map(Maleza::getId).collect(Collectors.toList()));
+        } else {
+            dto.setMalezasNormalesId(null);
+        }
+        // Mapeo de malezas toleradas
+        if (pureza.getListamalezasToleradas() != null) {
+            dto.setMalezasToleradasId(pureza.getListamalezasToleradas().stream().map(Maleza::getId).collect(Collectors.toList()));
+        } else {
+            dto.setMalezasToleradasId(null);
+        }
+        // Mapeo de malezas tolerancia cero
+        if (pureza.getListamalezasToleranciaCero() != null) {
+            dto.setMalezasToleranciaCeroId(pureza.getListamalezasToleranciaCero().stream().map(Maleza::getId).collect(Collectors.toList()));
+        } else {
+            dto.setMalezasToleranciaCeroId(null);
+        }
 
         if (pureza.getRecibo() != null) {
             dto.setReciboId(pureza.getRecibo().getId());
         } else {
-
             dto.setReciboId(null);
         }
 
@@ -531,8 +581,46 @@ public class MapsDtoEntityService {
         pureza.setRepetido(dto.isRepetido());
         pureza.setFechaCreacion(dto.getFechaCreacion());
         pureza.setFechaRepeticion(dto.getFechaRepeticion());
+        pureza.setPesoTotalPorcentajeRedondeo(dto.getPesoTotalPorcentajeRedondeo());
+        pureza.setPesoTotalPorcentajeRedondeoInase(dto.getPesoTotalPorcentajeRedondeoInase());
 
-        // Validar y obtener el recibo si existe
+        // Mapeo de cultivos
+        if (dto.getCultivosId() != null) {
+            List<Cultivo> cultivos = dto.getCultivosId().stream()
+                .map(this::getValidCultivo)
+                .collect(Collectors.toList());
+            pureza.setCultivos(cultivos);
+        } else {
+            pureza.setCultivos(null);
+        }
+        // Mapeo de malezas normales
+        if (dto.getMalezasNormalesId() != null) {
+            List<Maleza> malezasNormales = dto.getMalezasNormalesId().stream()
+                .map(this::getValidMaleza)
+                .collect(Collectors.toList());
+            pureza.setMalezasNormales(malezasNormales);
+        } else {
+            pureza.setMalezasNormales(null);
+        }
+        // Mapeo de malezas toleradas
+        if (dto.getMalezasToleradasId() != null) {
+            List<Maleza> malezasToleradas = dto.getMalezasToleradasId().stream()
+                .map(this::getValidMaleza)
+                .collect(Collectors.toList());
+            pureza.setListamalezasToleradas(malezasToleradas);
+        } else {
+            pureza.setListamalezasToleradas(null);
+        }
+        // Mapeo de malezas tolerancia cero
+        if (dto.getMalezasToleranciaCeroId() != null) {
+            List<Maleza> malezasToleranciaCero = dto.getMalezasToleranciaCeroId().stream()
+                .map(this::getValidMaleza)
+                .collect(Collectors.toList());
+            pureza.setListamalezasToleranciaCero(malezasToleranciaCero);
+        } else {
+            pureza.setListamalezasToleranciaCero(null);
+        }
+
         Recibo recibo = getValidRecibo(dto.getReciboId());
         pureza.setRecibo(recibo);
 
