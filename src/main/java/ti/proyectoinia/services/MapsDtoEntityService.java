@@ -429,10 +429,6 @@ public class MapsDtoEntityService {
         dto.setFechaInia(pureza.getFechaInia());
         dto.setPesoInicial(pureza.getPesoInicial());
         dto.setPesoInicialInase(pureza.getPesoInicialInase());
-        dto.setPesoInicialPorcentaje(pureza.getPesoInicialPorcentaje());
-        dto.setPesoInicialPorcentajeInase(pureza.getPesoInicialPorcentajeInase());
-        dto.setPesoInicialPorcentajeRedondeo(pureza.getPesoInicialPorcentajeRedondeo());
-        dto.setPesoInicialPorcentajeRedondeoInase(pureza.getPesoInicialPorcentajeRedondeoInase());
         dto.setSemillaPura(pureza.getSemillaPura());
         dto.setSemillaPuraInase(pureza.getSemillaPuraInase());
         dto.setSemillaPuraPorcentaje(pureza.getSemillaPuraPorcentaje());
@@ -471,8 +467,6 @@ public class MapsDtoEntityService {
         dto.setMalezasToleranciaCeroPorcentajeRedondeoInase(pureza.getMalezasToleranciaCeroPorcentajeRedondeoInase());
         dto.setPesoTotal(pureza.getPesoTotal());
         dto.setPesoTotalInase(pureza.getPesoTotalInase());
-        dto.setPesoTotalPorcentaje(pureza.getPesoTotalPorcentaje());
-        dto.setPesoTotalPorcentajeInase(pureza.getPesoTotalPorcentajeInase());
         dto.setOtrosCultivo(pureza.getOtrosCultivo());
         dto.setFechaEstandar(pureza.getFechaEstandar());
         dto.setEstandar(pureza.getEstandar());
@@ -480,8 +474,6 @@ public class MapsDtoEntityService {
         dto.setRepetido(pureza.isRepetido());
         dto.setFechaCreacion(pureza.getFechaCreacion());
         dto.setFechaRepeticion(pureza.getFechaRepeticion());
-        dto.setPesoTotalPorcentajeRedondeo(pureza.getPesoTotalPorcentajeRedondeo());
-        dto.setPesoTotalPorcentajeRedondeoInase(pureza.getPesoTotalPorcentajeRedondeoInase());
 
         // Mapeo de cultivos
         if (pureza.getCultivos() != null) {
@@ -530,10 +522,6 @@ public class MapsDtoEntityService {
         pureza.setFechaInia(dto.getFechaInia());
         pureza.setPesoInicial(dto.getPesoInicial());
         pureza.setPesoInicialInase(dto.getPesoInicialInase());
-        pureza.setPesoInicialPorcentaje(dto.getPesoInicialPorcentaje());
-        pureza.setPesoInicialPorcentajeInase(dto.getPesoInicialPorcentajeInase());
-        pureza.setPesoInicialPorcentajeRedondeo(dto.getPesoInicialPorcentajeRedondeo());
-        pureza.setPesoInicialPorcentajeRedondeoInase(dto.getPesoInicialPorcentajeRedondeoInase());
         pureza.setSemillaPura(dto.getSemillaPura());
         pureza.setSemillaPuraInase(dto.getSemillaPuraInase());
         pureza.setSemillaPuraPorcentaje(dto.getSemillaPuraPorcentaje());
@@ -572,8 +560,6 @@ public class MapsDtoEntityService {
         pureza.setMalezasToleranciaCeroPorcentajeRedondeoInase(dto.getMalezasToleranciaCeroPorcentajeRedondeoInase());
         pureza.setPesoTotal(dto.getPesoTotal());
         pureza.setPesoTotalInase(dto.getPesoTotalInase());
-        pureza.setPesoTotalPorcentaje(dto.getPesoTotalPorcentaje());
-        pureza.setPesoTotalPorcentajeInase(dto.getPesoTotalPorcentajeInase());
         pureza.setOtrosCultivo(dto.getOtrosCultivo());
         pureza.setFechaEstandar(dto.getFechaEstandar());
         pureza.setEstandar(dto.isEstandar());
@@ -581,8 +567,6 @@ public class MapsDtoEntityService {
         pureza.setRepetido(dto.isRepetido());
         pureza.setFechaCreacion(dto.getFechaCreacion());
         pureza.setFechaRepeticion(dto.getFechaRepeticion());
-        pureza.setPesoTotalPorcentajeRedondeo(dto.getPesoTotalPorcentajeRedondeo());
-        pureza.setPesoTotalPorcentajeRedondeoInase(dto.getPesoTotalPorcentajeRedondeoInase());
 
         // Mapeo de cultivos
         if (dto.getCultivosId() != null) {

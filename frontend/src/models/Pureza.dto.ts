@@ -6,10 +6,6 @@ export interface PurezaDto {
 
   pesoInicial: number | null;
   pesoInicialInase: number | null;
-  pesoInicialPorcentaje: number | null;
-  pesoInicialPorcentajeInase: number | null;
-  pesoInicialPorcentajeRedondeo: number | null;
-  pesoInicialPorcentajeRedondeoInase: number | null;
 
   semillaPura: number | null;
   semillaPuraInase: number | null;
@@ -55,10 +51,6 @@ export interface PurezaDto {
 
   pesoTotal: number | null;
   pesoTotalInase: number | null;
-  pesoTotalPorcentaje: number | null;
-  pesoTotalPorcentajeInase: number | null;
-  pesoTotalPorcentajeRedondeo: number | null;
-  pesoTotalPorcentajeRedondeoInase: number | null;
 
   otrosCultivo: number | null;
 

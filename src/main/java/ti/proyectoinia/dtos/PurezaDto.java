@@ -16,10 +16,6 @@ public class PurezaDto {
 
     private Float pesoInicial;
     private Float pesoInicialInase;
-    private Float pesoInicialPorcentaje;
-    private Float pesoInicialPorcentajeInase;
-    private Float pesoInicialPorcentajeRedondeo;
-    private Float pesoInicialPorcentajeRedondeoInase;
 
     private Float semillaPura;
     private Float semillaPuraInase;
@@ -65,10 +61,6 @@ public class PurezaDto {
 
     private Float pesoTotal;
     private Float pesoTotalInase;
-    private Float pesoTotalPorcentaje;
-    private Float pesoTotalPorcentajeInase;
-    private Float pesoTotalPorcentajeRedondeo;
-    private Float pesoTotalPorcentajeRedondeoInase;
 
     private Float otrosCultivo;
 

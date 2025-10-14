@@ -25,14 +25,6 @@ public class Pureza {
     private Float pesoInicial;
     @Column(name = "PESO_INICIAL_INASE")
     private Float pesoInicialInase;
-    @Column(name = "PESO_INICIAL_PORCENTAJE")
-    private Float pesoInicialPorcentaje;
-    @Column(name = "PESO_INICIAL_PORCENTAJE_INASE")
-    private Float pesoInicialPorcentajeInase;
-    @Column(name = "PESO_INICIAL_PORCENTAJE_REDONDEO")
-    private Float pesoInicialPorcentajeRedondeo;
-    @Column(name = "PESO_INICIAL_PORCENTAJE_REDONDEO_INASE")
-    private Float pesoInicialPorcentajeRedondeoInase;
 
     @Column(name = "SEMILLA_PURA")
     private Float semillaPura;
@@ -116,14 +108,6 @@ public class Pureza {
     private Float pesoTotal;
     @Column(name = "PESO_TOTAL_INASE")
     private Float pesoTotalInase;
-    @Column(name = "PESO_TOTAL_PORCENTAJE")
-    private Float pesoTotalPorcentaje;
-    @Column(name = "PESO_TOTAL_PORCENTAJE_INASE")
-    private Float pesoTotalPorcentajeInase;
-    @Column(name = "PESO_TOTAL_PORCENTAJE_REDONDEO")
-    private Float pesoTotalPorcentajeRedondeo;
-    @Column(name = "PESO_TOTAL_PORCENTAJE_REDONDEO_INASE")
-    private Float pesoTotalPorcentajeRedondeoInase;
 
     @Column(name = "OTROS_CULTIVO")
     private Float otrosCultivo;
