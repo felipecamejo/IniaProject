@@ -30,10 +30,6 @@ public class Pureza {
     private Float semillaPura;
     @Column(name = "SEMILLA_PURA_INASE")
     private Float semillaPuraInase;
-    @Column(name = "SEMILLA_PURA_PORCENTAJE")
-    private Float semillaPuraPorcentaje;
-    @Column(name = "SEMILLA_PURA_PORCENTAJE_INASE")
-    private Float semillaPuraPorcentajeInase;
     @Column(name = "SEMILLA_PURA_PORCENTAJE_REDONDEO")
     private Float semillaPuraPorcentajeRedondeo;
     @Column(name = "SEMILLA_PURA_PORCENTAJE_REDONDEO_INASE")
@@ -43,10 +39,6 @@ public class Pureza {
     private Float materialInerte;
     @Column(name = "MATERIAL_INERTE_INASE")
     private Float materialInerteInase;
-    @Column(name = "MATERIAL_INERTE_PORCENTAJE")
-    private Float materialInertePorcentaje;
-    @Column(name = "MATERIAL_INERTE_PORCENTAJE_INASE")
-    private Float materialInertePorcentajeInase;
     @Column(name = "MATERIAL_INERTE_PORCENTAJE_REDONDEO")
     private Float materialInertePorcentajeRedondeo;
     @Column(name = "MATERIAL_INERTE_PORCENTAJE_REDONDEO_INASE")
@@ -56,10 +48,6 @@ public class Pureza {
     private Float otrosCultivos;
     @Column(name = "OTROS_CULTIVOS_INASE")
     private Float otrosCultivosInase;
-    @Column(name = "OTROS_CULTIVOS_PORCENTAJE")
-    private Float otrosCultivosPorcentaje;
-    @Column(name = "OTROS_CULTIVOS_PORCENTAJE_INASE")
-    private Float otrosCultivosPorcentajeInase;
     @Column(name = "OTROS_CULTIVOS_PORCENTAJE_REDONDEO")
     private Float otrosCultivosPorcentajeRedondeo;
     @Column(name = "OTROS_CULTIVOS_PORCENTAJE_REDONDEO_INASE")
@@ -69,10 +57,6 @@ public class Pureza {
     private Float malezas;
     @Column(name = "MALEZAS_INASE")
     private Float malezasInase;
-    @Column(name = "MALEZAS_PORCENTAJE")
-    private Float malezasPorcentaje;
-    @Column(name = "MALEZAS_PORCENTAJE_INASE")
-    private Float malezasPorcentajeInase;
     @Column(name = "MALEZAS_PORCENTAJE_REDONDEO")
     private Float malezasPorcentajeRedondeo;
     @Column(name = "MALEZAS_PORCENTAJE_REDONDEO_INASE")
@@ -82,10 +66,6 @@ public class Pureza {
     private Float malezasToleradas;
     @Column(name = "MALEZAS_TOLERADAS_INASE")
     private Float malezasToleradasInase;
-    @Column(name = "MALEZAS_TOLERADAS_PORCENTAJE")
-    private Float malezasToleradasPorcentaje;
-    @Column(name = "MALEZAS_TOLERADAS_PORCENTAJE_INASE")
-    private Float malezasToleradasPorcentajeInase;
     @Column(name = "MALEZAS_TOLERADAS_PORCENTAJE_REDONDEO")
     private Float malezasToleradasPorcentajeRedondeo;
     @Column(name = "MALEZAS_TOLERADAS_PORCENTAJE_REDONDEO_INASE")
@@ -95,10 +75,6 @@ public class Pureza {
     private Float malezasToleranciaCero;
     @Column(name = "MALEZAS_TOLERANCIA_CERO_INASE")
     private Float malezasToleranciaCeroInase;
-    @Column(name = "MALEZAS_TOLERANCIA_CERO_PORCENTAJE")
-    private Float malezasToleranciaCeroPorcentaje;
-    @Column(name = "MALEZAS_TOLERANCIA_CERO_PORCENTAJE_INASE")
-    private Float malezasToleranciaCeroPorcentajeInase;
     @Column(name = "MALEZAS_TOLERANCIA_CERO_PORCENTAJE_REDONDEO")
     private Float malezasToleranciaCeroPorcentajeRedondeo;
     @Column(name = "MALEZAS_TOLERANCIA_CERO_PORCENTAJE_REDONDEO_INASE")

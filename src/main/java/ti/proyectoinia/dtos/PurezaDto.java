@@ -19,43 +19,31 @@ public class PurezaDto {
 
     private Float semillaPura;
     private Float semillaPuraInase;
-    private Float semillaPuraPorcentaje;
-    private Float semillaPuraPorcentajeInase;
     private Float semillaPuraPorcentajeRedondeo;
     private Float semillaPuraPorcentajeRedondeoInase;
 
     private Float materialInerte;
     private Float materialInerteInase;
-    private Float materialInertePorcentaje;
-    private Float materialInertePorcentajeInase;
     private Float materialInertePorcentajeRedondeo;
     private Float materialInertePorcentajeRedondeoInase;
 
     private Float otrosCultivos;
     private Float otrosCultivosInase;
-    private Float otrosCultivosPorcentaje;
-    private Float otrosCultivosPorcentajeInase;
     private Float otrosCultivosPorcentajeRedondeo;
     private Float otrosCultivosPorcentajeRedondeoInase;
 
     private Float malezas;
     private Float malezasInase;
-    private Float malezasPorcentaje;
-    private Float malezasPorcentajeInase;
     private Float malezasPorcentajeRedondeo;
     private Float malezasPorcentajeRedondeoInase;
 
     private Float malezasToleradas;
     private Float malezasToleradasInase;
-    private Float malezasToleradasPorcentaje;
-    private Float malezasToleradasPorcentajeInase;
     private Float malezasToleradasPorcentajeRedondeo;
     private Float malezasToleradasPorcentajeRedondeoInase;
 
     private Float malezasToleranciaCero;
     private Float malezasToleranciaCeroInase;
-    private Float malezasToleranciaCeroPorcentaje;
-    private Float malezasToleranciaCeroPorcentajeInase;
     private Float malezasToleranciaCeroPorcentajeRedondeo;
     private Float malezasToleranciaCeroPorcentajeRedondeoInase;
 

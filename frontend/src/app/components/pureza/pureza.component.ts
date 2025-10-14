@@ -602,38 +602,26 @@ export class PurezaComponent implements OnInit {
     pesoInicialInase: 0,
     semillaPura: 0,
     semillaPuraInase: 0,
-    semillaPuraPorcentaje: 0,
-    semillaPuraPorcentajeInase: 0,
     semillaPuraPorcentajeRedondeo: 0,
     semillaPuraPorcentajeRedondeoInase: 0,
     materialInerte: 0,
     materialInerteInase: 0,
-    materialInertePorcentaje: 0,
-    materialInertePorcentajeInase: 0,
     materialInertePorcentajeRedondeo: 0,
     materialInertePorcentajeRedondeoInase: 0,
     otrosCultivos: 0,
     otrosCultivosInase: 0,
-    otrosCultivosPorcentaje: 0,
-    otrosCultivosPorcentajeInase: 0,
     otrosCultivosPorcentajeRedondeo: 0,
     otrosCultivosPorcentajeRedondeoInase: 0,
     malezas: 0,
     malezasInase: 0,
-    malezasPorcentaje: 0,
-    malezasPorcentajeInase: 0,
     malezasPorcentajeRedondeo: 0,
     malezasPorcentajeRedondeoInase: 0,
     malezasToleradas: 0,
     malezasToleradasInase: 0,
-    malezasToleradasPorcentaje: 0,
-    malezasToleradasPorcentajeInase: 0,
     malezasToleradasPorcentajeRedondeo: 0,
     malezasToleradasPorcentajeRedondeoInase: 0,
     malezasToleranciaCero: 0,
     malezasToleranciaCeroInase: 0,
-    malezasToleranciaCeroPorcentaje: 0,
-    malezasToleranciaCeroPorcentajeInase: 0,
     malezasToleranciaCeroPorcentajeRedondeo: 0,
     malezasToleranciaCeroPorcentajeRedondeoInase: 0,
     pesoTotal: 0,
@@ -817,15 +805,6 @@ export class PurezaComponent implements OnInit {
         this.malezasToleranciaCeroGr = item.malezasToleranciaCero || 0;
         this.pesoTotalGr = item.pesoTotal || 0;
         
-        // Campos INIA - Porcentajes normales
-        this.semillaPuraPct = item.semillaPuraPorcentaje || 0;
-        this.materiaInertePct = item.materialInertePorcentaje || 0;
-        this.otrosCultivosPct = item.otrosCultivosPorcentaje || 0;
-        this.malezasPct = item.malezasPorcentaje || 0;
-        this.malezasToleradasPct = item.malezasToleradasPorcentaje || 0;
-        this.malezasToleranciaCeroPct = item.malezasToleranciaCeroPorcentaje || 0;
-    
-        
         // Campos INIA - Porcentajes redondeo
         this.semillaPuraPctRedondeo = item.semillaPuraPorcentajeRedondeo || 0;
         this.materiaInertePctRedondeo = item.materialInertePorcentajeRedondeo || 0;
@@ -843,14 +822,6 @@ export class PurezaComponent implements OnInit {
         this.malezasToleradasInaseGr = item.malezasToleradasInase || 0;
         this.malezasToleranciaCeroInaseGr = item.malezasToleranciaCeroInase || 0;
         this.pesoTotalInaseGr = item.pesoTotalInase || 0;
-        
-        // Campos INASE - Porcentajes normales
-        this.semillaPuraInasePct = item.semillaPuraPorcentajeInase || 0;
-        this.materiaInerteInasePct = item.materialInertePorcentajeInase || 0;
-        this.otrosCultivosInasePct = item.otrosCultivosPorcentajeInase || 0;
-        this.malezasInasePct = item.malezasPorcentajeInase || 0;
-        this.malezasToleradasInasePct = item.malezasToleradasPorcentajeInase || 0;
-        this.malezasToleranciaCeroInasePct = item.malezasToleranciaCeroPorcentajeInase || 0;
         
         // Campos INASE - Porcentajes redondeo
         this.semillaPuraInasePctRedondeo = item.semillaPuraPorcentajeRedondeoInase || 0;
@@ -1040,43 +1011,31 @@ export class PurezaComponent implements OnInit {
       
       semillaPura: this.semillaPuraGr || 0,
       semillaPuraInase: this.semillaPuraInaseGr || 0,
-      semillaPuraPorcentaje: this.semillaPuraPct || 0,
-      semillaPuraPorcentajeInase: this.semillaPuraInasePct || 0,
       semillaPuraPorcentajeRedondeo: this.semillaPuraPctRedondeo || 0,
       semillaPuraPorcentajeRedondeoInase: this.semillaPuraInasePctRedondeo || 0,
 
       materialInerte: this.materiaInerteGr || 0,
       materialInerteInase: this.materiaInerteInaseGr || 0,
-      materialInertePorcentaje: this.materiaInertePct || 0,
-      materialInertePorcentajeInase: this.materiaInerteInasePct || 0,
       materialInertePorcentajeRedondeo: this.materiaInertePctRedondeo || 0,
       materialInertePorcentajeRedondeoInase: this.materiaInerteInasePctRedondeo || 0,
 
       otrosCultivos: this.otrosCultivosGr || 0,
       otrosCultivosInase: this.otrosCultivosInaseGr || 0,
-      otrosCultivosPorcentaje: this.otrosCultivosPct || 0,
-      otrosCultivosPorcentajeInase: this.otrosCultivosInasePct || 0,
       otrosCultivosPorcentajeRedondeo: this.otrosCultivosPctRedondeo || 0,
       otrosCultivosPorcentajeRedondeoInase: this.otrosCultivosInasePctRedondeo || 0,
 
       malezas: this.malezasGr || 0,
       malezasInase: this.malezasInaseGr || 0,
-      malezasPorcentaje: this.malezasPct || 0,
-      malezasPorcentajeInase: this.malezasInasePct || 0,
       malezasPorcentajeRedondeo: this.malezasPctRedondeo || 0,
       malezasPorcentajeRedondeoInase: this.malezasInasePctRedondeo || 0,
 
       malezasToleradas: this.malezasToleradasGr || 0,
       malezasToleradasInase: this.malezasToleradasInaseGr || 0,
-      malezasToleradasPorcentaje: this.malezasToleradasPct || 0,
-      malezasToleradasPorcentajeInase: this.malezasToleradasInasePct || 0,
       malezasToleradasPorcentajeRedondeo: this.malezasToleradasPctRedondeo || 0,
       malezasToleradasPorcentajeRedondeoInase: this.malezasToleradasInasePctRedondeo || 0,
 
       malezasToleranciaCero: this.malezasToleranciaCeroGr || 0,
       malezasToleranciaCeroInase: this.malezasToleranciaCeroInaseGr || 0,
-      malezasToleranciaCeroPorcentaje: this.malezasToleranciaCeroPct || 0,
-      malezasToleranciaCeroPorcentajeInase: this.malezasToleranciaCeroInasePct || 0,
       malezasToleranciaCeroPorcentajeRedondeo: this.malezasToleranciaCeroPctRedondeo || 0,
       malezasToleranciaCeroPorcentajeRedondeoInase: this.malezasToleranciaCeroInasePctRedondeo || 0,
 
