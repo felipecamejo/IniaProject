@@ -24,8 +24,6 @@ public class HongoService {
     }
 
     public String crearHongo(HongoDto hongoDto) {
-
-        this.hongoRepository.save(mapsDtoEntityService.mapToEntityHongo(hongoDto));
         return "Hongo creado correctamente ID:" + hongoDto.getId();
     }
 

@@ -36,11 +36,8 @@ public class Recibo {
     @Column(name = "CULTIVAR")
     private String cultivar;
 
-    @Column(name = "DEPOSITO")
-    private String deposito;
-
     @Column(name = "DEPOSITO_ID")
-    private Integer depositoId;
+    private Long depositoId;
 
     @Column(name = "ESTADO_ENUM")
     @Enumerated(EnumType.STRING)
@@ -82,12 +79,4 @@ public class Recibo {
 
     @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Tetrazolio> tetrazolioAnalisis;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "RECIBO_HUMEDADES",
-        joinColumns = @JoinColumn(name = "RECIBO_ID"),
-        inverseJoinColumns = @JoinColumn(name = "HUMEDAD_RECIBO_ID")
-    )
-    private List<HumedadRecibo> humedades;
 }

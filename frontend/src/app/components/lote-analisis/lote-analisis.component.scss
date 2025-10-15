@@ -48,6 +48,16 @@
   &:hover {
     transform: scale(1.05);
   }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
 }
 
 .button-circle {

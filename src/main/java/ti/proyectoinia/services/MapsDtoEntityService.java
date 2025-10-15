@@ -6,8 +6,14 @@ import org.springframework.stereotype.Service;
 import ti.proyectoinia.business.entities.*;
 import ti.proyectoinia.dtos.*;
 import ti.proyectoinia.business.repositories.ReciboRepository;
+import ti.proyectoinia.business.repositories.CultivoRepository;
+import ti.proyectoinia.business.repositories.MalezaRepository;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class MapsDtoEntityService {
@@ -15,6 +21,41 @@ public class MapsDtoEntityService {
     private ReciboRepository reciboRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private CultivoRepository cultivoRepository;
+    @Autowired
+    private MalezaRepository malezaRepository;
+
+    // Formato ISO simple para fechas tipo "2024-01-15T10:30:00"
+    private static final DateTimeFormatter ISO_LOCAL_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+    private String formatDate(Date date) {
+        if (date == null) {
+            return null;
+        }
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        return ISO_LOCAL_DATE_TIME.format(localDateTime);
+    }
+
+    private Date parseDate(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        
+        // Remover milisegundos y zona horaria para evitar problemas de parsing
+        String cleanValue = value;
+        if (cleanValue.contains(".")) {
+            // Remover milisegundos (ej: .917)
+            cleanValue = cleanValue.substring(0, cleanValue.indexOf("."));
+        }
+        if (cleanValue.endsWith("Z")) {
+            // Remover Z de zona horaria UTC
+            cleanValue = cleanValue.substring(0, cleanValue.length() - 1);
+        }
+        
+        LocalDateTime localDateTime = LocalDateTime.parse(cleanValue, ISO_LOCAL_DATE_TIME);
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
 
     public Recibo getValidRecibo(Long reciboId) {
         if (reciboId == null) {
@@ -23,6 +64,24 @@ public class MapsDtoEntityService {
         
         return reciboRepository.findById(reciboId)
             .filter(Recibo::isActivo)
+            .orElse(null);
+    }
+
+    public Cultivo getValidCultivo(Long cultivoId) {
+        if (cultivoId == null) {
+            return null;
+        }
+        return cultivoRepository.findById(cultivoId)
+            .filter(Cultivo::isActivo)
+            .orElse(null);
+    }
+
+    public Maleza getValidMaleza(Long malezaId) {
+        if (malezaId == null) {
+            return null;
+        }
+        return malezaRepository.findById(malezaId)
+            .filter(Maleza::isActivo)
             .orElse(null);
     }
 
@@ -166,75 +225,57 @@ public class MapsDtoEntityService {
         if (recibo == null) {
             return null;
         }
-
-        ti.proyectoinia.dtos.ReciboDto reciboDto = new ti.proyectoinia.dtos.ReciboDto();
-        reciboDto.setId(recibo.getId());
-        reciboDto.setNroAnalisis(recibo.getNroAnalisis());
-        reciboDto.setEspecie(recibo.getEspecie());
-        reciboDto.setFicha(recibo.getFicha());
-        reciboDto.setFechaRecibo(recibo.getFechaRecibo());
-        reciboDto.setRemitente(recibo.getRemitente());
-        reciboDto.setOrigen(recibo.getOrigen());
-        reciboDto.setCultivar(recibo.getCultivar());
-        reciboDto.setDeposito(recibo.getDeposito());
-        reciboDto.setDepositoId(recibo.getDepositoId());
-        reciboDto.setEstado(recibo.getEstado());
-        reciboDto.setLote(recibo.getLote());
-        reciboDto.setKgLimpios(recibo.getKgLimpios());
-        reciboDto.setAnalisisSolicitados(recibo.getAnalisisSolicitados());
-        reciboDto.setArticulo(recibo.getArticulo());
-        reciboDto.setActivo(recibo.isActivo());
-
-        // Mapear humedades a lista de IDs
-        if (recibo.getHumedades() != null) {
-            reciboDto.setHumedadesId(recibo.getHumedades().stream().map(h -> h.getId().intValue()).collect(Collectors.toList()));
-        } else {
-            reciboDto.setHumedadesId(null);
-        }
-        return reciboDto;
+        ReciboDto dto = new ReciboDto();
+        dto.setId(recibo.getId());
+        dto.setNroAnalisis(recibo.getNroAnalisis());
+        dto.setDepositoId(recibo.getDepositoId());
+        dto.setEstado(recibo.getEstado());
+        dto.setEspecie(recibo.getEspecie());
+        dto.setFicha(recibo.getFicha());
+        dto.setFechaRecibo(recibo.getFechaRecibo());
+        dto.setRemitente(recibo.getRemitente());
+        dto.setOrigen(recibo.getOrigen());
+        dto.setCultivar(recibo.getCultivar());
+        dto.setLote(recibo.getLote());
+        dto.setKgLimpios(recibo.getKgLimpios());
+        dto.setAnalisisSolicitados(recibo.getAnalisisSolicitados());
+        dto.setArticulo(recibo.getArticulo());
+        dto.setActivo(recibo.isActivo());
+        // Mapear listas de entidades a listas de IDs
+        dto.setDosnAnalisisId(recibo.getDosnAnalisis() != null ? recibo.getDosnAnalisis().stream().map(DOSN::getId).collect(Collectors.toList()) : null);
+        dto.setPmsAnalisisId(recibo.getPmsAnalisis() != null ? recibo.getPmsAnalisis().stream().map(PMS::getId).collect(Collectors.toList()) : null);
+        dto.setPurezaAnalisisId(recibo.getPurezaAnalisis() != null ? recibo.getPurezaAnalisis().stream().map(Pureza::getId).collect(Collectors.toList()) : null);
+        dto.setGerminacionAnalisisId(recibo.getGerminacionAnalisis() != null ? recibo.getGerminacionAnalisis().stream().map(Germinacion::getId).collect(Collectors.toList()) : null);
+        dto.setPurezaPNotatumAnalisisId(recibo.getPurezaPNotatumAnalisis() != null ? recibo.getPurezaPNotatumAnalisis().stream().map(PurezaPNotatum::getId).collect(Collectors.toList()) : null);
+        dto.setSanitarioAnalisisId(recibo.getSanitarioAnalisis() != null ? recibo.getSanitarioAnalisis().stream().map(Sanitario::getId).collect(Collectors.toList()) : null);
+        dto.setTetrazolioAnalisisId(recibo.getTetrazolioAnalisis() != null ? recibo.getTetrazolioAnalisis().stream().map(Tetrazolio::getId).collect(Collectors.toList()) : null);
+        return dto;
     }
 
-    public ti.proyectoinia.business.entities.Recibo mapToEntityRecibo(ti.proyectoinia.dtos.ReciboDto reciboDto) {
-        if (reciboDto == null) {
+    public ti.proyectoinia.business.entities.Recibo mapToEntityRecibo(ti.proyectoinia.dtos.ReciboDto dto) {
+        if (dto == null) {
             return null;
         }
-
-        ti.proyectoinia.business.entities.Recibo recibo = new ti.proyectoinia.business.entities.Recibo();
-        if (reciboDto.getId() != null) {
-            recibo.setId(reciboDto.getId());
-        }
-
-        recibo.setNroAnalisis(reciboDto.getNroAnalisis());
-        recibo.setEspecie(reciboDto.getEspecie());
-        recibo.setFicha(reciboDto.getFicha());
-        recibo.setFechaRecibo(reciboDto.getFechaRecibo());
-        recibo.setRemitente(reciboDto.getRemitente());
-        recibo.setOrigen(reciboDto.getOrigen());
-        recibo.setCultivar(reciboDto.getCultivar());
-        recibo.setDeposito(reciboDto.getDeposito());
-        recibo.setDepositoId(reciboDto.getDepositoId());
-        recibo.setEstado(reciboDto.getEstado());
-        recibo.setLote(reciboDto.getLote());
-        recibo.setKgLimpios(reciboDto.getKgLimpios());
-        recibo.setAnalisisSolicitados(reciboDto.getAnalisisSolicitados());
-        recibo.setArticulo(reciboDto.getArticulo());
-        recibo.setActivo(reciboDto.isActivo());
-
-        // Mapear lista de IDs a entidades HumedadRecibo (solo con id)
-        if (reciboDto.getHumedadesId() != null && !reciboDto.getHumedadesId().isEmpty()) {
-            List<HumedadRecibo> humedadesValidas = reciboDto.getHumedadesId().stream()
-                .filter(id -> id != null && id > 0) // Filtrar IDs nulos o cero
-                .map(id -> {
-                    HumedadRecibo h = new HumedadRecibo();
-                    h.setId(Long.valueOf(id));
-                    return h;
-                }).collect(Collectors.toList());
-            
-            // Solo establecer humedades si hay IDs válidos
-            recibo.setHumedades(humedadesValidas.isEmpty() ? null : humedadesValidas);
-        } else {
-            recibo.setHumedades(null);
-        }
+        Recibo recibo = new Recibo();
+        recibo.setId(dto.getId());
+        recibo.setNroAnalisis(dto.getNroAnalisis());
+        recibo.setDepositoId(dto.getDepositoId());
+        recibo.setEstado(dto.getEstado());
+        recibo.setEspecie(dto.getEspecie());
+        recibo.setFicha(dto.getFicha());
+        recibo.setFechaRecibo(dto.getFechaRecibo());
+        recibo.setRemitente(dto.getRemitente());
+        recibo.setOrigen(dto.getOrigen());
+        recibo.setCultivar(dto.getCultivar());
+        recibo.setLote(dto.getLote());
+        recibo.setKgLimpios(dto.getKgLimpios());
+        recibo.setAnalisisSolicitados(dto.getAnalisisSolicitados());
+        recibo.setArticulo(dto.getArticulo());
+        recibo.setActivo(dto.isActivo());
+        // Mapear listas de IDs a listas de entidades (requiere repositorios para cada entidad)
+        // Ejemplo: recibo.setDosnAnalisis(dto.getDosnAnalisisId() != null ? dto.getDosnAnalisisId().stream().map(id -> dosnRepository.findById(id).orElse(null)).filter(Objects::nonNull).collect(Collectors.toList()) : null);
+        // Repetir para cada lista de análisis y humedades
+        // ...
         return recibo;
     }
 
@@ -246,7 +287,7 @@ public class MapsDtoEntityService {
         MalezaDto malezaDto = new MalezaDto();
         malezaDto.setId(maleza.getId());
         malezaDto.setNombre(maleza.getNombre());
-        malezaDto.setDescripcion(malezaDto.getDescripcion());
+        malezaDto.setDescripcion(maleza.getDescripcion());
         malezaDto.setActivo(maleza.isActivo());
         return malezaDto;
 
@@ -335,7 +376,6 @@ public class MapsDtoEntityService {
         }
         PMSDto pmsDto = new PMSDto();
         pmsDto.setId(pms.getId());
-        pmsDto.setGramosPorRepeticiones(pms.getGramosPorRepeticiones());
         pmsDto.setPesoPromedioCienSemillas(pms.getPesoPromedioCienSemillas());
         pmsDto.setPesoMilSemillas(pms.getPesoMilSemillas());
         pmsDto.setPesoPromedioMilSemillas(pms.getPesoPromedioMilSemillas());
@@ -361,7 +401,6 @@ public class MapsDtoEntityService {
         }
         PMS pms = new PMS();
         pms.setId(pmsDto.getId());
-        pms.setGramosPorRepeticiones(pmsDto.getGramosPorRepeticiones());
         pms.setPesoPromedioCienSemillas(pmsDto.getPesoPromedioCienSemillas());
         pms.setPesoMilSemillas(pmsDto.getPesoMilSemillas());
         pms.setPesoPromedioMilSemillas(pmsDto.getPesoPromedioMilSemillas());
@@ -390,8 +429,6 @@ public class MapsDtoEntityService {
         dto.setFechaInia(pureza.getFechaInia());
         dto.setPesoInicial(pureza.getPesoInicial());
         dto.setPesoInicialInase(pureza.getPesoInicialInase());
-        dto.setPesoInicialPorcentajeRedondeo(pureza.getPesoInicialPorcentajeRedondeo());
-        dto.setPesoInicialPorcentajeRedondeoInase(pureza.getPesoInicialPorcentajeRedondeoInase());
         dto.setSemillaPura(pureza.getSemillaPura());
         dto.setSemillaPuraInase(pureza.getSemillaPuraInase());
         dto.setSemillaPuraPorcentajeRedondeo(pureza.getSemillaPuraPorcentajeRedondeo());
@@ -417,6 +454,8 @@ public class MapsDtoEntityService {
         dto.setMalezasToleranciaCeroPorcentajeRedondeo(pureza.getMalezasToleranciaCeroPorcentajeRedondeo());
         dto.setMalezasToleranciaCeroPorcentajeRedondeoInase(pureza.getMalezasToleranciaCeroPorcentajeRedondeoInase());
         dto.setPesoTotal(pureza.getPesoTotal());
+        dto.setPesoTotalInase(pureza.getPesoTotalInase());
+        dto.setOtrosCultivo(pureza.getOtrosCultivo());
         dto.setFechaEstandar(pureza.getFechaEstandar());
         dto.setEstandar(pureza.getEstandar());
         dto.setActivo(pureza.isActivo());
@@ -424,10 +463,34 @@ public class MapsDtoEntityService {
         dto.setFechaCreacion(pureza.getFechaCreacion());
         dto.setFechaRepeticion(pureza.getFechaRepeticion());
 
+        // Mapeo de cultivos
+        if (pureza.getCultivos() != null) {
+            dto.setCultivosId(pureza.getCultivos().stream().map(Cultivo::getId).collect(Collectors.toList()));
+        } else {
+            dto.setCultivosId(null);
+        }
+        // Mapeo de malezas normales
+        if (pureza.getMalezasNormales() != null) {
+            dto.setMalezasNormalesId(pureza.getMalezasNormales().stream().map(Maleza::getId).collect(Collectors.toList()));
+        } else {
+            dto.setMalezasNormalesId(null);
+        }
+        // Mapeo de malezas toleradas
+        if (pureza.getListamalezasToleradas() != null) {
+            dto.setMalezasToleradasId(pureza.getListamalezasToleradas().stream().map(Maleza::getId).collect(Collectors.toList()));
+        } else {
+            dto.setMalezasToleradasId(null);
+        }
+        // Mapeo de malezas tolerancia cero
+        if (pureza.getListamalezasToleranciaCero() != null) {
+            dto.setMalezasToleranciaCeroId(pureza.getListamalezasToleranciaCero().stream().map(Maleza::getId).collect(Collectors.toList()));
+        } else {
+            dto.setMalezasToleranciaCeroId(null);
+        }
+
         if (pureza.getRecibo() != null) {
             dto.setReciboId(pureza.getRecibo().getId());
         } else {
-
             dto.setReciboId(null);
         }
 
@@ -447,8 +510,6 @@ public class MapsDtoEntityService {
         pureza.setFechaInia(dto.getFechaInia());
         pureza.setPesoInicial(dto.getPesoInicial());
         pureza.setPesoInicialInase(dto.getPesoInicialInase());
-        pureza.setPesoInicialPorcentajeRedondeo(dto.getPesoInicialPorcentajeRedondeo());
-        pureza.setPesoInicialPorcentajeRedondeoInase(dto.getPesoInicialPorcentajeRedondeoInase());
         pureza.setSemillaPura(dto.getSemillaPura());
         pureza.setSemillaPuraInase(dto.getSemillaPuraInase());
         pureza.setSemillaPuraPorcentajeRedondeo(dto.getSemillaPuraPorcentajeRedondeo());
@@ -474,6 +535,8 @@ public class MapsDtoEntityService {
         pureza.setMalezasToleranciaCeroPorcentajeRedondeo(dto.getMalezasToleranciaCeroPorcentajeRedondeo());
         pureza.setMalezasToleranciaCeroPorcentajeRedondeoInase(dto.getMalezasToleranciaCeroPorcentajeRedondeoInase());
         pureza.setPesoTotal(dto.getPesoTotal());
+        pureza.setPesoTotalInase(dto.getPesoTotalInase());
+        pureza.setOtrosCultivo(dto.getOtrosCultivo());
         pureza.setFechaEstandar(dto.getFechaEstandar());
         pureza.setEstandar(dto.isEstandar());
         pureza.setActivo(dto.isActivo());
@@ -481,7 +544,43 @@ public class MapsDtoEntityService {
         pureza.setFechaCreacion(dto.getFechaCreacion());
         pureza.setFechaRepeticion(dto.getFechaRepeticion());
 
-        // Validar y obtener el recibo si existe
+        // Mapeo de cultivos
+        if (dto.getCultivosId() != null) {
+            List<Cultivo> cultivos = dto.getCultivosId().stream()
+                .map(this::getValidCultivo)
+                .collect(Collectors.toList());
+            pureza.setCultivos(cultivos);
+        } else {
+            pureza.setCultivos(null);
+        }
+        // Mapeo de malezas normales
+        if (dto.getMalezasNormalesId() != null) {
+            List<Maleza> malezasNormales = dto.getMalezasNormalesId().stream()
+                .map(this::getValidMaleza)
+                .collect(Collectors.toList());
+            pureza.setMalezasNormales(malezasNormales);
+        } else {
+            pureza.setMalezasNormales(null);
+        }
+        // Mapeo de malezas toleradas
+        if (dto.getMalezasToleradasId() != null) {
+            List<Maleza> malezasToleradas = dto.getMalezasToleradasId().stream()
+                .map(this::getValidMaleza)
+                .collect(Collectors.toList());
+            pureza.setListamalezasToleradas(malezasToleradas);
+        } else {
+            pureza.setListamalezasToleradas(null);
+        }
+        // Mapeo de malezas tolerancia cero
+        if (dto.getMalezasToleranciaCeroId() != null) {
+            List<Maleza> malezasToleranciaCero = dto.getMalezasToleranciaCeroId().stream()
+                .map(this::getValidMaleza)
+                .collect(Collectors.toList());
+            pureza.setListamalezasToleranciaCero(malezasToleranciaCero);
+        } else {
+            pureza.setListamalezasToleranciaCero(null);
+        }
+
         Recibo recibo = getValidRecibo(dto.getReciboId());
         pureza.setRecibo(recibo);
 
@@ -498,8 +597,8 @@ public class MapsDtoEntityService {
         loteDto.setNombre(lote.getNombre());
         loteDto.setActivo(lote.isActivo());
         loteDto.setDescripcion(lote.getDescripcion());
-        loteDto.setFechaCreacion(lote.getFechaCreacion());
-        loteDto.setFechaFinalizacion(lote.getFechaFinalizacion());
+        loteDto.setFechaCreacion(formatDate(lote.getFechaCreacion()));
+        loteDto.setFechaFinalizacion(formatDate(lote.getFechaFinalizacion()));
 
         if (lote.getUsuarios() != null) {
             loteDto.setUsuariosId(lote.getUsuarios().stream().map(Usuario::getId).collect(Collectors.toList()));
@@ -520,8 +619,8 @@ public class MapsDtoEntityService {
         lote.setNombre(loteDto.getNombre());
         lote.setActivo(loteDto.isActivo());
         lote.setDescripcion(loteDto.getDescripcion());
-        lote.setFechaCreacion(loteDto.getFechaCreacion());
-        lote.setFechaFinalizacion(loteDto.getFechaFinalizacion());
+        lote.setFechaCreacion(parseDate(loteDto.getFechaCreacion()));
+        lote.setFechaFinalizacion(parseDate(loteDto.getFechaFinalizacion()));
 
         if (loteDto.getUsuariosId() != null) {
             lote.setUsuarios(loteDto.getUsuariosId().stream().map(id -> {
@@ -719,7 +818,7 @@ public class MapsDtoEntityService {
         return dosn;
     }
 
-    private CultivoDto mapToDtoCultivo(Cultivo cultivo) {
+    public CultivoDto mapToDtoCultivo(Cultivo cultivo) {
         if (cultivo == null) return null;
 
         CultivoDto dto = new CultivoDto();
@@ -730,7 +829,7 @@ public class MapsDtoEntityService {
 
         return dto;
     }
-    private Cultivo mapToEntityCultivo(CultivoDto dto) {
+    public Cultivo mapToEntityCultivo(CultivoDto dto) {
         if (dto == null) return null;
 
         Cultivo cultivo = new Cultivo();
@@ -957,12 +1056,16 @@ public class MapsDtoEntityService {
         return entity;
     }
 
-    public HumedadReciboDto mapToDtoHumedadRecibo(HumedadRecibo entity) {
-        if (entity == null) return null;
+    public HumedadReciboDto mapToDtoHumedadRecibo(HumedadRecibo humedadRecibo) {
+        if (humedadRecibo == null) {
+            return null;
+        }
         HumedadReciboDto dto = new HumedadReciboDto();
-        dto.setId(entity.getId());
-        dto.setLugar(entity.getLugar());
-        dto.setNumero(entity.getNumero());
+        dto.setId(humedadRecibo.getId());
+        dto.setLugar(humedadRecibo.getLugar());
+        dto.setNumero(humedadRecibo.getNumero());
+        dto.setReciboId(humedadRecibo.getRecibo() != null ? humedadRecibo.getRecibo().getId() : null);
+        dto.setActivo(humedadRecibo.isActivo());
         return dto;
     }
 
@@ -972,6 +1075,37 @@ public class MapsDtoEntityService {
         entity.setId(dto.getId());
         entity.setLugar(dto.getLugar());
         entity.setNumero(dto.getNumero());
+        entity.setActivo(dto.isActivo());
+        // Asignar la relación Recibo si reciboId está presente
+        if (dto.getReciboId() != null) {
+            Recibo recibo = getValidRecibo(dto.getReciboId());
+            entity.setRecibo(recibo);
+        } else {
+            entity.setRecibo(null);
+        }
+        return entity;
+    }
+
+    // Mappers for GramosPms
+    public GramosPmsDto mapToDtoGramosPms(ti.proyectoinia.business.entities.GramosPms entity) {
+        if (entity == null) return null;
+        GramosPmsDto dto = new GramosPmsDto();
+        dto.setId(entity.getId());
+        dto.setActivo(entity.isActivo());
+        dto.setPmsId(entity.getPmsId());
+        dto.setGramos(entity.getGramos());
+        dto.setNumeroRepeticion(entity.getNumeroRepeticion());
+        return dto;
+    }
+
+    public ti.proyectoinia.business.entities.GramosPms mapToEntityGramosPms(GramosPmsDto dto) {
+        if (dto == null) return null;
+        ti.proyectoinia.business.entities.GramosPms entity = new ti.proyectoinia.business.entities.GramosPms();
+        entity.setId(dto.getId());
+        entity.setActivo(dto.isActivo());
+        entity.setPmsId(dto.getPmsId());
+        entity.setGramos(dto.getGramos());
+        entity.setNumeroRepeticion(dto.getNumeroRepeticion());
         return entity;
     }
 

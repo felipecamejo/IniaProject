@@ -2,7 +2,6 @@ package ti.proyectoinia.services;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import ti.proyectoinia.api.responses.ResponseListadoPurezas;
 import ti.proyectoinia.api.responses.ResponseListadoRecibos;
 import ti.proyectoinia.business.entities.Recibo;
 import ti.proyectoinia.business.entities.Lote;
@@ -31,9 +30,8 @@ public class ReciboService {
                 throw new IllegalArgumentException("El lote con ID " + reciboDto.getLote() + " no existe o no está activo");
             }
         }
-        
-        this.reciboRepository.save(mapsDtoEntityService.mapToEntityRecibo(reciboDto));
-        return "Recibo creado correctamente ID:" + reciboDto.getId();
+
+        return "Recibo creado correctamente ID:" + this.reciboRepository.save(mapsDtoEntityService.mapToEntityRecibo(reciboDto)).getId();
     }
 
     public ReciboDto obtenerReciboPorId(Long id) {
@@ -67,6 +65,13 @@ public class ReciboService {
         return "Recibo actualizado correctamente ID:" + reciboDto.getId();
     }
 
+    public ResponseEntity<ResponseListadoRecibos> listadoRecibos() {
+        var recibosActivos = this.reciboRepository.findByActivoTrue();
+        var recibosDto = recibosActivos.stream()
+                .map(mapsDtoEntityService::mapToDtoRecibo)
+                .toList();
+        ResponseListadoRecibos responseListadoRecibos = new ResponseListadoRecibos(recibosDto);
+        return ResponseEntity.ok(responseListadoRecibos);
+    }
+
 }
-
-

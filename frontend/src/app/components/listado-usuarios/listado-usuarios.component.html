@@ -68,4 +68,111 @@
         </div>
 
     </p-card>
+
+    <p-dialog 
+        header="{{ modalTitulo }}" 
+        [(visible)]="mostrarModal" 
+        [modal]="true" 
+        [draggable]="false" 
+        [resizable]="false"
+        [style]="{width: '90vw', maxWidth: '450px'}"
+        styleClass="auth-modal">
+        
+        <form #modalForm="ngForm" (ngSubmit)="onSubmitModal(modalForm)">
+            <div class="modal-form-grid">
+                <div class="modal-form-field">
+                    <label for="modalNombre">Nombre</label>
+                    <input id="modalNombre" type="text" [(ngModel)]="modalNombre" name="modalNombre" pInputText required />
+                </div>
+
+                <div class="modal-form-field">
+                    <label for="modalEmail">Email</label>
+                    <input id="modalEmail" type="email" [(ngModel)]="modalEmail" name="modalEmail" pInputText required />
+                </div>
+
+                <div class="modal-form-field">
+                    <label for="modalTelefono">Teléfono (opcional)</label>
+                    <input id="modalTelefono" type="tel" [(ngModel)]="modalTelefono" name="modalTelefono" pInputText />
+                </div>
+
+                <div class="modal-form-field">
+                    <label for="modalRol">Rol</label>
+                    <select id="modalRol" [(ngModel)]="modalRol" name="modalRol" class="form-select" required>
+                        <option *ngFor="let option of rolesOptions" [value]="option.value">
+                            {{ option.label }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Checkbox para cambiar contraseña (solo en edición) -->
+                <div class="modal-form-field" *ngIf="itemEditando">
+                    <label class="checkbox-label">
+                        <input 
+                            type="checkbox" 
+                            [(ngModel)]="cambiarPassword" 
+                            name="cambiarPassword"
+                            class="checkbox-input"
+                        />
+                        <span class="checkbox-text">Cambiar contraseña</span>
+                    </label>
+                </div>
+
+                <div class="modal-form-field" *ngIf="cambiarPassword || !itemEditando">
+                    <label for="modalPassword">{{ itemEditando ? 'Nueva Contraseña' : 'Contraseña' }} *</label>
+                    <div class="password-input-container">
+                        <input 
+                            id="modalPassword" 
+                            [type]="showModalPassword ? 'text' : 'password'" 
+                            [(ngModel)]="modalPassword" 
+                            name="modalPassword" 
+                            pInputText 
+                            [required]="cambiarPassword || !itemEditando"
+                            [placeholder]="itemEditando ? 'Ingrese la nueva contraseña' : 'Ingrese la contraseña'"
+                            minlength="6"
+                        />
+                        <button 
+                            type="button" 
+                            class="password-toggle-btn" 
+                            (click)="toggleModalPasswordVisibility()"
+                            title="{{ showModalPassword ? 'Ocultar contraseña' : 'Mostrar contraseña' }}"
+                        >
+                            <i [class]="showModalPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="modal-form-field" *ngIf="cambiarPassword || !itemEditando">
+                    <label for="modalConfirmPassword">{{ itemEditando ? 'Confirmar Nueva Contraseña' : 'Confirmar Contraseña' }} *</label>
+                    <div class="password-input-container">
+                        <input 
+                            id="modalConfirmPassword" 
+                            [type]="showModalConfirmPassword ? 'text' : 'password'" 
+                            [(ngModel)]="modalConfirmPassword" 
+                            name="modalConfirmPassword" 
+                            pInputText 
+                            [required]="cambiarPassword || !itemEditando"
+                            [placeholder]="itemEditando ? 'Confirme la nueva contraseña' : 'Confirme la contraseña'"
+                            minlength="6"
+                        />
+                        <button 
+                            type="button" 
+                            class="password-toggle-btn" 
+                            (click)="toggleModalConfirmPasswordVisibility()"
+                            title="{{ showModalConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña' }}"
+                        >
+                            <i [class]="showModalConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-submit-btn">
+                <button pButton type="submit" [disabled]="modalLoading || modalForm.invalid" 
+                        label="{{ modalLoading ? 'Procesando...' : modalBotonTexto }}" 
+                        class="p-button-primary"></button>
+            </div>
+
+            <div *ngIf="modalError" class="error">{{ modalError }}</div>
+        </form>
+    </p-dialog>
 </div>

@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { UrlService } from './url.service';
 import { DepositoDto } from '../models/Deposito.dto';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { UrlService } from '../services/url.service';
 
 interface ResponseListadoDepositos {
   depositos: DepositoDto[];
@@ -19,12 +20,6 @@ export class DepositoService {
       `${this.urlService.baseUrl}${this.endpoint}/crear`,
       payload,
       { responseType: 'text' }
-    );
-  }
-
-  listarDepositos(): Observable<ResponseListadoDepositos> {
-    return this.http.get<ResponseListadoDepositos>(
-      `${this.urlService.baseUrl}${this.endpoint}/listar`
     );
   }
 
@@ -47,6 +42,16 @@ export class DepositoService {
       `${this.urlService.baseUrl}${this.endpoint}/eliminar/${id}`,
       {},
       { responseType: 'text' }
+    );
+  }
+
+  listarDepositos(): Observable<DepositoDto[]> {
+    return this.http.get<ResponseListadoDepositos>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar`
+    ).pipe(
+      map((response: ResponseListadoDepositos) => {
+        return response.depositos || [];
+      })
     );
   }
 }

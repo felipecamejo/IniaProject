@@ -118,6 +118,13 @@ class Semilla(Base):
     semilla_id = Column(BigInteger, primary_key=True, autoincrement=True)
     semilla_activo = Column(Boolean, nullable=True)
     semilla_nro_semillas_pura = Column(Integer, nullable=True)
+    # semilla_descripcion = Column(String(255), nullable=True)  # Comentado temporalmente hasta que se agregue a la BD
+
+class Deposito(Base):
+    __tablename__ = 'deposito'
+    deposito_id = Column(BigInteger, primary_key=True, autoincrement=True)
+    deposito_activo = Column(Boolean, nullable=True)
+    deposito_nombre = Column(String(255), nullable=True)
 
 class Usuario(Base):
     __tablename__ = 'usuario'
@@ -127,6 +134,7 @@ class Usuario(Base):
     nombre = Column(String(255), nullable=True)
     password = Column(String(255), nullable=True)
     rol = Column(String(255), nullable=True)
+    telefono = Column(String(255), nullable=True)
 
 class Recibo(Base):
     __tablename__ = 'recibo'
@@ -135,9 +143,9 @@ class Recibo(Base):
     analisis_solicitados = Column(String(255), nullable=True)
     articulo = Column(Integer, nullable=True)
     cultivar = Column(String(255), nullable=True)
-    deposito = Column(String(255), nullable=True)
+    deposito_id = Column(BigInteger, nullable=True)
     especie = Column(String(255), nullable=True)
-    estado = Column(String(255), nullable=True)
+    estado_enum = Column(String(255), nullable=True)
     fecha_recibo = Column(DateTime, nullable=True)
     ficha = Column(String(255), nullable=True)
     kg_limpios = Column(Float, nullable=True)
@@ -145,7 +153,6 @@ class Recibo(Base):
     nro_analisis = Column(Integer, nullable=True)
     origen = Column(String(255), nullable=True)
     remitente = Column(String(255), nullable=True)
-    lote_id = Column(BigInteger, nullable=True)
 
 class Dosn(Base):
     __tablename__ = 'dosn'
@@ -161,6 +168,8 @@ class Dosn(Base):
     dosn_malezas_tolerancia_cero = Column(Float, nullable=True)
     dosn_otros_cultivos = Column(Float, nullable=True)
     dosn_tipos_de_analisis = Column(String(255), nullable=True)
+    dosn_fecha_creacion = Column(DateTime, nullable=True)
+    dosn_fecha_repeticion = Column(DateTime, nullable=True)
     recibo_id = Column(BigInteger, nullable=True)
     dosn_repetido = Column(Boolean, nullable=True)
 
@@ -209,6 +218,8 @@ class Germinacion(Base):
     germinacion_totaldias = Column(Integer, nullable=True)
     germinacion_totalrepeticion = Column(Integer, nullable=True)
     germinacion_tratamiento = Column(String(255), nullable=True)
+    germinacion_fecha_creacion = Column(DateTime, nullable=True)
+    germinacion_fecha_repeticion = Column(DateTime, nullable=True)
     recibo_id = Column(BigInteger, nullable=True)
     germinacion_repetido = Column(Boolean, nullable=True)
 
@@ -216,29 +227,84 @@ class Pms(Base):
     __tablename__ = 'pms'
     pms_id = Column(BigInteger, primary_key=True, autoincrement=True)
     pms_activo = Column(Boolean, nullable=True)
-    fecha_medicion = Column(DateTime, nullable=True)
-    humedad_porcentual = Column(Float, nullable=True)
-    metodo = Column(String(255), nullable=True)
-    observaciones = Column(String(255), nullable=True)
+    peso_prom_cien_semillas = Column(Float, nullable=True)
     peso_mil_semillas = Column(Float, nullable=True)
+    peso_prom_mil_semillas = Column(Float, nullable=True)
+    desvio_estandar = Column(Float, nullable=True)
+    coef_variacion = Column(Float, nullable=True)
+    comentarios = Column(String(255), nullable=True)
+    pms_fecha_creacion = Column(DateTime, nullable=True)
+    pms_fecha_repeticion = Column(DateTime, nullable=True)
     recibo_id = Column(BigInteger, nullable=True)
     pms_repetido = Column(Boolean, nullable=True)
+
+class GramosPms(Base):
+    __tablename__ = 'gramos_pms'
+    gramos_pms_id = Column(BigInteger, primary_key=True, autoincrement=True)
+    gramos_pms_activo = Column(Boolean, nullable=True)
+    pms_id = Column(BigInteger, nullable=True)
+    gramos = Column(Integer, nullable=True)
+    numero_repeticion = Column(Integer, nullable=True)
 
 class Pureza(Base):
     __tablename__ = 'pureza'
     pureza_id = Column(BigInteger, primary_key=True, autoincrement=True)
     pureza_activo = Column(Boolean, nullable=True)
     estandar = Column(Boolean, nullable=True)
-    fecha = Column(DateTime, nullable=True)
+    fecha_inase = Column(DateTime, nullable=True)
+    fecha_inia = Column(DateTime, nullable=True)
     fecha_estandar = Column(DateTime, nullable=True)
-    malezas = Column(Float, nullable=True)
-    malezas_toleradas = Column(Float, nullable=True)
-    material_inerte = Column(Float, nullable=True)
-    otros_cultivo = Column(Float, nullable=True)
-    otros_cultivos = Column(Float, nullable=True)
+    
+    # Peso inicial con variantes INIA/INASE
     peso_inicial = Column(Float, nullable=True)
-    peso_total = Column(Float, nullable=True)
+    peso_inicial_inase = Column(Float, nullable=True)
+    
+    # Semilla pura con variantes INIA/INASE
     semilla_pura = Column(Float, nullable=True)
+    semilla_pura_inase = Column(Float, nullable=True)
+    semilla_pura_porcentaje_redondeo = Column(Float, nullable=True)
+    semilla_pura_porcentaje_redondeo_inase = Column(Float, nullable=True)
+    
+    # Material inerte con variantes INIA/INASE
+    material_inerte = Column(Float, nullable=True)
+    material_inerte_inase = Column(Float, nullable=True)
+    material_inerte_porcentaje_redondeo = Column(Float, nullable=True)
+    material_inerte_porcentaje_redondeo_inase = Column(Float, nullable=True)
+    
+    # Otros cultivos con variantes INIA/INASE
+    otros_cultivos = Column(Float, nullable=True)
+    otros_cultivos_inase = Column(Float, nullable=True)
+    otros_cultivos_porcentaje_redondeo = Column(Float, nullable=True)
+    otros_cultivos_porcentaje_redondeo_inase = Column(Float, nullable=True)
+    
+    # Malezas con variantes INIA/INASE
+    malezas = Column(Float, nullable=True)
+    malezas_inase = Column(Float, nullable=True)
+    malezas_porcentaje_redondeo = Column(Float, nullable=True)
+    malezas_porcentaje_redondeo_inase = Column(Float, nullable=True)
+    
+    # Malezas toleradas con variantes INIA/INASE
+    malezas_toleradas = Column(Float, nullable=True)
+    malezas_toleradas_inase = Column(Float, nullable=True)
+    malezas_toleradas_porcentaje_redondeo = Column(Float, nullable=True)
+    malezas_toleradas_porcentaje_redondeo_inase = Column(Float, nullable=True)
+    
+    # Malezas tolerancia cero con variantes INIA/INASE
+    malezas_tolerancia_cero = Column(Float, nullable=True)
+    malezas_tolerancia_cero_inase = Column(Float, nullable=True)
+    malezas_tolerancia_cero_porcentaje_redondeo = Column(Float, nullable=True)
+    malezas_tolerancia_cero_porcentaje_redondeo_inase = Column(Float, nullable=True)
+    
+    # Peso total con variantes INIA/INASE
+    peso_total = Column(Float, nullable=True)
+    peso_total_inase = Column(Float, nullable=True)
+    
+    # Campo legacy
+    otros_cultivo = Column(Float, nullable=True)
+    
+    # Campos de control
+    pureza_fecha_creacion = Column(DateTime, nullable=True)
+    pureza_fecha_repeticion = Column(DateTime, nullable=True)
     recibo_id = Column(BigInteger, nullable=True)
     pureza_repetido = Column(Boolean, nullable=True)
 
@@ -254,6 +320,8 @@ class PurezaPnotatum(Base):
     pureza_repeticiones = Column(Integer, nullable=True)
     pureza_semillas_ls = Column(Float, nullable=True)
     pureza_total_a = Column(Integer, nullable=True)
+    pureza_pnotatum_fecha_creacion = Column(DateTime, nullable=True)
+    pureza_pnotatum_fecha_repeticion = Column(DateTime, nullable=True)
     recibo_id = Column(BigInteger, nullable=True)
     pureza_repetido = Column(Boolean, nullable=True)
 
@@ -264,14 +332,26 @@ class Sanitario(Base):
     sanitario_estadoproductodosis = Column(String(255), nullable=True)
     sanitario_fecha = Column(DateTime, nullable=True)
     sanitario_fechasiembra = Column(DateTime, nullable=True)
-    sanitario_horasluzoscuridad = Column(Integer, nullable=True)
+    sanitario_horasluz = Column(Integer, nullable=True)
+    sanitario_horasoscuridad = Column(Integer, nullable=True)
     sanitario_metodo = Column(String(255), nullable=True)
     sanitario_nrodias = Column(Integer, nullable=True)
     sanitario_nrosemillasrepeticion = Column(Integer, nullable=True)
     sanitario_observaciones = Column(String(255), nullable=True)
     sanitario_temperatura = Column(Integer, nullable=True)
-    recibo_id = Column(BigInteger, nullable=True)
+    sanitario_estandar = Column(Boolean, nullable=True)
+    sanitario_fechacreacion = Column(DateTime, nullable=True)
+    sanitario_fecharepeticion = Column(DateTime, nullable=True)
+    sanitario_reciboid = Column(BigInteger, nullable=True)
     sanitario_repetido = Column(Boolean, nullable=True)
+
+class HumedadRecibo(Base):
+    __tablename__ = 'humedad_recibo'
+    humedad_recibo_id = Column(BigInteger, primary_key=True, autoincrement=True)
+    humedad_recibo_activo = Column(Boolean, nullable=True)
+    humedad_lugar = Column(String(255), nullable=True)  # Enum
+    humedad_numero = Column(Integer, nullable=True)
+    recibo_id = Column(BigInteger, nullable=True)
 
 class Hongo(Base):
     __tablename__ = 'hongo'
@@ -284,6 +364,8 @@ class Tetrazolio(Base):
     __tablename__ = 'tetrazolio'
     tetrazolio_id = Column(BigInteger, primary_key=True, autoincrement=True)
     tetrazolio_activo = Column(Boolean, nullable=True)
+    tetrazolio_repeticion = Column(Integer, nullable=True)
+    tetrazolio_nro_semillas_por_repeticion = Column(Integer, nullable=True)
     concentracion = Column(Float, nullable=True)
     tetrazolio_danio_ambiente = Column(Integer, nullable=True)
     tetrazolio_danios_chinches = Column(Integer, nullable=True)
@@ -297,18 +379,18 @@ class Tetrazolio(Base):
     tetrazolio_fecha = Column(DateTime, nullable=True)
     tetrazolio_no_viables = Column(Float, nullable=True)
     tetrazolio_nro_semillas = Column(Integer, nullable=True)
-    tetrazolio_nro_semillas_por_repeticion = Column(Integer, nullable=True)
     tetrazolio_porcentaje = Column(Integer, nullable=True)
     tetrazolio_porcentaje_final = Column(Integer, nullable=True)
     pretratamiento = Column(String(255), nullable=True)
     tetrazolio_promedio = Column(Float, nullable=True)
-    tetrazolio_repeticion = Column(Integer, nullable=True)
     tincion_grados = Column(Float, nullable=True)
     tincion_hs = Column(Float, nullable=True)
     tetrazolio_total = Column(Float, nullable=True)
     viabilidad_tz = Column(String(255), nullable=True)
     viabilidad_vigor_tz = Column(String(255), nullable=True)
     tetrazolio_viables = Column(Float, nullable=True)
+    tetrazolio_fecha_creacion = Column(DateTime, nullable=True)
+    tetrazolio_fecha_repeticion = Column(DateTime, nullable=True)
     recibo_id = Column(BigInteger, nullable=True)
     tetrazolio_repetido = Column(Boolean, nullable=True)
 
@@ -331,6 +413,30 @@ class SanitarioHongo(Base):
     hongo_id = Column(BigInteger, nullable=True)
     sanitario_id = Column(BigInteger, nullable=True)
 
+class PurezaMalezaNormal(Base):
+    __tablename__ = 'pureza_maleza_normal'
+    pureza_id = Column(BigInteger, primary_key=True)
+    maleza_id = Column(BigInteger, primary_key=True)
+    __table_args__ = (PrimaryKeyConstraint('pureza_id', 'maleza_id'),)
+
+class PurezaMalezaTolerada(Base):
+    __tablename__ = 'pureza_maleza_tolerada'
+    pureza_id = Column(BigInteger, primary_key=True)
+    maleza_id = Column(BigInteger, primary_key=True)
+    __table_args__ = (PrimaryKeyConstraint('pureza_id', 'maleza_id'),)
+
+class PurezaMalezaToleranciaCero(Base):
+    __tablename__ = 'pureza_maleza_tolerancia_cero'
+    pureza_id = Column(BigInteger, primary_key=True)
+    maleza_id = Column(BigInteger, primary_key=True)
+    __table_args__ = (PrimaryKeyConstraint('pureza_id', 'maleza_id'),)
+
+class SanitarioHongoIds(Base):
+    __tablename__ = 'sanitario_hongo_ids'
+    sanitario_id = Column(BigInteger, primary_key=True)
+    hongo_id = Column(BigInteger, primary_key=True)
+    __table_args__ = (PrimaryKeyConstraint('sanitario_id', 'hongo_id'),)
+
 # Datos de muestra para generar entradas realistas
 DATOS_MUESTRA = {
     'especies': ['Trigo', 'Maíz', 'Soja', 'Girasol', 'Sorgo', 'Cebada', 'Avena', 'Arroz'],
@@ -338,7 +444,7 @@ DATOS_MUESTRA = {
     'origenes': ['Uruguay', 'Argentina', 'Brasil', 'Paraguay', 'Chile', 'Bolivia'],
     'remitentes': ['Productor A', 'Productor B', 'Cooperativa X', 'Empresa Y', 'Laboratorio Z'],
     'depositos': ['Depósito Norte', 'Depósito Sur', 'Depósito Este', 'Depósito Oeste', 'Depósito Central'],
-    'estados': ['Recibido', 'En análisis', 'Completado', 'Pendiente'],
+    'estados': ['L', 'C', 'S'],  # Valores permitidos por la restricción CHECK
     'analisis': ['DOSN', 'Germinación', 'PMS', 'Pureza', 'Sanitario', 'Tetrazolio'],
     'metodos': ['METODO_A', 'METODO_B', 'METODO_C'],
     'hongos': ['Fusarium', 'Alternaria', 'Aspergillus', 'Penicillium', 'Rhizopus'],
@@ -384,6 +490,9 @@ def asegurar_autoincrementos(engine):
         ("hongo", "hongo_id"),
         ("tetrazolio", "tetrazolio_id"),
         ("sanitario_hongo", "sanitario_hongo_id"),
+        ("deposito", "deposito_id"),
+        ("gramos_pms", "gramos_pms_id"),
+        ("humedad_recibo", "humedad_recibo_id"),
     ]
     with engine.begin() as conn:
         for tabla, columna in ajustes:
@@ -490,7 +599,8 @@ def obtener_valores_check(engine, tabla: str, columna: str) -> list:
             if not values_blob:
                 return []
             parts = re.findall(r"'([^']+)'", values_blob)
-            return [p.upper() for p in parts]
+            # Importante: respetar casing exacto definido en el CHECK/BD
+            return parts
     except Exception:
         return []
     
@@ -502,14 +612,18 @@ def insert_pms(session, recibos):
     try:
         pms_list = []
         for i in range(5000):
-            fecha_medicion = generar_fecha_aleatoria(30)
+            fecha_creacion = generar_fecha_aleatoria(30)
+            fecha_repeticion = generar_fecha_aleatoria(15) if random.choice([True, False]) else None
             pms = Pms(
                 pms_activo=True,
-                fecha_medicion=fecha_medicion,
-                humedad_porcentual=round(random.uniform(8.0, 15.0), 2),
-                metodo=random.choice(DATOS_MUESTRA['metodos']),
-                observaciones=random.choice(DATOS_MUESTRA['observaciones']),
+                peso_prom_cien_semillas=round(random.uniform(0.5, 2.0), 3),
                 peso_mil_semillas=round(random.uniform(20.0, 50.0), 2),
+                peso_prom_mil_semillas=round(random.uniform(20.0, 50.0), 2),
+                desvio_estandar=round(random.uniform(0.1, 2.0), 3),
+                coef_variacion=round(random.uniform(1.0, 10.0), 2),
+                comentarios=random.choice(DATOS_MUESTRA['comentarios']),
+                pms_fecha_creacion=fecha_creacion,
+                pms_fecha_repeticion=fecha_repeticion,
                 recibo_id=random.choice([r.recibo_id for r in recibos]),
                 pms_repetido=random.choice([True, False])
             )
@@ -527,21 +641,81 @@ def insert_pureza(session, recibos):
     try:
         purezas = []
         for i in range(5000):
-            fecha_pureza = generar_fecha_aleatoria(30)
-            fecha_estandar = generar_fecha_aleatoria(25)
+            fecha_inia = generar_fecha_aleatoria(30)
+            fecha_inase = generar_fecha_aleatoria(25)
+            fecha_estandar = generar_fecha_aleatoria(20)
+            fecha_creacion = generar_fecha_aleatoria(35)
+            fecha_repeticion = generar_fecha_aleatoria(15) if random.choice([True, False]) else None
+            
+            # Generar valores base
+            peso_inicial = round(random.uniform(50.0, 200.0), 2)
+            peso_inicial_inase_val = round(peso_inicial * random.uniform(0.95, 1.05), 2)
+            semilla_pura = round(random.uniform(90.0, 99.0), 2)
+            material_inerte = round(random.uniform(0.0, 3.0), 2)
+            otros_cultivos = round(random.uniform(0.0, 2.0), 2)
+            malezas = round(random.uniform(0.0, 5.0), 2)
+            malezas_toleradas = round(random.uniform(0.0, 2.0), 2)
+            malezas_tolerancia_cero = round(random.uniform(0.0, 1.0), 2)
+            peso_total = round(peso_inicial * random.uniform(0.9, 1.0), 2)
+            peso_total_inase = round(peso_inicial_inase_val * random.uniform(0.9, 1.0), 2)
+            
             pureza = Pureza(
                 pureza_activo=True,
                 estandar=random.choice([True, False]),
-                fecha=fecha_pureza,
+                fecha_inase=fecha_inase,
+                fecha_inia=fecha_inia,
                 fecha_estandar=fecha_estandar,
-                malezas=round(random.uniform(0.0, 5.0), 2),
-                malezas_toleradas=round(random.uniform(0.0, 2.0), 2),
-                material_inerte=round(random.uniform(0.0, 3.0), 2),
-                otros_cultivo=round(random.uniform(0.0, 2.0), 2),
-                otros_cultivos=round(random.uniform(0.0, 2.0), 2),
-                peso_inicial=round(random.uniform(50.0, 200.0), 2),
-                peso_total=round(random.uniform(45.0, 195.0), 2),
-                semilla_pura=round(random.uniform(90.0, 99.0), 2),
+                
+                # Peso inicial con variantes
+                peso_inicial=peso_inicial,
+                peso_inicial_inase=peso_inicial_inase_val,
+                
+                # Semilla pura con variantes
+                semilla_pura=semilla_pura,
+                semilla_pura_inase=semilla_pura * random.uniform(0.95, 1.05),
+                semilla_pura_porcentaje_redondeo=round((semilla_pura / peso_inicial) * 100, 1),
+                semilla_pura_porcentaje_redondeo_inase=round((semilla_pura / peso_inicial) * 100, 1),
+                
+                # Material inerte con variantes
+                material_inerte=material_inerte,
+                material_inerte_inase=material_inerte * random.uniform(0.95, 1.05),
+                material_inerte_porcentaje_redondeo=round((material_inerte / peso_inicial) * 100, 1),
+                material_inerte_porcentaje_redondeo_inase=round((material_inerte / peso_inicial) * 100, 1),
+                
+                # Otros cultivos con variantes
+                otros_cultivos=otros_cultivos,
+                otros_cultivos_inase=otros_cultivos * random.uniform(0.95, 1.05),
+                otros_cultivos_porcentaje_redondeo=round((otros_cultivos / peso_inicial) * 100, 1),
+                otros_cultivos_porcentaje_redondeo_inase=round((otros_cultivos / peso_inicial) * 100, 1),
+                
+                # Malezas con variantes
+                malezas=malezas,
+                malezas_inase=malezas * random.uniform(0.95, 1.05),
+                malezas_porcentaje_redondeo=round((malezas / peso_inicial) * 100, 1),
+                malezas_porcentaje_redondeo_inase=round((malezas / peso_inicial) * 100, 1),
+                
+                # Malezas toleradas con variantes
+                malezas_toleradas=malezas_toleradas,
+                malezas_toleradas_inase=malezas_toleradas * random.uniform(0.95, 1.05),
+                malezas_toleradas_porcentaje_redondeo=round((malezas_toleradas / peso_inicial) * 100, 1),
+                malezas_toleradas_porcentaje_redondeo_inase=round((malezas_toleradas / peso_inicial) * 100, 1),
+                
+                # Malezas tolerancia cero con variantes
+                malezas_tolerancia_cero=malezas_tolerancia_cero,
+                malezas_tolerancia_cero_inase=malezas_tolerancia_cero * random.uniform(0.95, 1.05),
+                malezas_tolerancia_cero_porcentaje_redondeo=round((malezas_tolerancia_cero / peso_inicial) * 100, 1),
+                malezas_tolerancia_cero_porcentaje_redondeo_inase=round((malezas_tolerancia_cero / peso_inicial) * 100, 1),
+                
+                # Peso total (sin variantes adicionales en BD actual)
+                peso_total=peso_total,
+                peso_total_inase=peso_total_inase,
+                
+                # Campo legacy
+                otros_cultivo=otros_cultivos,
+                
+                # Campos de control
+                pureza_fecha_creacion=fecha_creacion,
+                pureza_fecha_repeticion=fecha_repeticion,
                 recibo_id=random.choice([r.recibo_id for r in recibos]),
                 pureza_repetido=random.choice([True, False])
             )
@@ -559,6 +733,8 @@ def insert_pureza_pnotatum(session, recibos):
     try:
         purezas_pnotatum = []
         for i in range(5000):
+            fecha_creacion = generar_fecha_aleatoria(30)
+            fecha_repeticion = generar_fecha_aleatoria(15) if random.choice([True, False]) else None
             pureza_pnotatum = PurezaPnotatum(
                 pureza_at=round(random.uniform(0.0, 5.0), 2),
                 pureza_pi=round(random.uniform(0.0, 3.0), 2),
@@ -569,6 +745,8 @@ def insert_pureza_pnotatum(session, recibos):
                 pureza_repeticiones=random.randint(2, 4),
                 pureza_semillas_ls=round(random.uniform(0.0, 2.0), 2),
                 pureza_total_a=random.randint(0, 5),
+                pureza_pnotatum_fecha_creacion=fecha_creacion,
+                pureza_pnotatum_fecha_repeticion=fecha_repeticion,
                 recibo_id=random.choice([r.recibo_id for r in recibos]),
                 pureza_repetido=random.choice([True, False])
             )
@@ -601,8 +779,12 @@ def insert_tetrazolio(session, recibos, engine=None):
         tetrazolios = []
         for i in range(5000):
             fecha_tetrazolio = generar_fecha_aleatoria(30)
+            fecha_creacion = generar_fecha_aleatoria(35)
+            fecha_repeticion = generar_fecha_aleatoria(15) if random.choice([True, False]) else None
             tetrazolio = Tetrazolio(
                 tetrazolio_activo=True,
+                tetrazolio_repeticion=random.randint(2, 4),
+                tetrazolio_nro_semillas_por_repeticion=random.randint(50, 100),
                 concentracion=round(random.uniform(0.5, 2.0), 2),
                 tetrazolio_danio_ambiente=random.randint(0, 5),
                 tetrazolio_danios_chinches=random.randint(0, 3),
@@ -616,18 +798,18 @@ def insert_tetrazolio(session, recibos, engine=None):
                 tetrazolio_fecha=fecha_tetrazolio,
                 tetrazolio_no_viables=round(random.uniform(0.0, 15.0), 2),
                 tetrazolio_nro_semillas=random.randint(200, 400),
-                tetrazolio_nro_semillas_por_repeticion=random.randint(50, 100),
                 tetrazolio_porcentaje=random.randint(70, 95),
                 tetrazolio_porcentaje_final=random.randint(70, 95),
                 pretratamiento=random.choice(pretratamientos_validos),
                 tetrazolio_promedio=round(random.uniform(80.0, 95.0), 2),
-                tetrazolio_repeticion=random.randint(2, 4),
                 tincion_grados=round(random.uniform(20.0, 40.0), 1),
                 tincion_hs=round(random.uniform(2.0, 4.0), 1),
                 tetrazolio_total=round(random.uniform(80.0, 95.0), 2),
                 viabilidad_tz=random.choice(viabilidades_validas),
                 viabilidad_vigor_tz=random.choice(viabilidades_vigor_validas),
                 tetrazolio_viables=round(random.uniform(80.0, 95.0), 2),
+                tetrazolio_fecha_creacion=fecha_creacion,
+                tetrazolio_fecha_repeticion=fecha_repeticion,
                 recibo_id=random.choice([r.recibo_id for r in recibos]),
                 tetrazolio_repetido=random.choice([True, False])
             )
@@ -647,6 +829,8 @@ def insert_dosn(session, recibos):
         for i in range(5000):
             fecha_dosn = generar_fecha_aleatoria(60)
             fecha_analisis = generar_fecha_aleatoria(30)
+            fecha_creacion = generar_fecha_aleatoria(65)
+            fecha_repeticion = generar_fecha_aleatoria(20) if random.choice([True, False]) else None
             dosn = Dosn(
                 dosn_activo=True,
                 dosn_completo_reducido=random.choice([True, False]),
@@ -659,6 +843,8 @@ def insert_dosn(session, recibos):
                 dosn_malezas_tolerancia_cero=round(random.uniform(0.0, 2.0), 2),
                 dosn_otros_cultivos=round(random.uniform(0.0, 5.0), 2),
                 dosn_tipos_de_analisis=random.choice(DATOS_MUESTRA['tipos_analisis']),
+                dosn_fecha_creacion=fecha_creacion,
+                dosn_fecha_repeticion=fecha_repeticion,
                 recibo_id=random.choice([r.recibo_id for r in recibos]),
                 dosn_repetido=random.choice([True, False])
             )
@@ -694,6 +880,116 @@ def insert_cultivos(session, dosns):
         log_fail(f"Error insertando Cultivos: {e}")
         return []
 
+def insert_depositos(session):
+    try:
+        log_step("➡️ Insertando Depósitos...")
+        depositos = []
+        for i in range(10):
+            deposito = Deposito(
+                deposito_activo=True,
+                deposito_nombre=f"Depósito-{i+1}"
+            )
+            depositos.append(deposito)
+        # Usar inserción optimizada por lotes
+        insert_batch_optimized(session, depositos, batch_size=10, operation_name="Depósitos")
+        return depositos
+    except Exception as e:
+        session.rollback()
+        log_fail(f"Error insertando Depósitos: {e}")
+        return []
+
+def insert_gramos_pms(session, pms_list):
+    try:
+        log_step("➡️ Insertando GramosPms (dependen de PMS)...")
+        if not pms_list:
+            log_fail("No hay PMS disponibles para asociar GramosPms.")
+            return []
+        gramos_pms_list = []
+        for i in range(2000):
+            gramos_pms = GramosPms(
+                gramos_pms_activo=True,
+                pms_id=random.choice([p.pms_id for p in pms_list]),
+                gramos=random.randint(1, 100),
+                numero_repeticion=random.randint(1, 4)
+            )
+            gramos_pms_list.append(gramos_pms)
+        # Usar inserción optimizada por lotes
+        insert_batch_optimized(session, gramos_pms_list, batch_size=1000, operation_name="GramosPms")
+        return gramos_pms_list
+    except Exception as e:
+        session.rollback()
+        log_fail(f"Error insertando GramosPms: {e}")
+        return []
+
+def insert_humedad_recibo(session, recibos, engine=None):
+    try:
+        log_step("➡️ Insertando HumedadRecibo (dependen de Recibo)...")
+        if not recibos:
+            log_fail("No hay Recibos disponibles para asociar HumedadRecibo.")
+            return []
+        # Fallback alineado al backend (enum HumedadLugar)
+        lugares_validos = ["Camara1", "Camara2", "Camara3", "Cosecha"]
+        if engine is not None:
+            vals = obtener_valores_check(engine, 'humedad_recibo', 'humedad_lugar')
+            if vals:
+                lugares_validos = vals
+        humedad_recibos = []
+        for i in range(1000):
+            humedad_recibo = HumedadRecibo(
+                humedad_recibo_activo=True,
+                humedad_lugar=random.choice(lugares_validos),
+                humedad_numero=random.randint(1, 10),
+                recibo_id=random.choice([r.recibo_id for r in recibos])
+            )
+            humedad_recibos.append(humedad_recibo)
+        # Usar inserción optimizada por lotes
+        insert_batch_optimized(session, humedad_recibos, batch_size=1000, operation_name="HumedadRecibo")
+        return humedad_recibos
+    except Exception as e:
+        session.rollback()
+        log_fail(f"Error insertando HumedadRecibo: {e}")
+        return []
+
+# def insert_pureza_maleza_relations(session, purezas, malezas):
+#     try:
+#         log_step("➡️ Insertando relaciones Pureza-Maleza...")
+#         if not purezas or not malezas:
+#             log_fail("No hay Purezas o Malezas disponibles para crear relaciones.")
+#             return []
+        
+#         # Insertar relaciones PurezaMalezaNormal
+#         pureza_maleza_normal = []
+#         for i in range(500):
+#             pureza_maleza_normal.append(PurezaMalezaNormal(
+#                 pureza_id=random.choice([p.pureza_id for p in purezas]),
+#                 maleza_id=random.choice([m.maleza_id for m in malezas])
+#             ))
+#         insert_batch_optimized(session, pureza_maleza_normal, batch_size=500, operation_name="PurezaMalezaNormal")
+        
+#         # Insertar relaciones PurezaMalezaTolerada
+#         pureza_maleza_tolerada = []
+#         for i in range(300):
+#             pureza_maleza_tolerada.append(PurezaMalezaTolerada(
+#                 pureza_id=random.choice([p.pureza_id for p in purezas]),
+#                 maleza_id=random.choice([m.maleza_id for m in malezas])
+#             ))
+#         insert_batch_optimized(session, pureza_maleza_tolerada, batch_size=300, operation_name="PurezaMalezaTolerada")
+        
+#         # Insertar relaciones PurezaMalezaToleranciaCero
+#         pureza_maleza_tolerancia_cero = []
+#         for i in range(200):
+#             pureza_maleza_tolerancia_cero.append(PurezaMalezaToleranciaCero(
+#                 pureza_id=random.choice([p.pureza_id for p in purezas]),
+#                 maleza_id=random.choice([m.maleza_id for m in malezas])
+#             ))
+#         insert_batch_optimized(session, pureza_maleza_tolerancia_cero, batch_size=200, operation_name="PurezaMalezaToleranciaCero")
+        
+#         return pureza_maleza_normal + pureza_maleza_tolerada + pureza_maleza_tolerancia_cero
+#     except Exception as e:
+#         session.rollback()
+#         log_fail(f"Error insertando relaciones Pureza-Maleza: {e}")
+#         return []
+
 def insert_germinacion(session, recibos, engine=None):
     try:
         log_step("➡️ Insertando Germinación...")
@@ -720,6 +1016,8 @@ def insert_germinacion(session, recibos, engine=None):
             fecha_conteo_5 = generar_fecha_aleatoria(10)
             fecha_final = generar_fecha_aleatoria(5)
             
+            fecha_creacion = generar_fecha_aleatoria(45)
+            fecha_repeticion = generar_fecha_aleatoria(20) if random.choice([True, False]) else None
             germinacion = Germinacion(
                 germinacion_activo=True,
                 germinacion_comentarios=random.choice(DATOS_MUESTRA['comentarios']),
@@ -755,6 +1053,8 @@ def insert_germinacion(session, recibos, engine=None):
                 germinacion_totaldias=random.randint(5, 15),
                 germinacion_totalrepeticion=random.randint(200, 250),
                 germinacion_tratamiento=random.choice(tratamientos_validos),
+                germinacion_fecha_creacion=fecha_creacion,
+                germinacion_fecha_repeticion=fecha_repeticion,
                 recibo_id=random.choice([r.recibo_id for r in recibos]),
                 germinacion_repetido=random.choice([True, False])
             )
@@ -790,8 +1090,14 @@ def insertar_datos_masivos():
             usuarios = cargar_usuarios(session)
             logger.info(f"✅ Usuarios existentes encontrados: {len(usuarios)}")
 
-            # SECUENCIA 2: Lotes
-            logger.info("📦 SECUENCIA 2: Insertando lotes...")
+            # SECUENCIA 2: Depósitos y Lotes
+            logger.info("📦 SECUENCIA 2: Insertando depósitos y lotes...")
+            
+            # Insertar depósitos primero
+            depositos = insert_depositos(session)
+            logger.info(f"✅ Depósitos insertados: {len(depositos)}")
+            
+            # Insertar lotes
             lotes = []
             for i in range(20):
                 fecha_creacion = generar_fecha_aleatoria(180)
@@ -817,17 +1123,16 @@ def insertar_datos_masivos():
                     analisis_solicitados=random.choice(DATOS_MUESTRA['analisis']),
                     articulo=random.randint(1000, 9999),
                     cultivar=random.choice(DATOS_MUESTRA['cultivares']),
-                    deposito=random.choice(DATOS_MUESTRA['depositos']),
+                    deposito_id=random.choice([d.deposito_id for d in depositos]) if depositos else None,
                     especie=random.choice(DATOS_MUESTRA['especies']),
-                    estado=random.choice(DATOS_MUESTRA['estados']),
+                    estado_enum=random.choice(DATOS_MUESTRA['estados']),
                     fecha_recibo=fecha_recibo,
                     ficha=f"FICHA-{i+1:04d}",
                     kg_limpios=round(random.uniform(1.0, 100.0), 2),
                     lote=random.randint(1, 100),
                     nro_analisis=random.randint(1000, 9999),
                     origen=random.choice(DATOS_MUESTRA['origenes']),
-                    remitente=random.choice(DATOS_MUESTRA['remitentes']),
-                    lote_id=random.choice([l.lote_id for l in lotes])
+                    remitente=random.choice(DATOS_MUESTRA['remitentes'])
                 )
                 recibos.append(recibo)
             insert_batch_optimized(session, recibos, batch_size=50, operation_name="Recibos")
@@ -853,21 +1158,42 @@ def insertar_datos_masivos():
 
             # Sanitario (para poder asociar Hongos)
             sanitarios = []
+            # Normalizar valores para cumplir restricciones CHECK en BD
+            estados_producto_validos = DATOS_MUESTRA['estados_producto']
+            try:
+                vals_est = obtener_valores_check(engine, 'sanitario', 'estadoproductodosis')
+                if vals_est:
+                    estados_producto_validos = vals_est
+            except Exception:
+                ...
+            metodos_validos_sanitario = DATOS_MUESTRA['metodos']
+            try:
+                vals_met = obtener_valores_check(engine, 'sanitario', 'metodo')
+                if vals_met:
+                    metodos_validos_sanitario = vals_met
+            except Exception:
+                ...
             for i in range(16):
                 fecha_sanitario = generar_fecha_aleatoria(30)
                 fecha_siembra = generar_fecha_aleatoria(25)
+                fecha_creacion = generar_fecha_aleatoria(35)
+                fecha_repeticion = generar_fecha_aleatoria(15) if random.choice([True, False]) else None
                 sanitario = Sanitario(
                     sanitario_activo=True,
-                    sanitario_estadoproductodosis=random.choice(DATOS_MUESTRA['estados_producto']),
+                    sanitario_estadoproductodosis=random.choice(estados_producto_validos),
                     sanitario_fecha=fecha_sanitario,
                     sanitario_fechasiembra=fecha_siembra,
-                    sanitario_horasluzoscuridad=random.randint(8, 16),
-                    sanitario_metodo=random.choice(DATOS_MUESTRA['metodos']),
+                    sanitario_horasluz=random.randint(8, 12),
+                    sanitario_horasoscuridad=random.randint(12, 16),
+                    sanitario_metodo=random.choice(metodos_validos_sanitario),
                     sanitario_nrodias=random.randint(5, 14),
                     sanitario_nrosemillasrepeticion=random.randint(50, 200),
                     sanitario_observaciones=random.choice(DATOS_MUESTRA['observaciones']),
                     sanitario_temperatura=random.randint(20, 30),
-                    recibo_id=random.choice([r.recibo_id for r in recibos]),
+                    sanitario_estandar=random.choice([True, False]),
+                    sanitario_fechacreacion=fecha_creacion,
+                    sanitario_fecharepeticion=fecha_repeticion,
+                    sanitario_reciboid=random.choice([r.recibo_id for r in recibos]),
                     sanitario_repetido=random.choice([True, False])
                 )
                 sanitarios.append(sanitario)
@@ -908,6 +1234,11 @@ def insertar_datos_masivos():
             dosns = insert_dosn(session, recibos)
             cultivos = insert_cultivos(session, dosns)
             germinaciones = insert_germinacion(session, recibos, engine)
+            
+            # Insertar nuevas tablas relacionadas
+            gramos_pms_list = insert_gramos_pms(session, pms_list)
+            humedad_recibos = insert_humedad_recibo(session, recibos, engine)
+            # pureza_maleza_relations = insert_pureza_maleza_relations(session, purezas, malezas)  # Comentado - tablas no existen en BD
             # Relaciones
             usuario_lotes = []
             if usuarios:
@@ -930,17 +1261,19 @@ def insertar_datos_masivos():
             else:
                 logger.info("ℹ️ No hay usuarios; se omite la creación de relaciones usuario-lote")
             
-            sanitario_hongos = []
-            for i in range(25):
-                sanitario_hongo = SanitarioHongo(
-                    incidencia=random.randint(0, 100),
-                    repeticion=random.randint(1, 4),
-                    valor=random.randint(0, 5),
-                    hongo_id=random.choice([h.hongo_id for h in hongos]),
-                    sanitario_id=random.choice([s.sanitario_id for s in sanitarios])
-                )
-                sanitario_hongos.append(sanitario_hongo)
-            insert_batch_optimized(session, sanitario_hongos, batch_size=25, operation_name="Sanitario-Hongo")
+            # OMITIR inserción de sanitario_hongos según especificación del plan
+            # sanitario_hongos = []
+            # for i in range(25):
+            #     sanitario_hongo = SanitarioHongo(
+            #         incidencia=random.randint(0, 100),
+            #         repeticion=random.randint(1, 4),
+            #         valor=random.randint(0, 5),
+            #         hongo_id=random.choice([h.hongo_id for h in hongos]),
+            #         sanitario_id=random.choice([s.sanitario_id for s in sanitarios])
+            #     )
+            #     sanitario_hongos.append(sanitario_hongo)
+            # insert_batch_optimized(session, sanitario_hongos, batch_size=25, operation_name="Sanitario-Hongo")
+            logger.info("ℹ️ Inserción de SanitarioHongo omitida según especificación del plan")
             
             # Commit final de la secuencia 5 (seguridad, puede no haber cambios pendientes)
             try:
@@ -950,10 +1283,12 @@ def insertar_datos_masivos():
             
             # Resumen final
             total_registros = (
-                len(lotes) + len(malezas) + len(semillas) + len(usuarios) +
+                len(depositos) + len(lotes) + len(malezas) + len(semillas) + len(usuarios) +
                 len(recibos) + len(dosns) + len(cultivos) + len(germinaciones) +
                 len(pms_list) + len(purezas) + len(purezas_pnotatum) + len(sanitarios) +
-                len(tetrazolios) + len(hongos) + len(usuario_lotes) + len(sanitario_hongos)
+                len(tetrazolios) + len(hongos) + len(usuario_lotes) + len(gramos_pms_list) +
+                len(humedad_recibos)
+                # sanitario_hongos y pureza_maleza_relations omitidos según especificación del plan
             )
             
             logger.info("🎉 ¡TODAS LAS SECUENCIAS COMPLETADAS EXITOSAMENTE!")

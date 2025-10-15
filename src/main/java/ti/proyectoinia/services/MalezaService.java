@@ -20,8 +20,7 @@ public class MalezaService {
         }
 
         public String crearMaleza(MalezaDto malezaDto) {
-            this.malezaRepository.save(mapsDtoEntityService.mapToEntityMaleza(malezaDto));
-            return "Maleza creada correctamente ID:" + malezaDto.getId();
+            return "Maleza creada correctamente ID:" + this.malezaRepository.save(mapsDtoEntityService.mapToEntityMaleza(malezaDto)).getId();
         }
 
         public ResponseEntity<ResponseListadoMalezas> listadoMalezas() {

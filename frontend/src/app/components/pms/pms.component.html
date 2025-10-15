@@ -10,57 +10,53 @@
     </ng-template>
 
     <form (ngSubmit)="onSubmit()">
-      
-      <!-- Tabla de repeticiones para PMS -->
       <div class="table-section">
         <h3 class="table-title">Tabla de repeticiones - PMS</h3>
         <div class="table-wrapper">
-          <p-table [value]="repeticiones" styleClass="p-datatable-sm">
-            <ng-template pTemplate="header">
+          <table class="p-table">
+            <thead>
               <tr>
                 <th>Repetición</th>
                 <th>Gramos</th>
-                <th *ngIf="!isViewing" style="width: 100px;">Acciones</th>
+                <th *ngIf="!isViewing">Acciones</th>
               </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-rep let-i="rowIndex">
-              <tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="repeticiones.length === 0">
+                <td [attr.colspan]="isViewing ? 2 : 3" class="no-repeticiones">
+                  No hay repeticiones agregadas. Haz clic en "Agregar repetición" para comenzar.
+                </td>
+              </tr>
+              <tr *ngFor="let rep of repeticiones; let i = index">
                 <td>{{ rep.numero }}</td>
                 <td>
-                  <div>
-                    <p-inputNumber 
-                      [(ngModel)]="rep.gramos" 
-                      [name]="'gramos' + i" 
-                      mode="decimal" 
-                      [minFractionDigits]="4" 
-                      [maxFractionDigits]="4"
-                      [step]="0.0001"
-                      [showButtons]="false"
+                  <div class="gramos-cell">
+                    <input
+                      type="number"
+                      [value]="rep.gramos"
+                      (input)="onGramosChange(i, $event.target.value)"
+                      [name]="'gramos' + i"
+                      step="0.0001"
                       [readonly]="isReadonly"
-                      styleClass="w-full">
-                    </p-inputNumber>
-                    <span>g</span>
+                    />
                   </div>
                 </td>
                 <td *ngIf="!isViewing">
-                  <button 
-                    pButton 
-                    type="button" 
-                    icon="pi pi-trash" 
-                    class="p-button-danger p-button-sm p-button-text" 
-                    (click)="eliminarRepeticion(i)" 
-                    [disabled]="repeticiones.length === 1" 
-                    title="Eliminar repetición">
+                  <button pButton type="button"
+                          icon="pi pi-trash"
+                          class="p-button-danger p-button-sm"
+                          (click)="eliminarRepeticion(i)"
+                          title="Eliminar">
                   </button>
                 </td>
               </tr>
-            </ng-template>
-          </p-table>
-        </div>
-        
-        <div class="add-repeticion-container" *ngIf="!isViewing">
-          <button pButton type="button" label="Agregar repetición" icon="pi pi-plus" 
-                  class="p-button-outlined" (click)="agregarRepeticion()">
+            </tbody>
+          </table>
+
+          <button pButton type="button"
+                  label="Agregar repetición"
+                  class="btn-agregar-rep"
+                  (click)="agregarRepeticion()">
           </button>
         </div>
       </div>

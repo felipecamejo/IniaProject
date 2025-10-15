@@ -1,5 +1,5 @@
 Write-Host "==> Setup del middleware para el proyecto INIA" -ForegroundColor Cyan
-Write-Host "Instalando dependencias completas: SQLAlchemy, psycopg2-binary, faker, pandas, fastapi, uvicorn, openpyxl" -ForegroundColor Gray
+Write-Host "Instalando dependencias completas: SQLAlchemy, psycopg2-binary, fastapi, uvicorn, openpyxl, pydantic" -ForegroundColor Gray
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -34,7 +34,7 @@ if (Test-Path "requirements.txt") {
 } else {
     Write-Host "⚠ requirements.txt no encontrado, instalando dependencias individualmente..." -ForegroundColor Yellow
     Write-Host "Instalando dependencias principales..." -ForegroundColor Cyan
-    pip install SQLAlchemy psycopg2-binary faker pandas
+    pip install SQLAlchemy psycopg2-binary
 
     Write-Host "Instalando dependencias para FastAPI..." -ForegroundColor Cyan
     pip install fastapi uvicorn python-multipart
@@ -51,7 +51,7 @@ Write-Host "Verificando importaciones..." -ForegroundColor Cyan
 $testCode = @"
 import importlib, sys
 mods = [
-    "sqlalchemy", "psycopg2", "faker", "pandas",
+    "sqlalchemy", "psycopg2", 
     "fastapi", "uvicorn", "openpyxl", "pydantic"
 ]
 for m in mods:

@@ -10,18 +10,23 @@ import { UsuarioService } from '../../../services/UsuarioService';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-usuario',
+  standalone: true,
   imports: [
       CommonModule,
       FormsModule,
       CardModule,
       InputTextModule,
-      ButtonModule
+      ButtonModule,
+      ToastModule
   ],
   templateUrl: './usuario.component.html',
-  styleUrls: ['./usuario.component.scss']
+  styleUrls: ['./usuario.component.scss'],
+  providers: [MessageService]
 })
 
 export class UsuarioComponent implements OnInit {
@@ -33,6 +38,14 @@ export class UsuarioComponent implements OnInit {
     email: string = '';
     telefono: string = '';
     rol: UserRole = UserRole.OBSERVADOR;
+    
+    // Campos de contraseña
+    password: string = '';
+    confirmPassword: string = '';
+    
+    // Variables para mostrar/ocultar contraseña
+    showPassword: boolean = false;
+    showConfirmPassword: boolean = false;
 
     // Opciones para el dropdown de roles
     rolesOptions = [
@@ -44,7 +57,8 @@ export class UsuarioComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private usuarioService: UsuarioService
+        private usuarioService: UsuarioService,
+        private messageService: MessageService
     ) {}
 
     ngOnInit() {
@@ -77,64 +91,21 @@ export class UsuarioComponent implements OnInit {
     cargarUsuario(id: number) {
         console.log('Cargando usuario con ID:', id);
         
-        // Simulación temporal con los mismos datos del listado-usuarios
-        const usuariosSimulados: UsuarioDto[] = [
-            { 
-                id: 1, 
-                nombre: 'Juan Pérez', 
-                email: 'juan.perez@example.com', 
-                telefono: '+598 99 123 456',
-                rol: UserRole.ADMIN, 
-                activo: true,
-                lotesId: [1, 2, 3]
+        this.usuarioService.obtenerUsuarioPorId(id).subscribe({
+            next: (usuario) => {
+                this.nombre = usuario.nombre;
+                this.email = usuario.email;
+                this.telefono = usuario.telefono || '';
+                this.rol = usuario.rol;
+                console.log('Usuario cargado:', usuario);
             },
-            { 
-                id: 2, 
-                nombre: 'María García', 
-                email: 'maria.garcia@example.com', 
-                telefono: '+598 99 654 321',
-                rol: UserRole.OBSERVADOR, 
-                activo: true,
-                lotesId: [4, 5]
-            },
-            { 
-                id: 3, 
-                nombre: 'Carlos López', 
-                email: 'carlos.lopez@example.com', 
-                telefono: '',
-                rol: UserRole.OBSERVADOR, 
-                activo: false,
-                lotesId: []
-            },
-        ];
-
-        const usuario = usuariosSimulados.find(u => u.id === id);
-        
-        if (usuario) {
-            this.nombre = usuario.nombre;
-            this.email = usuario.email;
-            this.telefono = usuario.telefono || '';
-            this.rol = usuario.rol;
-            console.log('Usuario cargado:', usuario);
-        } else {
-            console.error('Usuario no encontrado con ID:', id);
-            // En caso de no encontrar el usuario, limpiar campos
-            this.limpiarCampos();
-        }
-
-        // Cuando tengas el servicio real, reemplaza por:
-        // this.usuarioService.obtenerPerfilUsuario(email).subscribe({
-        //     next: (usuario) => {
-        //         this.nombre = usuario.nombre;
-        //         this.email = usuario.email;
-        //         this.telefono = usuario.telefono || '';
-        //         this.rol = usuario.rol;
-        //     },
-        //     error: (error) => {
-        //         console.error('Error al cargar usuario:', error);
-        //         this.limpiarCampos();
-        //     }
-        // });
+            error: (error) => {
+                console.error('Error al cargar usuario:', error);
+                alert('Error al cargar el usuario. Verifique que el usuario existe.');
+                this.limpiarCampos();
+                this.router.navigate(['/listado-usuarios']);
+            }
+        });
     }
 
 
@@ -145,6 +116,18 @@ export class UsuarioComponent implements OnInit {
       this.email = '';
       this.telefono = '';
       this.rol = UserRole.OBSERVADOR;
+      this.password = '';
+      this.confirmPassword = '';
+      this.showPassword = false;
+      this.showConfirmPassword = false;
+    }
+
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
+    }
+
+    toggleConfirmPasswordVisibility() {
+      this.showConfirmPassword = !this.showConfirmPassword;
     }
 
     getRolLabel(rol: UserRole): string {
@@ -172,29 +155,79 @@ export class UsuarioComponent implements OnInit {
         return;
       }
 
+      // Validación de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(this.email)) {
+        alert('Por favor ingrese un email válido');
+        return;
+      }
+
+      // Validaciones de contraseña (siempre requerida)
+      if (!this.password.trim()) {
+        alert(this.isEditing ? 'La nueva contraseña es requerida' : 'La contraseña es requerida');
+        return;
+      }
+
+      if (this.password.length < 6) {
+        alert('La contraseña debe tener al menos 6 caracteres');
+        return;
+      }
+
+      if (this.password !== this.confirmPassword) {
+        alert('Las contraseñas no coinciden');
+        return;
+      }
+
       const usuarioData: UsuarioDto = {
-        id: this.editingId ?? 0, // Se asigna en el backend para nuevos usuarios
+        id: this.editingId ?? 0, 
         nombre: this.nombre,
         email: this.email,
         telefono: this.telefono,
         rol: this.rol,
-        activo: true, // Por defecto activo (se excluye del formulario pero se envía)
-        lotesId: [] // Por defecto sin lotes (se excluye del formulario pero se envía)
+        activo: true, 
+        lotesId: [],
+        password: this.password // Siempre incluir contraseña
       };
 
       if (this.isEditing && this.editingId) {
         // Actualizar usuario existente
         console.log('Actualizando Usuario ID:', this.editingId, 'con datos:', usuarioData);
-        // Aquí deberías llamar al servicio:
-        // this.usuarioService.actualizarUsuario(usuarioData).subscribe(...)
+        this.usuarioService.actualizarUsuarioPorId(this.editingId, usuarioData).subscribe({
+          next: (usuarioActualizado) => {
+            console.log('Usuario actualizado exitosamente:', usuarioActualizado);
+            alert('Usuario actualizado exitosamente');
+            this.router.navigate(['/listado-usuarios']);
+          },
+          error: (error) => {
+            console.error('Error al actualizar usuario:', error);
+            alert('Error al actualizar el usuario. Verifique los datos e intente nuevamente.');
+          }
+        });
       } else {
         // Crear nuevo usuario
         console.log('Creando nuevo Usuario:', usuarioData);
-        // Aquí deberías llamar al servicio:
-        // this.usuarioService.crearUsuario(usuarioData).subscribe(...)
+        this.usuarioService.crearUsuario(usuarioData).subscribe({
+          next: () => {
+            // Mostrar toast de éxito y redirigir tras breve delay
+            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Usuario creado correctamente' });
+            setTimeout(() => this.router.navigate(['/listado-usuarios']), 800);
+          },
+          error: (error) => {
+            // Manejo de errores reales
+            if (error.status === 409) {
+              alert('Ya existe un usuario con ese email. Por favor use un email diferente.');
+            } else if (error.status === 400) {
+              alert('Datos inválidos. Verifique que todos los campos requeridos estén completos.');
+            } else if (error.status === 403) {
+              alert('No tiene permisos para crear usuarios. Contacte al administrador.');
+            } else if (error.status === 0) {
+              alert('Error de conexión. Verifique que el servidor esté ejecutándose.');
+            } else {
+              alert(`Error al crear el usuario: ${error.error?.message || error.message || 'Error desconocido'}`);
+            }
+          }
+        });
       }
-      
-      this.router.navigate(['/listado-usuarios']);
     }
 
     onCancel() {

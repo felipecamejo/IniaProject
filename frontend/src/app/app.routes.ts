@@ -53,6 +53,7 @@ export const routes: Routes = [
     { path : ':loteId/:reciboId/listado-sanitario', component: ListadoSanitarioComponent },
 
     //home asociado a un lote
+    { path : ':loteId/lote-analisis', component: LoteAnalisisComponent },
     { path : ':loteId/:reciboId/lote-analisis', component: LoteAnalisisComponent },
 
     //formularios de creación y edición
@@ -61,7 +62,7 @@ export const routes: Routes = [
     { path : 'lote/crear', component: LoteComponent },
 
     //formularios asociados a un lote
-    { path : ':loteId/recibo/crear', component: ReciboComponent },
+    { path : ':loteId/:reciboId/recibo', component: ReciboComponent },
 
     //formularios asociados a un recibo
     { path : ':loteId/:reciboId/pms/crear', component: PmsComponent },

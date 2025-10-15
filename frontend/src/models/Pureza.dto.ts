@@ -6,8 +6,6 @@ export interface PurezaDto {
 
   pesoInicial: number | null;
   pesoInicialInase: number | null;
-  pesoInicialPorcentajeRedondeo: number | null;
-  pesoInicialPorcentajeRedondeoInase: number | null;
 
   semillaPura: number | null;
   semillaPuraInase: number | null;
@@ -40,6 +38,15 @@ export interface PurezaDto {
   malezasToleranciaCeroPorcentajeRedondeoInase: number | null;
 
   pesoTotal: number | null;
+  pesoTotalInase: number | null;
+
+  otrosCultivo: number | null;
+
+  malezasNormalesId: number[] | null;
+  malezasToleradasId: number[] | null;
+  malezasToleranciaCeroId: number[] | null;
+  cultivosId: number[] | null;
+
 
   fechaEstandar: string | null;
   estandar: boolean;

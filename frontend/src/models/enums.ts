@@ -4,4 +4,10 @@ export enum UserRole {
   OBSERVADOR = 'OBSERVADOR'
 }
 
+export enum ReciboEstado {
+  L = 'L',
+  C = 'C', 
+  S = 'S'
+}
+
 

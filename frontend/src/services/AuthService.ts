@@ -45,6 +45,19 @@ export class AuthService {
   get token(): string | null {
     return localStorage.getItem('token');
   }
+
+  get userRoles(): string[] {
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData).roles : [];
+  }
+
+  isAdmin(): boolean {
+    return this.userRoles.includes('ADMIN');
+  }
+
+  hasRole(role: string): boolean {
+    return this.userRoles.includes(role);
+  }
 }
 
 

@@ -10,7 +10,7 @@ interface ResponseListadoDOSN {
 
 @Injectable({ providedIn: 'root' })
 export class DOSNService {
-  private endpoint: string = '/DOSN';
+  private endpoint: string = '/dosn';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
@@ -25,6 +25,12 @@ export class DOSNService {
   listar(): Observable<ResponseListadoDOSN> {
     return this.http.get<ResponseListadoDOSN>(
       `${this.urlService.baseUrl}${this.endpoint}/listar`
+    );
+  }
+
+  listarPorRecibo(reciboId: number): Observable<ResponseListadoDOSN> {
+    return this.http.get<ResponseListadoDOSN>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar/recibo/${reciboId}`
     );
   }
 

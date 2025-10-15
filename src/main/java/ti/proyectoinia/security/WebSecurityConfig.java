@@ -66,6 +66,7 @@ public class WebSecurityConfig {
                         .requestMatchers(antMatcher("/api/v1/Tetrazolio/**")).hasAuthority("ADMIN")
                         .requestMatchers(antMatcher("/api/v1/Sanitario/**")).hasAuthority("ADMIN")
                         .requestMatchers(antMatcher("/api/v1/recibo/**")).hasAuthority("ADMIN")
+                        .requestMatchers(antMatcher("/api/v1/deposito/**")).hasAuthority("ADMIN")
                         
                         // Endpoints de lotes: ADMIN, ANALISTA y OBSERVADOR pueden acceder
                         .requestMatchers(antMatcher("/api/v1/lote/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")

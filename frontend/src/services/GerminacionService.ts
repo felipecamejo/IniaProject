@@ -28,6 +28,12 @@ export class GerminacionService {
     );
   }
 
+  listarPorRecibo(reciboId: number): Observable<ResponseListadoGerminacion> {
+    return this.http.get<ResponseListadoGerminacion>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar/recibo/${reciboId}`
+    );
+  }
+
   obtener(id: number): Observable<GerminacionDto> {
     return this.http.get<GerminacionDto>(
       `${this.urlService.baseUrl}${this.endpoint}/${id}`

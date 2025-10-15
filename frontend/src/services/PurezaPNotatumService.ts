@@ -10,7 +10,7 @@ interface ResponseListadoPurezaPNotatum {
 
 @Injectable({ providedIn: 'root' })
 export class PurezaPNotatumService {
-  private endpoint: string = '/PurezaPNotatum';
+  private endpoint: string = '/purezapnotatum';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
@@ -25,6 +25,12 @@ export class PurezaPNotatumService {
   listar(): Observable<ResponseListadoPurezaPNotatum> {
     return this.http.get<ResponseListadoPurezaPNotatum>(
       `${this.urlService.baseUrl}${this.endpoint}/listar`
+    );
+  }
+
+  listarPorRecibo(reciboId: number): Observable<ResponseListadoPurezaPNotatum> {
+    return this.http.get<ResponseListadoPurezaPNotatum>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar/recibo/${reciboId}`
     );
   }
 

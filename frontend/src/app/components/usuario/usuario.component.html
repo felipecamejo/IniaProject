@@ -1,10 +1,11 @@
+<p-toast></p-toast>
 <div class="container">
   <!-- Botón de navegación hacia atrás -->
   <button class="back-button" (click)="onCancel()">
     <i class="pi pi-arrow-left"></i>
   </button>
   
-  <p-card class="card">
+  <p-card class="card auth-modal">
     <ng-template pTemplate="header">
       <h2 class="title">{{ isEditing ? 'Editar Usuario' : 'Crear Usuario' }}</h2>
     </ng-template>
@@ -67,6 +68,56 @@
               {{ option.label }}
             </option>
           </select>
+        </div>
+
+        <!-- Campo Contraseña -->
+        <div class="form-field">
+          <label for="password">{{ isEditing ? 'Nueva Contraseña' : 'Contraseña' }} *</label>
+          <div class="password-input-container">
+            <input 
+              id="password" 
+              [type]="showPassword ? 'text' : 'password'" 
+              [(ngModel)]="password" 
+              name="password" 
+              pInputText 
+              required
+              [placeholder]="isEditing ? 'Ingrese la nueva contraseña' : 'Ingrese la contraseña'"
+              minlength="6"
+            />
+            <button 
+              type="button" 
+              class="password-toggle-btn" 
+              (click)="togglePasswordVisibility()"
+              title="{{ showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña' }}"
+            >
+              <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Campo Confirmar Contraseña -->
+        <div class="form-field">
+          <label for="confirmPassword">{{ isEditing ? 'Confirmar Nueva Contraseña' : 'Confirmar Contraseña' }} *</label>
+          <div class="password-input-container">
+            <input 
+              id="confirmPassword" 
+              [type]="showConfirmPassword ? 'text' : 'password'" 
+              [(ngModel)]="confirmPassword" 
+              name="confirmPassword" 
+              pInputText 
+              required
+              [placeholder]="isEditing ? 'Confirme la nueva contraseña' : 'Confirme la contraseña'"
+              minlength="6"
+            />
+            <button 
+              type="button" 
+              class="password-toggle-btn" 
+              (click)="toggleConfirmPasswordVisibility()"
+              title="{{ showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña' }}"
+            >
+              <i [class]="showConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+            </button>
+          </div>
         </div>
 
       </div>

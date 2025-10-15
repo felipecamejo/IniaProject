@@ -47,20 +47,22 @@
                 </div>
               </td>
               <td>
-                <div>
+                <div *ngIf="rowIndex !== 0 && rowIndex !== 7">
                   <input 
                     type="number" 
                     [ngModel]="getPorcentajeValue(rowIndex)"
-                    (ngModelChange)="setPorcentajeValue(rowIndex, $event)"
                     [name]="'porcentaje_' + rowIndex" 
                     pInputText 
-                    [readonly]="isReadonly"
+                    [readonly]="true"
                   />
                   <span>%</span>
                 </div>
+                <div *ngIf="rowIndex === 0 || rowIndex === 7" class="empty-cell">
+                  <!-- Sin porcentaje para peso inicial y peso total -->
+                </div>
               </td>
               <td>
-                <div>
+                <div *ngIf="rowIndex !== 0 && rowIndex !== 7">
                   <input 
                     type="number" 
                     [ngModel]="getPorcentajeRedondeoValue(rowIndex)"
@@ -70,6 +72,9 @@
                     [readonly]="isReadonly"
                   />
                   <span>%</span>
+                </div>
+                <div *ngIf="rowIndex === 0 || rowIndex === 7" class="empty-cell">
+                  <!-- Sin redondeo para peso inicial y peso total -->
                 </div>
               </td>
             </tr>
@@ -119,20 +124,22 @@
                 </div>
               </td>
               <td>
-                <div>
+                <div *ngIf="rowIndex !== 0 && rowIndex !== 7">
                   <input 
                     type="number" 
                     [ngModel]="getPorcentajeInaseValue(rowIndex)"
-                    (ngModelChange)="setPorcentajeInaseValue(rowIndex, $event)"
                     [name]="'porcentajeInase_' + rowIndex" 
                     pInputText 
-                    [readonly]="isReadonly"
+                    [readonly]="true"
                   />
                   <span>%</span>
                 </div>
+                <div *ngIf="rowIndex === 0 || rowIndex === 7" class="empty-cell">
+                  <!-- Sin porcentaje para peso inicial y peso total -->
+                </div>
               </td>
               <td>
-                <div>
+                <div *ngIf="rowIndex !== 0 && rowIndex !== 7">
                   <input 
                     type="number" 
                     [ngModel]="getPorcentajeRedondeoInaseValue(rowIndex)"
@@ -142,6 +149,9 @@
                     [readonly]="isReadonly"
                   />
                   <span>%</span>
+                </div>
+                <div *ngIf="rowIndex === 0 || rowIndex === 7" class="empty-cell">
+                  <!-- Sin redondeo para peso inicial y peso total -->
                 </div>
               </td>
             </tr>
@@ -177,7 +187,7 @@
               <div class="multiselect-options-container">
                 <div class="multiselect-option" *ngFor="let mc of getFilteredMalezasCero()" (click)="toggleMalezaCeroSelection(mc)" [class.selected]="isMalezaCeroSelected(mc.id)">
                   <input type="checkbox" [checked]="isMalezaCeroSelected(mc.id)" (change)="toggleMalezaCeroSelection(mc)" (click)="$event.stopPropagation()">
-                  <span>{{ mc.label }}</span>
+                  <span>{{ mc.nombre }}</span>
                 </div>
                 <div class="no-results" *ngIf="getFilteredMalezasCero().length === 0">No se encontraron opciones</div>
               </div>
@@ -203,7 +213,7 @@
               <div class="multiselect-options-container">
                 <div class="multiselect-option" *ngFor="let m of getFilteredMalezasComunes()" (click)="toggleMalezaComunSelection(m)" [class.selected]="isMalezaComunSelected(m.id)">
                   <input type="checkbox" [checked]="isMalezaComunSelected(m.id)" (change)="toggleMalezaComunSelection(m)" (click)="$event.stopPropagation()">
-                  <span>{{ m.label }}</span>
+                  <span>{{ m.nombre }}</span>
                 </div>
                 <div class="no-results" *ngIf="getFilteredMalezasComunes().length === 0">No se encontraron opciones</div>
               </div>
@@ -228,7 +238,7 @@
               <div class="multiselect-options-container">
                 <div class="multiselect-option" *ngFor="let mt of getFilteredMalezasToleradas()" (click)="toggleMalezaToleradaSelection(mt)" [class.selected]="isMalezaToleradaSelected(mt.id)">
                   <input type="checkbox" [checked]="isMalezaToleradaSelected(mt.id)" (change)="toggleMalezaToleradaSelection(mt)" (click)="$event.stopPropagation()">
-                  <span>{{ mt.label }}</span>
+                  <span>{{ mt.nombre }}</span>
                 </div>
                 <div class="no-results" *ngIf="getFilteredMalezasToleradas().length === 0">No se encontraron opciones</div>
               </div>
@@ -253,7 +263,7 @@
               <div class="multiselect-options-container">
                 <div class="multiselect-option" *ngFor="let c of getFilteredCultivos()" (click)="toggleCultivoSelection(c)" [class.selected]="isCultivoSelected(c.id)">
                   <input type="checkbox" [checked]="isCultivoSelected(c.id)" (change)="toggleCultivoSelection(c)" (click)="$event.stopPropagation()">
-                  <span>{{ c.label }}</span>
+                  <span>{{ c.nombre }}</span>
                 </div>
                 <div class="no-results" *ngIf="getFilteredCultivos().length === 0">No se encontraron opciones</div>
               </div>
@@ -304,8 +314,9 @@
           pButton
           type="button"
           (click)="onSubmit()"
-          [label]="isEditing ? 'Actualizar Pureza' : 'Crear Pureza'"
+          [label]="isSubmitting ? 'Enviando...' : (isEditing ? 'Actualizar Pureza' : 'Crear Pureza')"
           class="p-button-success"
+          [disabled]="isSubmitting"
         ></button>
         
         <button

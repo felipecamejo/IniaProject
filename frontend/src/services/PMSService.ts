@@ -22,9 +22,15 @@ export class PMSService {
     );
   }
 
-  listar(): Observable<ResponseListadoPMS> {
+  listar(reciboId: number): Observable<PMSDto[]> {
+    return this.http.get<PMSDto[]>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar/recibo/${reciboId}`
+    );
+  }
+
+  listarPorRecibo(reciboId: number): Observable<ResponseListadoPMS> {
     return this.http.get<ResponseListadoPMS>(
-      `${this.urlService.baseUrl}${this.endpoint}/listar`
+      `${this.urlService.baseUrl}${this.endpoint}/listar/recibo/${reciboId}`
     );
   }
 

@@ -2,7 +2,6 @@ package ti.proyectoinia.dtos;
 
 import lombok.Data;
 import lombok.Generated;
-import ti.proyectoinia.business.entities.HumedadLugar;
 import ti.proyectoinia.business.entities.ReciboEstado;
 
 import java.util.Date;
@@ -14,11 +13,17 @@ public class ReciboDto {
 
     private Integer nroAnalisis;
 
-    private Integer depositoId;
+    private Long depositoId;
 
     private ReciboEstado estado;
 
-    private List<Integer> HumedadesId;
+    private List<Long> dosnAnalisisId;
+    private List<Long> pmsAnalisisId;
+    private List<Long> purezaAnalisisId;
+    private List<Long> germinacionAnalisisId;
+    private List<Long> purezaPNotatumAnalisisId;
+    private List<Long> sanitarioAnalisisId;
+    private List<Long> tetrazolioAnalisisId;
 
     private String especie;
 
@@ -31,8 +36,6 @@ public class ReciboDto {
     private String origen;
 
     private String cultivar;
-
-    private String deposito;
 
     private Integer lote;
 
@@ -57,7 +60,6 @@ public class ReciboDto {
                 java.util.Objects.equals(remitente, that.remitente) &&
                 java.util.Objects.equals(origen, that.origen) &&
                 java.util.Objects.equals(cultivar, that.cultivar) &&
-                java.util.Objects.equals(deposito, that.deposito) &&
                 java.util.Objects.equals(estado, that.estado) &&
                 lote == that.lote &&
                 Float.compare(kgLimpios, that.kgLimpios) == 0 &&
@@ -89,8 +91,6 @@ public class ReciboDto {
         result = result * 59 + ($origen == null ? 43 : $origen.hashCode());
         Object $cultivar = this.getCultivar();
         result = result * 59 + ($cultivar == null ? 43 : $cultivar.hashCode());
-        Object $deposito = this.getDeposito();
-        result = result * 59 + ($deposito == null ? 43 : $deposito.hashCode());
         Object $estado = this.getEstado();
         result = result * 59 + ($estado == null ? 43 : $estado.hashCode());
         result = result * 59 + this.getLote();

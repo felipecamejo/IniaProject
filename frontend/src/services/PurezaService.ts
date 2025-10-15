@@ -22,9 +22,15 @@ export class PurezaService {
     );
   }
 
-  listar(): Observable<ResponseListadoPurezas> {
+  listar(id: number): Observable<ResponseListadoPurezas> {
     return this.http.get<ResponseListadoPurezas>(
-      `${this.urlService.baseUrl}${this.endpoint}/listar`
+      `${this.urlService.baseUrl}${this.endpoint}/listar/recibo/${id}`
+    );
+  }
+
+  listarPorRecibo(reciboId: number): Observable<ResponseListadoPurezas> {
+    return this.http.get<ResponseListadoPurezas>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar/recibo/${reciboId}`
     );
   }
 
