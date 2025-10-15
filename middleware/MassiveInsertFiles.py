@@ -258,8 +258,6 @@ class Pureza(Base):
     # Peso inicial con variantes INIA/INASE
     peso_inicial = Column(Float, nullable=True)
     peso_inicial_inase = Column(Float, nullable=True)
-    peso_inicial_porcentaje_redondeo = Column(Float, nullable=True)
-    peso_inicial_porcentaje_redondeo_inase = Column(Float, nullable=True)
     
     # Semilla pura con variantes INIA/INASE
     semilla_pura = Column(Float, nullable=True)
@@ -299,6 +297,7 @@ class Pureza(Base):
     
     # Peso total con variantes INIA/INASE
     peso_total = Column(Float, nullable=True)
+    peso_total_inase = Column(Float, nullable=True)
     
     # Campo legacy
     otros_cultivo = Column(Float, nullable=True)
@@ -644,11 +643,13 @@ def insert_pureza(session, recibos):
         for i in range(5000):
             fecha_inia = generar_fecha_aleatoria(30)
             fecha_inase = generar_fecha_aleatoria(25)
+            fecha_estandar = generar_fecha_aleatoria(20)
             fecha_creacion = generar_fecha_aleatoria(35)
             fecha_repeticion = generar_fecha_aleatoria(15) if random.choice([True, False]) else None
             
             # Generar valores base
             peso_inicial = round(random.uniform(50.0, 200.0), 2)
+            peso_inicial_inase_val = round(peso_inicial * random.uniform(0.95, 1.05), 2)
             semilla_pura = round(random.uniform(90.0, 99.0), 2)
             material_inerte = round(random.uniform(0.0, 3.0), 2)
             otros_cultivos = round(random.uniform(0.0, 2.0), 2)
@@ -656,18 +657,18 @@ def insert_pureza(session, recibos):
             malezas_toleradas = round(random.uniform(0.0, 2.0), 2)
             malezas_tolerancia_cero = round(random.uniform(0.0, 1.0), 2)
             peso_total = round(peso_inicial * random.uniform(0.9, 1.0), 2)
+            peso_total_inase = round(peso_inicial_inase_val * random.uniform(0.9, 1.0), 2)
             
             pureza = Pureza(
                 pureza_activo=True,
                 estandar=random.choice([True, False]),
                 fecha_inase=fecha_inase,
                 fecha_inia=fecha_inia,
+                fecha_estandar=fecha_estandar,
                 
                 # Peso inicial con variantes
                 peso_inicial=peso_inicial,
-                peso_inicial_inase=peso_inicial * random.uniform(0.95, 1.05),
-                peso_inicial_porcentaje_redondeo=100.0,
-                peso_inicial_porcentaje_redondeo_inase=100.0,
+                peso_inicial_inase=peso_inicial_inase_val,
                 
                 # Semilla pura con variantes
                 semilla_pura=semilla_pura,
@@ -707,6 +708,7 @@ def insert_pureza(session, recibos):
                 
                 # Peso total (sin variantes adicionales en BD actual)
                 peso_total=peso_total,
+                peso_total_inase=peso_total_inase,
                 
                 # Campo legacy
                 otros_cultivo=otros_cultivos,
@@ -1156,6 +1158,21 @@ def insertar_datos_masivos():
 
             # Sanitario (para poder asociar Hongos)
             sanitarios = []
+            # Normalizar valores para cumplir restricciones CHECK en BD
+            estados_producto_validos = DATOS_MUESTRA['estados_producto']
+            try:
+                vals_est = obtener_valores_check(engine, 'sanitario', 'estadoproductodosis')
+                if vals_est:
+                    estados_producto_validos = vals_est
+            except Exception:
+                ...
+            metodos_validos_sanitario = DATOS_MUESTRA['metodos']
+            try:
+                vals_met = obtener_valores_check(engine, 'sanitario', 'metodo')
+                if vals_met:
+                    metodos_validos_sanitario = vals_met
+            except Exception:
+                ...
             for i in range(16):
                 fecha_sanitario = generar_fecha_aleatoria(30)
                 fecha_siembra = generar_fecha_aleatoria(25)
@@ -1163,12 +1180,12 @@ def insertar_datos_masivos():
                 fecha_repeticion = generar_fecha_aleatoria(15) if random.choice([True, False]) else None
                 sanitario = Sanitario(
                     sanitario_activo=True,
-                    sanitario_estadoproductodosis=random.choice(DATOS_MUESTRA['estados_producto']),
+                    sanitario_estadoproductodosis=random.choice(estados_producto_validos),
                     sanitario_fecha=fecha_sanitario,
                     sanitario_fechasiembra=fecha_siembra,
                     sanitario_horasluz=random.randint(8, 12),
                     sanitario_horasoscuridad=random.randint(12, 16),
-                    sanitario_metodo=random.choice(DATOS_MUESTRA['metodos']),
+                    sanitario_metodo=random.choice(metodos_validos_sanitario),
                     sanitario_nrodias=random.randint(5, 14),
                     sanitario_nrosemillasrepeticion=random.randint(50, 200),
                     sanitario_observaciones=random.choice(DATOS_MUESTRA['observaciones']),
