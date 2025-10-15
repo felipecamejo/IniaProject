@@ -17,9 +17,7 @@ from MassiveInsertFiles import (
     Lote, Maleza, Semilla, Usuario, Recibo, Deposito,
     Dosn as DOSN, Cultivo, Germinacion, Pms as PMS, Pureza,
     PurezaPnotatum as PurezaPNotatum, Sanitario, Hongo, Tetrazolio,
-    UsuarioLote, SanitarioHongo, GramosPms, HumedadRecibo,
-    SanitarioHongoIds,
-    PurezaMalezaNormal, PurezaMalezaTolerada, PurezaMalezaToleranciaCero,
+    UsuarioLote, GramosPms, HumedadRecibo,
     GREEN, RED, CYAN, RESET, logger, logging
 )
 
@@ -36,30 +34,16 @@ def log_step(message: str):
     logger.info(f"{CYAN}{message}{RESET}")
 
 
+# Solo análisis - incluyendo recibo como información clave
 MODELS = {
-    "lote": Lote,
-    "maleza": Maleza,
-    "semilla": Semilla,
-    "usuario": Usuario,
     "recibo": Recibo,
-    "deposito": Deposito,
     "dosn": DOSN,
-    "cultivo": Cultivo,
     "germinacion": Germinacion,
     "pms": PMS,
-    "gramos_pms": GramosPms,
     "pureza": Pureza,
     "pureza_pnotatum": PurezaPNotatum,
     "sanitario": Sanitario,
-    "hongo": Hongo,
     "tetrazolio": Tetrazolio,
-    "usuario_lote": UsuarioLote,
-    "sanitario_hongo": SanitarioHongo,
-    "humedad_recibo": HumedadRecibo,
-    "sanitario_hongo_ids": SanitarioHongoIds,
-    "pureza_maleza_normal": PurezaMalezaNormal,
-    "pureza_maleza_tolerada": PurezaMalezaTolerada,
-    "pureza_maleza_tolerancia_cero": PurezaMalezaToleranciaCero,
 }
 
 
@@ -103,14 +87,17 @@ def export_table_csv(session, model, output_dir: str) -> str:
             log_fail(f"No hay columnas válidas para exportar en {table}")
             return ""
 
+        # Filtrar columnas administrativas - solo datos de análisis
+        columnas_analisis = filtrar_columnas_analisis(columnas_validas, table)
+        
         # Usar SQL directo para evitar problemas con el modelo
-        query = text(f"SELECT {', '.join(columnas_validas)} FROM {table}")
+        query = text(f"SELECT {', '.join(columnas_analisis)} FROM {table}")
         result = session.execute(query)
         rows = result.fetchall()
         
         with open(csv_path, mode="w", encoding="utf-8-sig", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(columnas_validas)
+            writer.writerow(columnas_analisis)
             for row in rows:
                 values = [serialize_value(value) for value in row]
                 writer.writerow(values)
@@ -149,8 +136,11 @@ def export_table_xlsx(session, model, output_dir: str) -> str:
             log_fail(f"No hay columnas válidas para exportar en {table}")
             return ""
 
+        # Filtrar columnas administrativas - solo datos de análisis
+        columnas_analisis = filtrar_columnas_analisis(columnas_validas, table)
+
         # Usar SQL directo para evitar problemas con el modelo
-        query = text(f"SELECT {', '.join(columnas_validas)} FROM {table}")
+        query = text(f"SELECT {', '.join(columnas_analisis)} FROM {table}")
         result = session.execute(query)
         rows = result.fetchall()
         
@@ -158,13 +148,13 @@ def export_table_xlsx(session, model, output_dir: str) -> str:
         ws = wb.active
         ws.title = table[:31]  # límite de Excel
         # Escribir encabezados
-        ws.append(columnas_validas)
+        ws.append(columnas_analisis)
         # Escribir filas
         for row in rows:
             values = [serialize_value(value) for value in row]
             ws.append(values)
         # Auto ancho simple
-        for idx, col_name in enumerate(columnas_validas, start=1):
+        for idx, col_name in enumerate(columnas_analisis, start=1):
             max_len = max((len(str(ws.cell(row=r, column=idx).value)) if ws.cell(row=r, column=idx).value is not None else 0) for r in range(1, ws.max_row + 1))
             ws.column_dimensions[get_column_letter(idx)].width = min(max(10, max_len + 2), 60)
         wb.save(xlsx_path)
@@ -173,6 +163,36 @@ def export_table_xlsx(session, model, output_dir: str) -> str:
     except Exception as e:
         log_fail(f"No se pudo exportar {table} a Excel: {e}")
         return ""
+
+
+def filtrar_columnas_analisis(columnas: list, tabla: str) -> list:
+    """Filtra columnas para exportar solo datos de análisis, excluyendo campos administrativos"""
+    # Campos administrativos a excluir
+    campos_excluir = {
+        # IDs y claves primarias
+        'id', 'dosn_id', 'germinacion_id', 'pms_id', 'pureza_id', 
+        'pureza_pnotatum_id', 'sanitario_id', 'tetrazolio_id', 'recibo_id',
+        # Estados administrativos
+        'activo', 'dosn_activo', 'germinacion_activo', 'pms_activo', 
+        'pureza_activo', 'sanitario_activo', 'tetrazolio_activo', 'recibo_activo',
+        # Campos de control
+        'repetido', 'dosn_repetido', 'germinacion_repetido', 'pms_repetido',
+        'pureza_repetido', 'sanitario_repetido', 'tetrazolio_repetido',
+        # Fechas de control
+        'fecha_creacion', 'dosn_fecha_creacion', 'germinacion_fecha_creacion',
+        'pms_fecha_creacion', 'pureza_fecha_creacion', 'sanitario_fechacreacion',
+        'tetrazolio_fecha_creacion', 'fecha_repeticion', 'dosn_fecha_repeticion',
+        'germinacion_fecha_repeticion', 'pms_fecha_repeticion', 'pureza_fecha_repeticion',
+        'sanitario_fecharepeticion', 'tetrazolio_fecha_repeticion',
+        # Relaciones (excepto recibo que se mantiene)
+        'deposito_id'
+    }
+    
+    # Filtrar columnas que no están en la lista de exclusión
+    columnas_analisis = [col for col in columnas if col not in campos_excluir]
+    
+    log_step(f"Filtrando {tabla}: {len(columnas)} → {len(columnas_analisis)} columnas de análisis")
+    return columnas_analisis
 
 
 def verificar_estructura_tabla(session, tabla_nombre: str) -> list:
@@ -228,12 +248,12 @@ def export_selected_tables(tables: list, output_dir: str, fmt: str) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Exporta tablas del proyecto INIA a Excel/CSV")
+    parser = argparse.ArgumentParser(description="Exporta análisis del proyecto INIA a Excel/CSV (solo datos de análisis, sin campos administrativos)")
     parser.add_argument(
         "--tables",
         nargs="*",
         default=list(MODELS.keys()),
-        help="Lista de tablas a exportar. Por defecto exporta todas"
+        help="Lista de análisis a exportar. Por defecto exporta todos los análisis"
     )
     parser.add_argument(
         "--out",
@@ -248,7 +268,8 @@ def main():
     )
     args = parser.parse_args()
 
-    log_step(f"Iniciando exportación en formato {args.format}…")
+    log_step(f"Iniciando exportación de análisis en formato {args.format}…")
+    log_step("Se exportarán datos de análisis + recibo (excluyendo IDs, estados activos, fechas de control)")
     export_selected_tables(args.tables, args.out, args.format)
 
 
