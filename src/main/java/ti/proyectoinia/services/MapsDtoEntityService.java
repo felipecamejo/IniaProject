@@ -1130,4 +1130,28 @@ public class MapsDtoEntityService {
 
         return dto;
     }
+
+    public ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio mapToEntityViabilidadRepsTetrazolio(ViabilidadRepsTetrazolioDto dto) {
+        if (dto == null) return null;
+        ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio entity = new ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio();
+        entity.setId(dto.getId());
+        entity.setActivo(dto.isActivo());
+        entity.setTetrazolioId(dto.getTetrazolioId());
+        entity.setViables(dto.getViables());
+        entity.setNoViables(dto.getNoViables());
+        entity.setDuras(dto.getDuras());
+        return entity;
+    }
+
+    public ViabilidadRepsTetrazolioDto mapToDtoViabilidadRepsTetrazolio(ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio entity) {
+        if (entity == null) return null;
+        ViabilidadRepsTetrazolioDto dto = new ViabilidadRepsTetrazolioDto();
+        dto.setId(entity.getId());
+        dto.setActivo(entity.isActivo());
+        dto.setTetrazolioId(entity.getTetrazolioId());
+        dto.setViables(entity.getViables());
+        dto.setNoViables(entity.getNoViables());
+        dto.setDuras(entity.getDuras());
+        return dto;
+    }
 }
