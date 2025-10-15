@@ -47,20 +47,22 @@
                 </div>
               </td>
               <td>
-                <div>
+                <div *ngIf="rowIndex !== 0 && rowIndex !== 7">
                   <input 
                     type="number" 
                     [ngModel]="getPorcentajeValue(rowIndex)"
-                    (ngModelChange)="setPorcentajeValue(rowIndex, $event)"
                     [name]="'porcentaje_' + rowIndex" 
                     pInputText 
-                    [readonly]="isReadonly"
+                    [readonly]="true"
                   />
                   <span>%</span>
                 </div>
+                <div *ngIf="rowIndex === 0 || rowIndex === 7" class="empty-cell">
+                  <!-- Sin porcentaje para peso inicial y peso total -->
+                </div>
               </td>
               <td>
-                <div>
+                <div *ngIf="rowIndex !== 0 && rowIndex !== 7">
                   <input 
                     type="number" 
                     [ngModel]="getPorcentajeRedondeoValue(rowIndex)"
@@ -70,6 +72,9 @@
                     [readonly]="isReadonly"
                   />
                   <span>%</span>
+                </div>
+                <div *ngIf="rowIndex === 0 || rowIndex === 7" class="empty-cell">
+                  <!-- Sin redondeo para peso inicial y peso total -->
                 </div>
               </td>
             </tr>
@@ -119,20 +124,22 @@
                 </div>
               </td>
               <td>
-                <div>
+                <div *ngIf="rowIndex !== 0 && rowIndex !== 7">
                   <input 
                     type="number" 
                     [ngModel]="getPorcentajeInaseValue(rowIndex)"
-                    (ngModelChange)="setPorcentajeInaseValue(rowIndex, $event)"
                     [name]="'porcentajeInase_' + rowIndex" 
                     pInputText 
-                    [readonly]="isReadonly"
+                    [readonly]="true"
                   />
                   <span>%</span>
                 </div>
+                <div *ngIf="rowIndex === 0 || rowIndex === 7" class="empty-cell">
+                  <!-- Sin porcentaje para peso inicial y peso total -->
+                </div>
               </td>
               <td>
-                <div>
+                <div *ngIf="rowIndex !== 0 && rowIndex !== 7">
                   <input 
                     type="number" 
                     [ngModel]="getPorcentajeRedondeoInaseValue(rowIndex)"
@@ -142,6 +149,9 @@
                     [readonly]="isReadonly"
                   />
                   <span>%</span>
+                </div>
+                <div *ngIf="rowIndex === 0 || rowIndex === 7" class="empty-cell">
+                  <!-- Sin redondeo para peso inicial y peso total -->
                 </div>
               </td>
             </tr>
