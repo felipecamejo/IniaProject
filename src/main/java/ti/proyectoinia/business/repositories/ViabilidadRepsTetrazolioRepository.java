@@ -4,8 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ti.proyectoinia.business.entities.GramosPms;
-import ti.proyectoinia.business.entities.HumedadRecibo;
+import ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio;
 
 @Repository
 public interface ViabilidadRepsTetrazolioRepository extends JpaRepository<ViabilidadRepsTetrazolio, Long>{

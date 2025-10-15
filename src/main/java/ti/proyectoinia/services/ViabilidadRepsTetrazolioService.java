@@ -19,7 +19,7 @@ public class ViabilidadRepsTetrazolioService {
     private MapsDtoEntityService mapsDtoEntityService;
 
     public List<ViabilidadRepsTetrazolioDto> obtenerViabilidadPorTetrazolio(Long tetrazolioId) {
-        List<ViabilidadRepsTetrazolio> lista = repository.findByTetrazolioIdAndActivoTrue(tetrazolioId);
+    List<ViabilidadRepsTetrazolio> lista = repository.findByActivoTrueAndTetrazolioId(tetrazolioId);
         return lista.stream()
                 .map(mapsDtoEntityService::mapToDtoViabilidadRepsTetrazolio)
                 .collect(Collectors.toList());

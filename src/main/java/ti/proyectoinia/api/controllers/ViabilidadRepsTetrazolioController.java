@@ -27,7 +27,7 @@ public class ViabilidadRepsTetrazolioController {
     private ViabilidadRepsTetrazolioService viabilidadRepsTetrazolioService;
 
     @GetMapping("/tetrazolio/{tetrazolioId}")
-    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    //@Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(description = "Obtiene todos los viabilidades asociados a un Tetrazolio")
     public ResponseEntity<List<ViabilidadRepsTetrazolioDto>> getViabilidadPorTetrazolio(@PathVariable Long tetrazolioId) {
         List<ViabilidadRepsTetrazolioDto> lista = viabilidadRepsTetrazolioService.obtenerViabilidadPorTetrazolio(tetrazolioId);
@@ -35,7 +35,7 @@ public class ViabilidadRepsTetrazolioController {
     }
 
     @PostMapping("/crear-multiple")
-    @Secured({"ADMIN"})
+    //@Secured({"ADMIN"})
     @Operation(description = "Crea múltiples ViabilidadRepsTetrazolio en una sola llamada")
     public ResponseEntity<Object> crearMultiples(@RequestBody List<ViabilidadRepsTetrazolioDto> dtos) {
         List<ViabilidadRepsTetrazolioDto> validos = new java.util.ArrayList<>();
@@ -66,7 +66,7 @@ public class ViabilidadRepsTetrazolioController {
     }
 
     @PutMapping("/editar-multiple")
-    @Secured({"ADMIN"})
+    //Secured({"ADMIN"})
     @Operation(description = "Edita múltiples ViabilidadRepsTetrazolio en una sola llamada")
     public ResponseEntity<Object> editarMultiples(@RequestBody List<ViabilidadRepsTetrazolioDto> dtos) {
         List<ViabilidadRepsTetrazolioDto> validos = new java.util.ArrayList<>();
@@ -107,7 +107,7 @@ public class ViabilidadRepsTetrazolioController {
     }
 
     @PutMapping("/eliminar-multiple")
-    @Secured({"ADMIN"})
+    //@Secured({"ADMIN"})
     @Operation(description = "Elimina múltiples ViabilidadRepsTetrazolio (soft-delete) en una sola llamada")
     public ResponseEntity<Object> eliminarMultiples(@RequestBody List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
