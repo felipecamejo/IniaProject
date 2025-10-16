@@ -20,7 +20,6 @@ public class PMS {
     @Column(name = "PESO_MIL_SEMILLAS")
     private Float pesoMilSemillas; // en gramos
 
-
     @Column(name = "PESO_PROM_CIEN_SEMILLAS")
     private Float pesoPromedioCienSemillas;
 

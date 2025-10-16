@@ -7,14 +7,14 @@ export interface SanitarioDto {
   horasLuz: number | null;
   horasOscuridad: number | null;
   nroDias: number | null;
-  estadoProductoDosis: string;
+  estado: string;
   observaciones: string;
   nroSemillasRepeticion: number | null;
   reciboId: number | null;
   activo: boolean;
   estandar: boolean;
   repetido: boolean;
-  SanitarioHongoids: number[] | null;
+  sanitarioHongoids: number[] | null;
   fechaCreacion: string | null;
   fechaRepeticion: string | null;
 }
