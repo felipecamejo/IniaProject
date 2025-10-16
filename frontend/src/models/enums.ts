@@ -10,4 +10,10 @@ export enum ReciboEstado {
   S = 'S'
 }
 
+export enum TipoHongoSanitario {
+  PATOGENO = 'PATOGENO',
+  CONTAMINANTE  = 'CONTAMINANTE',
+  ALMACENAJE = 'ALMACENAJE'
+}
+
 
