@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface ReciboRepository extends JpaRepository<Recibo, Long> {
     List<Recibo> findByActivoTrue();
+
+    Recibo findByActivoTrueAndLoteId(Long loteId);
 }

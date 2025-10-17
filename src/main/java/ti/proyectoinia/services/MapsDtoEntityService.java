@@ -266,7 +266,7 @@ public class MapsDtoEntityService {
         dto.setRemitente(recibo.getRemitente());
         dto.setOrigen(recibo.getOrigen());
         dto.setCultivar(recibo.getCultivar());
-        dto.setLote(recibo.getLote());
+        dto.setLoteId(recibo.getLoteId());
         dto.setKgLimpios(recibo.getKgLimpios());
         dto.setAnalisisSolicitados(recibo.getAnalisisSolicitados());
         dto.setArticulo(recibo.getArticulo());
@@ -297,7 +297,7 @@ public class MapsDtoEntityService {
         recibo.setRemitente(dto.getRemitente());
         recibo.setOrigen(dto.getOrigen());
         recibo.setCultivar(dto.getCultivar());
-        recibo.setLote(dto.getLote());
+        recibo.setLoteId(dto.getLoteId());
         recibo.setKgLimpios(dto.getKgLimpios());
         recibo.setAnalisisSolicitados(dto.getAnalisisSolicitados());
         recibo.setArticulo(dto.getArticulo());
@@ -646,6 +646,7 @@ public class MapsDtoEntityService {
         loteDto.setDescripcion(lote.getDescripcion());
         loteDto.setFechaCreacion(formatDate(lote.getFechaCreacion()));
         loteDto.setFechaFinalizacion(formatDate(lote.getFechaFinalizacion()));
+        loteDto.setEstado(lote.getEstado());
 
         if (lote.getUsuarios() != null) {
             loteDto.setUsuariosId(lote.getUsuarios().stream().map(Usuario::getId).collect(Collectors.toList()));
@@ -668,6 +669,7 @@ public class MapsDtoEntityService {
         lote.setDescripcion(loteDto.getDescripcion());
         lote.setFechaCreacion(parseDate(loteDto.getFechaCreacion()));
         lote.setFechaFinalizacion(parseDate(loteDto.getFechaFinalizacion()));
+        lote.setEstado(loteDto.getEstado());
 
         if (loteDto.getUsuariosId() != null) {
             lote.setUsuarios(loteDto.getUsuariosId().stream().map(id -> {

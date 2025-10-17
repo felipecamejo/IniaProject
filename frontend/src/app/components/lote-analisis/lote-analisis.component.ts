@@ -16,7 +16,6 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   reciboId: number | null = null;
   tieneRecibo: boolean = false;
   lote: LoteDto | null = null; // Agregar para mantener info del lote
-  recibos: any[] = []; // Lista de recibos del lote
   private navigationSubscription: any;
   private currentUrl: string = '';
 
@@ -98,23 +97,27 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
 
   verificarRecibosDelLote(): void {
     if (this.loteId) {
-      this.reciboService.listarPorLote(this.loteId).subscribe({
-        next: (response: any) => {
-          this.recibos = response?.recibos ?? [];
-          this.tieneRecibo = this.recibos.length > 0;
+      this.loteService.reciboFromLote(this.loteId).subscribe({
+        next: (reciboId: number | null) => {
+          console.log('Recibo ID recibido del backend:', reciboId);
           
-          // Si tiene recibos pero no se especificó reciboId, usar el primero
-          if (this.tieneRecibo && !this.reciboId) {
-            this.reciboId = this.recibos[0].id;
-            console.log('ReciboId automáticamente asignado:', this.reciboId);
+          if (reciboId !== null && reciboId > 0) {
+            this.tieneRecibo = true;
+            
+            // Si no se especificó reciboId en la ruta, usar el del lote
+            if (!this.reciboId) {
+              this.reciboId = reciboId;
+            }
+            
+            console.log('Recibo del lote encontrado:', reciboId);
+          } else {
+            this.tieneRecibo = false;
+            console.log('El lote no tiene recibo asociado');
           }
-          
-          console.log('Recibos del lote:', this.recibos);
         },
         error: (error: any) => {
-          console.error('Error al verificar recibos del lote:', error);
+          console.error('Error al verificar recibo del lote:', error);
           this.tieneRecibo = false;
-          this.recibos = [];
         }
       });
     }
@@ -205,13 +208,12 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
 
   // Método para obtener información de recibos
   getRecibosInfo(): string {
-    if (this.recibos.length === 0) {
-      return 'Sin recibos';
-    } else if (this.recibos.length === 1) {
-      return `1 recibo (ID: ${this.recibos[0].id})`;
-    } else {
-      return `${this.recibos.length} recibos disponibles`;
+    if (!this.tieneRecibo) {
+      return 'Sin recibo';
+    } else if (this.reciboId) {
+      return `Recibo ID: ${this.reciboId}`;
     }
+    return 'Verificando recibo...';
   }
 
   // Método para recargar datos (útil cuando se regresa de crear/editar)

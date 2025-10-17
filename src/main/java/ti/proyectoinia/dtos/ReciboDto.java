@@ -37,7 +37,7 @@ public class ReciboDto {
 
     private String cultivar;
 
-    private Integer lote;
+    private Long loteId;
 
     private Float kgLimpios;
 
@@ -61,7 +61,7 @@ public class ReciboDto {
                 java.util.Objects.equals(origen, that.origen) &&
                 java.util.Objects.equals(cultivar, that.cultivar) &&
                 java.util.Objects.equals(estado, that.estado) &&
-                lote == that.lote &&
+                loteId == that.loteId &&
                 Float.compare(kgLimpios, that.kgLimpios) == 0 &&
                 java.util.Objects.equals(analisisSolicitados, that.analisisSolicitados) &&
                 articulo == that.articulo &&
@@ -93,7 +93,7 @@ public class ReciboDto {
         result = result * 59 + ($cultivar == null ? 43 : $cultivar.hashCode());
         Object $estado = this.getEstado();
         result = result * 59 + ($estado == null ? 43 : $estado.hashCode());
-        result = result * 59 + this.getLote();
+        result = Math.toIntExact(result * 59 + this.getLoteId());
         result = result * 59 + Float.floatToIntBits(this.getKgLimpios());
         Object $analisisSolicitados = this.getAnalisisSolicitados();
         result = result * 59 + ($analisisSolicitados == null ? 43 : $analisisSolicitados.hashCode());
