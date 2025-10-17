@@ -1,145 +1,128 @@
-Write-Host "==> INIA Project Middleware Setup" -ForegroundColor Cyan
-Write-Host "Installing complete dependencies: SQLAlchemy, psycopg2-binary, fastapi, uvicorn, openpyxl, pydantic" -ForegroundColor Gray
+Write-Host "==> Setup del middleware para el proyecto INIA" -ForegroundColor Cyan
+Write-Host "Instalando dependencias completas: SQLAlchemy, psycopg2-binary, fastapi, uvicorn, openpyxl, pydantic" -ForegroundColor Gray
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# Use py (Python Launcher) which is more reliable on Windows
+# Usar py (Python Launcher) que es más confiable en Windows
 if (-not (Get-Command py -ErrorAction SilentlyContinue)) {
-    Write-Error "Python is not installed. Install it and run again."
+    Write-Error "Python no está instalado. Instálalo y vuelve a ejecutar."
     exit 1
 }
 
 Push-Location (Split-Path -Parent $MyInvocation.MyCommand.Path)
 
-# 1) Create venv if it does not exist
+# 1) Crear venv si no existe
 if (-not (Test-Path ".venv")) {
-    Write-Host "Creating .venv..." -ForegroundColor Cyan
+    Write-Host "Creando .venv..." -ForegroundColor Cyan
     py -m venv .venv
 }
 
-# 2) Activate venv
-Write-Host "Activating .venv..." -ForegroundColor Cyan
+# 2) Activar venv
+Write-Host "Activando .venv..." -ForegroundColor Cyan
 . .\.venv\Scripts\Activate.ps1
 
-# 3) Update pip and basic tools
-Write-Host "Updating pip..." -ForegroundColor Cyan
+# 3) Actualizar pip y herramientas básicas
+Write-Host "Actualizando pip..." -ForegroundColor Cyan
 py -m pip install --upgrade pip setuptools wheel
 
-# 4) Install complete dependencies for INIA middleware
-Write-Host "Installing dependencies from requirements.txt..." -ForegroundColor Cyan
+# 4) Instalar dependencias completas para el middleware INIA
+Write-Host "Instalando dependencias desde requirements.txt..." -ForegroundColor Cyan
 if (Test-Path "requirements.txt") {
     pip install -r requirements.txt
-    Write-Host "OK Dependencies installed from requirements.txt" -ForegroundColor Green
+    Write-Host "✓ Dependencias instaladas desde requirements.txt" -ForegroundColor Green
 } else {
-    Write-Host "WARNING: requirements.txt not found, installing dependencies individually..." -ForegroundColor Yellow
-    Write-Host "Installing main dependencies..." -ForegroundColor Cyan
+    Write-Host "⚠ requirements.txt no encontrado, instalando dependencias individualmente..." -ForegroundColor Yellow
+    Write-Host "Instalando dependencias principales..." -ForegroundColor Cyan
     pip install SQLAlchemy psycopg2-binary
 
-    Write-Host "Installing FastAPI dependencies..." -ForegroundColor Cyan
+    Write-Host "Instalando dependencias para FastAPI..." -ForegroundColor Cyan
     pip install fastapi uvicorn python-multipart
 
-    Write-Host "Installing Excel dependencies..." -ForegroundColor Cyan
+    Write-Host "Instalando dependencias para Excel..." -ForegroundColor Cyan
     pip install openpyxl
 
-    Write-Host "Installing additional dependencies..." -ForegroundColor Cyan
+    Write-Host "Instalando dependencias adicionales..." -ForegroundColor Cyan
     pip install pydantic
-
-    Write-Host "Installing testing dependencies..." -ForegroundColor Cyan
-    pip install pytest pytest-asyncio httpx
 }
 
-# 5) Complete dependency verification
-Write-Host "Verifying imports..." -ForegroundColor Cyan
-$testCode = @'
+# 5) Verificación completa de dependencias
+Write-Host "Verificando importaciones..." -ForegroundColor Cyan
+$testCode = @"
 import importlib, sys
 mods = [
     "sqlalchemy", "psycopg2", 
-    "fastapi", "uvicorn", "openpyxl", "pydantic",
-    "pytest", "httpx"
+    "fastapi", "uvicorn", "openpyxl", "pydantic"
 ]
 for m in mods:
     try:
         importlib.import_module(m)
-        print(f"OK {m} - OK")
+        print(f"✓ {m} - OK")
     except ImportError as e:
-        print(f"ERROR {m} - ERROR: {e}")
+        print(f"✗ {m} - ERROR: {e}")
         sys.exit(1)
-print("OK All dependencies installed correctly")
-'@
+print("✓ Todas las dependencias instaladas correctamente")
+"@
 $testCode | py
 if ($LASTEXITCODE -ne 0) { 
-    Write-Error "Error in dependency verification"
+    Write-Error "Error en la verificación de dependencias"
     exit 1 
 }
 
-# 6) Quick test of middleware scripts
-Write-Host "Testing middleware scripts..." -ForegroundColor Cyan
-$testScript = @'
+# 6) Prueba rápida de los scripts del middleware
+Write-Host "Probando scripts del middleware..." -ForegroundColor Cyan
+$testScript = @"
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 try:
-    # Test MassiveInsertFiles import
+    # Probar importación de MassiveInsertFiles
     from MassiveInsertFiles import build_connection_string, create_engine
-    print("OK MassiveInsertFiles.py can be imported correctly")
+    print("✓ MassiveInsertFiles.py se puede importar correctamente")
     
-    # Test ExportExcel import
+    # Probar importación de ExportExcel
     from ExportExcel import export_selected_tables, MODELS
-    print("OK ExportExcel.py can be imported correctly")
+    print("✓ ExportExcel.py se puede importar correctamente")
     
-    # Test ImportExcel import
+    # Probar importación de ImportExcel
     from ImportExcel import import_one_file, MODELS as IMPORT_MODELS
-    print("OK ImportExcel.py can be imported correctly")
+    print("✓ ImportExcel.py se puede importar correctamente")
     
-    # Test http_server import
+    # Probar importación de http_server
     from http_server import app
-    print("OK http_server.py can be imported correctly")
+    print("✓ http_server.py se puede importar correctamente")
     
-    # Test FastAPI TestClient
-    from fastapi.testclient import TestClient
-    client = TestClient(app)
-    print("OK FastAPI TestClient works correctly")
-    
-    # Test pytest
-    import pytest
-    print("OK pytest is available and functional")
-    
-    # Test database connection
+    # Probar la conexión a la base de datos
     try:
         connection_string = build_connection_string()
         engine = create_engine(connection_string)
-        print("OK Database connection successful")
+        print("✓ Conexión a la base de datos exitosa")
     except Exception as e:
-        print(f"WARNING: Could not connect to database: {e}")
-        print("  Make sure PostgreSQL is running and the Inia database exists")
+        print(f"⚠ Advertencia: No se pudo conectar a la base de datos: {e}")
+        print("  Asegúrate de que PostgreSQL esté ejecutándose y la base de datos 'Inia' exista")
     
 except Exception as e:
-    print(f"ERROR importing middleware scripts: {e}")
+    print(f"✗ Error importando scripts del middleware: {e}")
     sys.exit(1)
-'@
+"@
 
 $testScript | py
 if ($LASTEXITCODE -ne 0) { 
-    Write-Warning "Middleware scripts have issues, but dependencies are installed"
+    Write-Warning "Los scripts del middleware tienen problemas, pero las dependencias están instaladas"
 }
 
-Write-Host "`n=== SETUP COMPLETED ===" -ForegroundColor Green
-Write-Host "To use the middleware:" -ForegroundColor Yellow
-Write-Host "1. Activate environment: .\.venv\Scripts\Activate.ps1" -ForegroundColor White
-Write-Host "2. Massive insertion: python .\MassiveInsertFiles.py" -ForegroundColor White
-Write-Host "3. Export data: python .\ExportExcel.py --tables lote,recibo --format xlsx" -ForegroundColor White
-Write-Host "4. Import data: python .\ImportExcel.py --file datos.xlsx --table lote" -ForegroundColor White
-Write-Host "5. API Server: python .\http_server.py" -ForegroundColor White
-Write-Host "6. Available endpoints:" -ForegroundColor White
-Write-Host "   - POST /insertar (massive insertion)" -ForegroundColor Gray
-Write-Host "   - POST /exportar (export tables)" -ForegroundColor Gray
-Write-Host "   - POST /importar (import files)" -ForegroundColor Gray
-Write-Host "7. Run tests:" -ForegroundColor White
-Write-Host "   - pytest (run all tests)" -ForegroundColor Gray
-Write-Host "   - pytest -v (verbose mode)" -ForegroundColor Gray
-Write-Host "   - pytest test_setup.py (run configuration test)" -ForegroundColor Gray
+Write-Host "`n=== SETUP COMPLETADO ===" -ForegroundColor Green
+Write-Host "Para usar el middleware:" -ForegroundColor Yellow
+Write-Host "1. Activa el entorno: .\.venv\Scripts\Activate.ps1" -ForegroundColor White
+Write-Host "2. Inserción masiva: python .\MassiveInsertFiles.py" -ForegroundColor White
+Write-Host "3. Exportar datos: python .\ExportExcel.py --tables lote,recibo --format xlsx" -ForegroundColor White
+Write-Host "4. Importar datos: python .\ImportExcel.py --file datos.xlsx --table lote" -ForegroundColor White
+Write-Host "5. Servidor API: python .\http_server.py" -ForegroundColor White
+Write-Host "6. Endpoints disponibles:" -ForegroundColor White
+Write-Host "   - POST /insertar (inserción masiva)" -ForegroundColor Gray
+Write-Host "   - POST /exportar (exportar tablas)" -ForegroundColor Gray
+Write-Host "   - POST /importar (importar archivos)" -ForegroundColor Gray
 
 Pop-Location
 

@@ -3,11 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SanitarioDto } from '../../../models/Sanitario.dto';
-import { SanitarioHongoDTO } from '../../../models/SanitarioHongo.dto';
-import { TipoHongoSanitario } from '../../../models/enums';
-import { SanitarioService } from '../../../services/SanitarioService';
-import { HongoService } from '../../../services/HongoService';
-import { HongoDto } from '../../../models/Hongo.dto';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -49,30 +44,51 @@ export class SanitarioComponent implements OnInit {
   loteId: string | null = '';
   reciboId: string | null = '';
 
-  // Lista de hongos cargada desde el servicio
-  hongos: HongoDto[] = [];
-  
-  // Arrays separados para cada tipo de hongo (evitar conflictos de selección)
-  hongosPatogenos: HongoDto[] = [];
-  hongosCampo: HongoDto[] = [];
-  hongosAlmacenaje: HongoDto[] = [];
+  metodos = [
+      { label: 'Metodo A', id: 1 },
+      { label: 'Metodo B', id: 2 },
+      { label: 'Metodo C', id: 3 }
+    ];
 
-  // Arrays de selección completamente independientes para cada campo
-  selectedHongosPatogenos: number[] = [];
-  selectedHongosContaminantes: number[] = [];
-  selectedHongosAlmacenajeNuevo: number[] = [];
+  estados = [
+      { label: 'Activo', id: 1 },
+      { label: 'Inactivo', id: 2 },
+      { label: 'Pendiente', id: 3 },
+      { label: 'Completado', id: 4 }
+    ];
 
-  // Propiedades enlazadas con ngModel (DEPRECATED - usar las nuevas arrays)
+  hongos = [
+      { label: 'Hongo A', id: 1 },
+      { label: 'Hongo B', id: 2 },
+      { label: 'Hongo C', id: 3 },
+      { label: 'Hongo D', id: 4 }
+  ];
+
+  hongosCampo = [
+      { label: 'Fusarium Campo', id: 1 },
+      { label: 'Alternaria Campo', id: 2 },
+      { label: 'Rhizoctonia Campo', id: 3 },
+      { label: 'Pythium Campo', id: 4 }
+  ];
+
+  hongosAlmacenaje = [
+      { label: 'Aspergillus Almacen', id: 1 },
+      { label: 'Penicillium Almacen', id: 2 },
+      { label: 'Fusarium Almacen', id: 3 },
+      { label: 'Mucor Almacen', id: 4 }
+  ];
+
+  // Propiedades enlazadas con ngModel
   selectedMetodo: string = '';
   selectedEstado: string = '';
+  selectedHongos: number[] = [];
+  selectedHongosCampo: number[] = [];
+  selectedHongosAlmacenaje: number[] = [];
 
   // Tabla de hongos seleccionados
   hongosTable: Array<{tipoHongo: string, repeticion: number | null, valor: number | null, incidencia: number | null}> = [];
   hongosCampoTable: Array<{tipoHongo: string, repeticion: number | null, valor: number | null, incidencia: number | null}> = [];
   hongosAlmacenajeTable: Array<{tipoHongo: string, repeticion: number | null, valor: number | null, incidencia: number | null}> = [];
-
-  // Estado anterior para comparación (solo en modo edición)
-  hongosOriginales: SanitarioHongoDTO[] = [];
 
   // Control del dropdown personalizado
   isHongosDropdownOpen: boolean = false;
@@ -83,21 +99,18 @@ export class SanitarioComponent implements OnInit {
   hongosAlmacenajeSearchText: string = '';
 
   // Campos de fecha
-  fechaSiembra: string | null = null;
+  fechaSiembra: string = '';
   fecha: string = '';
 
   // Campos numéricos
   nLab: number = 0;
   temperatura: number = 0;
+  horasLuzOscuridad: number = 0;
+  numeroDias: number = 0;
+  numeroSemillasRepeticion: number = 0;
 
   // Campos de texto
   observaciones: string = '';
-
-  metodos = [
-      { label: 'METODO_A', id: 1 },
-      { label: 'METODO_B', id: 2 },
-      { label: 'METODO_C', id: 3 }
-  ];
 
   // Propiedades actualizadas según el nuevo DTO
   id: number | null = null;
@@ -105,23 +118,17 @@ export class SanitarioComponent implements OnInit {
   horasLuz: number | null = null;
   horasOscuridad: number | null = null;
   nroDias: number | null = null;
-  estado: string = '';
+  estadoProductoDosis: string = '';
   nroSemillasRepeticion: number | null = null;
   activo: boolean = true;
   estandar: boolean = false;
+  SanitarioHongoids: number[] | null = null;
   fechaCreacion: string | null = null;
   fechaRepeticion: string | null = null;
 
-  // Estados de carga
-  isLoading: boolean = false;
-  isSaving: boolean = false;
-  isCargandoDatosIniciales: boolean = false;
-
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
-    private sanitarioService: SanitarioService,
-    private hongoService: HongoService
+    private router: Router
   ) {}
 
   // Getter para determinar si está en modo readonly
@@ -142,37 +149,12 @@ export class SanitarioComponent implements OnInit {
           this.isViewing = queryParams['view'] === 'true';
           this.isEditing = !this.isViewing;
         });
-        
-        // En modo edición: cargar hongos primero, luego datos de sanitario
-        this.cargarHongos(); // Los hongos asociados se cargarán después automáticamente
         this.cargarDatosParaEdicion(this.editingId);
       } else {
-        // En modo creación: solo cargar lista de hongos
         this.isEditing = false;
         this.isViewing = false;
         this.editingId = null;
-        this.cargarHongos(); // Solo la lista, sin asociados
         this.cargarDatos();
-        // Establecer fecha actual en modo creación
-        this.fecha = new Date().toISOString().split('T')[0];
-      }
-    });
-  }
-
-  cargarHongos() {
-    this.hongoService.listar().subscribe({
-      next: (response) => {
-        this.hongos = response.hongos;
-        this.hongosPatogenos = [...response.hongos];
-        this.hongosCampo = [...response.hongos];
-        this.hongosAlmacenaje = [...response.hongos];
-        
-        if (this.editingId && this.isCargandoDatosIniciales) {
-          this.cargarHongosAsociados(this.editingId);
-        }
-      },
-      error: (error) => {
-        console.error('Error al cargar hongos:', error);
       }
     });
   }
@@ -187,38 +169,36 @@ export class SanitarioComponent implements OnInit {
 
   getFilteredHongos() {
     if (!this.hongosSearchText) {
-      return this.hongosPatogenos;
+      return this.hongos;
     }
-    return this.hongosPatogenos.filter(hongo =>
-      hongo.nombre.toLowerCase().includes(this.hongosSearchText.toLowerCase())
+    return this.hongos.filter(hongo =>
+      hongo.label.toLowerCase().includes(this.hongosSearchText.toLowerCase())
     );
   }
 
   toggleHongoSelection(hongo: any) {
-    if (hongo.id === null || hongo.id === undefined) return;
-    
-    const index = this.selectedHongosPatogenos.indexOf(hongo.id);
+    const index = this.selectedHongos.indexOf(hongo.id);
     if (index > -1) {
-      this.selectedHongosPatogenos.splice(index, 1);
+      this.selectedHongos.splice(index, 1);
     } else {
-      this.selectedHongosPatogenos.push(hongo.id);
+      this.selectedHongos.push(hongo.id);
     }
     this.onHongosChange();
   }
 
   isHongoSelected(hongoId: number): boolean {
-    return this.selectedHongosPatogenos.includes(hongoId);
+    return this.selectedHongos.includes(hongoId);
   }
 
   getSelectedHongosText(): string {
-    if (this.selectedHongosPatogenos.length === 0) {
+    if (this.selectedHongos.length === 0) {
       return 'Seleccionar hongos...';
     }
-    if (this.selectedHongosPatogenos.length === 1) {
-      const hongo = this.hongosPatogenos.find(h => h.id === this.selectedHongosPatogenos[0]);
-      return hongo ? hongo.nombre : '';
+    if (this.selectedHongos.length === 1) {
+      const hongo = this.hongos.find(h => h.id === this.selectedHongos[0]);
+      return hongo ? hongo.label : '';
     }
-    return `${this.selectedHongosPatogenos.length} hongos seleccionados`;
+    return `${this.selectedHongos.length} hongos seleccionados`;
   }
 
   // Cerrar dropdown al hacer clic fuera
@@ -234,29 +214,20 @@ export class SanitarioComponent implements OnInit {
 
   // Método para manejar cambios en el multiselect de hongos
   onHongosChange() {
+    console.log('Hongos seleccionados:', this.selectedHongos);
     this.createHongosTable();
   }
 
   createHongosTable() {
-    const valoresExistentes = new Map<string, any>();
-    this.hongosTable.forEach(fila => {
-      valoresExistentes.set(fila.tipoHongo, {
-        repeticion: fila.repeticion,
-        valor: fila.valor,
-        incidencia: fila.incidencia
-      });
-    });
-
     this.hongosTable = [];
-    this.selectedHongosPatogenos.forEach((hongoId: number) => {
-      const hongo = this.hongosPatogenos.find(h => h.id === hongoId);
+    this.selectedHongos.forEach(hongoId => {
+      const hongo = this.hongos.find(h => h.id === hongoId);
       if (hongo) {
-        const valoresPreservados = valoresExistentes.get(hongo.nombre);
         this.hongosTable.push({
-          tipoHongo: hongo.nombre,
-          repeticion: valoresPreservados?.repeticion || null,
-          valor: valoresPreservados?.valor || null,
-          incidencia: valoresPreservados?.incidencia || null
+          tipoHongo: hongo.label,
+          repeticion: null,
+          valor: null,
+          incidencia: null
         });
       }
     });
@@ -275,61 +246,50 @@ export class SanitarioComponent implements OnInit {
       return this.hongosCampo;
     }
     return this.hongosCampo.filter(hongo =>
-      hongo.nombre.toLowerCase().includes(this.hongosCampoSearchText.toLowerCase())
+      hongo.label.toLowerCase().includes(this.hongosCampoSearchText.toLowerCase())
     );
   }
 
   toggleHongoCampoSelection(hongo: any) {
-    if (hongo.id === null || hongo.id === undefined) return;
-    
-    const index = this.selectedHongosContaminantes.indexOf(hongo.id);
+    const index = this.selectedHongosCampo.indexOf(hongo.id);
     if (index > -1) {
-      this.selectedHongosContaminantes.splice(index, 1);
+      this.selectedHongosCampo.splice(index, 1);
     } else {
-      this.selectedHongosContaminantes.push(hongo.id);
+      this.selectedHongosCampo.push(hongo.id);
     }
     this.onHongosCampoChange();
   }
 
   isHongoCampoSelected(hongoId: number): boolean {
-    return this.selectedHongosContaminantes.includes(hongoId);
+    return this.selectedHongosCampo.includes(hongoId);
   }
 
   getSelectedHongosCampoText(): string {
-    if (this.selectedHongosContaminantes.length === 0) {
+    if (this.selectedHongosCampo.length === 0) {
       return 'Seleccionar hongos...';
     }
-    if (this.selectedHongosContaminantes.length === 1) {
-      const hongo = this.hongosCampo.find(h => h.id === this.selectedHongosContaminantes[0]);
-      return hongo ? hongo.nombre : '';
+    if (this.selectedHongosCampo.length === 1) {
+      const hongo = this.hongosCampo.find(h => h.id === this.selectedHongosCampo[0]);
+      return hongo ? hongo.label : '';
     }
-    return `${this.selectedHongosContaminantes.length} hongos seleccionados`;
+    return `${this.selectedHongosCampo.length} hongos seleccionados`;
   }
 
   onHongosCampoChange() {
+    console.log('Hongos Campo seleccionados:', this.selectedHongosCampo);
     this.createHongosCampoTable();
   }
 
   createHongosCampoTable() {
-    const valoresExistentes = new Map<string, any>();
-    this.hongosCampoTable.forEach(fila => {
-      valoresExistentes.set(fila.tipoHongo, {
-        repeticion: fila.repeticion,
-        valor: fila.valor,
-        incidencia: fila.incidencia
-      });
-    });
-
     this.hongosCampoTable = [];
-    this.selectedHongosContaminantes.forEach((hongoId: number) => {
+    this.selectedHongosCampo.forEach(hongoId => {
       const hongo = this.hongosCampo.find(h => h.id === hongoId);
       if (hongo) {
-        const valoresPreservados = valoresExistentes.get(hongo.nombre);
         this.hongosCampoTable.push({
-          tipoHongo: hongo.nombre,
-          repeticion: valoresPreservados?.repeticion || null,
-          valor: valoresPreservados?.valor || null,
-          incidencia: valoresPreservados?.incidencia || null
+          tipoHongo: hongo.label,
+          repeticion: null,
+          valor: null,
+          incidencia: null
         });
       }
     });
@@ -348,433 +308,167 @@ export class SanitarioComponent implements OnInit {
       return this.hongosAlmacenaje;
     }
     return this.hongosAlmacenaje.filter(hongo =>
-      hongo.nombre.toLowerCase().includes(this.hongosAlmacenajeSearchText.toLowerCase())
+      hongo.label.toLowerCase().includes(this.hongosAlmacenajeSearchText.toLowerCase())
     );
   }
 
   toggleHongoAlmacenajeSelection(hongo: any) {
-    if (hongo.id === null || hongo.id === undefined) return;
-    
-    const index = this.selectedHongosAlmacenajeNuevo.indexOf(hongo.id);
+    const index = this.selectedHongosAlmacenaje.indexOf(hongo.id);
     if (index > -1) {
-      this.selectedHongosAlmacenajeNuevo.splice(index, 1);
+      this.selectedHongosAlmacenaje.splice(index, 1);
     } else {
-      this.selectedHongosAlmacenajeNuevo.push(hongo.id);
+      this.selectedHongosAlmacenaje.push(hongo.id);
     }
     this.onHongosAlmacenajeChange();
   }
 
   isHongoAlmacenajeSelected(hongoId: number): boolean {
-    return this.selectedHongosAlmacenajeNuevo.includes(hongoId);
+    return this.selectedHongosAlmacenaje.includes(hongoId);
   }
 
   getSelectedHongosAlmacenajeText(): string {
-    if (this.selectedHongosAlmacenajeNuevo.length === 0) {
+    if (this.selectedHongosAlmacenaje.length === 0) {
       return 'Seleccionar hongos...';
     }
-    if (this.selectedHongosAlmacenajeNuevo.length === 1) {
-      const hongo = this.hongosAlmacenaje.find(h => h.id === this.selectedHongosAlmacenajeNuevo[0]);
-      return hongo ? hongo.nombre : '';
+    if (this.selectedHongosAlmacenaje.length === 1) {
+      const hongo = this.hongosAlmacenaje.find(h => h.id === this.selectedHongosAlmacenaje[0]);
+      return hongo ? hongo.label : '';
     }
-    return `${this.selectedHongosAlmacenajeNuevo.length} hongos seleccionados`;
+    return `${this.selectedHongosAlmacenaje.length} hongos seleccionados`;
   }
 
   onHongosAlmacenajeChange() {
+    console.log('Hongos Almacenaje seleccionados:', this.selectedHongosAlmacenaje);
     this.createHongosAlmacenajeTable();
   }
 
   createHongosAlmacenajeTable() {
-    const valoresExistentes = new Map<string, any>();
-    this.hongosAlmacenajeTable.forEach(fila => {
-      valoresExistentes.set(fila.tipoHongo, {
-        repeticion: fila.repeticion,
-        valor: fila.valor,
-        incidencia: fila.incidencia
-      });
-    });
-
     this.hongosAlmacenajeTable = [];
-    this.selectedHongosAlmacenajeNuevo.forEach((hongoId: number) => {
+    this.selectedHongosAlmacenaje.forEach(hongoId => {
       const hongo = this.hongosAlmacenaje.find(h => h.id === hongoId);
       if (hongo) {
-        const valoresPreservados = valoresExistentes.get(hongo.nombre);
         this.hongosAlmacenajeTable.push({
-          tipoHongo: hongo.nombre,
-          repeticion: valoresPreservados?.repeticion || null,
-          valor: valoresPreservados?.valor || null,
-          incidencia: valoresPreservados?.incidencia || null
+          tipoHongo: hongo.label,
+          repeticion: null,
+          valor: null,
+          incidencia: null
         });
       }
     });
   }
 
   // Datos de prueba (deberían venir de un servicio)
-  private itemsData: SanitarioDto[] = [];
+  private itemsData: SanitarioDto[] = [
+    {
+      id: 1,
+      fechaSiembra: '2023-01-10',
+      fecha: '2023-01-15',
+      metodo: 'A',
+      temperatura: 25.5,
+      horasLuz: 12,
+      horasOscuridad: 12,
+      nroDias: 7,
+      estadoProductoDosis: 'ESTADO_X',
+      observaciones: 'Control de calidad mensual - Muestra estándar',
+      nroSemillasRepeticion: 100,
+      reciboId: 101,
+      activo: true,
+      estandar: true,
+      repetido: false,
+      SanitarioHongoids: [1, 2],
+      fechaCreacion: '2023-01-15',
+      fechaRepeticion: null
+    },
+    {
+      id: 2,
+      fechaSiembra: '2022-02-15',
+      fecha: '2022-02-20',
+      metodo: 'B',
+      temperatura: 23.8,
+      horasLuz: 14,
+      horasOscuridad: 10,
+      nroDias: 10,
+      estadoProductoDosis: 'ESTADO_Y',
+      observaciones: 'Lote especial - Requiere repetición',
+      nroSemillasRepeticion: 150,
+      reciboId: 102,
+      activo: true,
+      estandar: false,
+      repetido: true,
+      SanitarioHongoids: [3, 4, 5],
+      fechaCreacion: '2022-02-20',
+      fechaRepeticion: '2022-02-22'
+    }
+  ];
 
   private cargarDatosParaEdicion(id: number) {
-    this.isLoading = true;
-    this.isCargandoDatosIniciales = true;
-    
-    this.sanitarioService.obtener(id).subscribe({
-      next: (item: SanitarioDto) => {
-        this.id = item.id;
-        this.fechaSiembra = item.fechaSiembra ? this.formatearFechaParaInput(item.fechaSiembra) : '';
-        this.fecha = item.fecha ? this.formatearFechaParaInput(item.fecha) : '';
-        this.metodo = item.metodo || '';
-        this.temperatura = item.temperatura || 0;
-        this.horasLuz = item.horasLuz || 0;
-        this.horasOscuridad = item.horasOscuridad || 0;
-        this.nroDias = item.nroDias || 0;
-        this.nroSemillasRepeticion = item.nroSemillasRepeticion || 0;
-        this.observaciones = item.observaciones || '';
-        this.estado = item.estado || '';
-        this.activo = item.activo;
-        this.estandar = item.estandar;
-        this.repetido = item.repetido;
-        this.fechaCreacion = item.fechaCreacion;
-        this.fechaRepeticion = item.fechaRepeticion;
-        
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error al cargar sanitario:', error);
-        this.isLoading = false;
-        this.isCargandoDatosIniciales = false;
-        alert('Error al cargar los datos del sanitario');
-      }
-    });
+    // En un escenario real, esto vendría de un servicio
+    const item = this.itemsData.find(sanitario => sanitario.id === id);
+    if (item) {
+      console.log('Cargando datos para edición:', item);
+      this.fechaSiembra = item.fechaSiembra || '';
+      this.fecha = item.fecha || '';
+      this.temperatura = item.temperatura || 0;
+      this.horasLuz = item.horasLuz || 0;
+      this.horasOscuridad = item.horasOscuridad || 0;
+      this.numeroDias = item.nroDias || 0;
+      this.numeroSemillasRepeticion = item.nroSemillasRepeticion || 0;
+      this.observaciones = item.observaciones || '';
+      // Aquí también podrías cargar el método y estado seleccionados
+    }
   }
 
   private cargarDatos() {
-    this.isCargandoDatosIniciales = false;
-    const fechaActual = new Date().toISOString().split('T')[0];
-    
+    console.log('Modo creación - limpiando campos');
+    // Limpiar campos para creación
     this.id = null;
-    this.fechaSiembra = null;
-    this.fecha = fechaActual;
-    this.metodo = '';
-    this.temperatura = 0;
-    this.horasLuz = 0;
-    this.horasOscuridad = 0;
-    this.nroDias = 0;
-    this.estado = '';
-    this.observaciones = '';
-    this.nroSemillasRepeticion = 0;
+    this.fechaSiembra = '2025-10-01';
+    this.fecha = '2025-10-03';
+    this.metodo = 'Metodo A';
+    this.temperatura = 22;
+    this.horasLuz = 12;
+    this.horasOscuridad = 12;
+    this.nroDias = 7;
+    this.estadoProductoDosis = 'Activo';
+    this.observaciones = 'Ejemplo de sanitario actualizado';
+    this.nroSemillasRepeticion = 100;
+    this.reciboId = '1';
     this.activo = true;
     this.estandar = false;
     this.repetido = false;
-    this.fechaCreacion = null;
+    this.SanitarioHongoids = [1, 2];
+    this.fechaCreacion = '2025-10-03';
     this.fechaRepeticion = null;
   }
 
   onSubmit() {
-    if (this.isSaving) return;
-    
-    this.isSaving = true;
-
-    const sanitarioData: SanitarioDto = {
-      id: this.isEditing ? this.editingId : null,
+    const sanitarioData: Partial<SanitarioDto> = {
       fechaSiembra: this.fechaSiembra,
       fecha: this.fecha,
-      metodo: this.metodo,
       temperatura: this.temperatura,
       horasLuz: this.horasLuz,
       horasOscuridad: this.horasOscuridad,
-      nroDias: this.nroDias,
-      estado: this.estado,
+      nroDias: this.numeroDias,
+      nroSemillasRepeticion: this.numeroSemillasRepeticion,
       observaciones: this.observaciones,
-      nroSemillasRepeticion: this.nroSemillasRepeticion,
-      reciboId: parseInt(this.reciboId || '0'),
-      activo: this.activo,
-      estandar: this.estandar,
-      repetido: this.repetido,
-      sanitarioHongoids: null,
-      fechaCreacion: this.fechaCreacion,
-      fechaRepeticion: this.fechaRepeticion
+      activo: true
+      // Aquí también deberías agregar el método y estado seleccionados
     };
-
-    // LOG FINAL ANTES DE ENVIAR
-    console.log('📋 SANITARIO DTO:', sanitarioData);
-    console.log('📋 HONGOS SELECCIONADOS:', {
-      patogenos: this.selectedHongosPatogenos,
-      contaminantes: this.selectedHongosContaminantes,
-      almacenaje: this.selectedHongosAlmacenajeNuevo
-    });
 
     if (this.isEditing && this.editingId) {
-      this.actualizarSanitario(sanitarioData);
+      // Actualizar Sanitario existente
+      console.log('Actualizando Sanitario ID:', this.editingId, 'con datos:', sanitarioData);
     } else {
-      this.crearNuevoSanitario(sanitarioData);
+      // Crear nuevo Sanitario
+      console.log('Creando nuevo Sanitario:', sanitarioData);
     }
-  }
 
-  private crearNuevoSanitario(sanitarioData: SanitarioDto) {
-    const fechaActual = new Date().toISOString();
-    
-    const sanitarioPayload = {
-      id: 0,
-      fechaSiembra: this.fechaSiembra ? new Date(this.fechaSiembra).toISOString() : fechaActual,
-      fecha: this.fecha ? new Date(this.fecha).toISOString() : fechaActual,
-      metodo: this.metodo || "METODO_A",
-      temperatura: this.temperatura || 0,
-      horasLuz: this.horasLuz || 0,
-      horasOscuridad: this.horasOscuridad || 0,
-      nroDias: this.nroDias || 0,
-      estado: this.estado || "", 
-      observaciones: this.observaciones || "",
-      nroSemillasRepeticion: this.nroSemillasRepeticion || 0,
-      reciboId: parseInt(this.reciboId || '0'),
-      activo: this.activo,
-      estandar: this.estandar,
-      repetido: false,
-      sanitarioHongosId: [],
-      fechaCreacion: fechaActual,
-      fechaRepeticion: null
-    };
-
-    this.sanitarioService.crear(sanitarioPayload as any).subscribe({
-      next: (sanitarioId: number) => {
-        this.crearHongosAsociados(sanitarioId).then(() => {
-          this.isSaving = false;
-          alert('Sanitario y hongos creados exitosamente');
-          this.volverAlListado();
-        }).catch((error) => {
-          console.error('Error al crear hongos:', error);
-          this.isSaving = false;
-          alert('Sanitario creado, pero hubo errores al crear algunos hongos');
-        });
-      },
-      error: (error) => {
-        console.error('Error al crear sanitario:', error);
-        this.isSaving = false;
-        alert('Error al crear el sanitario. Por favor, inténtalo de nuevo.');
-      }
-    });
-  }
-
-  private actualizarSanitario(sanitarioData: SanitarioDto) {
-    const fechaRepeticionFinal = this.repetido && !sanitarioData.fechaRepeticion ? 
-      new Date().toISOString() : 
-      (sanitarioData.fechaRepeticion ? new Date(sanitarioData.fechaRepeticion).toISOString() : null);
-
-    const sanitarioPayload = {
-      id: this.editingId!,
-      fechaSiembra: this.fechaSiembra ? new Date(this.fechaSiembra).toISOString() : new Date().toISOString(),
-      fecha: this.fecha ? new Date(this.fecha).toISOString() : new Date().toISOString(),
-      metodo: this.metodo || "METODO_A",
-      temperatura: this.temperatura || 0,
-      horasLuz: this.horasLuz || 0,
-      horasOscuridad: this.horasOscuridad || 0,
-      nroDias: this.nroDias || 0,
-      estado: this.estado || "",
-      observaciones: this.observaciones || "",
-      nroSemillasRepeticion: this.nroSemillasRepeticion || 0,
-      reciboId: parseInt(this.reciboId || '0'),
-      activo: this.activo,
-      estandar: this.estandar,
-      repetido: this.repetido,
-      sanitarioHongosId: [],
-      fechaCreacion: this.fechaCreacion ? new Date(this.fechaCreacion).toISOString() : new Date().toISOString(),
-      fechaRepeticion: fechaRepeticionFinal
-    };
-    
-    this.sanitarioService.editar(sanitarioPayload as any).subscribe({
-      next: (response) => {
-        this.actualizarHongosAsociados(this.editingId!).then(() => {
-          this.isSaving = false;
-          alert('Sanitario y hongos actualizados exitosamente');
-          this.volverAlListado();
-        }).catch((error) => {
-          console.error('Error al actualizar hongos:', error);
-          this.isSaving = false;
-          alert('Sanitario actualizado, pero hubo errores al actualizar algunos hongos');
-        });
-      },
-      error: (error) => {
-        console.error('Error al actualizar sanitario:', error);
-        this.isSaving = false;
-        alert('Error al actualizar el sanitario. Por favor, inténtalo de nuevo.');
-      }
-    });
-  }
-
-  private async crearHongosAsociados(sanitarioId: number): Promise<void> {
-    const hongosACrear = this.obtenerHongosActuales(sanitarioId);
-
-    if (hongosACrear.length > 0) {
-      return new Promise((resolve, reject) => {
-        this.sanitarioService.actualizarHongosCompleto(sanitarioId, hongosACrear).subscribe({
-          next: (response) => {
-            console.log('✅ Hongos creados exitosamente');
-            resolve();
-          },
-          error: (error) => {
-            console.error('❌ Error al crear hongos:', error);
-            reject(error);
-          }
-        });
-      });
-    } else {
-      return Promise.resolve();
-    }
-  }
-
-  private async actualizarHongosAsociados(sanitarioId: number): Promise<void> {
-    const hongosActuales = this.obtenerHongosActuales(sanitarioId);
-    
-    return new Promise((resolve, reject) => {
-      this.sanitarioService.actualizarHongosCompleto(sanitarioId, hongosActuales).subscribe({
-        next: (response) => {
-          console.log('✅ Hongos actualizados exitosamente');
-          resolve();
-        },
-        error: (error) => {
-          console.error('❌ Error al actualizar hongos:', error);
-          reject(error);
-        }
-      });
-    });
-  }
-
-  private obtenerHongosActuales(sanitarioId: number): SanitarioHongoDTO[] {
-    const hongosActuales: SanitarioHongoDTO[] = [];
-
-    this.hongosTable.forEach((hongo) => {
-      if (hongo.repeticion !== null || hongo.valor !== null || hongo.incidencia !== null) {
-        const hongoInfo = this.hongosPatogenos.find(h => h.nombre === hongo.tipoHongo);
-        if (hongoInfo) {
-          hongosActuales.push({
-            id: null,
-            sanitarioId: sanitarioId,
-            hongoId: hongoInfo.id,
-            repeticion: hongo.repeticion,
-            valor: hongo.valor,
-            incidencia: hongo.incidencia,
-            activo: true,
-            tipo: TipoHongoSanitario.PATOGENO
-          });
-        }
-      }
-    });
-
-    this.hongosCampoTable.forEach((hongo) => {
-      if (hongo.repeticion !== null || hongo.valor !== null || hongo.incidencia !== null) {
-        const hongoInfo = this.hongosCampo.find(h => h.nombre === hongo.tipoHongo);
-        if (hongoInfo) {
-          hongosActuales.push({
-            id: null,
-            sanitarioId: sanitarioId,
-            hongoId: hongoInfo.id,
-            repeticion: hongo.repeticion,
-            valor: hongo.valor,
-            incidencia: hongo.incidencia,
-            activo: true,
-            tipo: TipoHongoSanitario.CONTAMINANTE
-          });
-        }
-      }
-    });
-
-    this.hongosAlmacenajeTable.forEach((hongo) => {
-      if (hongo.repeticion !== null || hongo.valor !== null || hongo.incidencia !== null) {
-        const hongoInfo = this.hongosAlmacenaje.find(h => h.nombre === hongo.tipoHongo);
-        if (hongoInfo) {
-          hongosActuales.push({
-            id: null,
-            sanitarioId: sanitarioId,
-            hongoId: hongoInfo.id,
-            repeticion: hongo.repeticion,
-            valor: hongo.valor,
-            incidencia: hongo.incidencia,
-            activo: true,
-            tipo: TipoHongoSanitario.ALMACENAJE
-          });
-        }
-      }
-    });
-
-    return hongosActuales;
-  }
-
-  private volverAlListado(): void {
-    this.router.navigate([this.loteId, this.reciboId, 'listado-sanitario']);
-  }
-
-  private cargarHongosAsociados(sanitarioId: number): void {
-    this.sanitarioService.listarHongosPorSanitario(sanitarioId).subscribe({
-      next: (hongosAsociados: SanitarioHongoDTO[]) => {
-        this.hongosOriginales = [...hongosAsociados];
-        this.cargarHongosEnTablas(hongosAsociados);
-        this.isCargandoDatosIniciales = false;
-      },
-      error: (error: any) => {
-        console.error('Error al cargar hongos asociados:', error);
-        this.hongosOriginales = [];
-        this.isCargandoDatosIniciales = false;
-      }
-    });
-  }
-
-  private cargarHongosEnTablas(hongosAsociados: SanitarioHongoDTO[]): void {
-    this.selectedHongosPatogenos = [];
-    this.selectedHongosContaminantes = [];
-    this.selectedHongosAlmacenajeNuevo = [];
-    this.hongosTable = [];
-    this.hongosCampoTable = [];
-    this.hongosAlmacenajeTable = [];
-
-    hongosAsociados.forEach((sanitarioHongo) => {
-      const hongo = this.hongos.find(h => h.id === sanitarioHongo.hongoId);
-      if (!hongo) return;
-
-      const tablaItem = {
-        tipoHongo: hongo.nombre,
-        repeticion: sanitarioHongo.repeticion,
-        valor: sanitarioHongo.valor,
-        incidencia: sanitarioHongo.incidencia
-      };
-
-      switch (sanitarioHongo.tipo) {
-        case TipoHongoSanitario.PATOGENO:
-          if (!this.selectedHongosPatogenos.includes(hongo.id!)) {
-            this.selectedHongosPatogenos.push(hongo.id!);
-          }
-          this.hongosTable.push(tablaItem);
-          break;
-          
-        case TipoHongoSanitario.CONTAMINANTE:
-          if (!this.selectedHongosContaminantes.includes(hongo.id!)) {
-            this.selectedHongosContaminantes.push(hongo.id!);
-          }
-          this.hongosCampoTable.push(tablaItem);
-          break;
-          
-        case TipoHongoSanitario.ALMACENAJE:
-          if (!this.selectedHongosAlmacenajeNuevo.includes(hongo.id!)) {
-            this.selectedHongosAlmacenajeNuevo.push(hongo.id!);
-          }
-          this.hongosAlmacenajeTable.push(tablaItem);
-          break;
-      }
-    });
+    // Navegar de vuelta al listado
+    this.router.navigate(['/listado-sanitario']);
   }
 
   onCancel() {
-      this.router.navigate([this.loteId, this.reciboId, 'listado-sanitario']);
-  }
-
-  /**
-   * Convierte fecha ISO (2025-10-16T22:00:57.145Z) a formato input date (2025-10-16)
-   */
-  private formatearFechaParaInput(fechaISO: string): string {
-    if (!fechaISO) return '';
-    try {
-      const fecha = new Date(fechaISO);
-      return fecha.toISOString().split('T')[0];
-    } catch (error) {
-      console.error('Error al formatear fecha:', fechaISO, error);
-      return '';
-    }
+      this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);
   }
 
 }

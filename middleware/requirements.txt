@@ -12,8 +12,3 @@ openpyxl>=3.1.0
 
 # Dependencias adicionales
 pydantic>=2.0.0
-
-# Dependencias para testing
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-httpx>=0.25.0  # Requerido por TestClient

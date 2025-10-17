@@ -320,7 +320,7 @@ public class MapsDtoEntityService {
         sanitarioDto.setHorasLuz(sanitario.getHorasLuz());
         sanitarioDto.setHorasOscuridad(sanitario.getHorasOscuridad());
         sanitarioDto.setNroDias(sanitario.getNroDias());
-        sanitarioDto.setEstado(sanitario.getEstado());
+        sanitarioDto.setEstadoProductoDosis(sanitario.getEstadoProductoDosis());
         sanitarioDto.setObservaciones(sanitario.getObservaciones());
         sanitarioDto.setNroSemillasRepeticion(sanitario.getNroSemillasRepeticion());
         sanitarioDto.setActivo(sanitario.isActivo());
@@ -328,18 +328,13 @@ public class MapsDtoEntityService {
         sanitarioDto.setRepetido(sanitario.isRepetido());
         sanitarioDto.setFechaCreacion(sanitario.getFechaCreacion());
         sanitarioDto.setFechaRepeticion(sanitario.getFechaRepeticion());
-
+        // Manejar la relación con Recibo
         if (sanitario.getRecibo() != null) {
             sanitarioDto.setReciboId(sanitario.getRecibo().getId());
         } else {
             sanitarioDto.setReciboId(null);
         }
-        // Mapeo de la lista sanitarioHongos a IDs
-        if (sanitario.getSanitarioHongos() != null) {
-            sanitarioDto.setSanitarioHongosId(sanitario.getSanitarioHongos().stream()
-                .map(SanitarioHongo::getId)
-                .collect(Collectors.toList()));
-        }
+        sanitarioDto.setSanitarioHongoids(sanitario.getSanitarioHongoids());
         return sanitarioDto;
     }
 
@@ -356,7 +351,7 @@ public class MapsDtoEntityService {
         sanitario.setHorasLuz(sanitarioDto.getHorasLuz());
         sanitario.setHorasOscuridad(sanitarioDto.getHorasOscuridad());
         sanitario.setNroDias(sanitarioDto.getNroDias());
-        sanitario.setEstado(sanitarioDto.getEstado());
+        sanitario.setEstadoProductoDosis(sanitarioDto.getEstadoProductoDosis());
         sanitario.setObservaciones(sanitarioDto.getObservaciones());
         sanitario.setNroSemillasRepeticion(sanitarioDto.getNroSemillasRepeticion());
         sanitario.setActivo(sanitarioDto.isActivo());
@@ -364,29 +359,17 @@ public class MapsDtoEntityService {
         sanitario.setRepetido(sanitarioDto.isRepetido());
         sanitario.setFechaCreacion(sanitarioDto.getFechaCreacion());
         sanitario.setFechaRepeticion(sanitarioDto.getFechaRepeticion());
-
+        // Manejar la relación con Recibo
         if (sanitarioDto.getReciboId() != null) {
             Recibo recibo = getValidRecibo(sanitarioDto.getReciboId());
             sanitario.setRecibo(recibo);
         } else {
             sanitario.setRecibo(null);
         }
-
-        // Mapeo de la lista de IDs a entidades SanitarioHongo
-        if (sanitarioDto.getSanitarioHongosId() != null) {
-            List<SanitarioHongo> sanitarioHongos = sanitarioDto.getSanitarioHongosId().stream()
-                .map(id -> {
-                    SanitarioHongo sh = new SanitarioHongo();
-                    sh.setId(id);
-                    return sh;
-                })
-                .collect(Collectors.toList());
-            sanitario.setSanitarioHongos(sanitarioHongos);
-        }
-
-
+        sanitario.setSanitarioHongoids(sanitarioDto.getSanitarioHongoids());
         return sanitario;
     }
+
     public PMSDto mapToDtoPMS(PMS pms) {
         if (pms == null) {
             return null;
@@ -709,7 +692,7 @@ public class MapsDtoEntityService {
         usuario.setEmail(usuarioDto.getEmail());
         usuario.setNombre(usuarioDto.getNombre());
         usuario.setTelefono(usuarioDto.getTelefono());
-
+        
         // Encriptar la contraseña si no está vacía
         if (usuarioDto.getPassword() != null && !usuarioDto.getPassword().trim().isEmpty()) {
             usuario.setPassword(passwordEncoder.encode(usuarioDto.getPassword()));
@@ -717,7 +700,7 @@ public class MapsDtoEntityService {
             // Si la contraseña es null o vacía, se mantiene null para ser manejada en el servicio
             usuario.setPassword(null);
         }
-
+        
         usuario.setRol(usuarioDto.getRol());
         usuario.setActivo(usuarioDto.isActivo());
 
@@ -1006,10 +989,9 @@ public class MapsDtoEntityService {
         return tetrazolio;
     }
 
-
     public SanitarioHongoDto mapToDtoSanitarioHongo(SanitarioHongo entity) {
-
         if (entity == null) return null;
+
         SanitarioHongoDto dto = new SanitarioHongoDto();
         dto.setId(entity.getId());
         dto.setSanitarioId(entity.getSanitario() != null ? entity.getSanitario().getId() : null);
@@ -1017,40 +999,36 @@ public class MapsDtoEntityService {
         dto.setRepeticion(entity.getRepeticion());
         dto.setValor(entity.getValor());
         dto.setIncidencia(entity.getIncidencia());
-        dto.setActivo(entity.getActivo());
-        // Mapeo del tipo
-        dto.setTipo(entity.getTipo());
+
         return dto;
     }
 
     public SanitarioHongo mapToEntitySanitarioHongo(SanitarioHongoDto dto) {
-
         if (dto == null) return null;
-        SanitarioHongo entity = new SanitarioHongo();
 
+        SanitarioHongo entity = new SanitarioHongo();
         entity.setId(dto.getId());
+
         if (dto.getSanitarioId() != null) {
             Sanitario sanitario = new Sanitario();
             sanitario.setId(dto.getSanitarioId());
             entity.setSanitario(sanitario);
         } else {
             entity.setSanitario(null);
-
         }
+
         if (dto.getHongoId() != null) {
             Hongo hongo = new Hongo();
             hongo.setId(dto.getHongoId());
             entity.setHongo(hongo);
         } else {
             entity.setHongo(null);
-
         }
+
         entity.setRepeticion(dto.getRepeticion());
         entity.setValor(dto.getValor());
         entity.setIncidencia(dto.getIncidencia());
-        entity.setActivo(dto.isActivo());
 
-        entity.setTipo(dto.getTipo());
         return entity;
     }
 

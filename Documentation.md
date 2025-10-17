@@ -301,18 +301,6 @@ La cliente (INIA) enfrentaba los siguientes desafíos en su proceso de análisis
 - **RxJS 7.8.0**: Programación reactiva
 - **Zone.js 0.15.0**: Detección de cambios
 
-#### Detalle Tecnologías Frontend
-- **Angular 20**
-  - Por qué: Soporte a componentes standalone, router moderno y rendimiento estable.
-  - Clave: DI, HttpClient, routing, formularios reactivos, i18n.
-  - Compatibilidad: Node 18+, TypeScript ~5.8, PrimeNG 20.
-  - Alternativas: React, Vue; se eligió Angular por opinionado y DX integral.
-- **PrimeNG/PrimeFlex**
-  - Por qué: Velocidad para construir UI con componentes accesibles.
-  - Clave: DataTable, Dialog, Form inputs, utilidades CSS responsivas.
-  - Compatibilidad: Versionado alineado con Angular mayor.
-  - Alternativas: Angular Material, NG-Zorro.
-
 ### Backend
 - **Spring Boot 3.4.4**: Framework principal
 - **Java 21**: Lenguaje de programación
@@ -326,23 +314,6 @@ La cliente (INIA) enfrentaba los siguientes desafíos en su proceso de análisis
 - **Jackson**: Serialización JSON
 - **Spring Mail**: Envío de correos
 
-#### Detalle Tecnologías Backend
-- **Spring Boot 3.4 + Java 21**
-  - Por qué: LTS moderno, mejoras de rendimiento y seguridad.
-  - Clave: Autoconfiguración, perfiles, Actuator (opcional), maven plugin.
-  - Compatibilidad: Jakarta EE 10, Hibernate 6, Spring Security 6.
-- **Spring Security + JWT (jjwt)**
-  - Por qué: Protección de endpoints, control fino por roles.
-  - Clave: Filtros, `@Secured`, expiración configurable.
-  - Alternativas: OAuth2/OIDC (Keycloak), Auth0.
-- **JPA/Hibernate + PostgreSQL**
-  - Por qué: Productivo, consultas tipadas, transacciones.
-  - Clave: `ddl-auto=update` (desarrollo), dialecto PostgreSQL.
-  - Alternativas: MySQL/MariaDB, Exposed, jOOQ.
-- **SpringDoc OpenAPI**
-  - Por qué: Swagger UI y generación de contratos.
-  - Clave: Descubrimiento automático de endpoints y esquemas.
-
 ### Middleware
 - **Python 3.x**: Lenguaje de programación
 - **FastAPI**: Framework web
@@ -353,17 +324,6 @@ La cliente (INIA) enfrentaba los siguientes desafíos en su proceso de análisis
 - **pandas**: Análisis de datos
 - **faker**: Generación de datos de prueba
 - **pydantic**: Validación de datos
-
-#### Detalle Tecnologías Middleware
-- **FastAPI + Uvicorn**
-  - Por qué: Alto rendimiento, tipado con Pydantic, docs automáticas.
-  - Clave: Validación de entrada/salida, asíncrono, OpenAPI built-in.
-- **SQLAlchemy + psycopg2**
-  - Por qué: ORM maduro y estable para PostgreSQL.
-  - Clave: Declarative ORM, sesiones, mapeo robusto.
-- **openpyxl / pandas**
-  - Por qué: Exportación e importación Excel/CSV y transformaciones.
-  - Clave: Estilos/celdas (openpyxl) y operaciones tabulares (pandas).
 
 ### Base de Datos
 - **PostgreSQL**: Sistema de gestión de base de datos
@@ -385,36 +345,6 @@ La cliente (INIA) enfrentaba los siguientes desafíos en su proceso de análisis
 - **Base de datos**: localhost:5432
 
 ---
-
-## Estrategia de Pruebas y Calidad
-
-### Objetivo
-Garantizar correctitud funcional, estabilidad entre capas y rendimiento aceptable.
-
-### Backend (Spring Boot)
-- Unitarias/Integración: JUnit 5, Spring Boot Test, Mockito, Spring Security Test.
-- API/HTTP: RestAssured para contratos y flujos; Testcontainers (PostgreSQL) para DB efímera.
-- Stubs externos: WireMock para simular el middleware Python.
-- Cobertura: JaCoCo; Calidad: SonarQube.
-
-### Frontend (Angular)
-- Unitarias: Jasmine + Karma existentes o Jest para mayor velocidad.
-- Utilidades: Angular Testing Library, `HttpClientTestingModule` para mocks HTTP.
-- E2E: Playwright (recomendado) o Cypress.
-
-### Middleware (FastAPI)
-- Unitarias/Integración: pytest, httpx/FastAPI TestClient, pytest-asyncio.
-- Datos: Hypothesis (property-based) y `openpyxl`/`pandas.testing` para validar exportaciones.
-- Contenedores: testcontainers-python para PostgreSQL, si aplica.
-
-### Contratos y E2E entre capas
-- Contratos: Pact (Frontend↔Backend, Backend↔Middleware).
-- Validación OpenAPI: Schemathesis o Dredd contra `swagger` del backend.
-- Carga: k6 o Locust para endpoints críticos (exportaciones, listados).
-
-### CI/CD sugerido
-- Pipelines con: build + unitarias (tres capas), integración con Testcontainers, E2E nocturnos, métricas de cobertura, análisis SonarQube y escaneo de dependencias (OWASP DC/Snyk).
-
 
 ## Estructura del Proyecto
 

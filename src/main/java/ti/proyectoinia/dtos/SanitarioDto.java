@@ -1,6 +1,7 @@
 package ti.proyectoinia.dtos;
 
 import lombok.Data;
+import ti.proyectoinia.business.entities.Estado;
 import ti.proyectoinia.business.entities.Metodo;
 
 import java.util.Date;
@@ -8,7 +9,6 @@ import java.util.List;
 
 @Data
 public class SanitarioDto {
-
     private Long id;
 
     private Date fechaSiembra;
@@ -25,7 +25,7 @@ public class SanitarioDto {
 
     private Integer nroDias;
 
-    private String estado;
+    private Estado estadoProductoDosis;
 
     private String observaciones;
 
@@ -39,10 +39,9 @@ public class SanitarioDto {
 
     private boolean repetido;
 
-    private List<Long> sanitarioHongosId;
+    private List<Long> SanitarioHongoids;
 
     private Date fechaCreacion;
 
     private Date fechaRepeticion;
-
 }

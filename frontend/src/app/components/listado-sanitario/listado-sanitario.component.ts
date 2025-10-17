@@ -7,7 +7,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { Router } from '@angular/router';
 import { SanitarioDto } from '../../../models/Sanitario.dto';
 import { ActivatedRoute } from '@angular/router';
-import { SanitarioService } from '../../../services/SanitarioService';
 
 
 @Component({
@@ -18,11 +17,7 @@ import { SanitarioService } from '../../../services/SanitarioService';
   styleUrls: ['./listado-sanitario.component.scss']
 })
 export class ListadoSanitarioComponent implements OnInit {
-    constructor(
-        private router: Router, 
-        private route: ActivatedRoute,
-        private sanitarioService: SanitarioService
-    ) {}
+    constructor(private router: Router, private route: ActivatedRoute) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
@@ -54,36 +49,77 @@ export class ListadoSanitarioComponent implements OnInit {
       { label: 'Diciembre', id: 12 }
     ];
 
-    anios: { label: string, id: number }[] = []; // Se generará dinámicamente desde los datos cargados
+    anios = [
+      { label: '2020', id: 2020 },
+      { label: '2021', id: 2021 },
+      { label: '2022', id: 2022 },
+      { label: '2023', id: 2023 },
+      { label: '2024', id: 2024 }
+    ];
 
-    items: SanitarioDto[] = [];
-
-    isLoading: boolean = false;
-
-
-    /**
-     * Formatea una fecha (posiblemente en ISO o YYYY-MM-DD[T...] ) a DD/MM/YYYY.
-     * Devuelve cadena vacía si la fecha es inválida o no está presente.
-     */
-    formatFecha(fecha: string | null | undefined): string {
-      if (!fecha) return '';
-      // Extraer la parte de fecha si viene con hora
-      const fechaSolo = fecha.split('T')[0];
-      const partes = fechaSolo.split('-');
-      if (partes.length >= 3 && partes[0].length === 4) {
-        const year = partes[0];
-        const month = partes[1];
-        const day = partes[2];
-        return `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
+    items: SanitarioDto[] = [
+      {
+        id: 1,
+        fechaSiembra: '2023-01-10',
+        fecha: '2023-01-15',
+        metodo: 'Metodo A',
+        temperatura: 25,
+        horasLuz: 12,
+        horasOscuridad: 12,
+        nroDias: 7,
+        estadoProductoDosis: 'Activo',
+        observaciones: 'Control de calidad mensual - Muestra estándar',
+        nroSemillasRepeticion: 100,
+        reciboId: 101,
+        activo: true,
+        estandar: false,
+        repetido: false,
+        SanitarioHongoids: [1, 2],
+        fechaCreacion: '2023-01-15',
+        fechaRepeticion: null
+      },
+      {
+        id: 2,
+        fechaSiembra: '2022-02-15',
+        fecha: '2022-02-20',
+        metodo: 'Metodo B',
+        temperatura: 23,
+        horasLuz: 14,
+        horasOscuridad: 10,
+        nroDias: 10,
+        estadoProductoDosis: 'Pendiente',
+        observaciones: 'Lote especial - Requiere repetición',
+        nroSemillasRepeticion: 150,
+        reciboId: 102,
+        activo: true,
+        estandar: true,
+        repetido: true,
+        SanitarioHongoids: [3, 4, 5],
+        fechaCreacion: '2022-02-20',
+        fechaRepeticion: '2022-02-22'
+      },
+      {
+        id: 3,
+        fechaSiembra: '2023-03-05',
+        fecha: '2023-03-10',
+        metodo: 'Metodo C',
+        temperatura: 26,
+        horasLuz: 16,
+        horasOscuridad: 8,
+        nroDias: 14,
+        estadoProductoDosis: 'Completado',
+        observaciones: 'Inspección rutinaria de equipos - Repetir análisis',
+        nroSemillasRepeticion: 200,
+        reciboId: 103,
+        activo: false,
+        estandar: false,
+        repetido: true,
+        SanitarioHongoids: null,
+        fechaCreacion: '2023-03-10',
+        fechaRepeticion: '2023-03-12'
       }
-      // Intentar parsear con Date como fallback
-      const d = new Date(fecha);
-      if (isNaN(d.getTime())) return '';
-      const dd = String(d.getDate()).padStart(2, '0');
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const yyyy = d.getFullYear();
-      return `${dd}-${mm}-${yyyy}`;
-    }
+    ];
+
 
 
     get itemsFiltrados() {
@@ -110,32 +146,6 @@ export class ListadoSanitarioComponent implements OnInit {
     ngOnInit() {
        this.loteId = this.route.snapshot.params['loteId'];
        this.reciboId = this.route.snapshot.params['reciboId'];
-       this.cargarSanitarios();
-    }
-
-    cargarSanitarios() {
-        if (!this.reciboId) {
-            console.error('No se encontró el ID del recibo');
-            return;
-        }
-
-        this.isLoading = true;
-        const reciboIdNumber = parseInt(this.reciboId);
-        
-        this.sanitarioService.listarPorRecibo(reciboIdNumber).subscribe({
-            next: (response) => {
-                this.items = response.sanitario || [];
-                this.actualizarAniosDisponibles(); // Actualizar años disponibles basados en los datos cargados
-                this.isLoading = false;
-                console.log('Sanitarios cargados:', this.items);
-            },
-            error: (error) => {
-                console.error('Error al cargar sanitarios:', error);
-                this.items = [];
-                this.anios = []; // Limpiar años si no hay datos
-                this.isLoading = false;
-            }
-        });
     }
 
     navegarAVer(item: SanitarioDto) {
@@ -182,61 +192,11 @@ export class ListadoSanitarioComponent implements OnInit {
 
     eliminarItem(item: SanitarioDto) {
       console.log('Eliminar Sanitario:', item);
-      
-      if (!item.id) {
-        console.error('El sanitario no tiene un ID válido');
-        return;
-      }
-
+      // Aquí puedes implementar la lógica para eliminar el Sanitario
+      // Por ejemplo, mostrar un modal de confirmación
       if (confirm(`¿Estás seguro de que quieres eliminar el Sanitario #${item.id}?`)) {
-        this.isLoading = true;
-        
-        this.sanitarioService.eliminar(item.id).subscribe({
-          next: (response) => {
-            console.log('Sanitario eliminado:', response);
-            // Recargar la lista después de eliminar
-            this.cargarSanitarios();
-          },
-          error: (error) => {
-            console.error('Error al eliminar sanitario:', error);
-            this.isLoading = false;
-            alert('Error al eliminar el sanitario. Por favor, inténtalo de nuevo.');
-          }
-        });
+        this.items = this.items.filter(sanitario => sanitario.id !== item.id);
+        console.log('Sanitario eliminado');
       }
-    }
-
-    /**
-     * Genera la lista de años disponibles basándose en los items cargados
-     */
-    actualizarAniosDisponibles() {
-        const aniosSet = new Set<number>();
-        
-        this.items.forEach(item => {
-            const fechaConTipo = this.getFechaConTipo(item);
-            if (fechaConTipo.fecha) {
-                const anio = this.getAnioFromFecha(fechaConTipo.fecha);
-                if (!isNaN(anio)) {
-                    aniosSet.add(anio);
-                }
-            }
-        });
-
-        // Convertir Set a array y ordenar de mayor a menor (más recientes primero)
-        const aniosArray = Array.from(aniosSet).sort((a, b) => b - a);
-        
-        // Crear el array de objetos con label e id
-        this.anios = aniosArray.map(anio => ({
-            label: anio.toString(),
-            id: anio
-        }));
-
-        // Limpiar el filtro de año seleccionado si ya no está disponible
-        if (this.selectedAnio && !this.anios.some(anio => anio.id.toString() === this.selectedAnio)) {
-            this.selectedAnio = '';
-            this.selectedMes = ''; // También limpiar el mes si se limpia el año
-        }
-
-        console.log('Años disponibles:', this.anios);
     }
 }

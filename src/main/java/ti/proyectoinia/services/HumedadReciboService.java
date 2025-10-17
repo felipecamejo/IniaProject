@@ -109,13 +109,16 @@ public class HumedadReciboService {
                     notFound.add(id);
                     continue;
                 }
-                try {
-                    humedadReciboRepository.deleteById(id);
-                    deleted.add(id);
-                } catch (Exception ex) {
+                HumedadRecibo h = humedadReciboRepository.findById(id).orElse(null);
+                if (h == null) {
                     notFound.add(id);
+                    continue;
                 }
+                h.setActivo(false);
+                humedadReciboRepository.save(h);
+                deleted.add(id);
             }
+
             java.util.Map<String, Object> resp = new java.util.HashMap<>();
             resp.put("deleted", deleted);
             resp.put("notFound", notFound);

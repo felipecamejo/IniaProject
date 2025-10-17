@@ -231,39 +231,3 @@
     }
   }
 }
-
-// Estilos para el indicador de carga
-.loading-message {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  padding: 3rem 1rem !important;
-  background: var(--blanco) !important;
-  border-radius: 12px !important;
-  margin: 1rem 0 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-
-  .loading-content {
-    text-align: center !important;
-    color: var(--azul) !important;
-
-    i {
-      margin-bottom: 1rem !important;
-      color: var(--azul) !important;
-    }
-
-    p {
-      margin: 0 !important;
-      font-family: var(--font-main) !important;
-      font-size: 1rem !important;
-      color: var(--gris-oscuro) !important;
-    }
-  }
-}
-
-// Estilo para deshabilitar botones durante la carga
-.action-button:disabled {
-  opacity: 0.5 !important;
-  cursor: not-allowed !important;
-  pointer-events: none !important;
-}

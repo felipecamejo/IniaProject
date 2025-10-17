@@ -9,13 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import ti.proyectoinia.api.responses.ResponseListadoPurezaPNotatum;
 import ti.proyectoinia.api.responses.ResponseListadoSanitario;
 import ti.proyectoinia.dtos.SanitarioDto;
-import ti.proyectoinia.dtos.SanitarioHongoDto;
 import ti.proyectoinia.services.SanitarioService;
 
-import java.util.List;
-
 @RestController
-@RequestMapping({"api/v1/sanitario"})
+@RequestMapping({"api/v1/Sanitario"})
 public class SanitarioController {
     
     @Generated
@@ -30,10 +27,10 @@ public class SanitarioController {
     @Operation(
             description = "Esta Funcion crea un nuevo MalezaS"
     )
-    public ResponseEntity<Long> crearSanitario(@RequestBody SanitarioDto sanitarioDto) {
+    public ResponseEntity<String> crearSanitario(@RequestBody SanitarioDto sanitarioDto) {
 
         sanitarioDto.setId((Long)null);
-        Long response = this.sanitarioService.crearSanitario(sanitarioDto);
+        String response = this.sanitarioService.crearSanitario(sanitarioDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -74,28 +71,6 @@ public class SanitarioController {
     @Operation(description = "Lista todas los Sanitarios activos asociados a un recibo específico")
     public ResponseEntity<ResponseListadoSanitario> listarSanitarioPorRecibo(@PathVariable("id") Long id) {
         return this.sanitarioService.listadoSanitarioPorReciboId(id);
-    }
-
-    @PutMapping("/actualizar-hongos/{sanitarioId}")
-    @Secured({"ADMIN"})
-    @Operation(description = "Actualiza los hongos asociados a un sanitario, creando, actualizando y eliminando según la lista recibida")
-    public ResponseEntity<String> actualizarHongosCompleto(
-            @PathVariable Long sanitarioId,
-            @RequestBody List<SanitarioHongoDto> hongosActuales) {
-        try {
-            sanitarioService.actualizarHongosCompleto(sanitarioId, hongosActuales);
-            return ResponseEntity.ok("Hongos actualizados correctamente");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar hongos: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/listar-hongos/{sanitarioId}")
-    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
-    @Operation(description = "Lista todos los SanitarioHongos activos asociados a un sanitario específico")
-    public ResponseEntity<List<SanitarioHongoDto>> listarHongosPorSanitario(@PathVariable Long sanitarioId) {
-        List<SanitarioHongoDto> dtos = sanitarioService.listarHongosPorSanitario(sanitarioId);
-        return ResponseEntity.ok(dtos);
     }
 
 }
