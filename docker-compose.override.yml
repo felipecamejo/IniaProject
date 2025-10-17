@@ -1,0 +1,47 @@
+# Archivo de override para desarrollo
+# Este archivo se carga automáticamente en desarrollo
+# y permite configuraciones específicas para desarrollo
+
+version: '3.8'
+
+services:
+  # Backend con hot reload para desarrollo
+  backend:
+    environment:
+      SPRING_PROFILES_ACTIVE: development
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "true"
+    volumes:
+      # Montar código fuente para hot reload (opcional)
+      - ./src:/app/src:ro
+    command: ["java", "-jar", "target/proyectoInia-0.0.1-SNAPSHOT.jar", "--spring.profiles.active=development"]
+
+  # Middleware con hot reload para desarrollo
+  middleware:
+    volumes:
+      # Montar código fuente para hot reload
+      - ./middleware:/app
+    command: ["uvicorn", "http_server:app", "--host", "0.0.0.0", "--port", "9099", "--reload", "--workers", "1"]
+    environment:
+      PYTHONPATH: /app
+
+  # Frontend con hot reload para desarrollo
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend.dev
+    volumes:
+      # Montar código fuente para hot reload
+      - ./frontend/src:/app/src
+      - ./frontend/angular.json:/app/angular.json
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+    command: ["npm", "run", "start", "--", "--host", "0.0.0.0", "--port", "4200"]
+    ports:
+      - "4200:4200"  # Puerto de desarrollo de Angular
+
+  # Base de datos con configuración de desarrollo
+  database:
+    environment:
+      POSTGRES_LOG_STATEMENT: "all"
+      POSTGRES_LOG_MIN_DURATION_STATEMENT: "0"
