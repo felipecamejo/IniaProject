@@ -1,6 +1,7 @@
 package ti.proyectoinia.dtos;
 
 import lombok.Data;
+import ti.proyectoinia.business.entities.TipoSanitarioHongo;
 
 @Data
 public class SanitarioHongoDto {
@@ -16,5 +17,9 @@ public class SanitarioHongoDto {
     private Integer valor;
 
     private Integer incidencia;
+
+    private boolean activo;
+
+    private TipoSanitarioHongo tipo;
 
 }

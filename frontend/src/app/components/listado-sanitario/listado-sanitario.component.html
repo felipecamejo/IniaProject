@@ -32,8 +32,16 @@
             </div>
         </div>
 
+        <!-- Indicador de carga -->
+        <div class="loading-message" *ngIf="isLoading">
+            <div class="loading-content">
+                <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+                <p>Cargando sanitarios...</p>
+            </div>
+        </div>
+
         <!-- Mensaje cuando no hay elementos -->
-        <div class="no-results-message" *ngIf="itemsFiltrados.length === 0">
+        <div class="no-results-message" *ngIf="!isLoading && itemsFiltrados.length === 0">
             <div class="no-results-content">
                 <h3>No se encontraron Sanitarios</h3>
                 <p>No hay análisis Sanitarios que coincidan con los filtros seleccionados.</p>
@@ -47,7 +55,8 @@
              [ngClass]="{
                'pendiente': !item.repetido,
                'repetido': item.repetido
-             }">
+             }"
+             [style.opacity]="isLoading ? '0.5' : '1'">
             <div class="item-header">
                 <div class="item-info">
                     <h3 class="item-title">Sanitario #{{ item.id }}</h3>    
@@ -70,12 +79,17 @@
                     <button *ngIf="!item.repetido" class="action-button edit-button" (click)="navegarAEditar(item)">
                         <i class="pi pi-pencil"></i>
                     </button>
-                    <button *ngIf="!item.repetido" class="action-button delete-button" (click)="eliminarItem(item)">
+                    <button *ngIf="!item.repetido" class="action-button delete-button" 
+                            (click)="eliminarItem(item)" 
+                            [disabled]="isLoading">
                         <i class="pi pi-trash"></i>
                     </button>
                 </div>
                 <div class="item-date">
-                    <span class="fecha">{{ getFechaConTipo(item).fecha }} ({{ getFechaConTipo(item).tipo }})</span>
+                    <span class="fecha">
+                        {{ formatFecha(getFechaConTipo(item).fecha) }}
+                        <span class="tipo-fecha">({{ getFechaConTipo(item).tipo }})</span>
+                    </span>
                 </div>
             </div>
         </div>
