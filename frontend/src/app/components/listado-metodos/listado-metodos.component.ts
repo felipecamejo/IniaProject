@@ -40,6 +40,11 @@ export class ListadoMetodosComponent implements OnInit, OnDestroy {
     error: string = '';
     private navigationSubscription: any;
 
+    // Popup de confirmación de eliminación
+    mostrarConfirmEliminar: boolean = false;
+    metodoAEliminar: MetodoDto | null = null;
+    confirmLoading: boolean = false;
+
     get itemsFiltrados() {
       return this.items.filter(item => {
         const q = (this.searchText || '').toLowerCase();
@@ -169,20 +174,35 @@ export class ListadoMetodosComponent implements OnInit, OnDestroy {
       this.abrirModalEdicion(item);
     }
 
-    eliminarItem(item: any) {
-      if (confirm(`¿Estás seguro de que deseas eliminar el método "${item.nombre}"?`)) {
-        console.log('Eliminar Método:', item);
-        
-        this.metodoService.eliminar(item.id).subscribe({
-          next: (response: string) => {
-            console.log('Método eliminado:', response);
-            this.cargarListado(); // Recargar la lista
-          },
-          error: (error: any) => {
-            console.error('Error al eliminar método:', error);
-            alert('Error al eliminar el método. Por favor, inténtalo de nuevo.');
-          }
-        });
-      }
+    eliminarItem(item: MetodoDto) {
+      this.metodoAEliminar = item;
+      this.mostrarConfirmEliminar = true;
+    }
+
+    confirmarEliminacion() {
+      const metodo = this.metodoAEliminar;
+      if (!metodo || metodo.id == null) return;
+      this.confirmLoading = true;
+      this.metodoService.eliminar(metodo.id).subscribe({
+        next: (response: string) => {
+          console.log('Método eliminado:', response);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.metodoAEliminar = null;
+          this.cargarListado();
+        },
+        error: (error: any) => {
+          console.error('Error al eliminar método:', error);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.metodoAEliminar = null;
+          alert('Error al eliminar el método. Por favor, inténtalo de nuevo.');
+        }
+      });
+    }
+
+    cancelarEliminacion() {
+      this.mostrarConfirmEliminar = false;
+      this.metodoAEliminar = null;
     }
 }

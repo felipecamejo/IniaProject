@@ -69,6 +69,11 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
 
     items: LoteDto[] = [];
 
+    // Popup de confirmación de eliminación
+    mostrarConfirmEliminar: boolean = false;
+    loteAEliminar: LoteDto | null = null;
+    confirmLoading: boolean = false;
+
     ngOnInit(): void {
         this.cargarLotes();
         
@@ -221,18 +226,35 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
       this.abrirModalEdicion(lote);
     }
 
-    eliminarItem(lote: any) {
-      if (confirm(`¿Estás seguro de que deseas eliminar el lote "${lote.nombre}"?`)) {
-        this.loteService.eliminarLote(lote.id).subscribe({
-          next: (response) => {
-            console.log('Lote eliminado:', response);
-            this.cargarLotes();
-          },
-          error: (error) => {
-            console.error('Error al eliminar lote:', error);
-            alert('Error al eliminar el lote');
-          }
-        });
-      }
+    eliminarItem(lote: LoteDto) {
+      this.loteAEliminar = lote;
+      this.mostrarConfirmEliminar = true;
+    }
+
+    confirmarEliminacion() {
+      const lote = this.loteAEliminar;
+      if (!lote || lote.id == null) return;
+      this.confirmLoading = true;
+      this.loteService.eliminarLote(lote.id).subscribe({
+        next: (response) => {
+          console.log('Lote eliminado:', response);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.loteAEliminar = null;
+          this.cargarLotes();
+        },
+        error: (error) => {
+          console.error('Error al eliminar lote:', error);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.loteAEliminar = null;
+          alert('Error al eliminar el lote');
+        }
+      });
+    }
+
+    cancelarEliminacion() {
+      this.mostrarConfirmEliminar = false;
+      this.loteAEliminar = null;
     }
 }

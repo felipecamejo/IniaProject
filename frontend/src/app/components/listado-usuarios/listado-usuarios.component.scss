@@ -298,6 +298,52 @@
   }
 }
 
+// Estilos del modal de confirmación
+::ng-deep .confirm-modal {
+  .p-dialog-header {
+    background: var(--azul);
+    color: #fff;
+    padding: 0.85rem 1.25rem;
+  }
+
+  .p-dialog-content {
+    background: #0b2340; // fondo oscuro coherente con tu tema
+    color: #e8eef6;
+    padding: 1.25rem 1.25rem 0.5rem 1.25rem;
+  }
+
+  .p-dialog-footer {
+    background: #0b2340;
+    padding: 0.75rem 1.25rem 1.25rem 1.25rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}
+
+.confirm-content p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.confirm-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+
+  ::ng-deep .p-button-danger {
+    background: var(--rojo) !important;
+    border-color: var(--rojo) !important;
+    color: #fff !important;
+  }
+
+  ::ng-deep .p-button-secondary {
+    background: transparent !important;
+    border: 1px solid #93a3b8 !important;
+    color: #e8eef6 !important;
+  }
+}
+
 // Sombreado sutil del fondo cuando el modal está abierto
 ::ng-deep .p-dialog-mask {
   background-color: rgba(0, 0, 0, 0.3) !important; // Sombreado suave

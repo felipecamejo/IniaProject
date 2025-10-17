@@ -31,11 +31,6 @@
                     <option *ngFor="let anio of anios" [value]="anio.id">{{ anio.label }}</option>
                 </select>
             </div>
-            <div class="filter-dropdown">
-                 <div class="submit-btn">
-                    <button pButton type="button" (click)="abrirModal()" label="Crear Lote" class="p-button-primary"></button>
-                </div>
-            </div>
         </div>
 
         <!-- Mensaje cuando no hay elementos -->
@@ -115,5 +110,29 @@
 
             <div *ngIf="modalError" class="error">{{ modalError }}</div>
         </form>
+    </p-dialog>
+
+    <!-- Popup de confirmación de eliminación -->
+    <p-dialog 
+        header="Confirmación" 
+        [(visible)]="mostrarConfirmEliminar" 
+        [modal]="true" 
+        [draggable]="false" 
+        [resizable]="false"
+        [closable]="true"
+        [style]="{width: '90vw', maxWidth: '420px'}"
+        styleClass="confirm-modal">
+        <div class="confirm-content">
+            <p>
+                ¿Seguro que deseas eliminar el lote 
+                <strong>{{ loteAEliminar?.nombre }}</strong>?
+            </p>
+        </div>
+        <ng-template pTemplate="footer">
+            <div class="confirm-footer">
+                <button pButton type="button" class="p-button-secondary" (click)="cancelarEliminacion()" [disabled]="confirmLoading" label="Cancelar"></button>
+                <button pButton type="button" class="p-button-danger" (click)="confirmarEliminacion()" [disabled]="confirmLoading" [label]="confirmLoading ? 'Eliminando...' : 'Eliminar'"></button>
+            </div>
+        </ng-template>
     </p-dialog>
 </div>

@@ -38,6 +38,11 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
     loading: boolean = false;
     error: string = '';
 
+    // Popup de confirmación de eliminación (misma UX que Usuarios)
+    mostrarConfirmEliminar: boolean = false;
+    cultivoAEliminar: CultivoDto | null = null;
+    confirmLoading: boolean = false;
+
     ngOnInit(): void {
         this.cargarCultivos();
         
@@ -181,18 +186,35 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
       this.abrirModalEdicion(maleza);
     }
 
-    eliminarItem(cultivo: any) {
-      if (confirm(`¿Estás seguro de que deseas eliminar el Cultivo "${cultivo.nombre}"?`)) {
-        this.cultivoService.eliminarCultivo(cultivo.id).subscribe({
-          next: (response) => {
-            console.log('Cultivo eliminado:', response);
-            this.cargarCultivos();
-          },
-          error: (error) => {
-            console.error('Error al eliminar cultivo:', error);
-            alert('Error al eliminar el cultivo');
-          }
-        });
-      }
+    eliminarItem(cultivo: CultivoDto) {
+      this.cultivoAEliminar = cultivo;
+      this.mostrarConfirmEliminar = true;
+    }
+
+    confirmarEliminacion() {
+      const cultivo = this.cultivoAEliminar;
+      if (!cultivo || cultivo.id == null) return;
+      this.confirmLoading = true;
+      this.cultivoService.eliminarCultivo(cultivo.id).subscribe({
+        next: (response) => {
+          console.log('Cultivo eliminado:', response);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.cultivoAEliminar = null;
+          this.cargarCultivos();
+        },
+        error: (error) => {
+          console.error('Error al eliminar cultivo:', error);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.cultivoAEliminar = null;
+          alert('Error al eliminar el cultivo');
+        }
+      });
+    }
+
+    cancelarEliminacion() {
+      this.mostrarConfirmEliminar = false;
+      this.cultivoAEliminar = null;
     }
 }

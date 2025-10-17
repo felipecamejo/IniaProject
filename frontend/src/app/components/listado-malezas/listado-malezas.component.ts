@@ -36,6 +36,11 @@ export class ListadoMalezasComponent implements OnInit, OnDestroy {
 
     items: MalezaDto[] = [];
 
+    // Popup de confirmación de eliminación
+    mostrarConfirmEliminar: boolean = false;
+    malezaAEliminar: MalezaDto | null = null;
+    confirmLoading: boolean = false;
+
     ngOnInit(): void {
         this.cargarMalezas();
         
@@ -174,18 +179,35 @@ export class ListadoMalezasComponent implements OnInit, OnDestroy {
       this.abrirModalEdicion(maleza);
     }
 
-    eliminarItem(maleza: any) {
-      if (confirm(`¿Estás seguro de que deseas eliminar la maleza "${maleza.nombre}"?`)) {
-        this.malezaService.eliminar(maleza.id).subscribe({
-          next: (response) => {
-            console.log('Maleza eliminada:', response);
-            this.cargarMalezas();
-          },
-          error: (error) => {
-            console.error('Error al eliminar maleza:', error);
-            alert('Error al eliminar la maleza');
-          }
-        });
-      }
+    eliminarItem(maleza: MalezaDto) {
+      this.malezaAEliminar = maleza;
+      this.mostrarConfirmEliminar = true;
+    }
+
+    confirmarEliminacion() {
+      const maleza = this.malezaAEliminar;
+      if (!maleza || maleza.id == null) return;
+      this.confirmLoading = true;
+      this.malezaService.eliminar(maleza.id).subscribe({
+        next: (response) => {
+          console.log('Maleza eliminada:', response);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.malezaAEliminar = null;
+          this.cargarMalezas();
+        },
+        error: (error) => {
+          console.error('Error al eliminar maleza:', error);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.malezaAEliminar = null;
+          alert('Error al eliminar la maleza');
+        }
+      });
+    }
+
+    cancelarEliminacion() {
+      this.mostrarConfirmEliminar = false;
+      this.malezaAEliminar = null;
     }
 }
