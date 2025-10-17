@@ -24,7 +24,14 @@ public class HongoService {
     }
 
     public String crearHongo(HongoDto hongoDto) {
-        return "Hongo creado correctamente ID:" + hongoDto.getId();
+        Hongo entity = mapsDtoEntityService.mapToEntityHongo(hongoDto);
+        // Forzar creación
+        entity.setId(null);
+        if (!entity.isActivo()) {
+            entity.setActivo(true);
+        }
+        Hongo saved = hongoRepository.save(entity);
+        return "Hongo creado correctamente ID:" + saved.getId();
     }
 
     public HongoDto obtenerHongoPorId(Long id) {
