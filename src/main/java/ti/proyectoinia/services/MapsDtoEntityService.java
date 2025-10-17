@@ -113,6 +113,36 @@ public class MapsDtoEntityService {
         return hongo;
     }
 
+    public MetodoDto mapToDtoMetodo(Metodo metodo) {
+        if (metodo == null) {
+            return null;
+        }
+
+        MetodoDto metodoDto = new MetodoDto();
+        metodoDto.setId(metodo.getId());
+        metodoDto.setNombre(metodo.getNombre());
+        metodoDto.setAutor(metodo.getAutor());
+        metodoDto.setDescripcion(metodo.getDescripcion());
+        metodoDto.setActivo(metodo.isActivo());
+
+        return metodoDto;
+    }
+
+    public Metodo mapToEntityMetodo(MetodoDto metodoDto) {
+        if (metodoDto == null) {
+            return null;
+        }
+
+        Metodo metodo = new Metodo();
+        metodo.setId(metodoDto.getId());
+        metodo.setNombre(metodoDto.getNombre());
+        metodo.setAutor(metodoDto.getAutor());
+        metodo.setDescripcion(metodoDto.getDescripcion());
+        metodo.setActivo(metodoDto.isActivo());
+
+        return metodo;
+    }
+
     public GerminacionDto mapToDtoGerminacion(Germinacion germinacion) {
         if (germinacion == null) {
             return null;

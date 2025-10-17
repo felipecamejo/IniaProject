@@ -27,6 +27,7 @@ import { ListadoSanitarioComponent } from './components/listado-sanitario/listad
 import { ListadoDepositosComponent } from './components/listado-depositos/listado-depositos.component';
 import { ListadoUsuariosComponent } from './components/listado-usuarios/listado-usuarios.component';
 import { UsuarioComponent } from './components/usuario/usuario.component';
+import { ListadoMetodosComponent } from './components/listado-metodos/listado-metodos.component';
 
 export const routes: Routes = [
     //rutas generales
@@ -37,6 +38,7 @@ export const routes: Routes = [
 
     //listados
     { path : 'listado-depositos', component: ListadoDepositosComponent },
+    { path : 'listado-metodos', component: ListadoMetodosComponent },
     { path : 'listado-usuarios', component: ListadoUsuariosComponent },
     { path : 'listado-lotes', component: ListadoLotesComponent }, // para todos los usuarios
     { path : 'listado-malezas', component: ListadoMalezasComponent },

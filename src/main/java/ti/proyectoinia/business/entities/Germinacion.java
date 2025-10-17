@@ -76,8 +76,8 @@ public class Germinacion {
     @Column(name = "GERMINACION_NROSEMILLAPORREPETICION")
     private Integer nroSemillaPorRepeticion;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "GERMINACION_METODO")
+    @ManyToOne
+    @JoinColumn(name = "METODO_ID")
     private Metodo metodo;
 
     @Column(name = "GERMINACION_TEMPERATURA")

@@ -49,4 +49,8 @@ export class HomeComponent {
   goToListadoHongos() {
     this.router.navigate(['/listado-hongos']);
   }
+
+  goToListadoMetodos() {
+    this.router.navigate(['/listado-metodos']);
+  }
 }

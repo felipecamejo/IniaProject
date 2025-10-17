@@ -23,8 +23,8 @@ public class Sanitario {
     @Column(name = "SANITARIO_FECHA")
     private Date fecha;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "SANITARIO_METODO")
+    @ManyToOne
+    @JoinColumn(name = "METODO_ID")
     private Metodo metodo;
 
     @Column(name = "SANITARIO_TEMPERATURA")
