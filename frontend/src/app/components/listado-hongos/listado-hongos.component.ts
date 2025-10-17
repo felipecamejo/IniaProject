@@ -36,6 +36,11 @@ export class ListadoHongosComponent implements OnInit, OnDestroy {
 
     items: HongoDto[] = [];
 
+    // Popup de confirmación de eliminación
+    mostrarConfirmEliminar: boolean = false;
+    hongoAEliminar: HongoDto | null = null;
+    confirmLoading: boolean = false;
+
     ngOnInit(): void {
         this.cargarHongos();
         
@@ -174,18 +179,35 @@ export class ListadoHongosComponent implements OnInit, OnDestroy {
       this.abrirModalEdicion(maleza);
     }
 
-    eliminarItem(hongo: any) {
-      if (confirm(`¿Estás seguro de que deseas eliminar el hongo "${hongo.nombre}"?`)) {
-        this.hongoService.eliminar(hongo.id).subscribe({
-          next: (response) => {
-            console.log('Hongo eliminado:', response);
-            this.cargarHongos();
-          },
-          error: (error) => {
-            console.error('Error al eliminar hongo:', error);
-            alert('Error al eliminar el hongo');
-          }
-        });
-      }
+    eliminarItem(hongo: HongoDto) {
+      this.hongoAEliminar = hongo;
+      this.mostrarConfirmEliminar = true;
+    }
+
+    confirmarEliminacion() {
+      const hongo = this.hongoAEliminar;
+      if (!hongo || hongo.id == null) return;
+      this.confirmLoading = true;
+      this.hongoService.eliminar(hongo.id).subscribe({
+        next: (response) => {
+          console.log('Hongo eliminado:', response);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.hongoAEliminar = null;
+          this.cargarHongos();
+        },
+        error: (error) => {
+          console.error('Error al eliminar hongo:', error);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.hongoAEliminar = null;
+          alert('Error al eliminar el hongo');
+        }
+      });
+    }
+
+    cancelarEliminacion() {
+      this.mostrarConfirmEliminar = false;
+      this.hongoAEliminar = null;
     }
 }
