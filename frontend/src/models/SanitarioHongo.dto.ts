@@ -7,6 +7,5 @@ export interface SanitarioHongoDTO {
   repeticion: number | null;
   valor: number | null;
   incidencia: number | null;
-  activo: boolean;
   tipo: TipoHongoSanitario | null;
 }

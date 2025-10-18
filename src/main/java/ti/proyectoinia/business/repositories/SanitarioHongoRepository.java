@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface SanitarioHongoRepository extends JpaRepository<SanitarioHongo, Long>{
 
-    List<SanitarioHongo> findByActivoTrueAndSanitarioId(Long sanitarioId);
+    List<SanitarioHongo> findBySanitarioId(Long sanitarioId);
 }

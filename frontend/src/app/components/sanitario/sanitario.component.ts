@@ -650,7 +650,6 @@ export class SanitarioComponent implements OnInit {
             repeticion: hongo.repeticion,
             valor: hongo.valor,
             incidencia: hongo.incidencia,
-            activo: true,
             tipo: TipoHongoSanitario.PATOGENO
           });
         }
@@ -668,7 +667,6 @@ export class SanitarioComponent implements OnInit {
             repeticion: hongo.repeticion,
             valor: hongo.valor,
             incidencia: hongo.incidencia,
-            activo: true,
             tipo: TipoHongoSanitario.CONTAMINANTE
           });
         }
@@ -686,7 +684,6 @@ export class SanitarioComponent implements OnInit {
             repeticion: hongo.repeticion,
             valor: hongo.valor,
             incidencia: hongo.incidencia,
-            activo: true,
             tipo: TipoHongoSanitario.ALMACENAJE
           });
         }

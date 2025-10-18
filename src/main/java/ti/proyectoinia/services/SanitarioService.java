@@ -72,7 +72,7 @@ public class SanitarioService {
     public void actualizarHongosCompleto(Long sanitarioId, List<SanitarioHongoDto> hongosActuales) {
         Sanitario sanitario = sanitarioRepository.findById(sanitarioId).orElse(null);
         if (sanitario == null) throw new RuntimeException("Sanitario no encontrado");
-        List<SanitarioHongo> actuales = sanitarioHongoRepository.findByActivoTrueAndSanitarioId(sanitarioId);
+        List<SanitarioHongo> actuales = sanitarioHongoRepository.findBySanitarioId(sanitarioId);
         Set<Long> nuevosIds = hongosActuales.stream()
                 .map(h -> h.getId() != null ? h.getId() : -1L)
                 .collect(Collectors.toSet());
@@ -98,13 +98,12 @@ public class SanitarioService {
             sanitarioHongo.setValor(dto.getValor());
             sanitarioHongo.setIncidencia(dto.getIncidencia());
             sanitarioHongo.setTipo(dto.getTipo());
-            sanitarioHongo.setActivo(true);
             sanitarioHongoRepository.save(sanitarioHongo);
         }
     }
 
     public List<SanitarioHongoDto> listarHongosPorSanitario(Long sanitarioId) {
-        List<SanitarioHongo> hongos = sanitarioHongoRepository.findByActivoTrueAndSanitarioId(sanitarioId);
+        List<SanitarioHongo> hongos = sanitarioHongoRepository.findBySanitarioId(sanitarioId);
         return hongos.stream()
                 .map(mapsDtoEntityService::mapToDtoSanitarioHongo)
                 .toList();

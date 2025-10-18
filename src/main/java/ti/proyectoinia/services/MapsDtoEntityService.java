@@ -1049,7 +1049,6 @@ public class MapsDtoEntityService {
         dto.setRepeticion(entity.getRepeticion());
         dto.setValor(entity.getValor());
         dto.setIncidencia(entity.getIncidencia());
-        dto.setActivo(entity.getActivo());
         // Mapeo del tipo
         dto.setTipo(entity.getTipo());
         return dto;
@@ -1080,7 +1079,6 @@ public class MapsDtoEntityService {
         entity.setRepeticion(dto.getRepeticion());
         entity.setValor(dto.getValor());
         entity.setIncidencia(dto.getIncidencia());
-        entity.setActivo(dto.isActivo());
 
         entity.setTipo(dto.getTipo());
         return entity;
@@ -1119,7 +1117,6 @@ public class MapsDtoEntityService {
         dto.setLugar(humedadRecibo.getLugar());
         dto.setNumero(humedadRecibo.getNumero());
         dto.setReciboId(humedadRecibo.getRecibo() != null ? humedadRecibo.getRecibo().getId() : null);
-        dto.setActivo(humedadRecibo.isActivo());
         return dto;
     }
 
@@ -1129,7 +1126,6 @@ public class MapsDtoEntityService {
         entity.setId(dto.getId());
         entity.setLugar(dto.getLugar());
         entity.setNumero(dto.getNumero());
-        entity.setActivo(dto.isActivo());
         // Asignar la relación Recibo si reciboId está presente
         if (dto.getReciboId() != null) {
             Recibo recibo = getValidRecibo(dto.getReciboId());

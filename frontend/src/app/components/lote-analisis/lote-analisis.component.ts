@@ -148,7 +148,7 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
       case 'recibo':
         if (this.reciboId) {
           // Si ya existe recibo, ir a editar
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/recibo/editar/${this.reciboId}`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/recibo/editar`]);
         } else {
           // Si no existe, crear nuevo recibo
           this.router.navigate([`/${this.loteId}/recibo/crear`]);
@@ -156,37 +156,37 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
         break;
       case 'pureza':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/pureza/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-pureza`]);
         }
         break;
       case 'pms':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/pms/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-pms`]);
         }
         break;
       case 'sanitario':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/sanitario/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-sanitario`]);
         }
         break;
       case 'dosn':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/dosn/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
         }
         break;
       case 'germinacion':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/germinacion/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-germinacion`]);
         }
         break;
       case 'tetrazolio':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/tetrazolio/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-tetrazolio`]);
         }
         break;
       case 'pureza-p-notatum':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/pureza-p-notatum/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-pureza-p-notatum`]);
         }
         break;
       default:

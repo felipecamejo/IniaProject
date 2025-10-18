@@ -9,5 +9,4 @@ public class HumedadReciboDto {
     private HumedadLugar lugar;
     private Integer numero;
     private Long reciboId;
-    private boolean activo;
 }

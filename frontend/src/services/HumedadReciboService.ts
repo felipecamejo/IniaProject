@@ -17,28 +17,12 @@ export class HumedadReciboService {
   constructor(private http: HttpClient, private urlService: UrlService) {}
   
   /**
-   * Crea múltiples humedades y devuelve un objeto con created[] y errors[]
+   * Actualiza múltiples humedades y devuelve un objeto con created[] y errors[]
    */
-  crearHumedadesRecibo(payload: HumedadReciboDto[]): Observable<{ created: HumedadReciboDto[]; errors: any[] }> {
-    return this.http.post<{ created: HumedadReciboDto[]; errors: any[] }>(
-      `${this.urlService.baseUrl}${this.endpoint}/crear-multiple`,
+  HumedadesRecibo(reciboId: number, payload: HumedadReciboDto[]): Observable<{ created: HumedadReciboDto[]; errors: any[] }> {
+    return this.http.put<{ created: HumedadReciboDto[]; errors: any[] }>(
+      `${this.urlService.baseUrl}${this.endpoint}/actualizar-humedades/${reciboId}`,
       payload
-    );
-  }
-
-  editarHumedadesRecibo(payload: HumedadReciboDto []): Observable<string> {
-    return this.http.put(
-      `${this.urlService.baseUrl}${this.endpoint}/editar-multiple`,
-      payload,
-      { responseType: 'text' }
-    );
-  }
-
-  eliminarHumedadRecibo(id: number): Observable<string> {
-    return this.http.put(
-      `${this.urlService.baseUrl}${this.endpoint}/eliminar/${id}`,
-      {},
-      { responseType: 'text' }
     );
   }
 

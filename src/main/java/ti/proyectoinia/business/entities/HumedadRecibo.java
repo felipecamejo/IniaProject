@@ -23,7 +23,4 @@ public class HumedadRecibo {
     @JoinColumn(name = "RECIBO_ID")
     private Recibo recibo;
 
-    @Column(name = "HUMEDAD_RECIBO_ACTIVO")
-    private boolean activo;
-
 }

@@ -1,5 +1,6 @@
 package ti.proyectoinia.services;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ti.proyectoinia.dtos.HumedadReciboDto;
@@ -17,7 +18,8 @@ public class HumedadReciboService {
     private MapsDtoEntityService mapsDtoEntityService;
 
     public List<HumedadReciboDto> obtenerHumedadesPorRecibo(Long reciboId) {
-        List<HumedadRecibo> lista = humedadReciboRepository.findByActivoTrueAndReciboId(reciboId);
+        // Usar el repositorio que filtra por activo = true y que además verifica que el recibo esté activo
+        List<HumedadRecibo> lista = humedadReciboRepository.findByReciboIdAndReciboActivoTrue(reciboId);
         return lista.stream()
                 .map(mapsDtoEntityService::mapToDtoHumedadRecibo)
                 .collect(Collectors.toList());
@@ -33,92 +35,24 @@ public class HumedadReciboService {
                 .collect(Collectors.toList());
     }
 
-    public java.util.Map<String, Object> editarMultiplesHumedades(List<HumedadReciboDto> dtos) {
-        java.util.List<HumedadReciboDto> edited = new java.util.ArrayList<>();
-        java.util.List<HumedadReciboDto> created = new java.util.ArrayList<>();
-        java.util.List<java.util.Map<String, Object>> errors = new java.util.ArrayList<>();
+    @Transactional
+    // Nuevo método: borra físicamente todas las humedades asociadas a un recibo y crea las nuevas
+    public void actualizarHumedadesCompleto(Long reciboId, List<HumedadReciboDto> dtos) {
+        // Borrar físicamente todas las humedades relacionadas al recibo
+        humedadReciboRepository.deleteAllByReciboId(reciboId);
 
-        // Collect those that must be created (id == null or id not found)
-        java.util.List<HumedadReciboDto> toCreate = new java.util.ArrayList<>();
-
-        for (int i = 0; i < dtos.size(); i++) {
-            HumedadReciboDto dto = dtos.get(i);
-
-            // If id is null -> treat as new
-            if (dto.getId() == null) {
-                // ensure id is null for creation
-                dto.setId(null);
-                toCreate.add(dto);
-                continue;
-            }
-
-            // If id provided but not present in DB -> treat as new (create)
-            if (!humedadReciboRepository.existsById(dto.getId())) {
-                dto.setId(null);
-                toCreate.add(dto);
-                continue;
-            }
-
-            // Otherwise try to edit
-            try {
-                HumedadRecibo entity = mapsDtoEntityService.mapToEntityHumedadRecibo(dto);
-                HumedadRecibo saved = humedadReciboRepository.save(entity);
-                HumedadReciboDto savedDto = mapsDtoEntityService.mapToDtoHumedadRecibo(saved);
-                edited.add(savedDto);
-            } catch (Exception ex) {
-                java.util.Map<String, Object> err = new java.util.HashMap<>();
-                err.put("index", i);
-                err.put("message", "Error al editar: " + ex.getMessage());
-                err.put("dto", dto);
-                errors.add(err);
-            }
+        if (dtos == null || dtos.isEmpty()) {
+            return; // nothing to create
         }
 
-        // If there are items to create, call crearMultiplesHumedades
-        if (!toCreate.isEmpty()) {
-            try {
-                List<HumedadReciboDto> creadas = crearMultiplesHumedades(toCreate);
-                if (creadas != null && !creadas.isEmpty()) {
-                    created.addAll(creadas);
-                }
-            } catch (Exception ex) {
-                java.util.Map<String, Object> err = new java.util.HashMap<>();
-                err.put("message", "Error al crear elementos durante la edición múltiple: " + ex.getMessage());
-                errors.add(err);
-            }
-        }
+        // Preparar dtos para creación: asegurar id nulo y asignar reciboId
+        List<HumedadReciboDto> toCreate = dtos.stream().map(dto -> {
+            dto.setId(null);
+            dto.setReciboId(reciboId);
+            return dto;
+        }).collect(Collectors.toList());
 
-        java.util.Map<String, Object> result = new java.util.HashMap<>();
-        result.put("edited", edited);
-        result.put("created", created);
-        result.put("errors", errors);
-        return result;
+        // Crear todos los registros nuevos
+        crearMultiplesHumedades(toCreate);
     }
-
-        /**
-         * Elimina (soft-delete) múltiples humedades por id: marca activo = false.
-         * Retorna lista de ids eliminados y lista de ids no encontrados.
-         */
-        public java.util.Map<String, Object> eliminarMultiplesHumedades(java.util.List<Long> ids) {
-            java.util.List<Long> deleted = new java.util.ArrayList<>();
-            java.util.List<Long> notFound = new java.util.ArrayList<>();
-
-            for (Long id : ids) {
-                if (id == null) continue;
-                if (!humedadReciboRepository.existsById(id)) {
-                    notFound.add(id);
-                    continue;
-                }
-                try {
-                    humedadReciboRepository.deleteById(id);
-                    deleted.add(id);
-                } catch (Exception ex) {
-                    notFound.add(id);
-                }
-            }
-            java.util.Map<String, Object> resp = new java.util.HashMap<>();
-            resp.put("deleted", deleted);
-            resp.put("notFound", notFound);
-            return resp;
-        }
 }
