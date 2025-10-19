@@ -10,7 +10,7 @@ interface ResponseListadoDOSN {
 
 @Injectable({ providedIn: 'root' })
 export class DOSNService {
-  private endpoint: string = '/dosn';
+  private endpoint: string = '/DOSN';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 

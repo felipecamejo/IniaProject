@@ -30,10 +30,17 @@ public class DOSNService {
     }
 
     public String crearDOSN(DOSNDto dosnDto) {
-        if (dosnDto.getCultivos() != null) {
-            for (var cultivoDto : dosnDto.getCultivos()) {
-                if (cultivoDto.getId() == null || !cultivoRepository.existsById(cultivoDto.getId())) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cultivo con id " + cultivoDto.getId() + " no existe");
+        if (dosnDto.getCultivosINIAId() != null) {
+            for (Long cultivoId : dosnDto.getCultivosINIAId()) {
+                if (cultivoId == null || !cultivoRepository.existsById(cultivoId)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cultivo con id " + cultivoId + " no existe (INIA)");
+                }
+            }
+        }
+        if (dosnDto.getCultivosINASEId() != null) {
+            for (Long cultivoId : dosnDto.getCultivosINASEId()) {
+                if (cultivoId == null || !cultivoRepository.existsById(cultivoId)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cultivo con id " + cultivoId + " no existe (INASE)");
                 }
             }
         }
@@ -60,10 +67,17 @@ public class DOSNService {
 
     public String editarDOSN(DOSNDto dosnDto) {
         DOSN dosn = mapsDtoEntityService.mapToEntityDOSN(dosnDto);
-        if (dosn.getCultivos() != null) {
-            for (Cultivo cultivo : dosn.getCultivos()) {
-                if (cultivo.getId() == null || cultivo.getId() == 0 || !cultivoRepository.existsById(cultivo.getId())) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cultivo con id " + cultivo.getId() + " no existe.");
+        if (dosnDto.getCultivosINIAId() != null) {
+            for (Long cultivoId : dosnDto.getCultivosINIAId()) {
+                if (cultivoId == null || cultivoId == 0 || !cultivoRepository.existsById(cultivoId)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cultivo con id " + cultivoId + " no existe (INIA).");
+                }
+            }
+        }
+        if (dosnDto.getCultivosINASEId() != null) {
+            for (Long cultivoId : dosnDto.getCultivosINASEId()) {
+                if (cultivoId == null || cultivoId == 0 || !cultivoRepository.existsById(cultivoId)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cultivo con id " + cultivoId + " no existe (INASE).");
                 }
             }
         }
