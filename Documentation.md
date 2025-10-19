@@ -34,6 +34,7 @@ El sistema está construido con una arquitectura de tres capas que garantiza esc
 - **Tecnología**: Angular 20.3.1 con TypeScript
 - **UI Framework**: PrimeNG para componentes de interfaz
 - **Estilos**: PrimeFlex para layout responsivo
+- **PWA**: Progressive Web App con Service Worker
 - **Puerto**: 4200 (desarrollo)
 
 ### 2. Backend (Spring Boot)
@@ -533,3 +534,292 @@ El Sistema INIA representa una solución integral y moderna para la gestión de 
 El sistema no solo resuelve los problemas inmediatos de la cliente, sino que también proporciona una base sólida para futuras expansiones y mejoras, cumpliendo con los estándares internacionales del sector y facilitando la colaboración entre diferentes roles de usuarios.
 
 La implementación de JWT para seguridad, la integración con middleware Python para operaciones especializadas, y la interfaz Angular moderna, hacen de este sistema una herramienta poderosa y confiable para laboratorios de análisis de semillas.
+
+---
+
+## Configuración PWA (Progressive Web App)
+
+### ¿Qué es una PWA?
+
+Una **Progressive Web App (PWA)** es una aplicación web que utiliza tecnologías web modernas para proporcionar una experiencia de usuario similar a las aplicaciones nativas. El Sistema INIA ha sido configurado como PWA para ofrecer:
+
+- **Instalabilidad**: Se puede instalar en dispositivos móviles y escritorio
+- **Funcionamiento offline**: Capacidad de trabajar sin conexión a internet
+- **Notificaciones push**: Alertas y actualizaciones en tiempo real
+- **Rendimiento optimizado**: Carga rápida y experiencia fluida
+- **Responsive**: Adaptación automática a diferentes tamaños de pantalla
+
+### Características PWA Implementadas
+
+#### 1. Service Worker
+- **Archivo**: `ngsw-worker.js` (generado automáticamente)
+- **Configuración**: `ngsw-config.json`
+- **Funcionalidad**: Cache de recursos, funcionamiento offline, actualizaciones automáticas
+
+#### 2. Web App Manifest
+- **Archivo**: `public/manifest.webmanifest`
+- **Configuración**: Nombre, iconos, colores, modo de visualización
+- **Instalabilidad**: Permite instalar la app en dispositivos
+
+#### 3. Iconos PWA
+- **Ubicación**: `public/icons/`
+- **Formatos**: PNG en múltiples tamaños (72x72 a 512x512)
+- **Compatibilidad**: Soporte para diferentes dispositivos y resoluciones
+
+### Desarrollo y Testing PWA
+
+#### Instalación de Herramientas
+
+```bash
+# Instalar ngrok para túnel HTTPS
+npm install -g ngrok
+
+# Instalar Lighthouse para auditorías
+npm install -g lighthouse
+
+# Configurar token de ngrok (automático en scripts)
+.\SetupNgrok.ps1
+```
+
+**Token de ngrok configurado:** `2yK9mpFEZXa9gvXRS2IHS6baOgL_7ABJwf2GPr1zMA28yPgLd`
+
+#### Scripts Disponibles
+
+```bash
+# Iniciar en modo PWA (producción)
+npm run start:pwa
+
+# Construir para producción PWA
+npm run build:pwa
+
+# Crear túnel ngrok
+npm run ngrok
+
+# Ejecutar auditoría Lighthouse
+npm run lighthouse
+```
+
+#### Scripts de Configuración PWA
+
+Se han creado dos scripts PowerShell principales en la raíz del proyecto:
+
+**1. Script de Configuración (`configPWA.ps1`):**
+```powershell
+# Configuración inicial (primera vez)
+.\configPWA.ps1 setup
+
+# Desarrollo PWA con ngrok
+.\configPWA.ps1 dev
+
+# Testing y verificación
+.\configPWA.ps1 test
+
+# Solo ngrok
+.\configPWA.ps1 ngrok
+
+# Auditoría Lighthouse
+.\configPWA.ps1 lighthouse
+```
+
+**2. Script de Build (`BuildPWA.ps1`):**
+```powershell
+# Build de producción PWA
+.\BuildPWA.ps1 build
+
+# Verificar archivos generados
+.\BuildPWA.ps1 verify
+
+# Servir PWA localmente
+.\BuildPWA.ps1 serve
+
+# Preparar para despliegue
+.\BuildPWA.ps1 deploy
+
+# Limpiar builds anteriores
+.\BuildPWA.ps1 clean
+```
+
+**3. Script Simplificado (`RunPWA.ps1`):**
+```powershell
+# Ejecutar PWA en modo desarrollo (RECOMENDADO)
+.\RunPWA.ps1 dev
+
+# Construir y servir PWA en modo producción
+.\RunPWA.ps1 prod
+
+# Solo construir PWA
+.\RunPWA.ps1 build
+
+# Testing y verificaciones
+.\RunPWA.ps1 test
+
+# Ayuda
+.\RunPWA.ps1 help
+```
+
+**Flujo completo recomendado:**
+1. `.\RunPWA.ps1 dev` - Desarrollo y testing (configuración automática)
+2. `.\RunPWA.ps1 build` - Build de producción
+3. `.\RunPWA.ps1 prod` - Probar build localmente
+4. `.\BuildPWA.ps1 deploy` - Preparación para despliegue
+
+**Flujo alternativo (más detallado):**
+1. `.\configPWA.ps1 setup` - Configuración inicial manual
+2. `.\configPWA.ps1 dev` - Desarrollo y testing
+3. `.\BuildPWA.ps1 build` - Build de producción
+4. `.\BuildPWA.ps1 verify` - Verificación de archivos
+5. `.\BuildPWA.ps1 deploy` - Preparación para despliegue
+
+Estos scripts:
+1. Configuran PWA automáticamente
+2. Instalan dependencias necesarias (ngrok, lighthouse, http-server)
+3. Personalizan manifest para INIA
+4. Gestionan desarrollo, build, testing y despliegue
+5. Proporcionan interfaz unificada desde la raíz del proyecto
+
+### Testing PWA en Desarrollo
+
+#### Método 1: Usando ngrok (Recomendado)
+
+```bash
+# Terminal 1: Iniciar aplicación PWA
+npm run start:pwa
+
+# Terminal 2: Crear túnel HTTPS
+npm run ngrok
+```
+
+**URLs disponibles:**
+- Local: `http://localhost:4200`
+- ngrok: `https://[túnel].ngrok.io`
+
+#### Método 2: Usando mkcert (Certificados locales)
+
+```bash
+# Instalar mkcert
+# Windows: choco install mkcert
+# O descargar desde: https://github.com/FiloSottile/mkcert
+
+# Crear certificado local
+mkcert -install
+mkcert localhost 127.0.0.1 ::1
+
+# Servir con SSL
+ng serve --ssl --ssl-cert localhost+2.pem --ssl-key localhost+2-key.pem
+```
+
+### Verificación PWA
+
+#### 1. Chrome DevTools
+
+**Application Tab:**
+- **Manifest**: Verificar configuración correcta
+- **Service Workers**: Confirmar registro y estado activo
+- **Storage**: Revisar cache y datos offline
+
+**Lighthouse Tab:**
+- Seleccionar "Progressive Web App"
+- Ejecutar auditoría
+- Revisar puntuación y recomendaciones
+
+#### 2. Verificaciones Manuales
+
+**Instalabilidad:**
+- Buscar botón "Instalar" en barra de direcciones
+- Verificar que aparezca en menú de aplicaciones
+
+**Funcionamiento Offline:**
+- Desconectar internet
+- Verificar que la app siga funcionando
+- Probar navegación entre páginas
+
+**Responsive:**
+- Probar en diferentes tamaños de pantalla
+- Verificar en dispositivos móviles reales
+
+#### 3. Auditoría Lighthouse
+
+```bash
+# Ejecutar auditoría completa
+lighthouse https://[tu-url-ngrok] --output html --output-path ./lighthouse-report.html
+
+# Auditoría específica PWA
+lighthouse https://[tu-url-ngrok] --only-categories=pwa --output html
+```
+
+**Métricas importantes:**
+- **PWA Score**: Debe ser > 90
+- **Installable**: Aplicación se puede instalar
+- **Service Worker**: Registrado y funcionando
+- **Offline**: Funciona sin conexión
+
+### Configuración de Producción
+
+#### Variables de Entorno
+
+```bash
+# Para producción PWA
+NODE_ENV=production
+PWA_ENABLED=true
+```
+
+#### Build de Producción
+
+```bash
+# Construir aplicación PWA
+npm run build:pwa
+
+# Los archivos se generan en dist/inia-frontend/
+# Incluye: ngsw-worker.js, manifest.webmanifest, iconos
+```
+
+#### Despliegue
+
+1. **Subir archivos** a servidor web
+2. **Configurar HTTPS** (requerido para PWA)
+3. **Verificar Service Worker** en producción
+4. **Probar instalación** en dispositivos reales
+
+### Troubleshooting PWA
+
+#### Problemas Comunes
+
+**Service Worker no se registra:**
+- Verificar que la app esté servida por HTTPS
+- Revisar consola del navegador para errores
+- Confirmar que `ngsw-worker.js` existe en el build
+
+**Manifest no se carga:**
+- Verificar que `manifest.webmanifest` esté en la raíz
+- Revisar sintaxis JSON del manifest
+- Confirmar que los iconos existen
+
+**No aparece botón instalar:**
+- Verificar que el manifest sea válido
+- Confirmar que los iconos tengan el tamaño correcto
+- Revisar que la app esté servida por HTTPS
+
+**Funcionamiento offline no funciona:**
+- Verificar configuración en `ngsw-config.json`
+- Revisar que los recursos estén incluidos en assetGroups
+- Confirmar que el Service Worker esté activo
+
+### Beneficios PWA para INIA
+
+#### Para Usuarios
+- **Acceso rápido**: Instalación directa desde el navegador
+- **Funcionamiento offline**: Continuar trabajando sin internet
+- **Notificaciones**: Alertas sobre análisis completados
+- **Experiencia nativa**: Interfaz similar a app móvil
+
+#### Para Administradores
+- **Menor mantenimiento**: No requiere tiendas de aplicaciones
+- **Actualizaciones automáticas**: Los usuarios siempre tienen la versión más reciente
+- **Analytics web**: Métricas detalladas de uso
+- **Compatibilidad**: Funciona en cualquier dispositivo con navegador moderno
+
+#### Para el Sistema
+- **Mejor rendimiento**: Cache inteligente de recursos
+- **Menor carga del servidor**: Recursos servidos desde cache
+- **Mayor engagement**: Los usuarios interactúan más con apps instalables
+- **Escalabilidad**: Mejor manejo de tráfico y recursos

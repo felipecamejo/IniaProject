@@ -13,9 +13,20 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+# Obtener directorio del script (PowerShell/)
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+
+# Navegar a la raíz del proyecto (un nivel arriba)
+$projectRoot = Split-Path -Parent $scriptDir
+Set-Location $projectRoot
+
+# Navegar al directorio middleware
+Push-Location "middleware"
+
 # Verificar que estamos en el directorio correcto
 if (-not (Test-Path "MassiveInsertFiles.py")) {
-    Write-Error "Este script debe ejecutarse desde el directorio middleware/"
+    Write-Error "No se encontró MassiveInsertFiles.py en el directorio middleware/"
+    Pop-Location
     exit 1
 }
 
@@ -94,3 +105,6 @@ switch ($Command) {
         Write-Host "  .\run_middleware.ps1 test" -ForegroundColor Gray
     }
 }
+
+# Restaurar directorio original
+Pop-Location

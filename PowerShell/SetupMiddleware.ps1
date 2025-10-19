@@ -1,3 +1,8 @@
+param(
+    [Parameter(Mandatory=$false)]
+    [string]$ProjectRoot = ""
+)
+
 Write-Host "==> INIA Project Middleware Setup" -ForegroundColor Cyan
 Write-Host "Installing complete dependencies: SQLAlchemy, psycopg2-binary, fastapi, uvicorn, openpyxl, pydantic" -ForegroundColor Gray
 
@@ -10,7 +15,16 @@ if (-not (Get-Command py -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-Push-Location (Split-Path -Parent $MyInvocation.MyCommand.Path)
+# Validate ProjectRoot parameter
+if ([string]::IsNullOrEmpty($ProjectRoot) -or -not (Test-Path $ProjectRoot)) {
+    Write-Error "ProjectRoot invalido o no existe: $ProjectRoot"
+    exit 1
+}
+
+Set-Location $ProjectRoot
+
+# Navegar al directorio middleware
+Push-Location "middleware"
 
 # 1) Create venv if it does not exist
 if (-not (Test-Path ".venv")) {
