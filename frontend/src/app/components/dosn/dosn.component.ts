@@ -31,9 +31,11 @@ import { TabsModule } from 'primeng/tabs';
       dosn: DOSNDto | null = null;
       loading: boolean = false;
       editingId: number | null = null;
+      loteId: number | null = null;
+      reciboId: number | null = null;
 
       // Todas las propiedades y métodos deben estar dentro de la clase
-      constructor(private dosnService: DOSNService, private route: ActivatedRoute) {}
+  constructor(private dosnService: DOSNService, private route: ActivatedRoute, private router: Router) {}
 
       brassicaCuscuta = [
         { label: 'Brassica spp.', contiene: false, gramos: 0 },
@@ -129,6 +131,8 @@ import { TabsModule } from 'primeng/tabs';
 
       ngOnInit(): void {
         this.route.params.subscribe(params => {
+          if (params['loteId']) this.loteId = +params['loteId'];
+          if (params['reciboId']) this.reciboId = +params['reciboId'];
           if (params['id']) {
             this.editingId = +params['id'];
             this.cargarDOSN(this.editingId);
@@ -153,8 +157,22 @@ import { TabsModule } from 'primeng/tabs';
       }
 
       onSubmit() {
-        // Implementar lógica de guardado o edición aquí
-        console.log('Formulario DOSN enviado');
+            if (!this.editingId) return;
+            const payload = this.buildPayloadFromView();
+            this.loading = true;
+            this.dosnService.editar(payload).subscribe({
+              next: () => {
+                this.loading = false;
+                // Navegar al listado del recibo
+                if (this.loteId != null && this.reciboId != null) {
+                  this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
+                }
+              },
+              error: (e) => {
+                console.error('Error al editar DOSN', e);
+                this.loading = false;
+              }
+            });
       }
 
       onCancel() {
@@ -341,5 +359,60 @@ import { TabsModule } from 'primeng/tabs';
       default:
         return '';
     }
+  }
+
+  private labelToEnum(value: string): string | null {
+    switch (value) {
+      case 'Completo':
+        return 'COMPLETO';
+      case 'Reducido':
+        return 'REDUCIDO';
+      case 'Limitado':
+        return 'LIMITADO';
+      case 'Reducido - limitado':
+        return 'REDUCIDO_LIMITADO';
+      default:
+        return null;
+    }
+  }
+
+  private buildPayloadFromView(): DOSNDto {
+    const brassica = this.brassicaCuscuta.find(b => b.label === 'Brassica spp.');
+    const cuscuta = this.brassicaCuscuta.find(b => b.label === 'Cuscuta spp.');
+
+    return {
+      id: this.editingId!,
+      // Fechas en formato ISO simple para backend
+      fechaINIA: this.fechaInia ? `${this.fechaInia}T00:00:00` : null,
+      fechaINASE: this.fechaInase ? `${this.fechaInase}T00:00:00` : null,
+      // Gramos analizados
+      gramosAnalizadosINIA: this.gramosInia ?? null,
+      gramosAnalizadosINASE: this.gramosInase ?? null,
+      // Tipos de análisis (enum backend)
+      tiposDeanalisisINIA: this.labelToEnum(this.tipoAnalisisInia),
+      tiposDeanalisisINASE: this.labelToEnum(this.tipoAnalisisInase),
+      // Determinaciones
+      determinacionBrassica: brassica ? Boolean(brassica.contiene) : null,
+      determinacionBrassicaGramos: brassica && brassica.contiene ? Number(brassica.gramos) : 0,
+      determinacionCuscuta: cuscuta ? Boolean(cuscuta.contiene) : null,
+      determinacionCuscutaGramos: cuscuta && cuscuta.contiene ? Number(cuscuta.gramos) : 0,
+      // Estandar y fecha análisis (preservar si existe)
+      estandar: this.dosn?.estandar ?? null,
+      fechaAnalisis: this.dosn?.fechaAnalisis ?? null,
+      // Colecciones por organismo
+      malezasNormalesINIAId: this.selectedMalezasInia ?? [],
+      malezasNormalesINASEId: this.selectedMalezasInase ?? [],
+      malezasToleradasINIAId: this.selectedMalezasToleradasInia ?? [],
+      malezasToleradasINASEId: this.selectedMalezasToleradasInase ?? [],
+      malezasToleranciaCeroINIAId: this.selectedMalezasCeroInia ?? [],
+      malezasToleranciaCeroINASEId: this.selectedMalezasCeroInase ?? [],
+      cultivosINIAId: this.selectedCultivosInia ?? [],
+      cultivosINASEId: this.selectedCultivosInase ?? [],
+      // Preservar flags y metadatos
+      activo: this.dosn?.activo ?? true,
+      repetido: this.dosn?.repetido ?? false,
+      fechaCreacion: this.dosn?.fechaCreacion ?? null,
+      fechaRepeticion: this.dosn?.fechaRepeticion ?? null
+    };
   }
 }
