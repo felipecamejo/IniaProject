@@ -1,7 +1,6 @@
 package ti.proyectoinia.dtos;
 
 import lombok.Data;
-import ti.proyectoinia.business.entities.Metodo;
 
 import java.util.Date;
 import java.util.List;
@@ -15,7 +14,7 @@ public class SanitarioDto {
 
     private Date fecha;
 
-    private Metodo metodo;
+    private String metodo;
 
     private Integer temperatura;
 

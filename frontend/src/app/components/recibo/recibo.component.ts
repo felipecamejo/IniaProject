@@ -238,6 +238,7 @@ export class ReciboComponent implements OnInit {
     // Intentar cargar las humedades existentes desde el backend
     this.humedadReciboService.listarHumedadesPorRecibo(reciboId).subscribe({
       next: (humedades: HumedadReciboDto[]) => {
+        console.log(`Cargando humedades para reciboId ${reciboId}`);
         console.log('Humedades recibidas del backend:', humedades);
         if (humedades && humedades.length > 0) {
           // Usar HumedadReciboDto[] directamente
@@ -247,7 +248,6 @@ export class ReciboComponent implements OnInit {
             numero: h.numero ?? null,
             lugar: (h.lugar as HumedadLugarDto) ?? null
           } as HumedadReciboDto));
-          console.log('Humedades mapeadas:', this.humedades);
         } else {
           // Si no hay humedades, inicializar sin filas por defecto
           this.humedades = [];

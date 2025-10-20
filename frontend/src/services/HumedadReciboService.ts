@@ -38,11 +38,28 @@ export class HumedadReciboService {
    * Lista humedades asociadas a un recibo (endpoint: /recibo/{reciboId})
    */
   listarHumedadesPorRecibo(reciboId: number): Observable<HumedadReciboDto[]> {
-    return this.http.get<ResponseListadoHumedadRecibo>(
+    return this.http.get<any>(
       `${this.urlService.baseUrl}${this.endpoint}/recibo/${reciboId}`
     ).pipe(
-      map((response: ResponseListadoHumedadRecibo) => {
-        return response.humedadRecibo || [];
+      map((response: any) => {
+        console.log('🔍 Respuesta RAW del backend para humedades:', response);
+        console.log('🔍 Tipo de respuesta:', typeof response);
+        console.log('🔍 Es array?:', Array.isArray(response));
+        
+        // Si la respuesta es directamente un array
+        if (Array.isArray(response)) {
+          console.log('✅ Respuesta es array directo, longitud:', response.length);
+          return response as HumedadReciboDto[];
+        }
+        
+        // Si la respuesta es un objeto con la propiedad humedadRecibo
+        if (response && response.humedadRecibo) {
+          console.log('✅ Respuesta tiene propiedad humedadRecibo, longitud:', response.humedadRecibo.length);
+          return response.humedadRecibo as HumedadReciboDto[];
+        }
+        
+        console.warn('⚠️ Formato de respuesta no reconocido, devolviendo array vacío');
+        return [];
       })
     );
   }

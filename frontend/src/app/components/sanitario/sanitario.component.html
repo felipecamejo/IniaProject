@@ -20,17 +20,12 @@
 
         <div class="form-field">
           <label for="fecha">Fecha</label>
-          <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" pInputText [readonly]="isReadonly" />
+          <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" pInputText [readonly]="true" />
         </div>
 
         <div class="form-field">
           <label for="metodo">Metodo</label>
-          <select id="metodo" [(ngModel)]="metodo" name="metodo" [disabled]="isReadonly" class="form-select">
-            <option value="">Seleccione un método</option>
-            <option *ngFor="let metodoOption of metodos" [value]="metodoOption.label">
-              {{ metodoOption.label }}
-            </option>
-          </select>
+          <input id="metodo" type="text" [(ngModel)]="metodo" name="metodo" pInputText [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">
@@ -54,8 +49,8 @@
         </div>
 
         <div class="form-field">
-          <label for="metodo">Estado Producto y Dosis</label>
-          <input id="metodo" type="text" [(ngModel)]="metodo" name="metodo" pInputText [readonly]="isReadonly" />
+          <label for="estado">Estado Producto y Dosis</label>
+          <input id="estado" type="text" [(ngModel)]="estado" name="estado" pInputText [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">

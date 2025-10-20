@@ -23,9 +23,8 @@ public class Sanitario {
     @Column(name = "SANITARIO_FECHA")
     private Date fecha;
 
-    @ManyToOne
-    @JoinColumn(name = "METODO_ID")
-    private Metodo metodo;
+    @Column(name = "SANITARIO_METODO")
+    private String metodo;
 
     @Column(name = "SANITARIO_TEMPERATURA")
     private Integer temperatura;
