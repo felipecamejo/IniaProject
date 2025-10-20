@@ -47,15 +47,5 @@ export class HumedadReciboService {
     );
   }
 
-  listar(): Observable<HumedadReciboDto[]> {
-    return this.http.get<ResponseListadoHumedadRecibo>(
-      `${this.urlService.baseUrl}${this.endpoint}/listar`
-    ).pipe(
-      map((response: ResponseListadoHumedadRecibo) => {
-        return response.humedadRecibo || [];
-      })
-    );
-  }
-
 
 }
