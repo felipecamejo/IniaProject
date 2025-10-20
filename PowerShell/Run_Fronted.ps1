@@ -47,12 +47,19 @@ function Find-FreePort {
     return $p
 }
 
-# Cambiar al directorio del script (raíz del frontend)
+# Obtener directorio del script (PowerShell/)
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-Set-Location $scriptDir
+
+# Navegar a la raíz del proyecto (un nivel arriba)
+$projectRoot = Split-Path -Parent $scriptDir
+Set-Location $projectRoot
+
+# Navegar al directorio frontend
+Push-Location "frontend"
 
 if (-not (Test-Path -Path './package.json')) {
-    Write-Err 'No se encontró package.json. Ejecuta este script dentro de la carpeta frontend.'
+    Write-Err 'No se encontró package.json en el directorio frontend.'
+    Pop-Location
     exit 1
 }
 
@@ -99,7 +106,7 @@ try {
 }
 
 # Preferir CLI local
-$ngPath = Join-Path $scriptDir 'node_modules/.bin/ng.cmd'
+$ngPath = Join-Path (Get-Location) 'node_modules/.bin/ng.cmd'
 if (-not (Test-Path $ngPath)) {
     Write-Warn 'Angular CLI local no encontrado. Se usará npx ng.'
 }
@@ -122,6 +129,8 @@ try {
 } catch {
     Write-Err "Fallo al iniciar el servidor: $($_.Exception.Message)"
     exit 1
+} finally {
+    Pop-Location
 }
 
 

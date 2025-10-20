@@ -815,14 +815,22 @@ public class MapsDtoEntityService {
 
         DOSNDto dto = new DOSNDto();
         dto.setId(dosn.getId());
-        dto.setFecha(dosn.getFecha());
-        dto.setGramosAnalizados(dosn.getGramosAnalizados());
-        dto.setTiposDeanalisis(dosn.getTiposDeanalisis());
-        dto.setCompletoReducido(dosn.getCompletoReducido());
-        dto.setMalezasToleranciaCero(dosn.getMalezasToleranciaCero());
-        dto.setOtrosCultivos(dosn.getOtrosCultivos());
+        // Fechas
+        dto.setFechaINIA(dosn.getFechaINIA());
+        dto.setFechaINASE(dosn.getFechaINASE());
+        // Gramos analizados
+        dto.setGramosAnalizadosINIA(dosn.getGramosAnalizadosINIA());
+        dto.setGramosAnalizadosINASE(dosn.getGramosAnalizadosINASE());
+        // Tipos de análisis (enum a String)
+        dto.setTiposDeanalisisINIA(dosn.getTiposDeanalisisINIA() != null ? dosn.getTiposDeanalisisINIA().name() : null);
+        dto.setTiposDeanalisisINASE(dosn.getTiposDeanalisisINASE() != null ? dosn.getTiposDeanalisisINASE().name() : null);
+    // Completo/Reducido removido; usar tiposDeanalisis*
+        // Determinaciones
         dto.setDeterminacionBrassica(dosn.getDeterminacionBrassica());
+        dto.setDeterminacionBrassicaGramos(dosn.getDeterminacionBrassicaGramos());
         dto.setDeterminacionCuscuta(dosn.getDeterminacionCuscuta());
+        dto.setDeterminacionCuscutaGramos(dosn.getDeterminacionCuscutaGramos());
+        // Otros
         dto.setEstandar(dosn.getEstandar());
         dto.setFechaAnalisis(dosn.getFechaAnalisis());
         dto.setActivo(dosn.isActivo());
@@ -830,11 +838,26 @@ public class MapsDtoEntityService {
         dto.setFechaCreacion(dosn.getFechaCreacion());
         dto.setFechaRepeticion(dosn.getFechaRepeticion());
 
-        if (dosn.getCultivos() != null) {
-            dto.setCultivos(dosn.getCultivos().stream().map(this::mapToDtoCultivo).collect(Collectors.toList()));
-        } else {
-            dto.setCultivos(null);
-        }
+        // Colecciones -> listas de IDs
+        dto.setMalezasNormalesINIAId(dosn.getMalezasNormalesINIA() != null ?
+                dosn.getMalezasNormalesINIA().stream().map(Maleza::getId).collect(Collectors.toList()) : null);
+        dto.setMalezasNormalesINASEId(dosn.getMalezasNormalesINASE() != null ?
+                dosn.getMalezasNormalesINASE().stream().map(Maleza::getId).collect(Collectors.toList()) : null);
+
+        dto.setMalezasToleradasINIAId(dosn.getMalezasToleradasINIA() != null ?
+                dosn.getMalezasToleradasINIA().stream().map(Maleza::getId).collect(Collectors.toList()) : null);
+        dto.setMalezasToleradasINASEId(dosn.getMalezasToleradasINASE() != null ?
+                dosn.getMalezasToleradasINASE().stream().map(Maleza::getId).collect(Collectors.toList()) : null);
+
+        dto.setMalezasToleranciaCeroINIAId(dosn.getMalezasToleranciaCeroListaINIA() != null ?
+                dosn.getMalezasToleranciaCeroListaINIA().stream().map(Maleza::getId).collect(Collectors.toList()) : null);
+        dto.setMalezasToleranciaCeroINASEId(dosn.getMalezasToleranciaCeroListaINASE() != null ?
+                dosn.getMalezasToleranciaCeroListaINASE().stream().map(Maleza::getId).collect(Collectors.toList()) : null);
+
+        dto.setCultivosINIAId(dosn.getCultivosINIA() != null ?
+                dosn.getCultivosINIA().stream().map(Cultivo::getId).collect(Collectors.toList()) : null);
+        dto.setCultivosINASEId(dosn.getCultivosINASE() != null ?
+                dosn.getCultivosINASE().stream().map(Cultivo::getId).collect(Collectors.toList()) : null);
         return dto;
     }
 
@@ -844,25 +867,96 @@ public class MapsDtoEntityService {
         }
         DOSN dosn = new DOSN();
         dosn.setId(dto.getId());
-        dosn.setFecha(dto.getFecha());
-        dosn.setGramosAnalizados(dto.getGramosAnalizados());
-        dosn.setTiposDeanalisis(dto.getTiposDeanalisis());
-        dosn.setCompletoReducido(dto.isCompletoReducido());
-        dosn.setMalezasToleranciaCero(dto.getMalezasToleranciaCero());
-        dosn.setOtrosCultivos(dto.getOtrosCultivos());
+        // Fechas
+        dosn.setFechaINIA(dto.getFechaINIA());
+        dosn.setFechaINASE(dto.getFechaINASE());
+        // Gramos analizados
+        dosn.setGramosAnalizadosINIA(dto.getGramosAnalizadosINIA());
+        dosn.setGramosAnalizadosINASE(dto.getGramosAnalizadosINASE());
+        // Tipos de análisis (String a enum)
+        if (dto.getTiposDeanalisisINIA() != null) {
+            dosn.setTiposDeanalisisINIA(tipoAnalisisDOSN.valueOf(dto.getTiposDeanalisisINIA()));
+        }
+        if (dto.getTiposDeanalisisINASE() != null) {
+            dosn.setTiposDeanalisisINASE(tipoAnalisisDOSN.valueOf(dto.getTiposDeanalisisINASE()));
+        }
+    // Completo/Reducido removido; usar tiposDeanalisis*
+        // Determinaciones
         dosn.setDeterminacionBrassica(dto.getDeterminacionBrassica());
+        dosn.setDeterminacionBrassicaGramos(dto.getDeterminacionBrassicaGramos());
         dosn.setDeterminacionCuscuta(dto.getDeterminacionCuscuta());
-        dosn.setEstandar(dto.isEstandar());
+        dosn.setDeterminacionCuscutaGramos(dto.getDeterminacionCuscutaGramos());
+        // Otros
+        dosn.setEstandar(dto.getEstandar());
         dosn.setActivo(dto.isActivo());
         dosn.setFechaAnalisis(dto.getFechaAnalisis());
         dosn.setRepetido(dto.isRepetido());
         dosn.setFechaCreacion(dto.getFechaCreacion());
         dosn.setFechaRepeticion(dto.getFechaRepeticion());
 
-        if (dto.getCultivos() != null) {
-            dosn.setCultivos(dto.getCultivos().stream().map(this::mapToEntityCultivo).collect(Collectors.toList()));
+        // Listas de IDs -> colecciones de entidades
+        if (dto.getMalezasNormalesINIAId() != null) {
+            dosn.setMalezasNormalesINIA(dto.getMalezasNormalesINIAId().stream()
+                    .map(this::getValidMaleza)
+                    .collect(Collectors.toList()));
         } else {
-            dosn.setCultivos(null);
+            dosn.setMalezasNormalesINIA(null);
+        }
+
+        if (dto.getMalezasNormalesINASEId() != null) {
+            dosn.setMalezasNormalesINASE(dto.getMalezasNormalesINASEId().stream()
+                    .map(this::getValidMaleza)
+                    .collect(Collectors.toList()));
+        } else {
+            dosn.setMalezasNormalesINASE(null);
+        }
+
+        if (dto.getMalezasToleradasINIAId() != null) {
+            dosn.setMalezasToleradasINIA(dto.getMalezasToleradasINIAId().stream()
+                    .map(this::getValidMaleza)
+                    .collect(Collectors.toList()));
+        } else {
+            dosn.setMalezasToleradasINIA(null);
+        }
+
+        if (dto.getMalezasToleradasINASEId() != null) {
+            dosn.setMalezasToleradasINASE(dto.getMalezasToleradasINASEId().stream()
+                    .map(this::getValidMaleza)
+                    .collect(Collectors.toList()));
+        } else {
+            dosn.setMalezasToleradasINASE(null);
+        }
+
+        if (dto.getMalezasToleranciaCeroINIAId() != null) {
+            dosn.setMalezasToleranciaCeroListaINIA(dto.getMalezasToleranciaCeroINIAId().stream()
+                    .map(this::getValidMaleza)
+                    .collect(Collectors.toList()));
+        } else {
+            dosn.setMalezasToleranciaCeroListaINIA(null);
+        }
+
+        if (dto.getMalezasToleranciaCeroINASEId() != null) {
+            dosn.setMalezasToleranciaCeroListaINASE(dto.getMalezasToleranciaCeroINASEId().stream()
+                    .map(this::getValidMaleza)
+                    .collect(Collectors.toList()));
+        } else {
+            dosn.setMalezasToleranciaCeroListaINASE(null);
+        }
+
+        if (dto.getCultivosINIAId() != null) {
+            dosn.setCultivosINIA(dto.getCultivosINIAId().stream()
+                    .map(this::getValidCultivo)
+                    .collect(Collectors.toList()));
+        } else {
+            dosn.setCultivosINIA(null);
+        }
+
+        if (dto.getCultivosINASEId() != null) {
+            dosn.setCultivosINASE(dto.getCultivosINASEId().stream()
+                    .map(this::getValidCultivo)
+                    .collect(Collectors.toList()));
+        } else {
+            dosn.setCultivosINASE(null);
         }
         return dosn;
     }

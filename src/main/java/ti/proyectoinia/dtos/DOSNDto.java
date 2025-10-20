@@ -8,37 +8,44 @@ import java.util.List;
 
 @Data
 public class DOSNDto {
-    
     private Long id;
-    
-    private Date fecha;
-    
-    private float gramosAnalizados;
-    
-    private String tiposDeanalisis;
-    
-    private boolean completoReducido;
-    
-    private float malezasToleranciaCero;
-    
-    private float otrosCultivos;
-    
-    private float determinacionBrassica;
-    
-    private float determinacionCuscuta;
-    
-    private boolean estandar;
-    
+
+    // Fechas INIA / INASE
+    private Date fechaINIA;
+    private Date fechaINASE;
+
+    // Gramos analizados INIA / INASE
+    private Float gramosAnalizadosINIA;
+    private Float gramosAnalizadosINASE;
+
+    // Tipos de análisis (usar String para el nombre del enum)
+    private String tiposDeanalisisINIA;
+    private String tiposDeanalisisINASE;
+
+    // Campo completo/reducido removido; reemplazado por tiposDeanalisisINIA/INASE
+
+    // Determinaciones (flags + gramos)
+    private Boolean determinacionBrassica;
+    private Float determinacionBrassicaGramos;
+    private Boolean determinacionCuscuta;
+    private Float determinacionCuscutaGramos;
+
+    private Boolean estandar;
     private Date fechaAnalisis;
 
-    private List<CultivoDto> cultivos;
+    // Colecciones (IDs) para malezas y cultivos por organismo
+    private List<Long> malezasNormalesINIAId;
+    private List<Long> malezasNormalesINASEId;
+    private List<Long> malezasToleradasINIAId;
+    private List<Long> malezasToleradasINASEId;
+    private List<Long> malezasToleranciaCeroINIAId;
+    private List<Long> malezasToleranciaCeroINASEId;
+    private List<Long> cultivosINIAId;
+    private List<Long> cultivosINASEId;
 
     private boolean activo;
-
     private boolean repetido;
-
     private Date fechaCreacion;
-
     private Date fechaRepeticion;
 
     @Generated
@@ -56,6 +63,6 @@ public class DOSNDto {
 
     @Generated
     public String toString() {
-        return "DOSNDto(id=" + id + ", fecha=" + fecha + ", tiposDeanalisis=" + tiposDeanalisis + ")";
+        return "DOSNDto(id=" + id + ", fechaINIA=" + fechaINIA + ", fechaINASE=" + fechaINASE + ")";
     }
 }
