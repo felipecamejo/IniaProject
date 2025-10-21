@@ -29,90 +29,46 @@ public class HumedadReciboController {
         return new ResponseEntity<>(lista, HttpStatus.OK);
     }
 
-    @PostMapping("/crear-multiple")
+    @PutMapping("/actualizar-humedades/{reciboId}")
     @Secured({"ADMIN"})
-    @Operation(description = "Crea múltiples HumedadRecibo en una sola llamada")
-    public ResponseEntity<Object> crearMultiplesHumedades(@RequestBody List<HumedadReciboDto> dtos) {
+    @Operation(description = "Reemplaza todas las HumedadRecibo de un recibo: borra físicamente las existentes y crea las recibidas")
+    public ResponseEntity<Object> actualizarHumedades(@PathVariable Long reciboId, @RequestBody List<HumedadReciboDto> dtos) {
         // Validar cada dto: lugar y numero son obligatorios para crear
         List<HumedadReciboDto> validos = new java.util.ArrayList<>();
         List<java.util.Map<String, Object>> errores = new java.util.ArrayList<>();
 
-        for (int i = 0; i < dtos.size(); i++) {
-            HumedadReciboDto dto = dtos.get(i);
-            if (dto.getLugar() == null || dto.getNumero() == null) {
-                java.util.Map<String, Object> err = new java.util.HashMap<>();
-                err.put("index", i);
-                err.put("message", "Lugar y número son obligatorios");
-                err.put("dto", dto);
-                errores.add(err);
-            } else {
-                dto.setId(null);
-                validos.add(dto);
+        if (dtos != null) {
+            for (int i = 0; i < dtos.size(); i++) {
+                HumedadReciboDto dto = dtos.get(i);
+                if (dto.getLugar() == null || dto.getNumero() == null) {
+                    java.util.Map<String, Object> err = new java.util.HashMap<>();
+                    err.put("index", i);
+                    err.put("message", "Lugar y número son obligatorios");
+                    err.put("dto", dto);
+                    errores.add(err);
+                } else {
+                    dto.setId(null);
+                    dto.setReciboId(reciboId);
+                    validos.add(dto);
+                }
             }
         }
 
-        List<HumedadReciboDto> creadas = humedadReciboService.crearMultiplesHumedades(validos);
+        try {
+            // Borra físicamente todas las humedades del recibo y crea las nuevas válidas
+            humedadReciboService.actualizarHumedadesCompleto(reciboId, validos);
 
-        java.util.Map<String, Object> response = new java.util.HashMap<>();
-        response.put("created", creadas);
-        response.put("errors", errores);
+            // Recuperar las creadas para devolverlas en la respuesta
+            List<HumedadReciboDto> creadas = humedadReciboService.obtenerHumedadesPorRecibo(reciboId);
 
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("created", creadas);
+            response.put("errors", errores);
 
-    @PutMapping("/editar-multiple")
-    @Secured({"ADMIN"})
-    @Operation(description = "Edita múltiples HumedadRecibo en una sola llamada")
-    public ResponseEntity<Object> editarMultiplesHumedades(@RequestBody List<HumedadReciboDto> dtos) {
-        // Validación previa: cada dto debe tener lugar y numero.
-        // No exigimos id: si viene null, el servicio lo tratará como creación.
-        List<HumedadReciboDto> validos = new java.util.ArrayList<>();
-        List<java.util.Map<String, Object>> errores = new java.util.ArrayList<>();
-
-        for (int i = 0; i < dtos.size(); i++) {
-            HumedadReciboDto dto = dtos.get(i);
-            if (dto.getLugar() == null || dto.getNumero() == null) {
-                java.util.Map<String, Object> err = new java.util.HashMap<>();
-                err.put("index", i);
-                err.put("message", "Lugar y número son obligatorios");
-                err.put("dto", dto);
-                errores.add(err);
-            } else {
-                // Aceptar el DTO aunque su id sea null; el servicio decidirá crear o editar
-                validos.add(dto);
-            }
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar humedades: " + e.getMessage());
         }
-
-        // Llamar al servicio para procesar los válidos
-        java.util.Map<String, Object> serviceResult = humedadReciboService.editarMultiplesHumedades(validos);
-
-        // Obtener listas devueltas por el servicio
-        java.util.List<HumedadReciboDto> editadas = (java.util.List<HumedadReciboDto>) serviceResult.getOrDefault("edited", new java.util.ArrayList<>());
-        java.util.List<HumedadReciboDto> creadas = (java.util.List<HumedadReciboDto>) serviceResult.getOrDefault("created", new java.util.ArrayList<>());
-        java.util.List<java.util.Map<String, Object>> serviceErrors = (java.util.List<java.util.Map<String, Object>>) serviceResult.getOrDefault("errors", new java.util.ArrayList<>());
-
-        // Combinar errores de validación y errores devueltos por el servicio
-        java.util.List<Object> allErrors = new java.util.ArrayList<>();
-        allErrors.addAll(errores);
-        allErrors.addAll(serviceErrors);
-
-        java.util.Map<String, Object> response = new java.util.HashMap<>();
-        response.put("edited", editadas);
-        response.put("created", creadas);
-        response.put("errors", allErrors);
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PutMapping("/eliminar-multiple")
-    @Secured({"ADMIN"})
-    @Operation(description = "Elimina múltiples HumedadRecibo (soft-delete) en una sola llamada")
-    public ResponseEntity<Object> eliminarMultiples(@RequestBody List<Long> ids) {
-        if (ids == null || ids.isEmpty()) {
-            return new ResponseEntity<>(java.util.Collections.singletonMap("message", "No se recibieron ids"), HttpStatus.BAD_REQUEST);
-        }
-
-        java.util.Map<String, Object> result = humedadReciboService.eliminarMultiplesHumedades(ids);
-        return new ResponseEntity<>(result, HttpStatus.OK);
-    }
 }

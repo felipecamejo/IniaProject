@@ -3,12 +3,14 @@ package ti.proyectoinia.api.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.Generated;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import ti.proyectoinia.api.responses.ResponseListadoLotes;
 import ti.proyectoinia.dtos.LoteDto;
 import ti.proyectoinia.services.LoteService;
+import java.util.Optional;
 
 @RestController
 @RequestMapping({"api/v1/lote"})
@@ -31,7 +33,7 @@ public class LoteController {
             if (loteDto.getNombre().matches(".*\\d.*")) {
                 return new ResponseEntity<>("El nombre del Lote no puede contener números", HttpStatus.BAD_REQUEST);
             }
-            loteDto.setId((Long) null);
+            loteDto.setId(null);
             String response = this.loteService.crearLote(loteDto);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
 
@@ -77,6 +79,23 @@ public class LoteController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Lote: " + e.getMessage());
         }
     }
+
+    @GetMapping("/recibo/{loteId}")
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Operation(description = "Esta funcion trae la id del recibo asociado al lote")
+    public ResponseEntity<String> obtenerReciboIdPorLoteId(@PathVariable Long loteId) {
+        Optional<Long> reciboOpt = loteService.obtenerReciboIdPorLoteId(loteId);
+        if (reciboOpt.isEmpty()) {
+            // Enviar literal JSON null (cuerpo: null) como texto para que no quede vacío
+            return ResponseEntity
+                    .ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body("null");
+        }
+        // Devolver el id como texto numérico (ej: 123) con Content-Type application/json
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(reciboOpt.get().toString());
+    }
 }
-
-

@@ -97,7 +97,6 @@
                         <tr>
                             <th>Lugar</th>
                             <th>Número</th>
-                            <th>Acciónes</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -123,14 +122,6 @@
                                        [(ngModel)]="humedad.numero" 
                                        name="humedadNumero{{i}}" 
                                        placeholder="Número" />
-                            </td>
-                            <td>
-                                <button pButton type="button" 
-                                        icon="pi pi-trash" 
-                                        class="p-button-danger p-button-sm" 
-                                        (click)="eliminarHumedad(i)" 
-                                        title="Eliminar">
-                                </button>
                             </td>
                         </tr>
                     </tbody>

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { UrlService } from './url.service';
 import { LoteDto } from '../models/Lote.dto';
 
@@ -47,6 +48,23 @@ export class LoteService {
       `${this.urlService.baseUrl}${this.endpoint}/eliminar/${id}`,
       {},
       { responseType: 'text' }
+    );
+  }
+
+  reciboFromLote(loteId: number): Observable<number | null> {
+    return this.http.get(
+      `${this.urlService.baseUrl}${this.endpoint}/recibo/${loteId}`,
+      { responseType: 'text' }
+    ).pipe(
+      map((response: string) => {
+        // Si el backend devuelve literalmente "null" como texto
+        if (response === 'null' || response === null || response === undefined || response.trim() === '') {
+          return null;
+        }
+        
+        const reciboId = parseInt(response, 10);
+        return isNaN(reciboId) ? null : reciboId;
+      })
     );
   }
 }

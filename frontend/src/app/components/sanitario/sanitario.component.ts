@@ -534,15 +534,9 @@ export class SanitarioComponent implements OnInit {
 
     this.sanitarioService.crear(sanitarioPayload as any).subscribe({
       next: (sanitarioId: number) => {
-        this.crearHongosAsociados(sanitarioId).then(() => {
-          this.isSaving = false;
-          alert('Sanitario y hongos creados exitosamente');
-          this.volverAlListado();
-        }).catch((error) => {
-          console.error('Error al crear hongos:', error);
-          this.isSaving = false;
-          alert('Sanitario creado, pero hubo errores al crear algunos hongos');
-        });
+        console.log('Sanitario creado con ID:', sanitarioId);
+        // Guardar hongos después de crear el sanitario
+        this.guardarHongos(sanitarioId);
       },
       error: (error) => {
         console.error('Error al crear sanitario:', error);
@@ -580,15 +574,9 @@ export class SanitarioComponent implements OnInit {
     
     this.sanitarioService.editar(sanitarioPayload as any).subscribe({
       next: (response) => {
-        this.actualizarHongosAsociados(this.editingId!).then(() => {
-          this.isSaving = false;
-          alert('Sanitario y hongos actualizados exitosamente');
-          this.volverAlListado();
-        }).catch((error) => {
-          console.error('Error al actualizar hongos:', error);
-          this.isSaving = false;
-          alert('Sanitario actualizado, pero hubo errores al actualizar algunos hongos');
-        });
+        console.log('Sanitario editado exitosamente:', response);
+        // Guardar hongos después de editar el sanitario
+        this.guardarHongos(this.editingId!);
       },
       error: (error) => {
         console.error('Error al actualizar sanitario:', error);
@@ -598,98 +586,94 @@ export class SanitarioComponent implements OnInit {
     });
   }
 
-  private async crearHongosAsociados(sanitarioId: number): Promise<void> {
-    const hongosACrear = this.obtenerHongosActuales(sanitarioId);
+  /**
+   * Método unificado para guardar hongos (similar a guardarHumedades en recibo.component.ts)
+   * Envía todos los hongos al backend y este se encarga de crear/actualizar/eliminar
+   */
+  guardarHongos(sanitarioId: number) {
+    const hongosValidos = this.obtenerHongosActuales(sanitarioId);
 
-    if (hongosACrear.length > 0) {
-      return new Promise((resolve, reject) => {
-        this.sanitarioService.actualizarHongosCompleto(sanitarioId, hongosACrear).subscribe({
-          next: (response) => {
-            console.log('✅ Hongos creados exitosamente');
-            resolve();
-          },
-          error: (error) => {
-            console.error('❌ Error al crear hongos:', error);
-            reject(error);
-          }
-        });
-      });
-    } else {
-      return Promise.resolve();
-    }
-  }
+    console.log('Todos los hongos a enviar:', hongosValidos);
 
-  private async actualizarHongosAsociados(sanitarioId: number): Promise<void> {
-    const hongosActuales = this.obtenerHongosActuales(sanitarioId);
-    
-    return new Promise((resolve, reject) => {
-      this.sanitarioService.actualizarHongosCompleto(sanitarioId, hongosActuales).subscribe({
-        next: (response) => {
-          console.log('✅ Hongos actualizados exitosamente');
-          resolve();
-        },
-        error: (error) => {
-          console.error('❌ Error al actualizar hongos:', error);
-          reject(error);
-        }
-      });
+    // Enviar todos los hongos al método único del servicio
+    this.sanitarioService.actualizarHongosCompleto(sanitarioId, hongosValidos).subscribe({
+      next: (response) => {
+        console.log('✅ Hongos guardados exitosamente:', response);
+        this.isSaving = false;
+        alert('Sanitario y hongos guardados exitosamente');
+        this.volverAlListado();
+      },
+      error: (error) => {
+        console.error('❌ Error al guardar hongos:', error);
+        this.isSaving = false;
+        alert('Sanitario guardado, pero hubo errores al guardar algunos hongos');
+      }
     });
   }
 
   private obtenerHongosActuales(sanitarioId: number): SanitarioHongoDTO[] {
     const hongosActuales: SanitarioHongoDTO[] = [];
 
+    // Hongos Patógenos - Guardar TODOS los hongos seleccionados, tengan valores o no
     this.hongosTable.forEach((hongo) => {
-      if (hongo.repeticion !== null || hongo.valor !== null || hongo.incidencia !== null) {
-        const hongoInfo = this.hongosPatogenos.find(h => h.nombre === hongo.tipoHongo);
-        if (hongoInfo) {
-          hongosActuales.push({
-            id: null,
-            sanitarioId: sanitarioId,
-            hongoId: hongoInfo.id,
-            repeticion: hongo.repeticion,
-            valor: hongo.valor,
-            incidencia: hongo.incidencia,
-            activo: true,
-            tipo: TipoHongoSanitario.PATOGENO
-          });
-        }
+      const hongoInfo = this.hongosPatogenos.find(h => h.nombre === hongo.tipoHongo);
+      if (hongoInfo) {
+        // Buscar si este hongo ya existía (para preservar su ID en modo edición)
+        const hongoOriginal = this.hongosOriginales.find(
+          h => h.hongoId === hongoInfo.id && h.tipo === TipoHongoSanitario.PATOGENO
+        );
+        
+        hongosActuales.push({
+          id: hongoOriginal?.id ?? null,
+          sanitarioId: sanitarioId,
+          hongoId: hongoInfo.id ?? null,
+          repeticion: hongo.repeticion,
+          valor: hongo.valor,
+          incidencia: hongo.incidencia,
+          tipo: TipoHongoSanitario.PATOGENO
+        });
       }
     });
 
+    // Hongos Contaminantes - Guardar TODOS los hongos seleccionados, tengan valores o no
     this.hongosCampoTable.forEach((hongo) => {
-      if (hongo.repeticion !== null || hongo.valor !== null || hongo.incidencia !== null) {
-        const hongoInfo = this.hongosCampo.find(h => h.nombre === hongo.tipoHongo);
-        if (hongoInfo) {
-          hongosActuales.push({
-            id: null,
-            sanitarioId: sanitarioId,
-            hongoId: hongoInfo.id,
-            repeticion: hongo.repeticion,
-            valor: hongo.valor,
-            incidencia: hongo.incidencia,
-            activo: true,
-            tipo: TipoHongoSanitario.CONTAMINANTE
-          });
-        }
+      const hongoInfo = this.hongosCampo.find(h => h.nombre === hongo.tipoHongo);
+      if (hongoInfo) {
+        // Buscar si este hongo ya existía (para preservar su ID en modo edición)
+        const hongoOriginal = this.hongosOriginales.find(
+          h => h.hongoId === hongoInfo.id && h.tipo === TipoHongoSanitario.CONTAMINANTE
+        );
+        
+        hongosActuales.push({
+          id: hongoOriginal?.id ?? null,
+          sanitarioId: sanitarioId,
+          hongoId: hongoInfo.id ?? null,
+          repeticion: hongo.repeticion,
+          valor: hongo.valor,
+          incidencia: hongo.incidencia,
+          tipo: TipoHongoSanitario.CONTAMINANTE
+        });
       }
     });
 
+    // Hongos Almacenaje - Guardar TODOS los hongos seleccionados, tengan valores o no
     this.hongosAlmacenajeTable.forEach((hongo) => {
-      if (hongo.repeticion !== null || hongo.valor !== null || hongo.incidencia !== null) {
-        const hongoInfo = this.hongosAlmacenaje.find(h => h.nombre === hongo.tipoHongo);
-        if (hongoInfo) {
-          hongosActuales.push({
-            id: null,
-            sanitarioId: sanitarioId,
-            hongoId: hongoInfo.id,
-            repeticion: hongo.repeticion,
-            valor: hongo.valor,
-            incidencia: hongo.incidencia,
-            activo: true,
-            tipo: TipoHongoSanitario.ALMACENAJE
-          });
-        }
+      const hongoInfo = this.hongosAlmacenaje.find(h => h.nombre === hongo.tipoHongo);
+      if (hongoInfo) {
+        // Buscar si este hongo ya existía (para preservar su ID en modo edición)
+        const hongoOriginal = this.hongosOriginales.find(
+          h => h.hongoId === hongoInfo.id && h.tipo === TipoHongoSanitario.ALMACENAJE
+        );
+        
+        hongosActuales.push({
+          id: hongoOriginal?.id ?? null,
+          sanitarioId: sanitarioId,
+          hongoId: hongoInfo.id ?? null,
+          repeticion: hongo.repeticion,
+          valor: hongo.valor,
+          incidencia: hongo.incidencia,
+          tipo: TipoHongoSanitario.ALMACENAJE
+        });
       }
     });
 

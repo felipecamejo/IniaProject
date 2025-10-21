@@ -266,7 +266,7 @@ public class MapsDtoEntityService {
         dto.setRemitente(recibo.getRemitente());
         dto.setOrigen(recibo.getOrigen());
         dto.setCultivar(recibo.getCultivar());
-        dto.setLote(recibo.getLote());
+        dto.setLoteId(recibo.getLoteId());
         dto.setKgLimpios(recibo.getKgLimpios());
         dto.setAnalisisSolicitados(recibo.getAnalisisSolicitados());
         dto.setArticulo(recibo.getArticulo());
@@ -297,7 +297,7 @@ public class MapsDtoEntityService {
         recibo.setRemitente(dto.getRemitente());
         recibo.setOrigen(dto.getOrigen());
         recibo.setCultivar(dto.getCultivar());
-        recibo.setLote(dto.getLote());
+        recibo.setLoteId(dto.getLoteId());
         recibo.setKgLimpios(dto.getKgLimpios());
         recibo.setAnalisisSolicitados(dto.getAnalisisSolicitados());
         recibo.setArticulo(dto.getArticulo());
@@ -646,6 +646,7 @@ public class MapsDtoEntityService {
         loteDto.setDescripcion(lote.getDescripcion());
         loteDto.setFechaCreacion(formatDate(lote.getFechaCreacion()));
         loteDto.setFechaFinalizacion(formatDate(lote.getFechaFinalizacion()));
+        loteDto.setEstado(lote.getEstado());
 
         if (lote.getUsuarios() != null) {
             loteDto.setUsuariosId(lote.getUsuarios().stream().map(Usuario::getId).collect(Collectors.toList()));
@@ -668,6 +669,7 @@ public class MapsDtoEntityService {
         lote.setDescripcion(loteDto.getDescripcion());
         lote.setFechaCreacion(parseDate(loteDto.getFechaCreacion()));
         lote.setFechaFinalizacion(parseDate(loteDto.getFechaFinalizacion()));
+        lote.setEstado(loteDto.getEstado());
 
         if (loteDto.getUsuariosId() != null) {
             lote.setUsuarios(loteDto.getUsuariosId().stream().map(id -> {
@@ -1141,7 +1143,6 @@ public class MapsDtoEntityService {
         dto.setRepeticion(entity.getRepeticion());
         dto.setValor(entity.getValor());
         dto.setIncidencia(entity.getIncidencia());
-        dto.setActivo(entity.getActivo());
         // Mapeo del tipo
         dto.setTipo(entity.getTipo());
         return dto;
@@ -1172,7 +1173,6 @@ public class MapsDtoEntityService {
         entity.setRepeticion(dto.getRepeticion());
         entity.setValor(dto.getValor());
         entity.setIncidencia(dto.getIncidencia());
-        entity.setActivo(dto.isActivo());
 
         entity.setTipo(dto.getTipo());
         return entity;
@@ -1211,7 +1211,6 @@ public class MapsDtoEntityService {
         dto.setLugar(humedadRecibo.getLugar());
         dto.setNumero(humedadRecibo.getNumero());
         dto.setReciboId(humedadRecibo.getRecibo() != null ? humedadRecibo.getRecibo().getId() : null);
-        dto.setActivo(humedadRecibo.isActivo());
         return dto;
     }
 
@@ -1221,7 +1220,6 @@ public class MapsDtoEntityService {
         entity.setId(dto.getId());
         entity.setLugar(dto.getLugar());
         entity.setNumero(dto.getNumero());
-        entity.setActivo(dto.isActivo());
         // Asignar la relación Recibo si reciboId está presente
         if (dto.getReciboId() != null) {
             Recibo recibo = getValidRecibo(dto.getReciboId());

@@ -5,5 +5,4 @@ export interface HumedadReciboDto {
   reciboId: number | null;
   numero: number | null;
   lugar: HumedadLugarDto | null;
-  activo: boolean;
 }

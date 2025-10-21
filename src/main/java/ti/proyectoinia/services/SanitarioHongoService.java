@@ -19,7 +19,7 @@ public class SanitarioHongoService {
     private MapsDtoEntityService mapsDtoEntityService;
 
     public List<SanitarioHongoDto> obtenerSanitarioHongoPorSanitario(Long sanitarioId) {
-        List<SanitarioHongo> lista = sanitarioHongoRepository.findByActivoTrueAndSanitarioId(sanitarioId);
+        List<SanitarioHongo> lista = sanitarioHongoRepository.findBySanitarioId(sanitarioId);
         return lista.stream()
                 .map(mapsDtoEntityService::mapToDtoSanitarioHongo)
                 .collect(Collectors.toList());

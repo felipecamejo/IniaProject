@@ -43,8 +43,8 @@ public class Recibo {
     @Enumerated(EnumType.STRING)
     private ReciboEstado estado;
 
-    @Column(name = "LOTE")
-    private Integer lote;
+    @Column(name = "LOTE_ID")
+    private Long loteId;
 
     @Column(name = "KG_LIMPIOS")
     private Float kgLimpios;
