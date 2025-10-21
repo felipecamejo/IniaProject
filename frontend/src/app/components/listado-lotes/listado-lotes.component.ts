@@ -33,17 +33,6 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
     searchText: string = '';
     private navigationSubscription: any;
 
-    // Variables para el modal
-    mostrarModal: boolean = false;
-    modalNombre: string = '';
-    modalDescripcion: string = '';
-    modalLoading: boolean = false;
-    modalError: string = '';
-    modalTitulo: string = 'Crear Lote';
-    modalBotonTexto: string = 'Crear Lote';
-    itemEditando: any = null;
-    itemEditandoId: number | null = null;
-
     meses = [
       { label: 'Enero', id: 1 },
       { label: 'Febrero', id: 2 },
@@ -59,15 +48,64 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
       { label: 'Diciembre', id: 12 }
     ];
 
-    anios = [
-      { label: '2020', id: 2020 },
-      { label: '2021', id: 2021 },
-      { label: '2022', id: 2022 },
-      { label: '2023', id: 2023 },
-      { label: '2024', id: 2024 }
-    ];
+    anios: { label: string, id: number }[] = [];
+
+    actualizarAniosDisponibles() {
+        const aniosSet = new Set<number>();
+        
+        this.items.forEach(item => {
+            const fechaConTipo = this.getFechaConTipo(item);
+            if (fechaConTipo.fecha) {
+                const anio = this.getAnioFromFecha(fechaConTipo.fecha);
+                if (!isNaN(anio)) {
+                    aniosSet.add(anio);
+                }
+            }
+        });
+
+        // Convertir Set a array y ordenar de menor a mayor (más antiguos primero)
+        const aniosArray = Array.from(aniosSet).sort((a, b) => a - b);
+        
+        // Crear el array de objetos con label e id
+        this.anios = aniosArray.map(anio => ({
+            label: anio.toString(),
+            id: anio
+        }));
+
+        console.log('Años disponibles:', this.anios);
+    }
 
     items: LoteDto[] = [];
+    
+    /**
+     * Formatea una fecha (posiblemente en ISO o YYYY-MM-DD[T...] ) a DD/MM/YYYY.
+     * Devuelve cadena vacía si la fecha es inválida o no está presente.
+     */
+    formatFecha(fecha: string | null | undefined): string {
+      if (!fecha) return '';
+      // Extraer la parte de fecha si viene con hora
+      const fechaSolo = fecha.split('T')[0];
+      const partes = fechaSolo.split('-');
+      if (partes.length >= 3 && partes[0].length === 4) {
+        const year = partes[0];
+        const month = partes[1];
+        const day = partes[2];
+        return `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
+      }
+      // Intentar parsear con Date como fallback
+      const d = new Date(fecha);
+      if (isNaN(d.getTime())) return '';
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}-${mm}-${yyyy}`;
+    }
+
+    getFechaConTipo(item: LoteDto): { fecha: string, tipo: string } {
+      return { fecha: item.fechaCreacion || '', tipo: 'Creación' };
+    }
+
+    loteAEliminar: LoteDto | null = null;
 
     ngOnInit(): void {
         this.cargarLotes();
@@ -92,6 +130,7 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
         this.loteService.listarLotes().subscribe({
             next: (response) => {
                 this.items = response?.lotes ?? [];
+                this.actualizarAniosDisponibles();
             },
             error: (error) => {
                 console.error('Error al listar lotes', error);
@@ -105,9 +144,10 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
 
         const cumpleNombre = !this.searchText || 
           item.nombre.toLowerCase().includes(this.searchText.toLowerCase());
-        
-        const cumpleEstado = !this.selectedMetodo || (item.estado && item.estado === this.getEstadoLabel(this.selectedMetodo));
-        
+
+        // Filtro por estado: comparar directamente el estado del item con el label del método seleccionado
+        const cumpleEstado = !this.selectedMetodo || (item.estado === this.getEstadoLabel(this.selectedMetodo));
+
         const cumpleMes = !this.selectedMes || (item.fechaCreacion && this.getMesFromFecha(item.fechaCreacion) === parseInt(this.selectedMes));
         
         const cumpleAnio = !this.selectedAnio || (item.fechaCreacion && this.getAnioFromFecha(item.fechaCreacion) === parseInt(this.selectedAnio));
@@ -121,6 +161,11 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
       return estado ? estado.label : '';
     }
 
+    getEstadoFormateado(estado: string | undefined): string {
+      if (!estado || estado === undefined) return '';
+      return estado.charAt(0) + estado.slice(1).toLowerCase();
+    }
+
     getMesFromFecha(fecha: string): number {
       const partes = fecha.split('-');
       return parseInt(partes[1]); // El mes está en la posición 1
@@ -128,7 +173,7 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
 
     getAnioFromFecha(fecha: string): number {
       const partes = fecha.split('-');
-      return parseInt(partes[2]); // El año está en la posición 2
+      return parseInt(partes[0]); // El año está en la posición 0
     }
 
     onAnioChange() {
@@ -139,100 +184,57 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
       this.router.navigate(['/home']);
     }
 
-    abrirModal() {
-      this.modalNombre = '';
-      this.modalDescripcion = '';
-      this.modalError = '';
-      this.modalTitulo = 'Crear Lote';
-      this.modalBotonTexto = 'Crear Lote';
-      this.itemEditando = null;
-      this.itemEditandoId = null;
-      this.mostrarModal = true;
-    }
+    menuAnalisis(itemId: number | null) {
+      if (itemId == null) {
+        console.error('ID de lote no válido');
+        return;
+      }
 
-    abrirModalEdicion(item: any) {
-      this.modalNombre = item.nombre;
-      this.modalDescripcion = item.descripcion || '';
-      this.modalError = '';
-      this.modalTitulo = 'Editar Lote';
-      this.modalBotonTexto = 'Actualizar Lote';
-      this.itemEditando = item;
-      this.itemEditandoId = item.id;
-      this.mostrarModal = true;
-    }
+      this.loteService.reciboFromLote(itemId).subscribe({
+        next: (reciboId: number | null) => {
+          console.log('Recibo ID obtenido:', reciboId, 'para Lote ID:', itemId);
 
-    cerrarModal() {
-      this.mostrarModal = false;
-    }
-
-    onSubmitModal(form: any) {
-      if (form.invalid || this.modalLoading) return;
-      
-      this.modalLoading = true;
-      this.modalError = '';
-
-      const lote: LoteDto = { 
-        id: this.itemEditandoId ?? 0,
-        nombre: this.modalNombre,
-        descripcion: this.modalDescripcion,
-        fechaCreacion: new Date().toISOString().split('T')[0],
-        fechaFinalizacion: null,
-        usuariosId: null,
-        activo: true,
-        estado: 'Pendiente',
-        autor: this.authService.userData?.nombre || 'Usuario Actual',
-        fecha: new Date().toISOString().split('T')[0]
-      };
-
-      if (this.itemEditando) {
-        // Editar lote existente
-        this.loteService.editarLote(lote).subscribe({
-          next: (response) => {
-            console.log('Lote editado:', response);
-            this.modalLoading = false;
-            this.cerrarModal();
-            this.cargarLotes();
-          },
-          error: (error) => {
-            console.error('Error al editar lote:', error);
-            this.modalError = 'Error al actualizar el lote';
-            this.modalLoading = false;
+          if(reciboId === null || reciboId === 0) {
+            this.router.navigate([itemId, 'lote-analisis']);
+          } else {
+            this.router.navigate([itemId, reciboId, 'lote-analisis']);
           }
-        });
-      } else {
-        // Crear nuevo lote
-        this.loteService.crearLote(lote).subscribe({
-          next: (response) => {
-            console.log('Nuevo lote creado:', response);
-            this.modalLoading = false;
-            this.cerrarModal();
-            this.cargarLotes();
+
+        }
+      });
+    }
+
+
+
+    eliminarItem(lote: LoteDto) {
+      this.loteAEliminar = lote;
+    }
+
+    confirmarEliminacion() {
+
+      if (!this.loteAEliminar || this.loteAEliminar.id == null) return;
+
+      const loteId = this.loteAEliminar.id;
+      console.log('Eliminar Lote:', this.loteAEliminar);
+
+      if (confirm(`¿Estás seguro de que quieres eliminar el Lote #${loteId}?`)) {
+        this.loteService.eliminarLote(loteId).subscribe({
+          next: (res) => {
+            console.log('Lote eliminado en backend:', res);
+            // Actualizar lista localmente
+            this.items = this.items.filter(lote => lote.id !== loteId);
           },
-          error: (error) => {
-            console.error('Error al crear lote:', error);
-            this.modalError = 'Error al crear el lote';
-            this.modalLoading = false;
+          error: (err) => {
+            console.error('Error eliminando Lote:', err);
+            // Aquí podrías mostrar un mensaje de error al usuario
           }
         });
       }
+      this.loteAEliminar = null;
     }
 
-    editarItemModal(lote: any) {
-      this.abrirModalEdicion(lote);
-    }
 
-    eliminarItem(lote: any) {
-      if (confirm(`¿Estás seguro de que deseas eliminar el lote "${lote.nombre}"?`)) {
-        this.loteService.eliminarLote(lote.id).subscribe({
-          next: (response) => {
-            console.log('Lote eliminado:', response);
-            this.cargarLotes();
-          },
-          error: (error) => {
-            console.error('Error al eliminar lote:', error);
-            alert('Error al eliminar el lote');
-          }
-        });
-      }
+    cancelarEliminacion() {
+      this.loteAEliminar = null;
     }
 }

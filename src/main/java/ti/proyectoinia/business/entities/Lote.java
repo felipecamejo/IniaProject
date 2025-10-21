@@ -31,6 +31,10 @@ public class Lote {
     @Column(name = "LOTE_ACTIVO")
     private boolean activo;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "LOTE_ESTADO")
+    private Estado estado;
+
     @OneToMany
     @JoinColumn(name = "LOTE_ID")
     private List<Recibo> recibos;

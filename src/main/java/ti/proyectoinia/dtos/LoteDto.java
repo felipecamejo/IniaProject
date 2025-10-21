@@ -4,6 +4,7 @@ import java.util.List;
 
 import lombok.Data;
 import lombok.Generated;
+import ti.proyectoinia.business.entities.Estado;
 
 @Data
 public class LoteDto {
@@ -16,6 +17,8 @@ public class LoteDto {
     private String fechaCreacion;
 
     private String fechaFinalizacion;
+
+    private Estado estado;
 
     private boolean activo;
 

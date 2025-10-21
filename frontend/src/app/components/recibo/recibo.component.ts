@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ReciboService } from '../../../services/ReciboService';
 import { ReciboDto } from '../../../models/Recibo.dto';
 import { ReciboEstado } from '../../../models/enums';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DepositoService } from '../../../services/DepositoService';
 import { DepositoDto } from '../../../models/Deposito.dto';
 import { HumedadLugarDto } from '../../../models/HumedadLugar.dto';
@@ -92,9 +92,6 @@ export class ReciboComponent implements OnInit {
   // Propiedades para tabla de humedades usando HumedadReciboDto[]
   humedades: HumedadReciboDto[] = [];
 
-  // Acumula IDs de humedades eliminadas durante la edición
-  deletedHumedadesIds: number[] = [];
-
   // Opciones para el dropdown de lugares de humedad
   lugaresHumedad = [
     { label: 'Cámara 1', value: HumedadLugarDto.Camara1 },
@@ -108,6 +105,7 @@ export class ReciboComponent implements OnInit {
     private depositoService: DepositoService,
     private humedadReciboService: HumedadReciboService,
     private route: ActivatedRoute,
+    private router: Router,
     private authService: AuthService
   ) {}
 
@@ -240,18 +238,20 @@ export class ReciboComponent implements OnInit {
     // Intentar cargar las humedades existentes desde el backend
     this.humedadReciboService.listarHumedadesPorRecibo(reciboId).subscribe({
       next: (humedades: HumedadReciboDto[]) => {
+        console.log(`Cargando humedades para reciboId ${reciboId}`);
+        console.log('Humedades recibidas del backend:', humedades);
         if (humedades && humedades.length > 0) {
           // Usar HumedadReciboDto[] directamente
           this.humedades = humedades.map(h => ({
             id: h.id ?? null,
             reciboId: h.reciboId ?? null,
             numero: h.numero ?? null,
-            lugar: (h.lugar as HumedadLugarDto) ?? null,
-            activo: h.activo ?? true
+            lugar: (h.lugar as HumedadLugarDto) ?? null
           } as HumedadReciboDto));
         } else {
           // Si no hay humedades, inicializar sin filas por defecto
           this.humedades = [];
+          console.log('No se encontraron humedades para este recibo');
         }
       },
       error: (error: any) => {
@@ -306,6 +306,10 @@ export class ReciboComponent implements OnInit {
         // Actualizar el estado del componente
         this.reciboId = reciboId;
         this.isEditing = true;
+
+        // Navegar de vuelta a lote-analisis
+        console.log('Navegando a lote-analisis con loteId:', this.lote2, 'reciboId:', reciboId);
+        this.router.navigate([`/${this.lote2}/${reciboId}/lote-analisis`]);
       },
       error: (err: any) => console.error('Error creando recibo', err)
     });
@@ -370,23 +374,10 @@ export class ReciboComponent implements OnInit {
         console.log('Recibo editado exitosamente:', msg);
         // Guardar las humedades actualizadas
         this.guardarHumedades(this.reciboId);
-        // Si hay humedades marcadas para borrar, enviarlas en una sola llamada
-        (() => {
-          if (this.deletedHumedadesIds && this.deletedHumedadesIds.length > 0) {
-            const ids = [...this.deletedHumedadesIds];
-            this.humedadReciboService.eliminarHumedadesRecibo(ids).subscribe({
-              next: (r) => {
-                console.log('Eliminación múltiple de humedades OK:', r);
-                // limpiar lista local
-                this.deletedHumedadesIds = [];
-              },
-              error: (err) => {
-                console.error('Error en eliminación múltiple de humedades:', err);
-                // no limpiar para reintento manual si se desea
-              }
-            });
-          }
-        })();
+
+        // Navegar de vuelta a lote-analisis
+        console.log('Navegando a lote-analisis con loteId:', this.lote2, 'reciboId:', this.reciboId);
+        this.router.navigate([`/${this.lote2}/${this.reciboId}/lote-analisis`]);
       },
       error: (err: any) => {
         console.error('Error editando recibo:', err);
@@ -409,58 +400,33 @@ export class ReciboComponent implements OnInit {
       h.numero !== null || h.lugar !== null
     );
 
-    if (humedadesValidas.length === 0) {
-      console.log('No hay humedades para guardar');
-      return;
-    }
+    console.log('Todas las humedades a enviar:', humedadesValidas);
 
-    // Preparar DTOs para el backend: conservar id si existe (para edición)
+    // Preparar DTOs para el backend: conservar id si existe (para edición/eliminación)
     const humedadesDtos: HumedadReciboDto[] = humedadesValidas.map(h => ({
       id: h.id ?? null,
       reciboId: reciboId,
       numero: h.numero ?? null,
       lugar: h.lugar ?? null,
-      activo: h.activo ?? true
     } as HumedadReciboDto));
 
-    // Enviar al backend: crear o editar en función de si estamos en modo edición
-    console.log('Humedades a guardar (preparadas):', humedadesDtos);
-
-    if (this.isEditing) {
-      // Llamar al endpoint editar-multiple
-      this.humedadReciboService.editarHumedadesRecibo(humedadesDtos).subscribe({
-        next: (resp: string) => {
-          console.log('Respuesta editar-multiple:', resp);
-          // No siempre se devuelve la lista de ids en la edición; si el backend lo hace,
-          // podríamos parsearla aquí. Por ahora solo loggeamos la respuesta.
-        },
-        error: (error: any) => {
-          console.error('Error editando humedades en lote:', error);
+    // Enviar todas las humedades al método único del servicio
+    this.humedadReciboService.HumedadesRecibo(reciboId, humedadesDtos).subscribe({
+      next: (resp: { created: HumedadReciboDto[]; errors: any[] }) => {
+        console.log('Respuesta del servicio de humedades:', resp);
+        
+        if (resp.created && resp.created.length > 0) {
+          console.log('Humedades procesadas correctamente:', resp.created.length);
         }
-      });
-    } else {
-      // Crear múltiples (ya implementado)
-      this.humedadReciboService.crearHumedadesRecibo(humedadesDtos).subscribe({
-        next: (resp) => {
-          // Backend devuelve { created: [...], errors: [...] }
-          console.log('Respuesta crear-multiple:', resp);
-          const creadas = resp.created || [];
-          const errores = resp.errors || [];
-
-          if (creadas.length > 0) {
-            this.humedadesId = creadas.map(h => (h.id ? Number(h.id) : null)).filter(Boolean) as number[];
-            console.log('Humedades creadas correctamente. IDs:', this.humedadesId);
-          }
-
-          if (errores.length > 0) {
-            console.warn('Algunos elementos no fueron creados:', errores);
-          }
-        },
-        error: (error: any) => {
-          console.error('Error creando humedades en lote:', error);
+        
+        if (resp.errors && resp.errors.length > 0) {
+          console.warn('Algunos elementos tuvieron errores:', resp.errors);
         }
-      });
-    }
+      },
+      error: (error: any) => {
+        console.error('Error guardando humedades:', error);
+      }
+    });
   }
 
   // Métodos para manejo de tabla de humedades
@@ -469,21 +435,8 @@ export class ReciboComponent implements OnInit {
       id: null, 
       reciboId: null, 
       numero: null, 
-      lugar: null,
-      activo: true
+      lugar: null
     } as HumedadReciboDto);
     console.log('Humedad agregada. Total humedades:', this.humedades.length);
-  }
-
-  eliminarHumedad(index: number) {
-    if (this.humedades.length > 0) { // Permitir eliminar hasta la última
-      const h = this.humedades[index];
-      if (this.isEditing && h && h.id) {
-        this.deletedHumedadesIds.push(h.id);
-        console.log('Registrada humedad para eliminación al actualizar:', h.id);
-      }
-      this.humedades.splice(index, 1);
-      console.log('Humedad eliminada. Total humedades:', this.humedades.length);
-    }
   }
 }

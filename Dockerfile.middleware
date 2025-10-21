@@ -1,0 +1,34 @@
+# Dockerfile para el middleware Python/FastAPI
+FROM python:3.11-slim
+
+# Instalar dependencias del sistema necesarias para psycopg2
+RUN apt-get update && \
+    apt-get install -y \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar archivos de dependencias
+COPY middleware/requirements.txt .
+
+# Instalar dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar código fuente del middleware
+COPY middleware/ .
+
+# Crear directorio para exports si no existe
+RUN mkdir -p exports
+
+# Exponer el puerto
+EXPOSE 9099
+
+# Variables de entorno
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# Comando para ejecutar la aplicación FastAPI
+CMD ["uvicorn", "http_server:app", "--host", "0.0.0.0", "--port", "9099", "--workers", "1"]

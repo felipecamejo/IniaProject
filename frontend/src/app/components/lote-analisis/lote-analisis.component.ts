@@ -16,7 +16,6 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   reciboId: number | null = null;
   tieneRecibo: boolean = false;
   lote: LoteDto | null = null; // Agregar para mantener info del lote
-  recibos: any[] = []; // Lista de recibos del lote
   private navigationSubscription: any;
   private currentUrl: string = '';
 
@@ -98,23 +97,27 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
 
   verificarRecibosDelLote(): void {
     if (this.loteId) {
-      this.reciboService.listarPorLote(this.loteId).subscribe({
-        next: (response: any) => {
-          this.recibos = response?.recibos ?? [];
-          this.tieneRecibo = this.recibos.length > 0;
+      this.loteService.reciboFromLote(this.loteId).subscribe({
+        next: (reciboId: number | null) => {
+          console.log('Recibo ID recibido del backend:', reciboId);
           
-          // Si tiene recibos pero no se especificó reciboId, usar el primero
-          if (this.tieneRecibo && !this.reciboId) {
-            this.reciboId = this.recibos[0].id;
-            console.log('ReciboId automáticamente asignado:', this.reciboId);
+          if (reciboId !== null && reciboId > 0) {
+            this.tieneRecibo = true;
+            
+            // Si no se especificó reciboId en la ruta, usar el del lote
+            if (!this.reciboId) {
+              this.reciboId = reciboId;
+            }
+            
+            console.log('Recibo del lote encontrado:', reciboId);
+          } else {
+            this.tieneRecibo = false;
+            console.log('El lote no tiene recibo asociado');
           }
-          
-          console.log('Recibos del lote:', this.recibos);
         },
         error: (error: any) => {
-          console.error('Error al verificar recibos del lote:', error);
+          console.error('Error al verificar recibo del lote:', error);
           this.tieneRecibo = false;
-          this.recibos = [];
         }
       });
     }
@@ -145,7 +148,7 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
       case 'recibo':
         if (this.reciboId) {
           // Si ya existe recibo, ir a editar
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/recibo/editar/${this.reciboId}`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/recibo/editar`]);
         } else {
           // Si no existe, crear nuevo recibo
           this.router.navigate([`/${this.loteId}/recibo/crear`]);
@@ -153,37 +156,37 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
         break;
       case 'pureza':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/pureza/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-pureza`]);
         }
         break;
       case 'pms':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/pms/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-pms`]);
         }
         break;
       case 'sanitario':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/sanitario/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-sanitario`]);
         }
         break;
       case 'dosn':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/dosn/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
         }
         break;
       case 'germinacion':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/germinacion/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-germinacion`]);
         }
         break;
       case 'tetrazolio':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/tetrazolio/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-tetrazolio`]);
         }
         break;
       case 'pureza-p-notatum':
         if (this.reciboId) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/pureza-p-notatum/crear`]);
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-pureza-p-notatum`]);
         }
         break;
       default:
@@ -205,13 +208,12 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
 
   // Método para obtener información de recibos
   getRecibosInfo(): string {
-    if (this.recibos.length === 0) {
-      return 'Sin recibos';
-    } else if (this.recibos.length === 1) {
-      return `1 recibo (ID: ${this.recibos[0].id})`;
-    } else {
-      return `${this.recibos.length} recibos disponibles`;
+    if (!this.tieneRecibo) {
+      return 'Sin recibo';
+    } else if (this.reciboId) {
+      return `Recibo ID: ${this.reciboId}`;
     }
+    return 'Verificando recibo...';
   }
 
   // Método para recargar datos (útil cuando se regresa de crear/editar)

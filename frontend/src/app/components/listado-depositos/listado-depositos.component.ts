@@ -36,6 +36,11 @@ export class ListadoDepositosComponent implements OnInit {
     loading: boolean = false;
     error: string = '';
 
+    // Popup de confirmación de eliminación
+    mostrarConfirmEliminar: boolean = false;
+    depositoAEliminar: DepositoDto | null = null;
+    confirmLoading: boolean = false;
+
     get itemsFiltrados() {
       return this.items.filter(item => {
         const cumpleNombre = !this.searchText || 
@@ -142,20 +147,35 @@ export class ListadoDepositosComponent implements OnInit {
       this.abrirModalEdicion(deposito);
     }
 
-    eliminarItem(deposito: any) {
-      if (confirm(`¿Estás seguro de que deseas eliminar el depósito "${deposito.nombre}"?`)) {
-        console.log('Eliminar Depósito:', deposito);
-        
-        this.depositoService.eliminarDeposito(deposito.id).subscribe({
-          next: (response: string) => {
-            console.log('Depósito eliminado:', response);
-            this.cargarListado(); // Recargar la lista
-          },
-          error: (error: any) => {
-            console.error('Error al eliminar depósito:', error);
-            alert('Error al eliminar el depósito. Por favor, inténtalo de nuevo.');
-          }
-        });
-      }
+    eliminarItem(deposito: DepositoDto) {
+      this.depositoAEliminar = deposito;
+      this.mostrarConfirmEliminar = true;
+    }
+
+    confirmarEliminacion() {
+      const deposito = this.depositoAEliminar;
+      if (!deposito || deposito.id == null) return;
+      this.confirmLoading = true;
+      this.depositoService.eliminarDeposito(deposito.id).subscribe({
+        next: (response: string) => {
+          console.log('Depósito eliminado:', response);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.depositoAEliminar = null;
+          this.cargarListado();
+        },
+        error: (error: any) => {
+          console.error('Error al eliminar depósito:', error);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.depositoAEliminar = null;
+          alert('Error al eliminar el depósito. Por favor, inténtalo de nuevo.');
+        }
+      });
+    }
+
+    cancelarEliminacion() {
+      this.mostrarConfirmEliminar = false;
+      this.depositoAEliminar = null;
     }
 }

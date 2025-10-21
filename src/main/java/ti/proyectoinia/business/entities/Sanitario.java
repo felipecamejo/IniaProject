@@ -23,9 +23,8 @@ public class Sanitario {
     @Column(name = "SANITARIO_FECHA")
     private Date fecha;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "SANITARIO_METODO")
-    private Metodo metodo;
+    private String metodo;
 
     @Column(name = "SANITARIO_TEMPERATURA")
     private Integer temperatura;
@@ -38,10 +37,9 @@ public class Sanitario {
 
     @Column(name = "SANITARIO_NRODIAS")
     private Integer nroDias;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "SANITARIO_ESTADOPRODUCTODOSIS")
-    private Estado estadoProductoDosis;
+    
+    @Column(name = "SANITARIO_ESTADO")
+    private String estado;
 
     @Column(name = "SANITARIO_OBSERVACIONES")
     private String observaciones;
@@ -62,15 +60,14 @@ public class Sanitario {
     @Column(name = "SANITARIO_REPETIDO")
     private boolean repetido;
 
-    @ElementCollection
-    @CollectionTable(name = "SANITARIO_HONGO_IDS", joinColumns = @JoinColumn(name = "SANITARIO_ID"))
-    @Column(name = "HONGO_ID")
-    private List<Long> SanitarioHongoids;
 
     @Column(name = "SANITARIO_FECHACREACION")
     private Date fechaCreacion;
 
     @Column(name = "SANITARIO_FECHAREPETICION")
     private Date fechaRepeticion;
+
+    @OneToMany(mappedBy = "sanitario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SanitarioHongo> sanitarioHongos;
 
 }

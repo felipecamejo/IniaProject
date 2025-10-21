@@ -30,4 +30,8 @@ public class SanitarioHongo {
 
     @Column(name = "INCIDENCIA")
     private Integer incidencia;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "TIPO_SANITARIO_HONGO")
+    private TipoSanitarioHongo tipo;
 }

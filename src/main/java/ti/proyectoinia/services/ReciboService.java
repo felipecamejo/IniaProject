@@ -24,10 +24,10 @@ public class ReciboService {
 
     public String crearRecibo(ReciboDto reciboDto) {
         // Validar que el lote existe y está activo
-        if (reciboDto.getLote() != null) {
-            Lote lote = loteRepository.findById(Long.valueOf(reciboDto.getLote())).orElse(null);
+        if (reciboDto.getLoteId() != null) {
+            Lote lote = loteRepository.findById(Long.valueOf(reciboDto.getLoteId())).orElse(null);
             if (lote == null || !lote.isActivo()) {
-                throw new IllegalArgumentException("El lote con ID " + reciboDto.getLote() + " no existe o no está activo");
+                throw new IllegalArgumentException("El lote con ID " + reciboDto.getLoteId() + " no existe o no está activo");
             }
         }
 
@@ -54,10 +54,10 @@ public class ReciboService {
 
     public String editarRecibo(ReciboDto reciboDto) {
         // Validar que el lote existe y está activo
-        if (reciboDto.getLote() != null) {
-            Lote lote = loteRepository.findById(Long.valueOf(reciboDto.getLote())).orElse(null);
+        if (reciboDto.getLoteId() != null) {
+            Lote lote = loteRepository.findById(Long.valueOf(reciboDto.getLoteId())).orElse(null);
             if (lote == null || !lote.isActivo()) {
-                throw new IllegalArgumentException("El lote con ID " + reciboDto.getLote() + " no existe o no está activo");
+                throw new IllegalArgumentException("El lote con ID " + reciboDto.getLoteId() + " no existe o no está activo");
             }
         }
         
