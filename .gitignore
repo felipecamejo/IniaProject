@@ -42,3 +42,5 @@ build/
 frontend/node/node_modules/
 
 frontend/node/
+
+node_modules/
