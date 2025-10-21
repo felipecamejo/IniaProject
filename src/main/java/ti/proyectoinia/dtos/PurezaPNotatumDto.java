@@ -9,22 +9,14 @@ import java.util.Date;
 public class PurezaPNotatumDto {
     
     private Long id;
-    
-    private float porcentaje;
-    
-    private float pesoInicial;
-    
-    private int repeticiones;
-    
-    private float Pi;
-    
-    private float At;
-    
-    private float porcentajeA;
-    
-    private int totalA;
-    
-    private float semillasLS;
+
+    private Float gramosSemillaPura;
+
+    private Float gramosSemillasCultivos;
+
+    private Float gramosSemillasMalezas;
+
+    private Float gramosMateriaInerte;
 
     private boolean activo;
 

@@ -143,6 +143,46 @@ public class MapsDtoEntityService {
         return metodo;
     }
 
+    public RepeticionesPPN maptoEntityRepeticionPPN(RepeticionesPPNDTO dto){
+        if (dto == null){
+            return null;
+        }
+
+        RepeticionesPPN entity = new RepeticionesPPN();
+
+        entity.setId(dto.getId());
+        entity.setPeso(dto.getPeso());
+        entity.setNroSemillasPuras(dto.getNroSemillasPuras());
+        entity.setContaminadasYVanas(dto.getContaminadasYVanas());
+        entity.setGramosContaminadasYVanas(dto.getGramosContaminadasYVanas());
+        entity.setGramosControlDePesos(dto.getGramosControlDePesos());
+        entity.setGramosSemillasSanas(dto.getGramosSemillasSanas());
+        entity.setCantidadSemillasSanas(dto.getCantidadSemillasSanas());
+        entity.setPurezaPPNId(dto.getPurezaPPNId());
+
+        return entity;
+    }
+
+    public RepeticionesPPNDTO maptoDtoRepeticionPPN(RepeticionesPPN entity){
+        if (entity == null){
+            return null;
+        }
+
+        RepeticionesPPNDTO dto = new RepeticionesPPNDTO();
+
+        dto.setId(entity.getId());
+        dto.setPeso(entity.getPeso());
+        dto.setNroSemillasPuras(entity.getNroSemillasPuras());
+        dto.setContaminadasYVanas(entity.getContaminadasYVanas());
+        dto.setGramosContaminadasYVanas(entity.getGramosContaminadasYVanas());
+        dto.setGramosControlDePesos(entity.getGramosControlDePesos());
+        dto.setGramosSemillasSanas(entity.getGramosSemillasSanas());
+        dto.setCantidadSemillasSanas(entity.getCantidadSemillasSanas());
+        dto.setPurezaPPNId(entity.getPurezaPPNId());
+
+        return dto;
+    }
+
     public GerminacionDto mapToDtoGerminacion(Germinacion germinacion) {
         if (germinacion == null) {
             return null;
