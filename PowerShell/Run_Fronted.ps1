@@ -3,7 +3,7 @@ param(
     [switch]$Open
 )
 
-Set-StrictMode -Version Latest
+# Configuración más permisiva para evitar conflictos con npm.ps1
 $ErrorActionPreference = 'Stop'
 
 function Write-Info($msg) { Write-Host "[INFO] $msg" -ForegroundColor Cyan }
@@ -88,24 +88,48 @@ if ($null -eq $ver) {
 
 Write-Info 'Instalando dependencias...'
 $useCi = Test-Path -Path './package-lock.json'
+
+# Función para ejecutar npm de forma segura
+function Invoke-NpmCommand {
+    param([string[]]$Arguments)
+    try {
+        # Temporalmente deshabilitar modo estricto para npm
+        $originalErrorAction = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        
+        # Usar cmd para ejecutar npm (más compatible)
+        $cmdArgs = "npm " + ($Arguments -join ' ')
+        $process = Start-Process -FilePath "cmd" -ArgumentList "/c", $cmdArgs -Wait -PassThru -NoNewWindow
+        return $process.ExitCode
+    } catch {
+        Write-Warn "Error ejecutando npm: $($_.Exception.Message)"
+        return 1
+    } finally {
+        $ErrorActionPreference = $originalErrorAction
+    }
+}
+
 try {
     if ($useCi) {
         Write-Info 'Usando npm ci (lockfile encontrado)'
-        & npm ci | Write-Host
+        $exitCode = Invoke-NpmCommand -Arguments @('ci')
+        if ($exitCode -ne 0) { throw "npm ci falló con código $exitCode" }
     } else {
         Write-Warn 'No se encontró package-lock.json. Usando npm install.'
-        & npm install | Write-Host
+        $exitCode = Invoke-NpmCommand -Arguments @('install')
+        if ($exitCode -ne 0) { throw "npm install falló con código $exitCode" }
     }
 } catch {
     Write-Warn "Fallo instalando dependencias: $($_.Exception.Message)"
     Write-Info 'Intentando recuperación: limpiando instalación parcial y reintentando con npm install...'
     try { if (Test-Path './node_modules') { Remove-Item -Recurse -Force './node_modules' } } catch {}
     try { if (Test-Path './package-lock.json') { Remove-Item -Force './package-lock.json' } } catch {}
-    try { & npm cache clean --force | Write-Host } catch {}
-    & npm install | Write-Host
+    try { Invoke-NpmCommand -Arguments @('cache', 'clean', '--force') } catch {}
+    $exitCode = Invoke-NpmCommand -Arguments @('install')
+    if ($exitCode -ne 0) { throw "Recuperación falló con código $exitCode" }
 }
 
-# Preferir CLI local
+# Verificar si Angular CLI está disponible
 $ngPath = Join-Path (Get-Location) 'node_modules/.bin/ng.cmd'
 if (-not (Test-Path $ngPath)) {
     Write-Warn 'Angular CLI local no encontrado. Se usará npx ng.'
@@ -119,15 +143,25 @@ if (Test-PortInUse -CheckPort $Port) {
 }
 
 Write-Info "Levantando el servidor de desarrollo en http://localhost:$Port ..."
-$argsList = @('start', '--', '--port', "$Port")
-if ($Open.IsPresent) { $argsList += '--open' }
 
 # Iniciar servidor
 try {
-    # Usamos npm start para respetar scripts y CLI local
-    & npm @argsList
+    # Construir argumentos para npm start
+    $startArgs = @('start', '--', '--port', "$Port")
+    if ($Open.IsPresent) { 
+        $startArgs += '--open' 
+    }
+    
+    Write-Info "Ejecutando: npm $($startArgs -join ' ')"
+    
+    # Ejecutar npm start con los argumentos usando la función segura
+    $exitCode = Invoke-NpmCommand -Arguments $startArgs
+    if ($exitCode -ne 0) {
+        throw "npm start falló con código $exitCode"
+    }
 } catch {
     Write-Err "Fallo al iniciar el servidor: $($_.Exception.Message)"
+    Write-Err "Detalles del error: $($_.Exception)"
     exit 1
 } finally {
     Pop-Location

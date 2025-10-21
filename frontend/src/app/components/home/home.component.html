@@ -1,36 +1,45 @@
 <div class="home-container">
-  <!-- Imagen principal -->
-  <div class="banner">
-    <img src="assets/banner_home.jpg" alt="Banner principal" />
-  </div>
-
-  <!-- Sección Lote -->
-  <section class="section">
-    <h2 class="section-title">Lote</h2>
-    <div class="button-group">
-      <button pButton type="button" label="Crear Lote" class="btn-primary" (click)="goToCrearLote()">Crear Lote</button>
-      <button pButton type="button" label="Listar Lotes" class="btn-primary" (click)="goToListadoLotes()">Listar Lote</button>
+    <!-- Imagen principal -->
+    <div class="banner">
+        <img src="assets/banner_home.jpg" alt="Banner principal" />
     </div>
-  </section>
 
-  <!-- Admin Panel - Solo visible para ADMIN -->
-  <section class="section" *ngIf="isAdmin">
-    <h2 class="section-title">Listar/Crear Admin panel</h2>
-    <div class="button-grid">
-      <button pButton type="button" label="Listar Usuario" class="btn-secondary" (click)="goToListadoUsuarios()">Listar Usuario</button>
-      <button pButton type="button" label="Listar Análisis" class="btn-secondary" (click)="goToListadoLotes()">Listar Análisis</button>
-      <button pButton type="button" label="Listar Depositos" class="btn-secondary" (click)="goToListadoDepositos()">Listar Depósitos</button>
-      <button pButton type="button" label="Listar Cultivos" class="btn-secondary" (click)="goToListadoCultivos()">Listar Cultivos</button>
-      <button pButton type="button" label="Listar Malezas" class="btn-secondary" (click)="goToListadoMalezas()">Listar Malezas</button>
-      <button pButton type="button" label="Listar Hongos" class="btn-secondary" (click)="goToListadoHongos()">Listar Hongos</button>
-      <button pButton type="button" label="Listar Métodos" class="btn-secondary" (click)="goToListadoMetodos()">Listar Métodos</button>
+    <!-- Sección Lote -->
+    <section class="section">
+        <h2 class="section-title">Lote</h2>
+        <div class="button-group">
+            <button pButton type="button" label="Crear Lote" class="btn-primary" (click)="goToCrearLote()">Crear Lote</button>
+            <button pButton type="button" label="Listar Lotes" class="btn-primary" (click)="goToListadoLotes()">Listar Lote</button>
+        </div>
+    </section>
 
-    </div>
-    
-  </section>
+    <!-- Admin Panel - Solo visible para ADMIN -->
+    <section class="section" *ngIf="isAdmin">
+        <h2 class="section-title">Listar/Crear Admin panel</h2>
+        <div class="button-grid">
+            <button pButton type="button" label="Listar Usuario" class="btn-secondary" (click)="goToListadoUsuarios()">Listar Usuario</button>
+            <button pButton type="button" label="Listar Análisis" class="btn-secondary" (click)="goToListadoLotes()">Listar Análisis</button>
+            <button pButton type="button" label="Listar Depositos" class="btn-secondary" (click)="goToListadoDepositos()">Listar Depósitos</button>
+            <button pButton type="button" label="Listar Cultivos" class="btn-secondary" (click)="goToListadoCultivos()">Listar Cultivos</button>
+            <button pButton type="button" label="Listar Malezas" class="btn-secondary" (click)="goToListadoMalezas()">Listar Malezas</button>
+            <button pButton type="button" label="Listar Hongos" class="btn-secondary" (click)="goToListadoHongos()">Listar Hongos</button>
+            <button pButton type="button" label="Listar Métodos" class="btn-secondary" (click)="goToListadoMetodos()">Listar Métodos</button>
+            <button pButton type="button" label="Graficar Analisis" class="btn-secondary" (click)="goToChart()">Graficar Analisis</button>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <p>© Inia 2025</p>
-  </footer>
+        </div>
+
+    </section>
+
+    <!-- Sección Analista - Solo visible para ANALISTA -->
+    <section class="section" *ngIf="isAnalista">
+        <h2 class="section-title">Panel Analista</h2>
+        <div class="button-grid">
+            <button pButton type="button" label="Graficar Analisis" class="btn-secondary" (click)="goToChart()">Graficar Analisis</button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© Inia 2025</p>
+    </footer>
 </div>

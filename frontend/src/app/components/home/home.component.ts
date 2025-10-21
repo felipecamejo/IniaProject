@@ -17,6 +17,11 @@ export class HomeComponent {
     return this.authService.isAdmin();
   }
 
+  get isAnalista(): boolean {
+    return this.authService.isAnalista();
+  }
+
+
   goToListadoLotes() {
     this.router.navigate(['/listado-lotes']);
   }
@@ -52,5 +57,13 @@ export class HomeComponent {
 
   goToListadoMetodos() {
     this.router.navigate(['/listado-metodos']);
+  }
+
+  goToCreateGraficaAnalisis() {
+    this.router.navigate(['/grafica-analisis/crear']);
+  }
+
+  goToChart() {
+    this.router.navigate(['/chart']);
   }
 }

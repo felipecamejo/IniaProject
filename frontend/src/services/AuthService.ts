@@ -55,6 +55,10 @@ export class AuthService {
     return this.userRoles.includes('ADMIN');
   }
 
+  isAnalista(): boolean {
+    return this.userRoles.includes('ANALISTA');
+  }
+
   hasRole(role: string): boolean {
     return this.userRoles.includes(role);
   }
