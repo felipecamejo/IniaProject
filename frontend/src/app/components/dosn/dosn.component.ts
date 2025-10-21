@@ -133,9 +133,15 @@ import { TabsModule } from 'primeng/tabs';
         this.route.params.subscribe(params => {
           if (params['loteId']) this.loteId = +params['loteId'];
           if (params['reciboId']) this.reciboId = +params['reciboId'];
-          if (params['id']) {
+          this.isEditing = !!params['id'];
+          if (this.isEditing) {
+            // Modo edición: cargar DOSN existente
             this.editingId = +params['id'];
             this.cargarDOSN(this.editingId);
+          } else {
+            // Modo creación: limpiar/valores por defecto si hace falta
+            this.editingId = null;
+            this.dosn = null;
           }
         });
       }
@@ -157,19 +163,21 @@ import { TabsModule } from 'primeng/tabs';
       }
 
       onSubmit() {
-            if (!this.editingId) return;
             const payload = this.buildPayloadFromView();
             this.loading = true;
-            this.dosnService.editar(payload).subscribe({
+            const obs = this.isEditing
+              ? this.dosnService.editar(payload)
+              : this.dosnService.crear(payload);
+
+            obs.subscribe({
               next: () => {
                 this.loading = false;
-                // Navegar al listado del recibo
                 if (this.loteId != null && this.reciboId != null) {
                   this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
                 }
               },
               error: (e) => {
-                console.error('Error al editar DOSN', e);
+                console.error(`Error al ${this.isEditing ? 'editar' : 'crear'} DOSN`, e);
                 this.loading = false;
               }
             });
@@ -381,7 +389,7 @@ import { TabsModule } from 'primeng/tabs';
     const cuscuta = this.brassicaCuscuta.find(b => b.label === 'Cuscuta spp.');
 
     return {
-      id: this.editingId!,
+      id: this.isEditing ? this.editingId! : null,
       // Fechas en formato ISO simple para backend
       fechaINIA: this.fechaInia ? `${this.fechaInia}T00:00:00` : null,
       fechaINASE: this.fechaInase ? `${this.fechaInase}T00:00:00` : null,
