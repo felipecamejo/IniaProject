@@ -36,7 +36,7 @@ public class RepeticionesPPN {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PUREZA_PNOTATUM_ID")
-    private Long PurezaPPNId;
+    private PurezaPNotatum purezaPNotatum;
 
 
 }

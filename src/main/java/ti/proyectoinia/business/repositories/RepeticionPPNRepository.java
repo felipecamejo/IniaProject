@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface RepeticionPPNRepository extends JpaRepository<RepeticionesPPN, Long> {
 
-    List<RepeticionesPPN> findByPurezaPPNId(Long ppnId);
+    // Buscar repeticiones por el id de la entidad PurezaPNotatum
+    List<RepeticionesPPN> findByPurezaPNotatumId(Long ppnId);
 
 }

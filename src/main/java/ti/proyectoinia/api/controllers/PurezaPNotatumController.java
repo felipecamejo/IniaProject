@@ -77,25 +77,25 @@ public class PurezaPNotatumController {
         return this.purezaPNotatumService.listadoPurezaPNotatumporRecibo(id);
     }
 
-    @PutMapping("/actualizar-repeticiones/{ppnId}")
+    @PutMapping("/actualizar-repeticiones/{purezaPNotatumId}")
     @Secured({"ADMIN"})
     @Operation(description = "Actualiza los Repeticiones asociados a una PPN, creando, actualizando y eliminando según la lista recibida")
     public ResponseEntity<String> actualizarRepeticionesCompleto(
-            @PathVariable Long ppnId,
+            @PathVariable Long purezaPNotatumId,
             @RequestBody List<RepeticionesPPNDTO> repeticionesActuales) {
         try {
-            purezaPNotatumService.actualizarRepeticionesCompleto(ppnId, repeticionesActuales);
-            return ResponseEntity.ok("Hongos actualizados correctamente");
+            purezaPNotatumService.actualizarRepeticionesCompleto(purezaPNotatumId, repeticionesActuales);
+            return ResponseEntity.ok("Repeticiones actualizadas correctamente");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar hongos: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar repeticiones: " + e.getMessage());
         }
     }
 
-    @GetMapping("/listar-repeticiones/{ppnId}")
+    @GetMapping("/listar-repeticiones/{purezaPNotatumId}")
     @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(description = "Lista todos las repeticiones asociados a un sanitario específico")
-    public ResponseEntity<List<RepeticionesPPNDTO>> listarRepeticionesPorPPN(@PathVariable Long ppnId) {
-        List<RepeticionesPPNDTO> dtos = purezaPNotatumService.listarRepeticionesPorPPN(ppnId);
+    public ResponseEntity<List<RepeticionesPPNDTO>> listarRepeticionesPorPPN(@PathVariable Long purezaPNotatumId) {
+        List<RepeticionesPPNDTO> dtos = purezaPNotatumService.listarRepeticionesPorPPN(purezaPNotatumId);
         return ResponseEntity.ok(dtos);
     }
 }

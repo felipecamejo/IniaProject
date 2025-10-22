@@ -28,6 +28,8 @@ public class PurezaPNotatumDto {
 
     private Date fechaRepeticion;
 
+    private String observaciones;
+
     @Generated
     public boolean equals(final Object o) {
         if (o == this) return true;
@@ -43,6 +45,6 @@ public class PurezaPNotatumDto {
 
     @Generated
     public String toString() {
-        return "PurezaPnotatumDto(id=" + id + ", porcentaje=" + porcentaje + ", pesoInicial=" + pesoInicial + ")";
+        return "PurezaPnotatumDto(id=" + id + ", gramosSemillaPura=" + gramosSemillaPura + ", gramosSemillasCultivos=" + gramosSemillasCultivos + ", gramosSemillasMalezas=" + gramosSemillasMalezas + ", gramosMateriaInerte=" + gramosMateriaInerte + ", activo=" + activo + ", repetido=" + repetido + ", reciboId=" + reciboId + ", fechaCreacion=" + fechaCreacion + ", fechaRepeticion=" + fechaRepeticion + ")";
     }
 }

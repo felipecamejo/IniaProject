@@ -8,6 +8,7 @@ import ti.proyectoinia.dtos.*;
 import ti.proyectoinia.business.repositories.ReciboRepository;
 import ti.proyectoinia.business.repositories.CultivoRepository;
 import ti.proyectoinia.business.repositories.MalezaRepository;
+import ti.proyectoinia.business.repositories.PurezaPNotatumRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Date;
@@ -25,6 +26,8 @@ public class MapsDtoEntityService {
     private CultivoRepository cultivoRepository;
     @Autowired
     private MalezaRepository malezaRepository;
+    @Autowired
+    private PurezaPNotatumRepository purezaPNotatumRepository;
 
     // Formato ISO simple para fechas tipo "2024-01-15T10:30:00"
     private static final DateTimeFormatter ISO_LOCAL_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -83,6 +86,11 @@ public class MapsDtoEntityService {
         return malezaRepository.findById(malezaId)
             .filter(Maleza::isActivo)
             .orElse(null);
+    }
+
+    public PurezaPNotatum getValidPurezaPNotatum(Long id) {
+        if (id == null) return null;
+        return purezaPNotatumRepository.findById(id).filter(PurezaPNotatum::isActivo).orElse(null);
     }
 
     public HongoDto mapToDtoHongo(Hongo hongo) {
@@ -158,7 +166,7 @@ public class MapsDtoEntityService {
         entity.setGramosControlDePesos(dto.getGramosControlDePesos());
         entity.setGramosSemillasSanas(dto.getGramosSemillasSanas());
         entity.setCantidadSemillasSanas(dto.getCantidadSemillasSanas());
-        entity.setPurezaPPNId(dto.getPurezaPPNId());
+        entity.setPurezaPNotatum(getValidPurezaPNotatum(dto.getPurezaPNotatum()));
 
         return entity;
     }
@@ -178,7 +186,7 @@ public class MapsDtoEntityService {
         dto.setGramosControlDePesos(entity.getGramosControlDePesos());
         dto.setGramosSemillasSanas(entity.getGramosSemillasSanas());
         dto.setCantidadSemillasSanas(entity.getCantidadSemillasSanas());
-        dto.setPurezaPPNId(entity.getPurezaPPNId());
+        dto.setPurezaPNotatum(entity.getPurezaPNotatum() != null ? entity.getPurezaPNotatum().getId() : null);
 
         return dto;
     }
@@ -928,9 +936,9 @@ public class MapsDtoEntityService {
         dosn.setDeterminacionCuscutaGramos(dto.getDeterminacionCuscutaGramos());
         // Otros
         dosn.setEstandar(dto.getEstandar());
-        dosn.setActivo(dto.isActivo());
+        //dosn.setActivo(dto.getActivo());
         dosn.setFechaAnalisis(dto.getFechaAnalisis());
-        dosn.setRepetido(dto.isRepetido());
+        //dosn.setRepetido(dto.getRepetido());
         dosn.setFechaCreacion(dto.getFechaCreacion());
         dosn.setFechaRepeticion(dto.getFechaRepeticion());
 
@@ -1030,18 +1038,16 @@ public class MapsDtoEntityService {
         }
         PurezaPNotatumDto dto = new PurezaPNotatumDto();
         dto.setId(pureza.getId());
-        dto.setPorcentaje(pureza.getPorcentaje());
-        dto.setPesoInicial(pureza.getPesoInicial());
-        dto.setRepeticiones(pureza.getRepeticiones());
-        dto.setPi(pureza.getPi());
-        dto.setAt(pureza.getAt());
-        dto.setPorcentajeA(pureza.getPorcentajeA());
-        dto.setTotalA(pureza.getTotalA());
-        dto.setSemillasLS(pureza.getSemillasLS());
+
+        dto.setGramosSemillaPura(pureza.getGramosSemillaPura());
+        dto.setGramosSemillasMalezas(pureza.getGramosSemillasMalezas());
+        dto.setGramosMateriaInerte(pureza.getGramosMateriaInerte());
+        dto.setGramosSemillasCultivos(pureza.getGramosSemillasCultivos());
         dto.setActivo(pureza.isActivo());
         dto.setRepetido(pureza.isRepetido());
         dto.setFechaCreacion(pureza.getFechaCreacion());
         dto.setFechaRepeticion(pureza.getFechaRepeticion());
+        dto.setObservaciones(pureza.getObservaciones());
 
         if (pureza.getRecibo() != null) {
             dto.setReciboId(pureza.getRecibo().getId());
@@ -1058,18 +1064,15 @@ public class MapsDtoEntityService {
         }
         PurezaPNotatum pureza = new PurezaPNotatum();
         pureza.setId(dto.getId());
-        pureza.setPorcentaje(dto.getPorcentaje());
-        pureza.setPesoInicial(dto.getPesoInicial());
-        pureza.setRepeticiones(dto.getRepeticiones());
-        pureza.setPi(dto.getPi());
-        pureza.setAt(dto.getAt());
-        pureza.setPorcentajeA(dto.getPorcentajeA());
-        pureza.setTotalA(dto.getTotalA());
-        pureza.setSemillasLS(dto.getSemillasLS());
+        pureza.setGramosSemillaPura(dto.getGramosSemillaPura());
+        pureza.setGramosSemillasMalezas(dto.getGramosSemillasMalezas());
+        pureza.setGramosMateriaInerte(dto.getGramosMateriaInerte());
+        pureza.setGramosSemillasCultivos(dto.getGramosSemillasCultivos());
         pureza.setActivo(dto.isActivo());
         pureza.setRepetido(dto.isRepetido());
         pureza.setFechaCreacion(dto.getFechaCreacion());
         pureza.setFechaRepeticion(dto.getFechaRepeticion());
+        pureza.setObservaciones(dto.getObservaciones());
 
         // Validar y obtener el recibo si existe
         Recibo recibo = getValidRecibo(dto.getReciboId());

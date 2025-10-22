@@ -12,18 +12,6 @@ import { PurezaPNotatumService } from '../../../services/PurezaPNotatumService';
 import { PurezaPNotatumDto } from '../../../models/PurezaPNotatum.dto';
 import { RepeticionPPN } from '../../../models/RepeticionPPN.dto';
 
-// Interface local para manejar las repeticiones en el formulario
-export interface RepeticionPPNLocal {
-  numero: number;
-  semillasPuras: number;
-  pesoSemillasPuras: number;
-  semillasSanasCantidad: number;
-  semillasSanasPeso: number;
-  semillasContaminadasCantidad: number;
-  semillasContaminadasPeso: number;
-  controlPesos: number;
-}
-
 @Component({
   selector: 'app-pureza-p-notatum',
   standalone: true,
@@ -68,17 +56,17 @@ export class PurezaPNotatumComponent implements OnInit {
   fechaRepeticion: string | null = null;
 
   // Tabla de repeticiones
-  repeticiones: RepeticionPPNLocal[] = [];
+  repeticiones: RepeticionPPN[] = [];
 
   // Mantener las repeticiones del backend para edición
   repeticionesEntries: RepeticionPPN[] = [];
   deletedRepeticionesIds: number[] = [];
   // Totales para mostrar en el template
   get totalSemillasSanasPeso(): number {
-    return this.repeticiones.reduce((acc, rep) => acc + (rep.semillasSanasPeso || 0), 0);
+    return this.repeticiones.reduce((acc, rep) => acc + (rep.gramosSemillasSanas || 0), 0);
   }
   get totalSemillasContaminadasPeso(): number {
-    return this.repeticiones.reduce((acc, rep) => acc + (rep.semillasContaminadasPeso || 0), 0);
+    return this.repeticiones.reduce((acc, rep) => acc + (rep.gramosContaminadasYVanas || 0), 0);
   }
 
   constructor(
@@ -107,8 +95,10 @@ export class PurezaPNotatumComponent implements OnInit {
       next: (data: PurezaPNotatumDto) => {
         console.log('Pureza P. notatum obtenido para editar:', data);
         // Mapear los campos del DTO al formulario
-        this.semillaPuraGr = data.porcentaje || 0; // Ajustar según el DTO real
-        this.semillaPuraPct = data.porcentaje || 0;
+        this.semillaPuraGr = data.gramosSemillaPura || 0;
+        this.semillaCultivosGr = data.gramosSemillasCultivos || 0;
+        this.semillaMalezasGr = data.gramosSemillasMalezas || 0;
+        this.materiaInerteGr = data.gramosMateriaInerte || 0;
         this.comentarios = data.observaciones || '';
         this.activo = data.activo ?? true;
         this.repetido = data.repetido ?? false;
@@ -130,19 +120,12 @@ export class PurezaPNotatumComponent implements OnInit {
                 contaminadasYVanas: r.contaminadasYVanas ?? null,
                 gramosContaminadasYVanas: r.gramosContaminadasYVanas ?? null,
                 gramosControlDePesos: r.gramosControlDePesos ?? null,
-                PurezaPPNId: r.PurezaPPNId ?? null
+                purezaPNotatum: r.purezaPNotatum ?? null
               } as RepeticionPPN));
-              
-              this.repeticiones = this.repeticionesEntries.map((r, index) => ({
-                numero: index + 1,
-                semillasPuras: r.nroSemillasPuras ?? 0,
-                pesoSemillasPuras: r.peso ?? 0,
-                semillasSanasCantidad: r.cantidadSemillasSanas ?? 0,
-                semillasSanasPeso: r.gramosSemillasSanas ?? 0,
-                semillasContaminadasCantidad: r.contaminadasYVanas ?? 0,
-                semillasContaminadasPeso: r.gramosContaminadasYVanas ?? 0,
-                controlPesos: r.gramosControlDePesos ?? 0
-              }));
+              this.repeticiones = [...this.repeticionesEntries];
+              console.log('Repeticiones del backend:', reps);
+              console.log('RepeticionesEntries mapeadas:', this.repeticionesEntries);
+              console.log('Repeticiones mapeadas:', this.repeticiones);
             } else {
               this.repeticionesEntries = [];
               this.repeticiones = [];
@@ -181,18 +164,7 @@ export class PurezaPNotatumComponent implements OnInit {
   }
 
   agregarRepeticion() {
-    const nextNum = this.repeticiones.length + 1;
-    this.repeticiones.push({
-      numero: nextNum,
-      semillasPuras: 0,
-      pesoSemillasPuras: 0,
-      semillasSanasCantidad: 0,
-      semillasSanasPeso: 0,
-      semillasContaminadasCantidad: 0,
-      semillasContaminadasPeso: 0,
-      controlPesos: 0
-    });
-    this.repeticionesEntries.push({
+    const nuevaRepeticion: RepeticionPPN = {
       id: null,
       nroSemillasPuras: null,
       peso: null,
@@ -201,74 +173,58 @@ export class PurezaPNotatumComponent implements OnInit {
       contaminadasYVanas: null,
       gramosContaminadasYVanas: null,
       gramosControlDePesos: null,
-      PurezaPPNId: null
-    } as RepeticionPPN);
+      purezaPNotatum: null
+    };
+    this.repeticiones.push(nuevaRepeticion);
+    this.repeticionesEntries.push({...nuevaRepeticion});
+    console.log('Repetición agregada. Total repeticiones:', this.repeticiones.length);
   }
 
   eliminarRepeticion(idx: number) {
-    this.repeticiones.splice(idx, 1);
-    // Renumerar las repeticiones restantes
-    this.repeticiones.forEach((r, i) => r.numero = i + 1);
-    
-    // Sincronizar repeticionesEntries
-    const removed: RepeticionPPN[] = this.repeticionesEntries.splice(idx, 1);
-    if (removed && removed.length > 0 && removed[0].id) {
-      this.deletedRepeticionesIds.push(removed[0].id as number);
+    if (this.repeticiones.length > 0) {
+      this.repeticiones.splice(idx, 1);
+      
+      // Sincronizar repeticionesEntries
+      const removed: RepeticionPPN[] = this.repeticionesEntries.splice(idx, 1);
+      if (removed && removed.length > 0 && removed[0].id) {
+        this.deletedRepeticionesIds.push(removed[0].id as number);
+      }
+      
+      console.log('Repetición eliminada. Total repeticiones:', this.repeticiones.length);
+      console.log('RepeticionesEntries después de eliminar:', this.repeticionesEntries);
     }
   }
 
   // Método para sincronizar cambios desde los inputs
-  onRepeticionChange(index: number, field: string, value: any) {
-    const numericValue = parseFloat(value) || 0;
+  onRepeticionChange(index: number, field: keyof RepeticionPPN, value: any) {
+    const numericValue = parseFloat(value) || null;
+
     
+    // Actualizar tanto repeticiones como repeticionesEntries
     if (this.repeticiones[index]) {
       (this.repeticiones[index] as any)[field] = numericValue;
     }
-    
     if (this.repeticionesEntries[index]) {
-      // Mapear campos locales a campos del DTO
-      const fieldMap: any = {
-        'semillasPuras': 'nroSemillasPuras',
-        'pesoSemillasPuras': 'peso',
-        'semillasSanasCantidad': 'cantidadSemillasSanas',
-        'semillasSanasPeso': 'gramosSemillasSanas',
-        'semillasContaminadasCantidad': 'contaminadasYVanas',
-        'semillasContaminadasPeso': 'gramosContaminadasYVanas',
-        'controlPesos': 'gramosControlDePesos'
-      };
-      const dtoField = fieldMap[field];
-      if (dtoField) {
-        (this.repeticionesEntries[index] as any)[dtoField] = numericValue;
-      }
+      (this.repeticionesEntries[index] as any)[field] = numericValue;
     }
+    console.log('RepeticionesEntries actualizadas:', this.repeticionesEntries);
   }
 
   onSubmit() {
-    // Sincronizar repeticiones locales a repeticionesEntries antes de enviar
-    this.repeticiones.forEach((rep, index) => {
-      if (this.repeticionesEntries[index]) {
-        this.repeticionesEntries[index].nroSemillasPuras = rep.semillasPuras;
-        this.repeticionesEntries[index].peso = rep.pesoSemillasPuras;
-        this.repeticionesEntries[index].cantidadSemillasSanas = rep.semillasSanasCantidad;
-        this.repeticionesEntries[index].gramosSemillasSanas = rep.semillasSanasPeso;
-        this.repeticionesEntries[index].contaminadasYVanas = rep.semillasContaminadasCantidad;
-        this.repeticionesEntries[index].gramosContaminadasYVanas = rep.semillasContaminadasPeso;
-        this.repeticionesEntries[index].gramosControlDePesos = rep.controlPesos;
-      }
-    });
-
+    // Sincronizar repeticiones a repeticionesEntries antes de enviar
+    this.repeticionesEntries = this.repeticiones.map(rep => ({...rep}));
+    
+    const reciboIdNum = this.route.snapshot.params['reciboId'] ? Number(this.route.snapshot.params['reciboId']) : null;
+    
     const purezaData: PurezaPNotatumDto = {
       id: this.editingId ?? null,
-      porcentaje: this.semillaPuraPct,
-      pesoInicial: this.semillaPuraGr,
-      repeticiones: this.repeticiones.length,
-      Pi: 0, // Ajustar según necesidad
-      At: 0, // Ajustar según necesidad
-      porcentajeA: 0, // Ajustar según necesidad
-      totalA: 0, // Ajustar según necesidad
-      semillasLS: 0, // Ajustar según necesidad
+      gramosSemillaPura: this.semillaPuraGr,
+      gramosSemillasCultivos: this.semillaCultivosGr,
+      gramosSemillasMalezas: this.semillaMalezasGr,
+      gramosMateriaInerte: this.materiaInerteGr,
       activo: this.activo,
       repetido: this.repetido,
+      reciboId: reciboIdNum,
       fechaCreacion: this.fechaCreacion,
       fechaRepeticion: this.fechaRepeticion,
       observaciones: this.comentarios
@@ -303,8 +259,6 @@ export class PurezaPNotatumComponent implements OnInit {
       purezaData.repetido = false;
       purezaData.fechaCreacion = new Date().toISOString().split('T')[0];
       
-      const reciboIdNum = this.route.snapshot.params['reciboId'] ? Number(this.route.snapshot.params['reciboId']) : null;
-      
       this.purezaPNotatumService.crear(purezaData).subscribe({
         next: (res) => {
           console.log('Pureza P. notatum creado correctamente:', res);
@@ -331,7 +285,7 @@ export class PurezaPNotatumComponent implements OnInit {
   private async procesarRepeticionesDespuesDeCrear(purezaPNotatumId: number): Promise<void> {
     const payload: RepeticionPPN[] = this.repeticionesEntries.map((r) => ({
       ...r,
-      PurezaPPNId: purezaPNotatumId
+      purezaPNotatum: purezaPNotatumId
     }));
     
     console.log('Payload repeticiones a crear:', payload);
@@ -351,7 +305,7 @@ export class PurezaPNotatumComponent implements OnInit {
   private async procesarRepeticionesDespuesDeGuardar(purezaPNotatumId: number): Promise<void> {
     const toSend: RepeticionPPN[] = this.repeticionesEntries.map((r) => ({
       ...r,
-      PurezaPPNId: purezaPNotatumId
+      purezaPNotatum: purezaPNotatumId
     }));
     
     console.log('Payload repeticiones a editar:', toSend);

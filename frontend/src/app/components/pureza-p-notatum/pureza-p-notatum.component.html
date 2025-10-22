@@ -31,18 +31,15 @@
                 </td>
               </tr>
               <tr *ngFor="let rep of repeticiones; let i = index">
-                <td>{{ rep.numero }}</td>
-                <td><input type="number" [(ngModel)]="rep.semillasPuras" name="semillasPuras{{i}}" pInputText /></td>
-                <td><input type="number" [(ngModel)]="rep.pesoSemillasPuras" name="pesoSemillasPuras{{i}}" pInputText /></td>
-                <td><input type="number" [(ngModel)]="rep.semillasSanasCantidad" name="semillasSanasCantidad{{i}}" pInputText /></td>
-                <td><input type="number" [(ngModel)]="rep.semillasSanasPeso" name="semillasSanasPeso{{i}}" pInputText /></td>
-                <td><input type="number" [(ngModel)]="rep.semillasContaminadasCantidad" name="semillasContaminadasCantidad{{i}}" pInputText /></td>
-                <td><input type="number" [(ngModel)]="rep.semillasContaminadasPeso" name="semillasContaminadasPeso{{i}}" pInputText /></td>
+                <td>{{ i + 1 }}</td>
+                <td><input type="number" [(ngModel)]="rep.nroSemillasPuras" name="nroSemillasPuras{{i}}" (ngModelChange)="onRepeticionChange(i, 'nroSemillasPuras', $event)" pInputText /></td>
+                <td><input type="number" [(ngModel)]="rep.peso" name="peso{{i}}" (ngModelChange)="onRepeticionChange(i, 'peso', $event)" pInputText /></td>
+                <td><input type="number" [(ngModel)]="rep.cantidadSemillasSanas" name="cantidadSemillasSanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'cantidadSemillasSanas', $event)" pInputText /></td>
+                <td><input type="number" [(ngModel)]="rep.gramosSemillasSanas" name="gramosSemillasSanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'gramosSemillasSanas', $event)" pInputText /></td>
+                <td><input type="number" [(ngModel)]="rep.contaminadasYVanas" name="contaminadasYVanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'contaminadasYVanas', $event)" pInputText /></td>
+                <td><input type="number" [(ngModel)]="rep.gramosContaminadasYVanas" name="gramosContaminadasYVanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'gramosContaminadasYVanas', $event)" pInputText /></td>
                 <td>
-                  {{ rep.semillasSanasPeso + rep.semillasContaminadasPeso }}
-                  <span *ngIf="(rep.semillasSanasPeso + rep.semillasContaminadasPeso) > rep.pesoSemillasPuras" style="color: red; font-size: 0.9em; margin-left: 4px;">
-                    ⚠️
-                  </span>
+                  {{ (rep.gramosSemillasSanas || 0) + (rep.gramosContaminadasYVanas || 0) }}
                 </td>
                 <td>
                   <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="eliminarRepeticion(i)" title="Eliminar"></button>
@@ -151,7 +148,7 @@
       </div>
 
       <div class="comentarios-wrapper" style="margin-top:2rem;">
-        <label for="comentarios" style="font-weight:600; font-size:1.05em; color:#333;">Comentarios:</label>
+        <label for="comentarios" style="font-weight:600; font-size:1.05em; color:#333;">Observaciones:</label>
         <textarea id="comentarios" [(ngModel)]="comentarios" name="comentarios" rows="4" style="width:100%; border-radius:8px; border:1px solid #bdbdbd; padding:0.75rem; font-size:1em; margin-top:0.5rem; resize:vertical;"></textarea>
       </div>
       <div class="submit-btn" style="display: flex; gap: 1rem; margin-top:2rem;">

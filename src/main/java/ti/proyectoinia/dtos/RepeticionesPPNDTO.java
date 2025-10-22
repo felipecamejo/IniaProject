@@ -25,5 +25,5 @@ public class RepeticionesPPNDTO {
 
     private Float gramosControlDePesos;
 
-    private Long PurezaPPNId;
+    private Long purezaPNotatum;
 }

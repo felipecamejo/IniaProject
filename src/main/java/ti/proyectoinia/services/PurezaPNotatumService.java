@@ -64,7 +64,7 @@ public class PurezaPNotatumService {
     }
 
     public List<RepeticionesPPNDTO> listarRepeticionesPorPPN(Long ppnId) {
-        List<RepeticionesPPN> repeticionesPPNS = repeticionPPNRepository.findByPurezaPPNId(ppnId);
+        List<RepeticionesPPN> repeticionesPPNS = repeticionPPNRepository.findByPurezaPNotatumId(ppnId);
         return repeticionesPPNS.stream()
                 .map(mapsDtoEntityService::maptoDtoRepeticionPPN)
                 .toList();
@@ -73,7 +73,7 @@ public class PurezaPNotatumService {
     public void actualizarRepeticionesCompleto(Long ppnId, List<RepeticionesPPNDTO> repeticionesActuales) {
         PurezaPNotatum purezaPNotatum = purezaPNotatumRepository.findById(ppnId).orElse(null);
         if (purezaPNotatum == null) throw new RuntimeException("PurezaPNotatum no encontrado");
-        List<RepeticionesPPN> actuales = repeticionPPNRepository.findByPurezaPPNId(ppnId);
+        List<RepeticionesPPN> actuales = repeticionPPNRepository.findByPurezaPNotatumId(ppnId);
         // Usar la lista entrante para calcular los ids que deben permanecer
         Set<Long> nuevosIds = repeticionesActuales.stream()
                 .map(h -> h.getId() != null ? h.getId() : -1L)
@@ -101,8 +101,8 @@ public class PurezaPNotatumService {
             repeticionesPPN.setGramosControlDePesos(dto.getGramosControlDePesos());
             repeticionesPPN.setGramosSemillasSanas(dto.getGramosSemillasSanas());
             repeticionesPPN.setCantidadSemillasSanas(dto.getCantidadSemillasSanas());
-            // Asegurar la relación con la PurezaPNotatum guardando el id de la pureza
-            repeticionesPPN.setPurezaPPNId(ppnId);
+            // Asegurar la relación con la PurezaPNotatum asignando la entidad
+            repeticionesPPN.setPurezaPNotatum(purezaPNotatum);
 
             repeticionPPNRepository.save(repeticionesPPN);
         }
