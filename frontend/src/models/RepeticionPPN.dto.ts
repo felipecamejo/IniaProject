@@ -6,6 +6,5 @@ export interface RepeticionPPN {
     gramosSemillasSanas: number | null;
     contaminadasYVanas: number | null;
     gramosContaminadasYVanas: number | null;
-    gramosControlDePesos: number | null;
     purezaPNotatum: number | null;
 }

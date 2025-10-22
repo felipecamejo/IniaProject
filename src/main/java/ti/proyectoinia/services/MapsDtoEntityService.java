@@ -163,7 +163,6 @@ public class MapsDtoEntityService {
         entity.setNroSemillasPuras(dto.getNroSemillasPuras());
         entity.setContaminadasYVanas(dto.getContaminadasYVanas());
         entity.setGramosContaminadasYVanas(dto.getGramosContaminadasYVanas());
-        entity.setGramosControlDePesos(dto.getGramosControlDePesos());
         entity.setGramosSemillasSanas(dto.getGramosSemillasSanas());
         entity.setCantidadSemillasSanas(dto.getCantidadSemillasSanas());
         entity.setPurezaPNotatum(getValidPurezaPNotatum(dto.getPurezaPNotatum()));
@@ -183,7 +182,6 @@ public class MapsDtoEntityService {
         dto.setNroSemillasPuras(entity.getNroSemillasPuras());
         dto.setContaminadasYVanas(entity.getContaminadasYVanas());
         dto.setGramosContaminadasYVanas(entity.getGramosContaminadasYVanas());
-        dto.setGramosControlDePesos(entity.getGramosControlDePesos());
         dto.setGramosSemillasSanas(entity.getGramosSemillasSanas());
         dto.setCantidadSemillasSanas(entity.getCantidadSemillasSanas());
         dto.setPurezaPNotatum(entity.getPurezaPNotatum() != null ? entity.getPurezaPNotatum().getId() : null);

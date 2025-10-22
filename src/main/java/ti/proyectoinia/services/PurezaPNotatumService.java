@@ -98,7 +98,6 @@ public class PurezaPNotatumService {
             repeticionesPPN.setNroSemillasPuras(dto.getNroSemillasPuras());
             repeticionesPPN.setContaminadasYVanas(dto.getContaminadasYVanas());
             repeticionesPPN.setGramosContaminadasYVanas(dto.getGramosContaminadasYVanas());
-            repeticionesPPN.setGramosControlDePesos(dto.getGramosControlDePesos());
             repeticionesPPN.setGramosSemillasSanas(dto.getGramosSemillasSanas());
             repeticionesPPN.setCantidadSemillasSanas(dto.getCantidadSemillasSanas());
             // Asegurar la relación con la PurezaPNotatum asignando la entidad

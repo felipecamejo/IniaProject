@@ -31,9 +31,6 @@ public class RepeticionesPPN {
     @Column(name = "GRAMOS_CONTAMINADAS_Y_VANAS")
     private Float gramosContaminadasYVanas;
 
-    @Column(name = "CONTROL_DE_PESOS")
-    private Float gramosControlDePesos;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PUREZA_PNOTATUM_ID")
     private PurezaPNotatum purezaPNotatum;
