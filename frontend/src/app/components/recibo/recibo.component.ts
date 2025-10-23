@@ -211,7 +211,7 @@ export class ReciboComponent implements OnInit {
       this.rec = recibo.analisisSolicitados || '';
       this.especie = recibo.especie || '';
       this.ficha = recibo.ficha || '';
-      this.lote = recibo.lote || null;
+      this.lote = recibo.loteId || null;
       this.origen = recibo.origen || '';
       this.observaciones = ''; // This property doesn't exist in ReciboDto
       this.remite = recibo.remitente || '';
@@ -291,7 +291,7 @@ export class ReciboComponent implements OnInit {
       remitente: this.remite || null,
       origen: this.origen || null,
       cultivar: this.selectedCultivar || null,
-      lote: Number(this.lote) || null,
+      loteId: Number(this.lote) || null,
       kgLimpios: Number(this.kilos) || null,
       analisisSolicitados: this.rec || null,
       articulo: this.articulo,
@@ -361,7 +361,7 @@ export class ReciboComponent implements OnInit {
       remitente: this.remite || base.remitente || null,
       origen: this.origen || base.origen || null,
       cultivar: this.selectedCultivar || base.cultivar || null,
-      lote: Number(this.lote) || base.lote || null,
+      loteId: Number(this.lote) || base.loteId || null,
       kgLimpios: Number(this.kilos) || base.kgLimpios || null,
       analisisSolicitados: this.rec || base.analisisSolicitados || null,
       articulo: this.articulo ?? base.articulo ?? null,

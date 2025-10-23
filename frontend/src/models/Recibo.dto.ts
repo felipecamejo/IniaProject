@@ -18,7 +18,7 @@ export interface ReciboDto {
   remitente: string | null;
   origen: string | null;
   cultivar: string | null;
-  lote: number | null;
+  loteId: number | null;
   kgLimpios: number | null;
   analisisSolicitados: string | null;
   articulo: number | null;
