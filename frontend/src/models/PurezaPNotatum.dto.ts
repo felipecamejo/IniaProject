@@ -1,16 +1,14 @@
 export interface PurezaPNotatumDto {
   id: number | null;
-  porcentaje: number;
-  pesoInicial: number;
-  repeticiones: number;
-  Pi: number;
-  At: number;
-  porcentajeA: number;
-  totalA: number;
-  semillasLS: number;
-  activo: boolean;
-  repetido: boolean;
+  gramosSemillaPura: number | null;
+  gramosSemillasCultivos: number | null;
+  gramosSemillasMalezas: number | null;
+  gramosMateriaInerte: number | null;
+  activo: boolean | null;
+  repetido: boolean | null;
+  reciboId: number | null;
   fechaCreacion: string | null;
   fechaRepeticion: string | null;
-  observaciones: string;
+  observaciones: string | null;
+
 }

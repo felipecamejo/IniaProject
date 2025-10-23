@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UrlService } from './url.service';
 import { PurezaPNotatumDto } from '../models/PurezaPNotatum.dto';
+import { RepeticionPPN } from '../models/RepeticionPPN.dto';
 
 interface ResponseListadoPurezaPNotatum {
   purezaPNotatun: PurezaPNotatumDto[];
@@ -10,7 +11,7 @@ interface ResponseListadoPurezaPNotatum {
 
 @Injectable({ providedIn: 'root' })
 export class PurezaPNotatumService {
-  private endpoint: string = '/purezapnotatum';
+  private endpoint: string = '/PurezaPNotatum';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
@@ -52,6 +53,21 @@ export class PurezaPNotatumService {
     return this.http.put(
       `${this.urlService.baseUrl}${this.endpoint}/eliminar/${id}`,
       {},
+      { responseType: 'text' }
+    );
+  }
+
+  // Métodos para manejar repeticiones de Pureza P. notatum
+  listarRepeticiones(purezaPNotatumId: number): Observable<RepeticionPPN[]> {
+    return this.http.get<RepeticionPPN[]>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar-repeticiones/${purezaPNotatumId}`
+    );
+  }
+
+  actualizarRepeticiones(purezaPNotatumId: number, repeticiones: RepeticionPPN[]): Observable<string> {
+    return this.http.put(
+      `${this.urlService.baseUrl}${this.endpoint}/actualizar-repeticiones/${purezaPNotatumId}`,
+      repeticiones,
       { responseType: 'text' }
     );
   }

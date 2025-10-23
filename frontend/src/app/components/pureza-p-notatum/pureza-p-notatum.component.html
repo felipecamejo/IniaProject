@@ -7,107 +7,114 @@
       
 
       <!-- Tabla: Examen de semillas pura por corte -->
-      <h3 style="margin-top:2rem;">Examen de semillas pura por corte</h3>
-      <div class="table-wrapper">
-        <table class="p-table" style="width:100%; margin-bottom:1rem;">
-          <thead>
-            <tr>
-              <th>Repetición</th>
-              <th>N° semillas puras</th>
-              <th>Peso (g)</th>
-              <th>Semillas sanas (cant)</th>
-              <th>Semillas sanas (g)</th>
-              <th>Contaminadas y vanas (cant)</th>
-              <th>Contaminadas y vanas (g)</th>
-              <th>Control de pesos (g)</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let rep of repeticiones; let i = index">
-              <td>{{ rep.numero }}</td>
-              <td><input type="number" [(ngModel)]="rep.semillasPuras" name="semillasPuras{{i}}" pInputText style="width:80px;" /></td>
-              <td><input type="number" [(ngModel)]="rep.pesoSemillasPuras" name="pesoSemillasPuras{{i}}" pInputText style="width:80px;" /></td>
-              <td><input type="number" [(ngModel)]="rep.semillasSanasCantidad" name="semillasSanasCantidad{{i}}" pInputText style="width:80px;" /></td>
-              <td><input type="number" [(ngModel)]="rep.semillasSanasPeso" name="semillasSanasPeso{{i}}" pInputText style="width:80px;" /></td>
-              <td><input type="number" [(ngModel)]="rep.semillasContaminadasCantidad" name="semillasContaminadasCantidad{{i}}" pInputText style="width:80px;" /></td>
-              <td><input type="number" [(ngModel)]="rep.semillasContaminadasPeso" name="semillasContaminadasPeso{{i}}" pInputText style="width:80px;" /></td>
-              <td>
-                {{ rep.semillasSanasPeso + rep.semillasContaminadasPeso }}
-                <span *ngIf="(rep.semillasSanasPeso + rep.semillasContaminadasPeso) > rep.pesoSemillasPuras" style="color: red; font-size: 0.9em; margin-left: 4px;">
-                  ⚠️
-                </span>
-              </td>
-              <td>
-                <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="eliminarRepeticion(i)" [disabled]="repeticiones.length === 1"></button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <button pButton type="button" label="Agregar repetición" class="btn-agregar-rep" (click)="agregarRepeticion()"></button>
-        <div class="totales-wrapper" style="margin-top: 1.5rem; display: flex; gap: 3rem; justify-content: flex-start; align-items: center; background: #f6f6f6; border-radius: 8px; padding: 1rem 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-weight: 600; color: #2e7d32; font-size: 1.1em;">Peso total semillas analizadas:</span>
-            <span style="font-size: 1.1em; color: #333;">{{ totalSemillasSanasPeso }} g</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-weight: 600; color: #c62828; font-size: 1.1em;">Peso total semillas contaminadas:</span>
-            <span style="font-size: 1.1em; color: #333;">{{ totalSemillasContaminadasPeso }} g</span>
-          </div>
-        </div>
-        <div class="porcentajes-wrapper" style="margin-top: 1.5rem; display: flex; gap: 3rem; justify-content: flex-start; align-items: center; background: #e3f2fd; border-radius: 8px; padding: 1rem 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-weight: 600; color: #1565c0; font-size: 1.1em;">A%:</span>
-            <span style="font-size: 1.1em; color: #333;">--</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-weight: 600; color: #1565c0; font-size: 1.1em;">A% total:</span>
-            <span style="font-size: 1.1em; color: #333;">--</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-weight: 600; color: #1565c0; font-size: 1.1em;">% semillas llenas y sanas:</span>
-            <span style="font-size: 1.1em; color: #333;">--</span>
-          </div>
+      <div class="table-section">
+        <h3 class="table-title">Examen de semillas pura por corte</h3>
+        <div class="table-wrapper">
+          <table class="p-table">
+            <thead>
+              <tr>
+                <th>Repetición</th>
+                <th>N° semillas puras</th>
+                <th>Peso (g)</th>
+                <th>Semillas sanas (cant)</th>
+                <th>Semillas sanas (g)</th>
+                <th>Contaminadas y vanas (cant)</th>
+                <th>Contaminadas y vanas (g)</th>
+                <th>Control de pesos (g)</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="repeticiones.length === 0">
+                <td colspan="9" class="no-repeticiones">
+                  No hay repeticiones agregadas. Haz clic en "Agregar repetición" para comenzar.
+                </td>
+              </tr>
+              <tr *ngFor="let rep of repeticiones; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td><input type="number" [(ngModel)]="rep.nroSemillasPuras" name="nroSemillasPuras{{i}}" (ngModelChange)="onRepeticionChange(i, 'nroSemillasPuras', $event)" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="rep.peso" name="peso{{i}}" (ngModelChange)="onRepeticionChange(i, 'peso', $event)" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="rep.cantidadSemillasSanas" name="cantidadSemillasSanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'cantidadSemillasSanas', $event)" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="rep.gramosSemillasSanas" name="gramosSemillasSanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'gramosSemillasSanas', $event)" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="rep.contaminadasYVanas" name="contaminadasYVanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'contaminadasYVanas', $event)" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="rep.gramosContaminadasYVanas" name="gramosContaminadasYVanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'gramosContaminadasYVanas', $event)" [readonly]="isReadonly" pInputText /></td>
+                <td>
+                  {{ (rep.gramosSemillasSanas || 0) + (rep.gramosContaminadasYVanas || 0) }}
+                </td>
+                <td>
+                  <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="eliminarRepeticion(i)" title="Eliminar" *ngIf="!isReadonly"></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <button pButton type="button" label="Agregar repetición" class="btn-agregar-rep" (click)="agregarRepeticion()" *ngIf="!isReadonly"></button>
         </div>
       </div>
 
-      <div class="table-wrapper" style="margin-bottom:2rem;">
-        <h3 style="margin-bottom:0.5rem;">% Pureza</h3>
-        <table class="p-table" style="width:100%;">
-          <thead>
-            <tr>
-              <th></th>
-              <th>Peso (g)</th>
-              <th>%</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Semilla pura</td>
-              <td><input type="number" [(ngModel)]="semillaPuraGr" name="semillaPuraGr" pInputText style="width:100%;" /></td>
-              <td><input type="number" [(ngModel)]="semillaPuraPct" name="semillaPuraPct" pInputText style="width:100%;" /></td>
-            </tr>
-            <tr>
-              <td>Semilla cultivos</td>
-              <td><input type="number" [(ngModel)]="semillaCultivosGr" name="semillaCultivosGr" pInputText style="width:100%;" /></td>
-              <td><input type="number" [(ngModel)]="semillaCultivosPct" name="semillaCultivosPct" pInputText style="width:100%;" /></td>
-            </tr>
-            <tr>
-              <td>Semilla malezas</td>
-              <td><input type="number" [(ngModel)]="semillaMalezasGr" name="semillaMalezasGr" pInputText style="width:100%;" /></td>
-              <td><input type="number" [(ngModel)]="semillaMalezasPct" name="semillaMalezasPct" pInputText style="width:100%;" /></td>
-            </tr>
-            <tr>
-              <td>Materia inerte</td>
-              <td><input type="number" [(ngModel)]="materiaInerteGr" name="materiaInerteGr" pInputText style="width:100%;" /></td>
-              <td><input type="number" [(ngModel)]="materiaInertePct" name="materiaInertePct" pInputText style="width:100%;" /></td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="totales-wrapper" style="margin-top: 1.5rem; display: flex; gap: 3rem; justify-content: flex-start; align-items: center; background: #f6f6f6; border-radius: 8px; padding: 1rem 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-weight: 600; color: #2e7d32; font-size: 1.1em;">Peso total semillas analizadas:</span>
+          <span style="font-size: 1.1em; color: #333;">{{ totalSemillasSanasPeso }} g</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-weight: 600; color: #c62828; font-size: 1.1em;">Peso total semillas contaminadas:</span>
+          <span style="font-size: 1.1em; color: #333;">{{ totalSemillasContaminadasPeso }} g</span>
+        </div>
+      </div>
+      <div class="porcentajes-wrapper" style="margin-top: 1.5rem; display: flex; gap: 3rem; justify-content: flex-start; align-items: center; background: #e3f2fd; border-radius: 8px; padding: 1rem 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-weight: 600; color: #1565c0; font-size: 1.1em;">A%:</span>
+          <span style="font-size: 1.1em; color: #333;">--</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-weight: 600; color: #1565c0; font-size: 1.1em;">A% total:</span>
+          <span style="font-size: 1.1em; color: #333;">--</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-weight: 600; color: #1565c0; font-size: 1.1em;">% semillas llenas y sanas:</span>
+          <span style="font-size: 1.1em; color: #333;">--</span>
+        </div>
+      </div>
+
+      <div class="table-section">
+        <h3 class="table-title">% Pureza</h3>
+        <div class="table-wrapper">
+          <table class="p-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Peso (g)</th>
+                <th>%</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Semilla pura</td>
+                <td><input type="number" [(ngModel)]="semillaPuraGr" name="semillaPuraGr" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="semillaPuraPct" name="semillaPuraPct" [readonly]="isReadonly" pInputText /></td>
+              </tr>
+              <tr>
+                <td>Semilla cultivos</td>
+                <td><input type="number" [(ngModel)]="semillaCultivosGr" name="semillaCultivosGr" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="semillaCultivosPct" name="semillaCultivosPct" [readonly]="isReadonly" pInputText /></td>
+              </tr>
+              <tr>
+                <td>Semilla malezas</td>
+                <td><input type="number" [(ngModel)]="semillaMalezasGr" name="semillaMalezasGr" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="semillaMalezasPct" name="semillaMalezasPct" [readonly]="isReadonly" pInputText /></td>
+              </tr>
+              <tr>
+                <td>Materia inerte</td>
+                <td><input type="number" [(ngModel)]="materiaInerteGr" name="materiaInerteGr" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="materiaInertePct" name="materiaInertePct" [readonly]="isReadonly" pInputText /></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Checkboxes -->
-      <div class="checkbox-container" *ngIf="isEditing">
+      <div class="checkbox-container" *ngIf="isEditing && !isReadonly">
         <h4 class="checkbox-title">Opciones De Edición</h4>
         <div class="checkbox-grid">
           <div class="checkbox-item">
@@ -141,11 +148,12 @@
       </div>
 
       <div class="comentarios-wrapper" style="margin-top:2rem;">
-        <label for="comentarios" style="font-weight:600; font-size:1.05em; color:#333;">Comentarios:</label>
-        <textarea id="comentarios" [(ngModel)]="comentarios" name="comentarios" rows="4" style="width:100%; border-radius:8px; border:1px solid #bdbdbd; padding:0.75rem; font-size:1em; margin-top:0.5rem; resize:vertical;"></textarea>
+        <label for="comentarios" style="font-weight:600; font-size:1.05em; color:#333;">Observaciones:</label>
+        <textarea id="comentarios" [(ngModel)]="comentarios" name="comentarios" rows="4" [readonly]="isReadonly" style="width:100%; border-radius:8px; border:1px solid #bdbdbd; padding:0.75rem; font-size:1em; margin-top:0.5rem; resize:vertical;"></textarea>
       </div>
       <div class="submit-btn" style="display: flex; gap: 1rem; margin-top:2rem;">
         <button
+          *ngIf="!isReadonly"
           pButton
           type="button"
           [label]="isEditing ? 'Editar Pureza P. notatum' : 'Crear Pureza P. notatum'"

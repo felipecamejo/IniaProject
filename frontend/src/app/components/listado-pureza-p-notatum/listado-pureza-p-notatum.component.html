@@ -64,6 +64,9 @@
                     <p>{{ item.observaciones || 'Sin observaciones disponibles' }}</p>
                 </div>
                 <div class="item-actions">
+                    <button class="action-button view-button" (click)="navegarAVer(item)">
+                        <i class="pi pi-eye"></i>
+                    </button>
                     <button *ngIf="!item.repetido" class="action-button edit-button" (click)="navegarAEditar(item)">
                         <i class="pi pi-pencil"></i>
                     </button>
@@ -72,7 +75,10 @@
                     </button>
                 </div>
                 <div class="item-date">
-                    <span class="fecha">{{ getFechaConTipo(item).fecha }} ({{ getFechaConTipo(item).tipo }})</span>
+                    <span class="fecha">
+                        {{ formatFecha(getFechaConTipo(item).fecha) }}
+                        <span class="tipo-fecha">({{ getFechaConTipo(item).tipo }})</span>
+                    </span>
                 </div>
             </div>
         </div>

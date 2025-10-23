@@ -83,6 +83,7 @@ export const routes: Routes = [
     { path : ':loteId/:reciboId/dosn/editar/:id', component: DOSNComponent },
     { path : ':loteId/:reciboId/pureza-p-notatum/crear', component: PurezaPNotatumComponent },
     { path : ':loteId/:reciboId/pureza-p-notatum/editar/:id', component: PurezaPNotatumComponent },
+    { path : ':loteId/:reciboId/pureza-p-notatum/:id', component: PurezaPNotatumComponent }, // Para visualización con query param view=true
     { path : ':loteId/:reciboId/germinacion/crear', component: GerminacionComponent },
     { path : ':loteId/:reciboId/germinacion/editar/:id', component: GerminacionComponent },
     { path : ':loteId/:reciboId/tetrazolio/crear', component: TetrazolioComponent },

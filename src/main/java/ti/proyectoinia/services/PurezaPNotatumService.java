@@ -2,13 +2,16 @@ package ti.proyectoinia.services;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.ErrorResponse;
-import ti.proyectoinia.api.responses.ResponseListadoGerminacion;
-import ti.proyectoinia.api.responses.ResponseListadoPMS;
 import ti.proyectoinia.api.responses.ResponseListadoPurezaPNotatum;
-import ti.proyectoinia.business.entities.PurezaPNotatum;
+import ti.proyectoinia.business.entities.*;
 import ti.proyectoinia.business.repositories.PurezaPNotatumRepository;
+import ti.proyectoinia.business.repositories.RepeticionPPNRepository;
 import ti.proyectoinia.dtos.PurezaPNotatumDto;
+import ti.proyectoinia.dtos.RepeticionesPPNDTO;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -16,10 +19,12 @@ public class PurezaPNotatumService {
 
     private final PurezaPNotatumRepository purezaPNotatumRepository;
     private final MapsDtoEntityService mapsDtoEntityService;
+    private final RepeticionPPNRepository repeticionPPNRepository;
 
-    public PurezaPNotatumService(PurezaPNotatumRepository purezaPNotatumRepository, MapsDtoEntityService mapsDtoEntityService) {
+    public PurezaPNotatumService(PurezaPNotatumRepository purezaPNotatumRepository, MapsDtoEntityService mapsDtoEntityService, RepeticionPPNRepository repeticionPPNRepository) {
         this.mapsDtoEntityService = mapsDtoEntityService;
         this.purezaPNotatumRepository = purezaPNotatumRepository;
+        this.repeticionPPNRepository = repeticionPPNRepository;
     }
 
     public String crearPurezaPNotatum(PurezaPNotatumDto purezaPNotatumDto) {
@@ -56,5 +61,49 @@ public class PurezaPNotatumService {
                 .toList();
         ResponseListadoPurezaPNotatum responseListadoPurezaPNotatum= new ResponseListadoPurezaPNotatum(dto);
         return ResponseEntity.ok(responseListadoPurezaPNotatum);
+    }
+
+    public List<RepeticionesPPNDTO> listarRepeticionesPorPPN(Long ppnId) {
+        List<RepeticionesPPN> repeticionesPPNS = repeticionPPNRepository.findByPurezaPNotatumId(ppnId);
+        return repeticionesPPNS.stream()
+                .map(mapsDtoEntityService::maptoDtoRepeticionPPN)
+                .toList();
+    }
+
+    public void actualizarRepeticionesCompleto(Long ppnId, List<RepeticionesPPNDTO> repeticionesActuales) {
+        PurezaPNotatum purezaPNotatum = purezaPNotatumRepository.findById(ppnId).orElse(null);
+        if (purezaPNotatum == null) throw new RuntimeException("PurezaPNotatum no encontrado");
+        List<RepeticionesPPN> actuales = repeticionPPNRepository.findByPurezaPNotatumId(ppnId);
+        // Usar la lista entrante para calcular los ids que deben permanecer
+        Set<Long> nuevosIds = repeticionesActuales.stream()
+                .map(h -> h.getId() != null ? h.getId() : -1L)
+                .collect(Collectors.toSet());
+
+        // Eliminar los que no están en la nueva lista
+        for (RepeticionesPPN actual : actuales) {
+            if (!nuevosIds.contains(actual.getId())) {
+                repeticionPPNRepository.delete(actual);
+            }
+        }
+        // Crear o actualizar los recibidos
+        for (RepeticionesPPNDTO dto : repeticionesActuales) {
+            RepeticionesPPN repeticionesPPN;
+            if (dto.getId() != null) {
+                repeticionesPPN = repeticionPPNRepository.findById(dto.getId()).orElse(new RepeticionesPPN());
+            } else {
+                repeticionesPPN = new RepeticionesPPN();
+            }
+
+            repeticionesPPN.setPeso(dto.getPeso());
+            repeticionesPPN.setNroSemillasPuras(dto.getNroSemillasPuras());
+            repeticionesPPN.setContaminadasYVanas(dto.getContaminadasYVanas());
+            repeticionesPPN.setGramosContaminadasYVanas(dto.getGramosContaminadasYVanas());
+            repeticionesPPN.setGramosSemillasSanas(dto.getGramosSemillasSanas());
+            repeticionesPPN.setCantidadSemillasSanas(dto.getCantidadSemillasSanas());
+            // Asegurar la relación con la PurezaPNotatum asignando la entidad
+            repeticionesPPN.setPurezaPNotatum(purezaPNotatum);
+
+            repeticionPPNRepository.save(repeticionesPPN);
+        }
     }
 }

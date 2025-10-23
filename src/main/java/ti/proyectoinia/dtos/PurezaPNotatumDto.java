@@ -9,22 +9,14 @@ import java.util.Date;
 public class PurezaPNotatumDto {
     
     private Long id;
-    
-    private float porcentaje;
-    
-    private float pesoInicial;
-    
-    private int repeticiones;
-    
-    private float Pi;
-    
-    private float At;
-    
-    private float porcentajeA;
-    
-    private int totalA;
-    
-    private float semillasLS;
+
+    private Float gramosSemillaPura;
+
+    private Float gramosSemillasCultivos;
+
+    private Float gramosSemillasMalezas;
+
+    private Float gramosMateriaInerte;
 
     private boolean activo;
 
@@ -35,6 +27,8 @@ public class PurezaPNotatumDto {
     private Date fechaCreacion;
 
     private Date fechaRepeticion;
+
+    private String observaciones;
 
     @Generated
     public boolean equals(final Object o) {
@@ -51,6 +45,6 @@ public class PurezaPNotatumDto {
 
     @Generated
     public String toString() {
-        return "PurezaPnotatumDto(id=" + id + ", porcentaje=" + porcentaje + ", pesoInicial=" + pesoInicial + ")";
+        return "PurezaPnotatumDto(id=" + id + ", gramosSemillaPura=" + gramosSemillaPura + ", gramosSemillasCultivos=" + gramosSemillasCultivos + ", gramosSemillasMalezas=" + gramosSemillasMalezas + ", gramosMateriaInerte=" + gramosMateriaInerte + ", activo=" + activo + ", repetido=" + repetido + ", reciboId=" + reciboId + ", fechaCreacion=" + fechaCreacion + ", fechaRepeticion=" + fechaRepeticion + ")";
     }
 }

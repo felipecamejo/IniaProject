@@ -1,12 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { Router } from '@angular/router';
-import { PMSDto } from '../../../models/PMS.dto';
+import { Router, ActivatedRoute } from '@angular/router';
 import { PurezaPNotatumDto } from '../../../models/PurezaPNotatum.dto';
+import { PurezaPNotatumService } from '../../../services/PurezaPNotatumService';
 
 @Component({
   selector: 'app-listado-pureza-p-notatum',
@@ -15,12 +15,21 @@ import { PurezaPNotatumDto } from '../../../models/PurezaPNotatum.dto';
   templateUrl: './listado-pureza-p-notatum.component.html',
   styleUrl: './listado-pureza-p-notatum.component.scss'
 })
-export class ListadoPurezaPNotatumComponent {
-    constructor(private router: Router) {}
+export class ListadoPurezaPNotatumComponent implements OnInit {
+    constructor(private router: Router, private route: ActivatedRoute, private purezaPNotatumService: PurezaPNotatumService) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
     searchText: string = '';
+    loteId: string = '';
+    reciboId: number | null = null;
+
+    ngOnInit() {
+      this.loteId = this.route.snapshot.params['loteId'];
+      const reciboParam = this.route.snapshot.params['reciboId'];
+      this.reciboId = reciboParam != null ? Number(reciboParam) : null;
+      this.cargarItems();
+    }
 
     meses = [
       { label: 'Enero', id: 1 },
@@ -37,64 +46,41 @@ export class ListadoPurezaPNotatumComponent {
       { label: 'Diciembre', id: 12 }
     ];
 
-    anios = [
-      { label: '2020', id: 2020 },
-      { label: '2021', id: 2021 },
-      { label: '2022', id: 2022 },
-      { label: '2023', id: 2023 },
-      { label: '2024', id: 2024 }
-    ];
+    anios: { label: string, id: number }[] = [];
 
-    items: PurezaPNotatumDto[] = [
-      {
-        id: 1,
-        porcentaje: 98.5,
-        pesoInicial: 100,
-        repeticiones: 1,
-        Pi: 50,
-        At: 48,
-        porcentajeA: 96,
-        totalA: 48,
-        semillasLS: 2,
-        activo: true,
-        repetido: false,
-        fechaCreacion: '2023-01-15',
-        fechaRepeticion: null,
-        observaciones: 'Control de calidad mensual - Muestra estándar'
-      },
-      {
-        id: 2,
-        porcentaje: 97.2,
-        pesoInicial: 120,
-        repeticiones: 2,
-        Pi: 60,
-        At: 58,
-        porcentajeA: 96.7,
-        totalA: 58,
-        semillasLS: 2,
-        activo: true,
-        repetido: true,
-        fechaCreacion: '2022-02-20',
-        fechaRepeticion: '2022-02-22',
-        observaciones: 'Lote especial - Requiere repetición'
-      },
-      {
-        id: 3,
-        porcentaje: 99.1,
-        pesoInicial: 110,
-        repeticiones: 1,
-        Pi: 55,
-        At: 54,
-        porcentajeA: 98.2,
-        totalA: 54,
-        semillasLS: 1,
-        activo: true,
-        repetido: true,
-        fechaCreacion: '2023-03-10',
-        fechaRepeticion: '2023-03-12',
-        observaciones: 'Inspección rutinaria de equipos - Repetir análisis'
+    items: PurezaPNotatumDto[] = [];
+
+    cargarItems() {
+      if (this.reciboId == null || isNaN(this.reciboId)) {
+        console.warn('No hay reciboId para listar Pureza P. notatum');
+        this.items = [];
+        return;
       }
-    ];
+      this.purezaPNotatumService.listarPorRecibo(this.reciboId).subscribe({
+        next: (data) => {
+          // El servicio devuelve { purezaPNotatun: [...] }
+          let resolved: any = data;
+          if (resolved == null) {
+            this.items = [];
+          } else if (Array.isArray(resolved)) {
+            this.items = resolved;
+          } else if (Array.isArray(resolved.purezaPNotatun)) {
+            this.items = resolved.purezaPNotatun;
+          } else if (Array.isArray(resolved.data)) {
+            this.items = resolved.data;
+          } else {
+            console.warn('Respuesta inesperada al listar Pureza P. notatum, se esperaba un array o {purezaPNotatun: []}:', resolved);
+            this.items = [];
+          }
+          console.log('Pureza P. notatum cargados:', this.items);
+          this.actualizarAniosDisponibles();
+        },
+        error: (err) => {
+          console.error('Error cargando Pureza P. notatum:', err);
+          this.items = [];
+        }
+      });
+    }
 
     get itemsFiltrados() {
       return this.items.filter(item => {
@@ -128,29 +114,99 @@ export class ListadoPurezaPNotatumComponent {
       return parseInt(partes[0]); // El año está en la posición 0 (YYYY-MM-DD)
     }
 
+    /**
+     * Formatea una fecha (posiblemente en ISO o YYYY-MM-DD[T...] ) a DD/MM/YYYY.
+     * Devuelve cadena vacía si la fecha es inválida o no está presente.
+     */
+    formatFecha(fecha: string | null | undefined): string {
+      if (!fecha) return '';
+      // Extraer la parte de fecha si viene con hora
+      const fechaSolo = fecha.split('T')[0];
+      const partes = fechaSolo.split('-');
+      if (partes.length >= 3 && partes[0].length === 4) {
+        const year = partes[0];
+        const month = partes[1];
+        const day = partes[2];
+        return `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
+      }
+      // Intentar parsear con Date como fallback
+      const d = new Date(fecha);
+      if (isNaN(d.getTime())) return '';
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}-${mm}-${yyyy}`;
+    }
+
     onAnioChange() {
       this.selectedMes = '';
     }
 
     goToHome() {
-      this.router.navigate(['/home']);
+      this.router.navigate([this.loteId, this.reciboId, 'lote-analisis']);
+    }
+
+    /**
+     * Genera la lista de años disponibles basándose en los items cargados
+     */
+    actualizarAniosDisponibles() {
+        const aniosSet = new Set<number>();
+        
+        this.items.forEach(item => {
+            const fechaConTipo = this.getFechaConTipo(item);
+            if (fechaConTipo.fecha) {
+                const anio = this.getAnioFromFecha(fechaConTipo.fecha);
+                if (!isNaN(anio)) {
+                    aniosSet.add(anio);
+                }
+            }
+        });
+
+        // Convertir Set a array y ordenar de menor a mayor (más antiguos primero)
+        const aniosArray = Array.from(aniosSet).sort((a, b) => a - b);
+        
+        // Crear el array de objetos con label e id
+        this.anios = aniosArray.map(anio => ({
+            label: anio.toString(),
+            id: anio
+        }));
+
+        console.log('Años disponibles:', this.anios);
     }
 
     crearPurezaPNotatum() {
       console.log('Navegando para crear nuevo Pureza P. notatum');
-      this.router.navigate(['/pureza-p-notatum/crear']);
+      this.router.navigate([this.loteId, this.reciboId, 'pureza-p-notatum', 'crear']);
+    }
+
+    navegarAVer(item: PurezaPNotatumDto) {
+      console.log('Navegando para ver Pureza P. notatum:', item);
+      this.router.navigate([this.loteId, this.reciboId, 'pureza-p-notatum', item.id], { queryParams: { view: 'true' } });
     }
 
     navegarAEditar(item: PurezaPNotatumDto) {
       console.log('Navegando para editar Pureza P. notatum:', item);
-      this.router.navigate(['/pureza-p-notatum/editar', item.id]);
+      this.router.navigate([this.loteId, this.reciboId, 'pureza-p-notatum', 'editar', item.id]);
     }
 
     eliminarPurezaPNotatum(item: PurezaPNotatumDto) {
       console.log('Eliminar Pureza P. notatum:', item);
       if (confirm(`¿Estás seguro de que quieres eliminar el Pureza P. notatum #${item.id}?`)) {
-        this.items = this.items.filter(pn => pn.id !== item.id);
-        console.log('Pureza P. notatum eliminado');
+        if (item.id == null) {
+          console.warn('Item no tiene id, no se puede eliminar');
+          return;
+        }
+        this.purezaPNotatumService.eliminar(item.id).subscribe({
+          next: (res) => {
+            console.log('Pureza P. notatum eliminado en backend:', res);
+            // Actualizar lista localmente
+            this.items = this.items.filter(pn => pn.id !== item.id);
+          },
+          error: (err) => {
+            console.error('Error eliminando Pureza P. notatum:', err);
+            // Aquí podrías mostrar un mensaje de error al usuario
+          }
+        });
       }
     }
 }

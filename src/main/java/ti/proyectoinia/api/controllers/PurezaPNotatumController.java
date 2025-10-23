@@ -10,7 +10,11 @@ import ti.proyectoinia.api.responses.ResponseListadoGerminacion;
 import ti.proyectoinia.api.responses.ResponseListadoPMS;
 import ti.proyectoinia.api.responses.ResponseListadoPurezaPNotatum;
 import ti.proyectoinia.dtos.PurezaPNotatumDto;
+import ti.proyectoinia.dtos.RepeticionesPPNDTO;
+import ti.proyectoinia.dtos.SanitarioHongoDto;
 import ti.proyectoinia.services.PurezaPNotatumService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping({"api/v1/PurezaPNotatum"})
@@ -71,5 +75,27 @@ public class PurezaPNotatumController {
     @Operation(description = "Lista todas las PurezasPNotatum activas asociadas a un recibo específico")
     public ResponseEntity<ResponseListadoPurezaPNotatum> listarPurezaPNotatumPorRecibo(@PathVariable("id") Long id) {
         return this.purezaPNotatumService.listadoPurezaPNotatumporRecibo(id);
+    }
+
+    @PutMapping("/actualizar-repeticiones/{purezaPNotatumId}")
+    @Secured({"ADMIN"})
+    @Operation(description = "Actualiza los Repeticiones asociados a una PPN, creando, actualizando y eliminando según la lista recibida")
+    public ResponseEntity<String> actualizarRepeticionesCompleto(
+            @PathVariable Long purezaPNotatumId,
+            @RequestBody List<RepeticionesPPNDTO> repeticionesActuales) {
+        try {
+            purezaPNotatumService.actualizarRepeticionesCompleto(purezaPNotatumId, repeticionesActuales);
+            return ResponseEntity.ok("Repeticiones actualizadas correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar repeticiones: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/listar-repeticiones/{purezaPNotatumId}")
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Operation(description = "Lista todos las repeticiones asociados a un sanitario específico")
+    public ResponseEntity<List<RepeticionesPPNDTO>> listarRepeticionesPorPPN(@PathVariable Long purezaPNotatumId) {
+        List<RepeticionesPPNDTO> dtos = purezaPNotatumService.listarRepeticionesPorPPN(purezaPNotatumId);
+        return ResponseEntity.ok(dtos);
     }
 }

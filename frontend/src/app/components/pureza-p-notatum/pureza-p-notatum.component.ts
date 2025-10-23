@@ -8,6 +8,9 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TabsModule } from 'primeng/tabs';
+import { PurezaPNotatumService } from '../../../services/PurezaPNotatumService';
+import { PurezaPNotatumDto } from '../../../models/PurezaPNotatum.dto';
+import { RepeticionPPN } from '../../../models/RepeticionPPN.dto';
 
 @Component({
   selector: 'app-pureza-p-notatum',
@@ -28,147 +31,133 @@ import { TabsModule } from 'primeng/tabs';
 export class PurezaPNotatumComponent implements OnInit {
   // Variables para manejar navegación
   isEditing: boolean = false;
+  isViewing: boolean = false;
   editingId: number | null = null;
+
+  loteId: string | null = '';
+  reciboId: string | null = '';
 
   // Propiedades para checkboxes
   repetido: boolean = false;
   estandar: boolean = false;
 
-  fecha: string = '';
-  pesoInicialGr: number = 0;
-  pesoInicialRedondeo: number = 0;
-  pesoInicialPct: number = 0;
+  // Campos del formulario
   semillaPuraGr: number = 0;
-  semillaPuraRedondeo: number = 0;
   semillaPuraPct: number = 0;
   semillaCultivosGr: number = 0;
-  semillaCultivosRedondeo: number = 0;
   semillaCultivosPct: number = 0;
   semillaMalezasGr: number = 0;
-  semillaMalezasRedondeo: number = 0;
   semillaMalezasPct: number = 0;
   materiaInerteGr: number = 0;
-  materiaInerteRedondeo: number = 0;
   materiaInertePct: number = 0;
-  pesoFinalGr: number = 0;
-  pesoFinalRedondeo: number = 0;
-  pesoFinalPct: number = 0;
 
   comentarios: string = '';
+  activo: boolean = true;
+  fechaCreacion: string | null = null;
+  fechaRepeticion: string | null = null;
+
+  // Tabla de repeticiones
+  repeticiones: RepeticionPPN[] = [];
+
+  // Mantener las repeticiones del backend para edición
+  repeticionesEntries: RepeticionPPN[] = [];
+  deletedRepeticionesIds: number[] = [];
   // Totales para mostrar en el template
   get totalSemillasSanasPeso(): number {
-    return this.repeticiones.reduce((acc, rep) => acc + (rep.semillasSanasPeso || 0), 0);
+    return this.repeticiones.reduce((acc, rep) => acc + (rep.gramosSemillasSanas || 0), 0);
   }
   get totalSemillasContaminadasPeso(): number {
-    return this.repeticiones.reduce((acc, rep) => acc + (rep.semillasContaminadasPeso || 0), 0);
+    return this.repeticiones.reduce((acc, rep) => acc + (rep.gramosContaminadasYVanas || 0), 0);
   }
 
-  repeticiones: Array<{
-    numero: number;
-    semillasPuras: number;
-    pesoSemillasPuras: number;
-    semillasSanasCantidad: number;
-    semillasSanasPeso: number;
-    semillasContaminadasCantidad: number;
-    semillasContaminadasPeso: number;
-    controlPesos: number;
-  }> = [
-    {
-      numero: 1,
-      semillasPuras: 0,
-      pesoSemillasPuras: 0,
-      semillasSanasCantidad: 0,
-      semillasSanasPeso: 0,
-      semillasContaminadasCantidad: 0,
-      semillasContaminadasPeso: 0,
-      controlPesos: 0
-    }
-  ];
-
-  // Datos de prueba (deberían venir de un servicio)
-  private itemsData: any[] = [
-    {
-      id: 1,
-      fecha: '2023-01-15',
-      pesoInicialGr: 100,
-      pesoInicialPct: 0,
-      semillaPuraGr: 80,
-      semillaPuraPct: 80,
-      semillaCultivosGr: 10,
-      semillaCultivosPct: 10,
-      semillaMalezasGr: 5,
-      semillaMalezasPct: 5,
-      materiaInerteGr: 5,
-      materiaInertePct: 5,
-      pesoFinalGr: 100,
-      pesoFinalPct: 100,
-      repeticiones: [
-        {
-          numero: 1,
-          semillasPuras: 50,
-          pesoSemillasPuras: 40,
-          semillasSanasCantidad: 45,
-          semillasSanasPeso: 35,
-          semillasContaminadasCantidad: 5,
-          semillasContaminadasPeso: 5,
-          controlPesos: 40
-        }
-      ]
-    }
-    // ...otros datos de prueba
-  ];
-
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(
+    private route: ActivatedRoute, 
+    private router: Router,
+    private purezaPNotatumService: PurezaPNotatumService
+  ) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       if (params['id']) {
-        this.isEditing = true;
         this.editingId = parseInt(params['id']);
+        // Verificar si es modo visualización por query parameter
+        this.route.queryParams.subscribe(queryParams => {
+          this.isViewing = queryParams['view'] === 'true';
+          this.isEditing = !this.isViewing;
+        });
         this.cargarDatosParaEdicion(this.editingId);
       } else {
         this.isEditing = false;
+        this.isViewing = false;
         this.editingId = null;
-        this.cargarDatos();
+        this.limpiarCampos();
       }
     });
   }
 
-  cargarDatosParaEdicion(id: number) {
-    const item = this.itemsData.find(pureza => pureza.id === id);
-    if (item) {
-      this.fecha = item.fecha || '';
-      this.pesoInicialGr = item.pesoInicialGr || 0;
-      this.pesoInicialPct = item.pesoInicialPct || 0;
-      this.semillaPuraGr = item.semillaPuraGr || 0;
-      this.semillaPuraPct = item.semillaPuraPct || 0;
-      this.semillaCultivosGr = item.semillaCultivosGr || 0;
-      this.semillaCultivosPct = item.semillaCultivosPct || 0;
-      this.semillaMalezasGr = item.semillaMalezasGr || 0;
-      this.semillaMalezasPct = item.semillaMalezasPct || 0;
-      this.materiaInerteGr = item.materiaInerteGr || 0;
-      this.materiaInertePct = item.materiaInertePct || 0;
-      this.pesoFinalGr = item.pesoFinalGr || 0;
-      this.pesoFinalPct = item.pesoFinalPct || 0;
-      this.repeticiones = item.repeticiones || [
-        {
-          numero: 1,
-          semillasPuras: 0,
-          pesoSemillasPuras: 0,
-          semillasSanasCantidad: 0,
-          semillasSanasPeso: 0,
-          semillasContaminadasCantidad: 0,
-          semillasContaminadasPeso: 0,
-          controlPesos: 0
-        }
-      ];
-    }
+  // Getter para determinar si está en modo readonly
+  get isReadonly(): boolean {
+    return this.isViewing;
   }
 
-  cargarDatos() {
-    this.fecha = '';
-    this.pesoInicialGr = 0;
-    this.pesoInicialPct = 0;
+  cargarDatosParaEdicion(id: number) {
+    // Cargar los datos reales desde el servicio
+    this.purezaPNotatumService.obtener(id).subscribe({
+      next: (data: PurezaPNotatumDto) => {
+        console.log('Pureza P. notatum obtenido para editar:', data);
+        // Mapear los campos del DTO al formulario
+        this.semillaPuraGr = data.gramosSemillaPura || 0;
+        this.semillaCultivosGr = data.gramosSemillasCultivos || 0;
+        this.semillaMalezasGr = data.gramosSemillasMalezas || 0;
+        this.materiaInerteGr = data.gramosMateriaInerte || 0;
+        this.comentarios = data.observaciones || '';
+        this.activo = data.activo ?? true;
+        this.repetido = data.repetido ?? false;
+        this.fechaCreacion = data.fechaCreacion || null;
+        this.fechaRepeticion = data.fechaRepeticion || null;
+        this.reciboId = this.route.snapshot.params['reciboId'];
+
+        // Cargar las repeticiones asociadas
+        this.purezaPNotatumService.listarRepeticiones(id).subscribe({
+          next: (reps: RepeticionPPN[]) => {
+            console.log('Repeticiones cargadas para edición:', reps);
+            if (reps && reps.length > 0) {
+              this.repeticionesEntries = reps.map((r) => ({
+                id: r.id ?? null,
+                nroSemillasPuras: r.nroSemillasPuras ?? null,
+                peso: r.peso ?? null,
+                cantidadSemillasSanas: r.cantidadSemillasSanas ?? null,
+                gramosSemillasSanas: r.gramosSemillasSanas ?? null,
+                contaminadasYVanas: r.contaminadasYVanas ?? null,
+                gramosContaminadasYVanas: r.gramosContaminadasYVanas ?? null,
+                purezaPNotatum: r.purezaPNotatum ?? null
+              } as RepeticionPPN));
+              this.repeticiones = [...this.repeticionesEntries];
+              console.log('Repeticiones del backend:', reps);
+              console.log('RepeticionesEntries mapeadas:', this.repeticionesEntries);
+              console.log('Repeticiones mapeadas:', this.repeticiones);
+            } else {
+              this.repeticionesEntries = [];
+              this.repeticiones = [];
+            }
+          },
+          error: (err) => {
+            console.error('Error cargando repeticiones:', err);
+            this.repeticionesEntries = [];
+            this.repeticiones = [];
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error obteniendo Pureza P. notatum:', err);
+      }
+    });
+  }
+
+  limpiarCampos() {
+    this.repeticiones = [];
+    this.repeticionesEntries = [];
+    this.deletedRepeticionesIds = [];
     this.semillaPuraGr = 0;
     this.semillaPuraPct = 0;
     this.semillaCultivosGr = 0;
@@ -177,73 +166,185 @@ export class PurezaPNotatumComponent implements OnInit {
     this.semillaMalezasPct = 0;
     this.materiaInerteGr = 0;
     this.materiaInertePct = 0;
-    this.pesoFinalGr = 0;
-    this.pesoFinalPct = 0;
-    this.repeticiones = [
-      {
-        numero: 1,
-        semillasPuras: 0,
-        pesoSemillasPuras: 0,
-        semillasSanasCantidad: 0,
-        semillasSanasPeso: 0,
-        semillasContaminadasCantidad: 0,
-        semillasContaminadasPeso: 0,
-        controlPesos: 0
-      }
-    ];
+    this.comentarios = '';
+    this.activo = true;
+    this.repetido = false;
+    this.fechaCreacion = null;
+    this.fechaRepeticion = null;
   }
 
   agregarRepeticion() {
-    const nextNum = this.repeticiones.length + 1;
-    this.repeticiones.push({
-      numero: nextNum,
-      semillasPuras: 0,
-      pesoSemillasPuras: 0,
-      semillasSanasCantidad: 0,
-      semillasSanasPeso: 0,
-      semillasContaminadasCantidad: 0,
-      semillasContaminadasPeso: 0,
-      controlPesos: 0
-    });
+    const nuevaRepeticion: RepeticionPPN = {
+      id: null,
+      nroSemillasPuras: null,
+      peso: null,
+      cantidadSemillasSanas: null,
+      gramosSemillasSanas: null,
+      contaminadasYVanas: null,
+      gramosContaminadasYVanas: null,
+      purezaPNotatum: null
+    };
+    this.repeticiones.push(nuevaRepeticion);
+    this.repeticionesEntries.push({...nuevaRepeticion});
+    console.log('Repetición agregada. Total repeticiones:', this.repeticiones.length);
   }
 
   eliminarRepeticion(idx: number) {
-    if (this.repeticiones.length > 1) {
+    if (this.repeticiones.length > 0) {
       this.repeticiones.splice(idx, 1);
-      this.repeticiones.forEach((r, i) => r.numero = i + 1);
+      
+      // Sincronizar repeticionesEntries
+      const removed: RepeticionPPN[] = this.repeticionesEntries.splice(idx, 1);
+      if (removed && removed.length > 0 && removed[0].id) {
+        this.deletedRepeticionesIds.push(removed[0].id as number);
+      }
+      
+      console.log('Repetición eliminada. Total repeticiones:', this.repeticiones.length);
+      console.log('RepeticionesEntries después de eliminar:', this.repeticionesEntries);
     }
+  }
+
+  // Método para sincronizar cambios desde los inputs
+  onRepeticionChange(index: number, field: keyof RepeticionPPN, value: any) {
+    const numericValue = parseFloat(value) || null;
+
+    
+    // Actualizar tanto repeticiones como repeticionesEntries
+    if (this.repeticiones[index]) {
+      (this.repeticiones[index] as any)[field] = numericValue;
+    }
+    if (this.repeticionesEntries[index]) {
+      (this.repeticionesEntries[index] as any)[field] = numericValue;
+    }
+    console.log('RepeticionesEntries actualizadas:', this.repeticionesEntries);
   }
 
   onSubmit() {
-    const purezaData: any = {
-      fecha: this.fecha,
-      pesoInicialGr: this.pesoInicialGr,
-      pesoInicialPct: this.pesoInicialPct,
-      semillaPuraGr: this.semillaPuraGr,
-      semillaPuraPct: this.semillaPuraPct,
-      semillaCultivosGr: this.semillaCultivosGr,
-      semillaCultivosPct: this.semillaCultivosPct,
-      semillaMalezasGr: this.semillaMalezasGr,
-      semillaMalezasPct: this.semillaMalezasPct,
-      materiaInerteGr: this.materiaInerteGr,
-      materiaInertePct: this.materiaInertePct,
-      pesoFinalGr: this.pesoFinalGr,
-      pesoFinalPct: this.pesoFinalPct,
-      repeticiones: this.repeticiones
+    // Sincronizar repeticiones a repeticionesEntries antes de enviar
+    this.repeticionesEntries = this.repeticiones.map(rep => ({...rep}));
+    
+    const reciboIdNum = this.route.snapshot.params['reciboId'] ? Number(this.route.snapshot.params['reciboId']) : null;
+    
+    const purezaData: PurezaPNotatumDto = {
+      id: this.editingId ?? null,
+      gramosSemillaPura: this.semillaPuraGr,
+      gramosSemillasCultivos: this.semillaCultivosGr,
+      gramosSemillasMalezas: this.semillaMalezasGr,
+      gramosMateriaInerte: this.materiaInerteGr,
+      activo: this.activo,
+      repetido: this.repetido,
+      reciboId: reciboIdNum,
+      fechaCreacion: this.fechaCreacion,
+      fechaRepeticion: this.fechaRepeticion,
+      observaciones: this.comentarios
     };
+
     if (this.isEditing && this.editingId) {
-      // Actualizar Pureza existente
+      // Actualizar Pureza P. notatum existente
+      if (this.repetido && (!purezaData.repetido || purezaData.fechaRepeticion == null)) {
+        purezaData.repetido = true;
+        purezaData.fechaRepeticion = new Date().toISOString().split('T')[0];
+      }
       console.log('Actualizando Pureza P. notatum ID:', this.editingId, 'con datos:', purezaData);
+      this.purezaPNotatumService.editar(purezaData).subscribe({
+        next: (res) => {
+          console.log('Pureza P. notatum actualizado correctamente:', res);
+          // Procesar repeticiones
+          this.procesarRepeticionesDespuesDeGuardar(this.editingId!).then(() => {
+            this.safeNavigateToListado();
+          }).catch(err => {
+            console.error('Error procesando repeticiones después de editar:', err);
+            this.safeNavigateToListado();
+          });
+        },
+        error: (err) => {
+          console.error('Error actualizando Pureza P. notatum:', err);
+        }
+      });
     } else {
-      // Crear nueva Pureza
+      // Crear nueva Pureza P. notatum
       console.log('Creando nueva Pureza P. notatum:', purezaData);
+      purezaData.fechaRepeticion = null;
+      purezaData.repetido = false;
+      purezaData.fechaCreacion = new Date().toISOString().split('T')[0];
+      
+      this.purezaPNotatumService.crear(purezaData).subscribe({
+        next: (res) => {
+          console.log('Pureza P. notatum creado correctamente:', res);
+          // Asumiendo que el backend devuelve el ID como texto
+          const nuevoId = parseInt(res);
+          if (!isNaN(nuevoId)) {
+            this.procesarRepeticionesDespuesDeCrear(nuevoId).then(() => {
+              this.safeNavigateToListado();
+            }).catch(err => {
+              console.error('Error creando repeticiones después de crear:', err);
+              this.safeNavigateToListado();
+            });
+          } else {
+            this.safeNavigateToListado();
+          }
+        },
+        error: (err) => {
+          console.error('Error creando Pureza P. notatum:', err);
+        }
+      });
     }
-    // Navegar de vuelta al listado
-    this.router.navigate(['/listado-pureza-p-notatum']);
+  }
+
+  private async procesarRepeticionesDespuesDeCrear(purezaPNotatumId: number): Promise<void> {
+    const payload: RepeticionPPN[] = this.repeticionesEntries.map((r) => ({
+      ...r,
+      purezaPNotatum: purezaPNotatumId
+    }));
+    
+    console.log('Payload repeticiones a crear:', payload);
+    
+    return new Promise((resolve, reject) => {
+      if (!payload || payload.length === 0) return resolve();
+      this.purezaPNotatumService.actualizarRepeticiones(purezaPNotatumId, payload).subscribe({
+        next: (resp) => {
+          console.log('Repeticiones creadas exitosamente:', resp);
+          resolve();
+        },
+        error: (err) => reject(err)
+      });
+    });
+  }
+
+  private async procesarRepeticionesDespuesDeGuardar(purezaPNotatumId: number): Promise<void> {
+    const toSend: RepeticionPPN[] = this.repeticionesEntries.map((r) => ({
+      ...r,
+      purezaPNotatum: purezaPNotatumId
+    }));
+    
+    console.log('Payload repeticiones a editar:', toSend);
+    console.log('IDs de repeticiones a eliminar:', this.deletedRepeticionesIds);
+    
+    return new Promise((resolve, reject) => {
+      if (toSend.length === 0 && this.deletedRepeticionesIds.length === 0) return resolve();
+      
+      this.purezaPNotatumService.actualizarRepeticiones(purezaPNotatumId, toSend).subscribe({
+        next: (resp) => {
+          console.log('Repeticiones actualizadas exitosamente:', resp);
+          resolve();
+        },
+        error: (err) => reject(err)
+      });
+    });
   }
 
   onCancel() {
-    // Navegar de vuelta al listado
-    this.router.navigate(['/listado-pureza-p-notatum']);
+    this.safeNavigateToListado();
+  }
+
+  private safeNavigateToListado() {
+    const lote = this.route.snapshot.params['loteId'];
+    const recibo = this.route.snapshot.params['reciboId'];
+    const segments = [] as string[];
+    if (lote) segments.push(lote);
+    if (recibo) segments.push(recibo);
+    segments.push('listado-pureza-p-notatum');
+    console.log('Navegando a listado con segmentos:', segments);
+    this.router.navigate(segments);
   }
 }

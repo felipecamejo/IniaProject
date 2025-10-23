@@ -15,29 +15,17 @@ public class PurezaPNotatum {
     @Column(name = "PUREZA_PNOTATUM_ID")
     private Long Id;
 
-    @Column(name = "PUREZA_PORCENTAJE")
-    private Float porcentaje;
+    @Column(name = "GRAMOS_SEMILLA_PURA" )
+    private Float gramosSemillaPura;
 
-    @Column(name = "PUREZA_PESO_INICIAL")
-    private Float pesoInicial;
+    @Column(name = "GRAMOS_SEMILLA_CULTIVOS" )
+    private Float gramosSemillasCultivos;
 
-    @Column(name = "PUREZA_REPETICIONES")
-    private Integer repeticiones;
+    @Column(name = "GRAMOS_SEMILLA_MALEZAS" )
+    private Float gramosSemillasMalezas;
 
-    @Column(name = "PUREZA_PI")
-    private Float Pi;
-
-    @Column(name = "PUREZA_AT")
-    private Float At;
-
-    @Column(name = "PUREZA_PORCENTAJE_A")
-    private Float porcentajeA;
-
-    @Column(name = "PUREZA_TOTAL_A")
-    private Integer totalA;
-
-    @Column(name = "PUREZA_SEMILLAS_LS")
-    private Float semillasLS;
+    @Column(name = "GRAMOS_MATERIOA_INERTE" )
+    private Float gramosMateriaInerte;
 
     @ManyToOne
     @JoinColumn(name = "RECIBO_ID")
@@ -54,4 +42,7 @@ public class PurezaPNotatum {
 
     @Column(name = "PUREZA_PNOTATUM_FECHA_REPETICION")
     private Date fechaRepeticion;
+
+    @Column(name = "PUREZA_PNOTATUM_OBSERVACIONES")
+    private String observaciones;
 }
