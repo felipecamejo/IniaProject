@@ -1,4 +1,15 @@
 <div class="container">
+    <!-- Panel de Notificaciones -->
+    <app-notification-panel 
+        [notifications]="notifications"
+        [isOpen]="isNotificationPanelOpen"
+        [maxNotifications]="5"
+        [autoDismissDuration]="5000"
+        (notificationRead)="onNotificationRead($event)"
+        (notificationDismissed)="onNotificationDismissed($event)"
+        (panelToggled)="onPanelToggled($event)">
+    </app-notification-panel>
+
     <p-card class="card">
         <ng-template pTemplate="header">
             <h2 class="title">Recibo</h2>

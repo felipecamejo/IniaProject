@@ -18,6 +18,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 
+// Notification Panel
+import { NotificationPanelComponent, NotificationData } from '../notification-panel/notification-panel';
+
 @Component({
   selector: 'app-recibo',
   standalone: true,
@@ -29,7 +32,8 @@ import { ButtonModule } from 'primeng/button';
     CardModule,
     InputTextModule,
     InputNumberModule,
-    ButtonModule
+    ButtonModule,
+    NotificationPanelComponent
   ]
 })
 export class ReciboComponent implements OnInit {
@@ -99,6 +103,10 @@ export class ReciboComponent implements OnInit {
     { label: 'Cámara 3', value: HumedadLugarDto.Camara3 },
     { label: 'Cosecha', value: HumedadLugarDto.Cosecha }
   ];
+
+  // Propiedades para notificaciones
+  notifications: NotificationData[] = [];
+  isNotificationPanelOpen: boolean = false;
 
   constructor(
     private reciboService: ReciboService,
@@ -300,6 +308,9 @@ export class ReciboComponent implements OnInit {
           return;
         }
 
+        // Mostrar notificación de éxito
+        this.showSuccessNotification(reciboId);
+
         // Guardar las humedades con el ID del recibo
         this.guardarHumedades(reciboId);
 
@@ -307,11 +318,16 @@ export class ReciboComponent implements OnInit {
         this.reciboId = reciboId;
         this.isEditing = true;
 
-        // Navegar de vuelta a lote-analisis
-        console.log('Navegando a lote-analisis con loteId:', this.lote2, 'reciboId:', reciboId);
-        this.router.navigate([`/${this.lote2}/${reciboId}/lote-analisis`]);
+        // Navegar de vuelta a lote-analisis después de un breve delay para mostrar la notificación
+        setTimeout(() => {
+          console.log('Navegando a lote-analisis con loteId:', this.lote2, 'reciboId:', reciboId);
+          this.router.navigate([`/${this.lote2}/${reciboId}/lote-analisis`]);
+        }, 2000);
       },
-      error: (err: any) => console.error('Error creando recibo', err)
+      error: (err: any) => {
+        console.error('Error creando recibo', err);
+        this.showErrorNotification();
+      }
     });
   }
 
@@ -438,5 +454,44 @@ export class ReciboComponent implements OnInit {
       lugar: null
     } as HumedadReciboDto);
     console.log('Humedad agregada. Total humedades:', this.humedades.length);
+  }
+
+  // Métodos para manejo de notificaciones
+  showSuccessNotification(reciboId: number) {
+    const successNotification: NotificationData = {
+      title: 'Recibo creado con éxito',
+      message: `El recibo ha sido creado exitosamente con ID: ${reciboId}. Puede continuar con los análisis.`,
+      type: 'success',
+      autoDismiss: true,
+      duration: 5000
+    };
+    
+    this.notifications.unshift(successNotification);
+    this.isNotificationPanelOpen = true;
+  }
+
+  showErrorNotification() {
+    const errorNotification: NotificationData = {
+      title: 'Error al crear recibo',
+      message: 'Ha ocurrido un error al crear el recibo. Por favor, intente nuevamente.',
+      type: 'error',
+      autoDismiss: true,
+      duration: 7000
+    };
+    
+    this.notifications.unshift(errorNotification);
+    this.isNotificationPanelOpen = true;
+  }
+
+  onNotificationRead(notification: NotificationData) {
+    console.log('Notificación leída:', notification);
+  }
+
+  onNotificationDismissed(notification: NotificationData) {
+    console.log('Notificación descartada:', notification);
+  }
+
+  onPanelToggled(isOpen: boolean) {
+    this.isNotificationPanelOpen = isOpen;
   }
 }

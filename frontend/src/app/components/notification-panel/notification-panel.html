@@ -1,0 +1,46 @@
+<div class="notification-panel">
+  <button class="notification-toggle" (click)="togglePanel()">
+    <i class="notification-icon">🔔</i>
+    <span class="notification-count" *ngIf="notifications.length > 0">{{ notifications.length }}</span>
+  </button>
+
+  <div class="notification-dropdown" *ngIf="isOpen" [@slideInOut]>
+    <div class="notification-header">
+      <h3>Notificaciones</h3>
+      <button class="clear-all-btn" (click)="clearAll()">Limpiar todo</button>
+    </div>
+    
+    <div class="notification-list">
+      <div *ngIf="notifications.length === 0" class="no-notifications">
+        No hay notificaciones
+      </div>
+      
+      <div *ngFor="let notification of notifications; trackBy: trackByNotificationId" 
+           class="notification-item" 
+           [class]="getNotificationClass(notification)"
+           [class.unread]="!notification.read"
+           [@fadeInOut]
+           (click)="markAsRead(notification)">
+        
+        <div class="notification-content">
+          <div class="notification-header-content">
+            <div class="notification-icon-container">
+              <span class="notification-type-icon">{{ getNotificationIcon(notification) }}</span>
+            </div>
+            <div class="notification-text">
+              <h4 class="notification-title">{{ notification.title }}</h4>
+              <p class="notification-message">{{ notification.message }}</p>
+            </div>
+            <button class="dismiss-btn" (click)="dismissNotification(notification); $event.stopPropagation()" 
+                    title="Cerrar notificación">
+              ✕
+            </button>
+          </div>
+          <div class="notification-footer">
+            <span class="notification-time">{{ notification.timestamp | date:'short' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
