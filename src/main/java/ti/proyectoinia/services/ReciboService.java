@@ -22,7 +22,7 @@ public class ReciboService {
         this.loteRepository = loteRepository;
     }
 
-    public String crearRecibo(ReciboDto reciboDto) {
+    public ReciboDto crearRecibo(ReciboDto reciboDto) {
         // Validar que el lote existe y está activo
         if (reciboDto.getLoteId() != null) {
             Lote lote = loteRepository.findById(Long.valueOf(reciboDto.getLoteId())).orElse(null);
@@ -31,7 +31,9 @@ public class ReciboService {
             }
         }
 
-        return "Recibo creado correctamente ID:" + this.reciboRepository.save(mapsDtoEntityService.mapToEntityRecibo(reciboDto)).getId();
+        // Guardar el recibo y devolver el DTO creado
+        Recibo reciboGuardado = this.reciboRepository.save(mapsDtoEntityService.mapToEntityRecibo(reciboDto));
+        return mapsDtoEntityService.mapToDtoRecibo(reciboGuardado);
     }
 
     public ReciboDto obtenerReciboPorId(Long id) {

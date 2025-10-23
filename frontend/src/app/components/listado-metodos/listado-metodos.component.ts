@@ -124,11 +124,30 @@ export class ListadoMetodosComponent implements OnInit, OnDestroy {
       this.modalLoading = true;
       this.modalError = '';
 
+      // Validaciones del frontend para evitar errores 400 del backend
+      if (!this.modalNombre || this.modalNombre.trim() === '') {
+        this.modalError = 'El nombre del método es obligatorio';
+        this.modalLoading = false;
+        return;
+      }
+
+      if (this.modalNombre.match(/\d/)) {
+        this.modalError = 'El nombre del método no puede contener números';
+        this.modalLoading = false;
+        return;
+      }
+
+      if (!this.modalAutor || this.modalAutor.trim() === '') {
+        this.modalError = 'El autor del método es obligatorio';
+        this.modalLoading = false;
+        return;
+      }
+
       const metodo: MetodoDto = { 
         id: this.itemEditandoId,
-        nombre: this.modalNombre,
-        autor: this.modalAutor,
-        descripcion: this.modalDescripcion,
+        nombre: this.modalNombre.trim(),
+        autor: this.modalAutor.trim(),
+        descripcion: this.modalDescripcion?.trim() || '',
         activo: true
       };
 
@@ -143,7 +162,8 @@ export class ListadoMetodosComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             console.error('Error editando método', err);
-            this.modalError = 'Error al actualizar el método';
+            // Mostrar mensaje específico del backend si está disponible
+            this.modalError = err.error || 'Error al actualizar el método';
             this.modalLoading = false;
           }
         });
@@ -158,7 +178,8 @@ export class ListadoMetodosComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             console.error('Error creando método', err);
-            this.modalError = 'Error al crear el método';
+            // Mostrar mensaje específico del backend si está disponible
+            this.modalError = err.error || 'Error al crear el método';
             this.modalLoading = false;
           }
         });

@@ -29,8 +29,8 @@ public class ReciboController {
     public ResponseEntity<?> crearRecibo(@RequestBody ReciboDto reciboDto) {
         try {
             reciboDto.setId((Long) null);
-            String response = this.reciboService.crearRecibo(reciboDto);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
+            ReciboDto reciboCreado = this.reciboService.crearRecibo(reciboDto);
+            return new ResponseEntity<>(reciboCreado, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             // Return the validation message to help debugging client errors
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
