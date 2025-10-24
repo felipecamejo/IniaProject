@@ -28,7 +28,6 @@ import { ListadoDepositosComponent } from './components/listado-depositos/listad
 import { ListadoUsuariosComponent } from './components/listado-usuarios/listado-usuarios.component';
 import { UsuarioComponent } from './components/usuario/usuario.component';
 import { ListadoMetodosComponent } from './components/listado-metodos/listado-metodos.component';
-import { ChartComponent } from './components/chart/chart.component';
 
 export const routes: Routes = [
     //rutas generales
@@ -63,7 +62,6 @@ export const routes: Routes = [
     { path : 'usuario/crear', component: UsuarioComponent },
     { path : 'usuario/editar/:id', component: UsuarioComponent },
     { path : 'lote/crear', component: LoteComponent },
-    { path : 'chart', component: ChartComponent },
 
     //formularios asociados a un lote
     { path : ':loteId/recibo/crear', component: ReciboComponent },

@@ -1,12 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { PMSDto } from '../../../models/PMS.dto';
 import { DOSNDto } from '../../../models/DOSN.dto';
+import { DOSNService } from '../../../services/DOSNService';
 
 @Component({
   selector: 'app-listado-dosn.component',
@@ -15,12 +16,27 @@ import { DOSNDto } from '../../../models/DOSN.dto';
   templateUrl: './listado-dosn.component.html',
   styleUrl: './listado-dosn.component.scss'
 })
-export class ListadoDosnComponent {
-    constructor(private router: Router) {}
+export class ListadoDosnComponent implements OnInit {
+    constructor(
+        private router: Router, 
+        private route: ActivatedRoute,
+        private dosnService: DOSNService
+    ) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
     searchText: string = '';
+
+    loteId: string = '';
+    private _reciboId: string = '';
+    
+    get reciboId(): string {
+        return this._reciboId;
+    }
+    
+    set reciboId(value: string) {
+        this._reciboId = value;
+    }
 
     meses = [
       { label: 'Enero', id: 1 },
@@ -37,100 +53,57 @@ export class ListadoDosnComponent {
       { label: 'Diciembre', id: 12 }
     ];
 
-    anios = [
-      { label: '2020', id: 2020 },
-      { label: '2021', id: 2021 },
-      { label: '2022', id: 2022 },
-      { label: '2023', id: 2023 },
-      { label: '2024', id: 2024 }
-    ];
+    anios: { label: string, id: number }[] = [];
 
-    items: DOSNDto[] = [
-      {
-        id: 1,
-        fechaINIA: '2023-01-15T00:00:00',
-        fechaINASE: '2023-01-16T00:00:00',
-        gramosAnalizadosINIA: 100,
-        gramosAnalizadosINASE: 120,
-        tiposDeanalisisINIA: 'COMPLETO',
-        tiposDeanalisisINASE: 'REDUCIDO',
-        determinacionBrassica: false,
-        determinacionBrassicaGramos: 0,
-        determinacionCuscuta: false,
-        determinacionCuscutaGramos: 0,
-        estandar: true,
-        fechaAnalisis: '2023-01-15T00:00:00',
-        malezasNormalesINIAId: [1,2],
-        malezasNormalesINASEId: [2],
-        malezasToleradasINIAId: [],
-        malezasToleradasINASEId: [3],
-        malezasToleranciaCeroINIAId: [],
-        malezasToleranciaCeroINASEId: [],
-        cultivosINIAId: [1],
-        cultivosINASEId: [2,3],
-        activo: true,
-        repetido: false,
-        fechaCreacion: '2023-01-15',
-        fechaRepeticion: null,
-        observaciones: 'Sin observaciones'
-      },
-      {
-        id: 2,
-        fechaINIA: '2022-02-20T00:00:00',
-        fechaINASE: '2022-02-21T00:00:00',
-        gramosAnalizadosINIA: 80,
-        gramosAnalizadosINASE: 90,
-        tiposDeanalisisINIA: 'REDUCIDO',
-        tiposDeanalisisINASE: 'LIMITADO',
-        determinacionBrassica: true,
-        determinacionBrassicaGramos: 0.5,
-        determinacionCuscuta: false,
-        determinacionCuscutaGramos: 0,
-        estandar: false,
-        fechaAnalisis: '2022-02-20T00:00:00',
-        malezasNormalesINIAId: [],
-        malezasNormalesINASEId: [],
-        malezasToleradasINIAId: [1],
-        malezasToleradasINASEId: [],
-        malezasToleranciaCeroINIAId: [],
-        malezasToleranciaCeroINASEId: [2],
-        cultivosINIAId: [2],
-        cultivosINASEId: [],
-        activo: true,
-        repetido: true,
-        fechaCreacion: '2022-02-20',
-        fechaRepeticion: '2022-02-22',
-        observaciones: null
-      },
-      {
-        id: 3,
-        fechaINIA: '2023-03-10T00:00:00',
-        fechaINASE: '2023-03-11T00:00:00',
-        gramosAnalizadosINIA: 110,
-        gramosAnalizadosINASE: 115,
-        tiposDeanalisisINIA: 'COMPLETO',
-        tiposDeanalisisINASE: 'REDUCIDO_LIMITADO',
-        determinacionBrassica: false,
-        determinacionBrassicaGramos: 0,
-        determinacionCuscuta: true,
-        determinacionCuscutaGramos: 0.2,
-        estandar: true,
-        fechaAnalisis: '2023-03-10T00:00:00',
-        malezasNormalesINIAId: [],
-        malezasNormalesINASEId: [1],
-        malezasToleradasINIAId: [],
-        malezasToleradasINASEId: [],
-        malezasToleranciaCeroINIAId: [],
-        malezasToleranciaCeroINASEId: [],
-        cultivosINIAId: [],
-        cultivosINASEId: [4],
-        activo: true,
-        repetido: true,
-        fechaCreacion: '2023-03-10',
-        fechaRepeticion: '2023-03-12',
-        observaciones: 'Revisión completa'
-      }
-    ];
+    items: DOSNDto[] = [];
+
+    ngOnInit() {
+       this.loteId = this.route.snapshot.params['loteId'];
+       this.reciboId = this.route.snapshot.params['reciboId'];
+       this.cargarDosn();
+    }
+
+    cargarDosn() {
+        this.dosnService.listarPorRecibo(parseInt(this.reciboId)).subscribe({
+            next: (response) => {
+                this.items = response.DOSN;
+                console.log('DOSN cargadas:', this.items);
+                // Actualizar años disponibles después de cargar los items
+                this.actualizarAniosDisponibles();
+            },
+            error: (error) => {
+                console.error('Error al cargar DOSN:', error);
+            }
+        });
+    }
+
+    /**
+     * Genera la lista de años disponibles basándose en los items cargados
+     */
+    actualizarAniosDisponibles() {
+        const aniosSet = new Set<number>();
+        
+        this.items.forEach(item => {
+            const fechaConTipo = this.getFechaConTipo(item);
+            if (fechaConTipo.fecha) {
+                const anio = this.getAnioFromFecha(fechaConTipo.fecha);
+                if (!isNaN(anio)) {
+                    aniosSet.add(anio);
+                }
+            }
+        });
+
+        // Convertir Set a array y ordenar de menor a mayor (más antiguos primero)
+        const aniosArray = Array.from(aniosSet).sort((a, b) => a - b);
+        
+        // Crear el array de objetos con label e id
+        this.anios = aniosArray.map(anio => ({
+            label: anio.toString(),
+            id: anio
+        }));
+
+        console.log('Años disponibles:', this.anios);
+    }
 
     get itemsFiltrados() {
       return this.items.filter(item => {
@@ -154,6 +127,38 @@ export class ListadoDosnComponent {
       return { fecha: item.fechaCreacion || '', tipo: 'Creación' };
     }
 
+    /**
+     * Obtiene la fecha formateada según si es pendiente (fechaCreacion) o repetido (fechaRepeticion)
+     */
+    getFechaFormateada(item: DOSNDto): string {
+      const fechaConTipo = this.getFechaConTipo(item);
+      return this.formatFecha(fechaConTipo.fecha);
+    }
+
+    /**
+     * Formatea una fecha (posiblemente en ISO o YYYY-MM-DD[T...] ) a DD/MM/YYYY.
+     * Devuelve cadena vacía si la fecha es inválida o no está presente.
+     */
+    formatFecha(fecha: string | null | undefined): string {
+      if (!fecha) return '';
+      // Extraer la parte de fecha si viene con hora
+      const fechaSolo = fecha.split('T')[0];
+      const partes = fechaSolo.split('-');
+      if (partes.length >= 3 && partes[0].length === 4) {
+        const year = partes[0];
+        const month = partes[1];
+        const day = partes[2];
+        return `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
+      }
+      // Intentar parsear con Date como fallback
+      const d = new Date(fecha);
+      if (isNaN(d.getTime())) return '';
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}-${mm}-${yyyy}`;
+    }
+
     getMesFromFecha(fecha: string): number {
       const partes = fecha.split('-');
       return parseInt(partes[1]); // El mes está en la posición 1 (YYYY-MM-DD)
@@ -169,24 +174,40 @@ export class ListadoDosnComponent {
     }
 
     goToHome() {
-      this.router.navigate(['/home']);
+      this.router.navigate([this.loteId, this.reciboId, 'lote-analisis']);
     }
 
     crearDOSN() {
       console.log('Navegando para crear nuevo DOSN');
-      this.router.navigate(['/dosn/crear']);
+      this.router.navigate([this.loteId, this.reciboId, 'dosn', 'crear']);
+    }
+
+    navegarAVer(item: DOSNDto) {
+      console.log('Navegando para ver DOSN:', item);
+      this.router.navigate([this.loteId, this.reciboId, 'dosn', item.id], { queryParams: { view: 'true' } });
     }
 
     navegarAEditar(item: DOSNDto) {
       console.log('Navegando para editar DOSN:', item);
-      this.router.navigate(['/dosn/editar', item.id]);
+      this.router.navigate([this.loteId, this.reciboId, 'dosn', 'editar', item.id]);
     }
 
     eliminarDOSN(item: DOSNDto) {
       console.log('Eliminar DOSN:', item);
+      
       if (confirm(`¿Estás seguro de que quieres eliminar el DOSN #${item.id}?`)) {
-        this.items = this.items.filter(dosn => dosn.id !== item.id);
-        console.log('DOSN eliminado');
+          if (item.id) {
+              this.dosnService.eliminar(item.id).subscribe({
+                  next: (response) => {
+                      console.log('DOSN eliminado exitosamente:', response);
+                      // Recargar la lista después de eliminar
+                      this.cargarDosn();
+                  },
+                  error: (error) => {
+                      console.error('Error al eliminar el DOSN:', error);
+                  }
+              });
+          }
       }
     }
 }

@@ -63,7 +63,4 @@ export class HomeComponent {
     this.router.navigate(['/grafica-analisis/crear']);
   }
 
-  goToChart() {
-    this.router.navigate(['/chart']);
-  }
 }
