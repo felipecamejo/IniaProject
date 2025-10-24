@@ -102,6 +102,7 @@ export class PmsComponent implements OnInit {
               this.comentarios = data.comentarios || '';
               this.activo = data.activo ?? true;
               this.repetido = data.repetido ?? false;
+              this.estandar = (data as any).estandar ?? false;
               this.reciboId = this.route.snapshot.params['reciboId'];
               this.fechaCreacion = data.fechaCreacion || null;
               this.fechaRepeticion = data.fechaRepeticion || null;
@@ -151,7 +152,7 @@ export class PmsComponent implements OnInit {
 
     // Getter para determinar si está en modo readonly
     get isReadonly(): boolean {
-        return this.isViewing;
+        return this.isViewing || this.estandar || this.repetido;
     }
 
     // Métodos para manejar las repeticiones
@@ -219,6 +220,7 @@ export class PmsComponent implements OnInit {
       this.comentarios = '';
       this.activo = true;
       this.repetido = false;
+      this.estandar = false;
       this.reciboId = null;
       this.fechaCreacion = null;
       this.fechaRepeticion = null;
@@ -239,6 +241,7 @@ export class PmsComponent implements OnInit {
         comentarios: this.comentarios,
         activo: this.activo,
         repetido: this.repetido,
+        estandar: this.estandar,
         reciboId: this.route.snapshot.params['reciboId'] ? Number(this.route.snapshot.params['reciboId']) : null,
         fechaCreacion: this.fechaCreacion,
         fechaRepeticion: this.fechaRepeticion

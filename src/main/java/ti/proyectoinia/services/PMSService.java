@@ -42,6 +42,19 @@ public class PMSService {
     }
 
     public String editarPMS(PMSDto pmsDto) {
+        if (pmsDto.getId() == null) {
+            throw new IllegalArgumentException("ID de PMS requerido para editar");
+        }
+        PMS existente = this.pmsRepository.findById(pmsDto.getId()).orElse(null);
+        if (existente == null) {
+            throw new IllegalArgumentException("PMS no encontrado");
+        }
+        if (!existente.isActivo()) {
+            throw new IllegalStateException("No se puede editar un PMS inactivo");
+        }
+        if (existente.isRepetido() || existente.isEstandar()) {
+            throw new IllegalStateException("No se puede editar un PMS marcado como repetido o estándar");
+        }
         this.pmsRepository.save(mapsDtoEntityService.mapToEntityPMS(pmsDto));
         return "PMS actualizado correctamente ID:" + pmsDto.getId();
     }

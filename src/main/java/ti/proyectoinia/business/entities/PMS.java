@@ -41,6 +41,9 @@ public class PMS {
     @Column(name = "PMS_REPETIDO")
     private boolean repetido;
 
+    @Column(name = "PMS_ESTANDAR")
+    private boolean estandar;
+
     @Column(name = "PMS_FECHA_CREACION")
     private Date fechaCreacion;
 

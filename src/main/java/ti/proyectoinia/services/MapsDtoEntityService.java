@@ -477,6 +477,7 @@ public class MapsDtoEntityService {
         pmsDto.setComentarios(pms.getComentarios());
         pmsDto.setActivo(pms.isActivo());
         pmsDto.setRepetido(pms.isRepetido());
+        pmsDto.setEstandar(pms.isEstandar());
         pmsDto.setFechaCreacion(pms.getFechaCreacion());
         pmsDto.setFechaRepeticion(pms.getFechaRepeticion());
 
@@ -502,6 +503,7 @@ public class MapsDtoEntityService {
         pms.setComentarios(pmsDto.getComentarios());
         pms.setActivo(pmsDto.isActivo());
         pms.setRepetido(pmsDto.isRepetido());
+        pms.setEstandar(pmsDto.isEstandar());
         pms.setFechaCreacion(pmsDto.getFechaCreacion());
         pms.setFechaRepeticion(pmsDto.getFechaRepeticion());
 
