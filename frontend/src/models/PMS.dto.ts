@@ -9,7 +9,6 @@ export interface PMSDto {
   comentarios: string;
   activo: boolean;
   repetido: boolean;
-  estandar: boolean;
   reciboId: number | null;
   fechaCreacion: string | null;
   fechaRepeticion: string | null;
