@@ -67,6 +67,19 @@ export class LoteService {
       })
     );
   }
+
+  verificarAsociacionReciboLote(loteId: number, reciboId: number): Observable<boolean> {
+    return this.http.get(
+      `${this.urlService.baseUrl}${this.endpoint}/verificar-asociacion/${loteId}/${reciboId}`,
+      { responseType: 'text' }
+    ).pipe(
+      map((response: string) => {
+        console.log('Respuesta de verificación de asociación:', response);
+        // Si la respuesta contiene "Asociación correcta", es true
+        return response.includes('Asociación correcta');
+      })
+    );
+  }
 }
 
 

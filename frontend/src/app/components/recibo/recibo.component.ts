@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReciboService } from '../../../services/ReciboService';
+import { LoteService } from '../../../services/LoteService';
 import { ReciboDto } from '../../../models/Recibo.dto';
 import { ReciboEstado } from '../../../models/enums';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -110,6 +111,7 @@ export class ReciboComponent implements OnInit {
 
   constructor(
     private reciboService: ReciboService,
+    private loteService: LoteService,
     private depositoService: DepositoService,
     private humedadReciboService: HumedadReciboService,
     private route: ActivatedRoute,
@@ -291,7 +293,7 @@ export class ReciboComponent implements OnInit {
       remitente: this.remite || null,
       origen: this.origen || null,
       cultivar: this.selectedCultivar || null,
-      loteId: Number(this.lote) || null,
+      loteId: Number(this.lote2) || null,
       kgLimpios: Number(this.kilos) || null,
       analisisSolicitados: this.rec || null,
       articulo: this.articulo,
@@ -307,6 +309,9 @@ export class ReciboComponent implements OnInit {
           console.error('No se pudo obtener un ID válido del recibo creado');
           return;
         }
+
+        // VALIDACIÓN: Verificar que el recibo se asoció correctamente al lote
+        this.verificarAsociacionReciboLote(Number(this.lote2), reciboId);
 
         // Mostrar notificación de éxito
         this.showSuccessNotification(reciboId);
@@ -361,7 +366,7 @@ export class ReciboComponent implements OnInit {
       remitente: this.remite || base.remitente || null,
       origen: this.origen || base.origen || null,
       cultivar: this.selectedCultivar || base.cultivar || null,
-      loteId: Number(this.lote) || base.loteId || null,
+      loteId: Number(this.lote2) || base.loteId || null,
       kgLimpios: Number(this.kilos) || base.kgLimpios || null,
       analisisSolicitados: this.rec || base.analisisSolicitados || null,
       articulo: this.articulo ?? base.articulo ?? null,
@@ -457,10 +462,12 @@ export class ReciboComponent implements OnInit {
   }
 
   // Métodos para manejo de notificaciones
-  showSuccessNotification(reciboId: number) {
+  showSuccessNotification(reciboId: number, customMessage?: string) {
+    const message = customMessage || `El recibo ha sido creado exitosamente con ID: ${reciboId}. Puede continuar con los análisis.`;
+    
     const successNotification: NotificationData = {
       title: 'Recibo creado con éxito',
-      message: `El recibo ha sido creado exitosamente con ID: ${reciboId}. Puede continuar con los análisis.`,
+      message: message,
       type: 'success',
       autoDismiss: true,
       duration: 5000
@@ -470,10 +477,12 @@ export class ReciboComponent implements OnInit {
     this.isNotificationPanelOpen = true;
   }
 
-  showErrorNotification() {
+  showErrorNotification(customMessage?: string) {
+    const message = customMessage || 'Ha ocurrido un error al crear el recibo. Por favor, intente nuevamente.';
+    
     const errorNotification: NotificationData = {
       title: 'Error al crear recibo',
-      message: 'Ha ocurrido un error al crear el recibo. Por favor, intente nuevamente.',
+      message: message,
       type: 'error',
       autoDismiss: true,
       duration: 7000
@@ -493,5 +502,31 @@ export class ReciboComponent implements OnInit {
 
   onPanelToggled(isOpen: boolean) {
     this.isNotificationPanelOpen = isOpen;
+  }
+
+  /**
+   * Verifica que el recibo se haya asociado correctamente al lote
+   * @param loteId ID del lote
+   * @param reciboId ID del recibo
+   */
+  verificarAsociacionReciboLote(loteId: number, reciboId: number): void {
+    console.log('=== VALIDACIÓN FRONTEND: Verificando asociación recibo-lote ===');
+    console.log('LoteId:', loteId, 'ReciboId:', reciboId);
+    
+    this.loteService.verificarAsociacionReciboLote(loteId, reciboId).subscribe({
+      next: (asociacionCorrecta: boolean) => {
+        if (asociacionCorrecta) {
+          console.log('✅ VALIDACIÓN EXITOSA: El recibo se asoció correctamente al lote');
+          this.showSuccessNotification(reciboId, 'Recibo creado y asociado correctamente al lote');
+        } else {
+          console.error('❌ VALIDACIÓN FALLIDA: El recibo NO se asoció correctamente al lote');
+          this.showErrorNotification('Error: El recibo no se asoció correctamente al lote');
+        }
+      },
+      error: (error: any) => {
+        console.error('❌ ERROR en la verificación de asociación:', error);
+        this.showErrorNotification('Error al verificar la asociación recibo-lote');
+      }
+    });
   }
 }

@@ -98,4 +98,20 @@ public class LoteController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(reciboOpt.get().toString());
     }
+
+    @GetMapping("/verificar-asociacion/{loteId}/{reciboId}")
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Operation(description = "Verifica que un recibo esté correctamente asociado a un lote")
+    public ResponseEntity<String> verificarAsociacionReciboLote(
+            @PathVariable Long loteId, 
+            @PathVariable Long reciboId) {
+        boolean asociacionCorrecta = loteService.verificarAsociacionReciboLote(loteId, reciboId);
+        
+        if (asociacionCorrecta) {
+            return ResponseEntity.ok("Asociación correcta: Recibo " + reciboId + " está asociado al Lote " + loteId);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Asociación incorrecta: Recibo " + reciboId + " no está asociado al Lote " + loteId);
+        }
+    }
 }
