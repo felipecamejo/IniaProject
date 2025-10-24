@@ -73,7 +73,7 @@ public class GerminacionTablasController {
         }
     }
 
-    @GetMapping({"/{germinacionId}/matriz", "/{germinacionId}/resumen"})
+    @GetMapping("/{germinacionId}/resumen")
     @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(description = "Devuelve un resumen estructurado para la germinación: lista de conteos, normales por conteo para cada tratamiento y finales por repetición.")
     public ResponseEntity<Map<String, Object>> obtenerResumen(@PathVariable Long germinacionId) {

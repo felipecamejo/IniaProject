@@ -195,6 +195,22 @@ public class MapsDtoEntityService {
         }
 
         Germinacion germinacion = new Germinacion();
+        // Fallback de depuración: imprimir lo que llega antes de mapear
+        try {
+            System.out.println("[mapToEntityGerminacion] DTO -> " +
+                    "pNormalINIA=" + dto.getPNormalINIA() + ", " +
+                    "pNormalINASE=" + dto.getPNormalINASE() + ", " +
+                    "pAnormalINIA=" + dto.getPAnormalINIA() + ", " +
+                    "pAnormalINASE=" + dto.getPAnormalINASE() + ", " +
+                    "pMuertasINIA=" + dto.getPMuertasINIA() + ", " +
+                    "pMuertasINASE=" + dto.getPMuertasINASE() + ", " +
+                    "pFrescasINIA=" + dto.getPFrescasINIA() + ", " +
+                    "pFrescasINASE=" + dto.getPFrescasINASE() + ", " +
+                    "semillasDurasINIA=" + dto.getSemillasDurasINIA() + ", " +
+                    "semillasDurasINASE=" + dto.getSemillasDurasINASE() + ", " +
+                    "germinacionINIA=" + dto.getGerminacionINIA() + ", " +
+                    "germinacionINASE=" + dto.getGerminacionINASE());
+        } catch (Exception ignored) {}
         germinacion.setId(dto.getId());
         germinacion.setFechaInicio(dto.getFechaInicio());
         germinacion.setTotalDias(dto.getTotalDias());

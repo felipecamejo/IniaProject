@@ -1,5 +1,7 @@
 package ti.proyectoinia.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.ErrorResponse;
@@ -17,6 +19,7 @@ public class GerminacionService {
     private final GerminacionRepository germinacionRepository;
     private final MapsDtoEntityService mapsDtoEntityService;
     private final GerminacionMatrizService germinacionMatrizService;
+    private static final Logger log = LoggerFactory.getLogger(GerminacionService.class);
 
     public GerminacionService(GerminacionRepository germinacionRepository, MapsDtoEntityService mapsDtoEntityService, GerminacionMatrizService germinacionMatrizService) {
         this.mapsDtoEntityService = mapsDtoEntityService;
@@ -28,6 +31,36 @@ public class GerminacionService {
         // 1) Persistir germinación
         Germinacion saved = this.germinacionRepository.save(mapsDtoEntityService.mapToEntityGerminacion(germinacionDto));
         Long germinacionId = saved.getId();
+
+        // Log de confirmación de campos persistidos
+        try {
+            log.info("Germinacion guardada ID {} - pNormal(INIA/INASE): {}/{}; pAnormal: {}/{}; pMuertas: {}/{}; pFrescas: {}/{}; semillasDuras: {}/{}; germinacion: {}/{}",
+                    germinacionId,
+                    saved.getPNormalINIA(), saved.getPNormalINASE(),
+                    saved.getPAnormalINIA(), saved.getPAnormalINASE(),
+                    saved.getPMuertasINIA(), saved.getPMuertasINASE(),
+                    saved.getPFrescasINIA(), saved.getPFrescasINASE(),
+                    saved.getSemillasDurasINIA(), saved.getSemillasDurasINASE(),
+                    saved.getGerminacionINIA(), saved.getGerminacionINASE());
+        } catch (Exception e) {
+            log.warn("No se pudo registrar el log de la germinacion guardada: {}", e.getMessage());
+        }
+        // Fallback a System.out.println si los logs no se ven
+        try {
+            System.out.println("[GerminacionService] Guardada ID=" + germinacionId + " -> " +
+                    "pNormalINIA=" + saved.getPNormalINIA() + ", " +
+                    "pNormalINASE=" + saved.getPNormalINASE() + ", " +
+                    "pAnormalINIA=" + saved.getPAnormalINIA() + ", " +
+                    "pAnormalINASE=" + saved.getPAnormalINASE() + ", " +
+                    "pMuertasINIA=" + saved.getPMuertasINIA() + ", " +
+                    "pMuertasINASE=" + saved.getPMuertasINASE() + ", " +
+                    "pFrescasINIA=" + saved.getPFrescasINIA() + ", " +
+                    "pFrescasINASE=" + saved.getPFrescasINASE() + ", " +
+                    "semillasDurasINIA=" + saved.getSemillasDurasINIA() + ", " +
+                    "semillasDurasINASE=" + saved.getSemillasDurasINASE() + ", " +
+                    "germinacionINIA=" + saved.getGerminacionINIA() + ", " +
+                    "germinacionINASE=" + saved.getGerminacionINASE());
+        } catch (Exception ignored) {}
 
         // 2) Crear automáticamente el Conteo 1 usando la fechaInicio como fechaConteo (si está presente)
         ConteoGerminacionDto conteoInicial = new ConteoGerminacionDto();

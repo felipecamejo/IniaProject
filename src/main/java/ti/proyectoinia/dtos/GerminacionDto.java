@@ -1,5 +1,6 @@
 package ti.proyectoinia.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import ti.proyectoinia.business.entities.Metodo;
 import ti.proyectoinia.business.entities.PreFrio;
@@ -34,19 +35,28 @@ public class GerminacionDto {
 
     private Date fechaFinal;
 
+    @JsonProperty("pRedondeo")
     private Integer pRedondeo;
 
     // Métricas INIA / INASE
+    @JsonProperty("pNormalINIA")
     private Integer pNormalINIA;
+    @JsonProperty("pNormalINASE")
     private Integer pNormalINASE;
 
+    @JsonProperty("pAnormalINIA")
     private Integer pAnormalINIA;
+    @JsonProperty("pAnormalINASE")
     private Integer pAnormalINASE;
 
+    @JsonProperty("pMuertasINIA")
     private Integer pMuertasINIA;
+    @JsonProperty("pMuertasINASE")
     private Integer pMuertasINASE;
 
+    @JsonProperty("pFrescasINIA")
     private Integer pFrescasINIA;
+    @JsonProperty("pFrescasINASE")
     private Integer pFrescasINASE;
 
     private Integer semillasDurasINIA;

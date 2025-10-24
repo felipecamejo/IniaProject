@@ -23,7 +23,7 @@ public class GerminacionCuradaPlanta extends RepeticionesGerminacion {
         @JoinColumn(name = "GERMINACION_ID", referencedColumnName = "GERMINACION_ID"),
         @JoinColumn(name = "NUMERO_REPETICION", referencedColumnName = "NUMERO_REPETICION")
     })
-    @Where(clause = "TABLA='CURADA_PLANTA' AND ACTIVO=1")
+    @Where(clause = "TABLA='CURADA_PLANTA' AND ACTIVO=true")
     @OrderBy("conteoId ASC")
     private List<NormalPorConteo> normales;
 }
