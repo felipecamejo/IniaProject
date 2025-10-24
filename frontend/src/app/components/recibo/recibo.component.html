@@ -1,21 +1,17 @@
 <div class="container">
-    <!-- Panel de Notificaciones -->
-    <app-notification-panel 
-        [notifications]="notifications"
-        [isOpen]="isNotificationPanelOpen"
-        [maxNotifications]="5"
-        [autoDismissDuration]="5000"
-        (notificationRead)="onNotificationRead($event)"
-        (notificationDismissed)="onNotificationDismissed($event)"
-        (panelToggled)="onPanelToggled($event)">
-    </app-notification-panel>
+    <!-- Botón de navegación hacia atrás -->
+    <button class="back-button" (click)="onCancel()">
+        <i class="pi pi-arrow-left"></i>
+    </button>
 
     <p-card class="card">
         <ng-template pTemplate="header">
             <h2 class="title">Recibo</h2>
         </ng-template>
 
-        <form (ngSubmit)="guardarRecibo()">
+        <form (ngSubmit)="guardarRecibo()" (input)="manejarProblemas()">
+           
+
             <div class="form-grid">
                 <!-- Campos de texto -->
                 <div class="form-field">
@@ -38,7 +34,9 @@
 
                 <div class="form-field">
                     <label for="articulo">Artículo</label>
-                    <input id="articulo" type="number" [(ngModel)]="articulo" name="articulo" pInputText />
+                    <span *ngIf="articulo != null && articulo < 0" class="error-message">El artículo no puede ser negativo.</span>
+                    <input id="articulo" type="number" [(ngModel)]="articulo" name="articulo" pInputText 
+                           [ngClass]="{ 'input-error': articulo != null && articulo < 0 }"/>
                 </div>
 
                 <div class="form-field">
@@ -48,8 +46,14 @@
 
                 <div class="form-field">
                     <label for="fechaRecibo">Fecha Recibo</label>
-                    <input id="fechaRecibo" type="date" [(ngModel)]="fechaRecibo" name="fechaRecibo" 
-                           [readonly]="isEditing" pInputText />
+                    <span *ngIf="isFechaReciboInvalida" class="error-message">La fecha no puede ser mayor a hoy.</span>
+                    <input
+                        id="fechaRecibo"
+                        type="date"
+                        [(ngModel)]="fechaRecibo"
+                        [ngClass]="{ 'input-error': isFechaReciboInvalida }"
+                        name="fechaRecibo"
+                    />
                 </div>
 
                 <div class="form-field">
@@ -64,7 +68,9 @@
 
                 <div class="form-field">
                     <label for="kilos">Kilos Limpios</label>
-                    <input id="kilos" type="number" [(ngModel)]="kilos" name="kilos" pInputText />
+                    <span *ngIf="kilos != null && kilos < 0" class="error-message">Los kilos no pueden ser negativos.</span>
+                    <input id="kilos" type="number" [(ngModel)]="kilos" name="kilos" pInputText 
+                           [ngClass]="{ 'input-error': kilos != null && kilos < 0 }"/>
                 </div>
 
                 <div class="form-field">
@@ -132,7 +138,9 @@
                                 <input type="number" 
                                        [(ngModel)]="humedad.numero" 
                                        name="humedadNumero{{i}}" 
-                                       placeholder="Número" />
+                                       placeholder="Número" 
+                                       [ngClass]="{ 'input-error': humedad.numero != null && humedad.numero < 0 }"/>
+                                <span *ngIf="humedad.numero != null && humedad.numero < 0" class="error-message">El número no puede ser negativo.</span>
                             </td>
                         </tr>
                     </tbody>
@@ -144,9 +152,18 @@
                 </button>
             </div>
 
+            <div *ngIf="errores.length > 0" class="error-container">
+                <p class="error-message">
+                    {{ errores.length === 1 ? '1 error encontrado' : errores.length + ' errores encontrados' }}
+                </p>
+                <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
+            </div>
+
             <div class="submit-btn">
-                <button pButton type="submit" [label]="isEditing ? 'Actualizar' : 'Realizar Recibo'" class="p-button-success"></button>
+                <button pButton type="submit" [disabled]="errores.length > 0" [label]="isEditing ? 'Actualizar' : 'Realizar Recibo'" class="p-button-success" disabled="isProblem"></button>
             </div>
         </form>
+
+        
     </p-card>
 </div>

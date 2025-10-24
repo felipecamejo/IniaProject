@@ -12,6 +12,7 @@ import { HumedadLugarDto } from '../../../models/HumedadLugar.dto';
 import { HumedadReciboDto } from '../../../models/HumedadRecibo.dto';
 import { HumedadReciboService } from '../../../services/HumedadReciboService';
 import { AuthService } from '../../../services/AuthService';
+import { DateService } from '../../../services/DateService';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -19,8 +20,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 
-// Notification Panel
-import { NotificationPanelComponent, NotificationData } from '../notification-panel/notification-panel';
 
 @Component({
   selector: 'app-recibo',
@@ -34,7 +33,6 @@ import { NotificationPanelComponent, NotificationData } from '../notification-pa
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-    NotificationPanelComponent
   ]
 })
 export class ReciboComponent implements OnInit {
@@ -105,9 +103,11 @@ export class ReciboComponent implements OnInit {
     { label: 'Cosecha', value: HumedadLugarDto.Cosecha }
   ];
 
-  // Propiedades para notificaciones
-  notifications: NotificationData[] = [];
-  isNotificationPanelOpen: boolean = false;
+  // Agregar propiedades para manejar errores
+  errores: string[] = [];
+
+  // Nueva propiedad para validar la fecha
+  isFechaReciboInvalida: boolean = false;
 
   constructor(
     private reciboService: ReciboService,
@@ -272,68 +272,86 @@ export class ReciboComponent implements OnInit {
     });
   }
 
+  manejarProblemas(): boolean {
+    this.errores = []; // Reiniciar errores
+
+    const hoy = new Date();
+    const fechaRecibo = this.fechaRecibo ? new Date(this.fechaRecibo) : null;
+
+    if (this.articulo != null && this.articulo < 0) {
+      this.errores.push('El artículo no puede ser un número negativo.');
+    }
+
+    if (this.kilos != null && this.kilos < 0) {
+      this.errores.push('Los kilos no pueden ser un número negativo.');
+    }
+
+    if (this.humedades.some(h => h.numero != null && h.numero < 0)) {
+      this.errores.push('Algunas humedades tienen un número negativo.');
+    }
+
+    if (fechaRecibo != null && fechaRecibo > hoy) {
+      this.errores.push('La fecha no puede ser mayor a la fecha actual.');
+    }
+
+    return this.errores.length > 0;
+  }
+
+
   crearRecibo() {
     const payload: ReciboDto = {
-      id: null,
-      nroAnalisis: Number(this.nLab) || null,
-      depositoId: Number(this.selectedDepositoId) || null,
-      // Si la opción por defecto está seleccionada, enviar null como estado
-      estado: this.selectedEstado ?? null,
-      // Análisis inicializados como null para recibos nuevos
-      dosnAnalisisId: null,
-      pmsAnalisisId: null,
-      purezaAnalisisId: null,
-      germinacionAnalisisId: null,
-      purezaPNotatumAnalisisId: null,
-      sanitarioAnalisisId: null,
-      tetrazolioAnalisisId: null,
-      especie: this.especie || null,
-      ficha: this.ficha || null,
-      fechaRecibo: this.fechaRecibo ? new Date(this.fechaRecibo).toISOString() : new Date().toISOString(),
-      remitente: this.remite || null,
-      origen: this.origen || null,
-      cultivar: this.selectedCultivar || null,
-      loteId: Number(this.lote2) || null,
-      kgLimpios: Number(this.kilos) || null,
-      analisisSolicitados: this.rec || null,
-      articulo: this.articulo,
-      activo: true
+        id: null,
+        nroAnalisis: Number(this.nLab) || null,
+        depositoId: Number(this.selectedDepositoId) || null,
+        estado: this.selectedEstado ?? null,
+        dosnAnalisisId: null,
+        pmsAnalisisId: null,
+        purezaAnalisisId: null,
+        germinacionAnalisisId: null,
+        purezaPNotatumAnalisisId: null,
+        sanitarioAnalisisId: null,
+        tetrazolioAnalisisId: null,
+        especie: this.especie || null,
+        ficha: this.ficha || null,
+        fechaRecibo: DateService.ajustarFecha(this.fechaRecibo),
+        remitente: this.remite || null,
+        origen: this.origen || null,
+        cultivar: this.selectedCultivar || null,
+        loteId: Number(this.lote2) || null,
+        kgLimpios: Number(this.kilos) || null,
+        analisisSolicitados: this.rec || null,
+        articulo: this.articulo,
+        activo: true
     };
 
     this.reciboService.crearRecibo(payload).subscribe({
-      next: (reciboCreado: ReciboDto) => {
-        console.log('Recibo creado (DTO):', reciboCreado);
+        next: (reciboCreado: ReciboDto) => {
+            console.log('Recibo creado (DTO):', reciboCreado);
 
-        const reciboId = reciboCreado?.id ? Number(reciboCreado.id) : 0;
-        if (!reciboId || reciboId <= 0) {
-          console.error('No se pudo obtener un ID válido del recibo creado');
-          return;
+            const reciboId = reciboCreado?.id ? Number(reciboCreado.id) : 0;
+            if (!reciboId || reciboId <= 0) {
+                console.error('No se pudo obtener un ID válido del recibo creado');
+                return;
+            }
+
+            this.verificarAsociacionReciboLote(Number(this.lote2), reciboId);
+            this.guardarHumedades(reciboId);
+            this.reciboId = reciboId;
+            this.isEditing = true;
+
+            console.log('Navegando a lote-analisis con loteId:', this.lote2, 'reciboId:', reciboId);
+            this.router.navigate([`/${this.lote2}/${reciboId}/lote-analisis`]);
+        },
+        error: (err: any) => {
+            console.error('Error creando recibo', err);
         }
-
-        // VALIDACIÓN: Verificar que el recibo se asoció correctamente al lote
-        this.verificarAsociacionReciboLote(Number(this.lote2), reciboId);
-
-        // Mostrar notificación de éxito
-        this.showSuccessNotification(reciboId);
-
-        // Guardar las humedades con el ID del recibo
-        this.guardarHumedades(reciboId);
-
-        // Actualizar el estado del componente
-        this.reciboId = reciboId;
-        this.isEditing = true;
-
-        // Navegar de vuelta a lote-analisis después de un breve delay para mostrar la notificación
-        setTimeout(() => {
-          console.log('Navegando a lote-analisis con loteId:', this.lote2, 'reciboId:', reciboId);
-          this.router.navigate([`/${this.lote2}/${reciboId}/lote-analisis`]);
-        }, 2000);
-      },
-      error: (err: any) => {
-        console.error('Error creando recibo', err);
-        this.showErrorNotification();
-      }
     });
+  }
+
+  onCancel() {
+    const lote = this.route.snapshot.params['loteId'];
+    const recibo = this.route.snapshot.params['reciboId'] || 0;
+    this.router.navigate([`/${lote}/${recibo}/lote-analisis`]);
   }
 
   editarRecibo() {
@@ -362,7 +380,7 @@ export class ReciboComponent implements OnInit {
       tetrazolioAnalisisId: (this.tetrazolioAnalisisId ?? base.tetrazolioAnalisisId) ?? null,
       especie: this.especie || base.especie || null,
       ficha: this.ficha || base.ficha || null,
-      fechaRecibo: this.fechaRecibo ? new Date(this.fechaRecibo).toISOString() : (base.fechaRecibo ?? new Date().toISOString()),
+      fechaRecibo: DateService.ajustarFecha(this.fechaRecibo) || (base.fechaRecibo ?? new Date().toISOString()),
       remitente: this.remite || base.remitente || null,
       origen: this.origen || base.origen || null,
       cultivar: this.selectedCultivar || base.cultivar || null,
@@ -461,48 +479,7 @@ export class ReciboComponent implements OnInit {
     console.log('Humedad agregada. Total humedades:', this.humedades.length);
   }
 
-  // Métodos para manejo de notificaciones
-  showSuccessNotification(reciboId: number, customMessage?: string) {
-    const message = customMessage || `El recibo ha sido creado exitosamente con ID: ${reciboId}. Puede continuar con los análisis.`;
-    
-    const successNotification: NotificationData = {
-      title: 'Recibo creado con éxito',
-      message: message,
-      type: 'success',
-      autoDismiss: true,
-      duration: 5000
-    };
-    
-    this.notifications.unshift(successNotification);
-    this.isNotificationPanelOpen = true;
-  }
-
-  showErrorNotification(customMessage?: string) {
-    const message = customMessage || 'Ha ocurrido un error al crear el recibo. Por favor, intente nuevamente.';
-    
-    const errorNotification: NotificationData = {
-      title: 'Error al crear recibo',
-      message: message,
-      type: 'error',
-      autoDismiss: true,
-      duration: 7000
-    };
-    
-    this.notifications.unshift(errorNotification);
-    this.isNotificationPanelOpen = true;
-  }
-
-  onNotificationRead(notification: NotificationData) {
-    console.log('Notificación leída:', notification);
-  }
-
-  onNotificationDismissed(notification: NotificationData) {
-    console.log('Notificación descartada:', notification);
-  }
-
-  onPanelToggled(isOpen: boolean) {
-    this.isNotificationPanelOpen = isOpen;
-  }
+ 
 
   /**
    * Verifica que el recibo se haya asociado correctamente al lote
@@ -517,16 +494,43 @@ export class ReciboComponent implements OnInit {
       next: (asociacionCorrecta: boolean) => {
         if (asociacionCorrecta) {
           console.log('✅ VALIDACIÓN EXITOSA: El recibo se asoció correctamente al lote');
-          this.showSuccessNotification(reciboId, 'Recibo creado y asociado correctamente al lote');
         } else {
           console.error('❌ VALIDACIÓN FALLIDA: El recibo NO se asoció correctamente al lote');
-          this.showErrorNotification('Error: El recibo no se asoció correctamente al lote');
         }
       },
       error: (error: any) => {
         console.error('❌ ERROR en la verificación de asociación:', error);
-        this.showErrorNotification('Error al verificar la asociación recibo-lote');
       }
     });
   }
+
+  validarFormulario() {
+    this.errores = [];
+
+    if (!this.nLab || this.nLab.trim() === '') {
+        this.errores.push('El campo N° Analisis es obligatorio.');
+    }
+
+    if (!this.especie || this.especie.trim() === '') {
+        this.errores.push('El campo Especie es obligatorio.');
+    }
+
+    if (this.articulo != null && this.articulo < 0) {
+        this.errores.push('El artículo no puede ser negativo.');
+    }
+
+    if (this.isFechaReciboInvalida) {
+        this.errores.push('La fecha no puede ser mayor a hoy.');
+    }
+
+    if (this.kilos != null && this.kilos < 0) {
+        this.errores.push('Los kilos no pueden ser negativos.');
+    }
+
+    this.humedades.forEach((humedad, index) => {
+        if (humedad.numero != null && humedad.numero < 0) {
+            this.errores.push(`El número de humedad en la fila ${index + 1} no puede ser negativo.`);
+        }
+    });
+}
 }

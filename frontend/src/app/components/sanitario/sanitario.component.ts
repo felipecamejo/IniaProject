@@ -8,6 +8,7 @@ import { TipoHongoSanitario } from '../../../models/enums';
 import { SanitarioService } from '../../../services/SanitarioService';
 import { HongoService } from '../../../services/HongoService';
 import { HongoDto } from '../../../models/Hongo.dto';
+import { DateService } from '../../../services/DateService';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -49,6 +50,10 @@ export class SanitarioComponent implements OnInit {
   loteId: string | null = '';
   reciboId: string | null = '';
 
+  
+  // Agregar propiedades para manejar errores
+  errores: string[] = [];
+
   // Lista de hongos cargada desde el servicio
   hongos: HongoDto[] = [];
   
@@ -67,9 +72,9 @@ export class SanitarioComponent implements OnInit {
   selectedEstado: string = '';
 
   // Tabla de hongos seleccionados
-  hongosTable: Array<{tipoHongo: string, repeticion: number | null, valor: number | null, incidencia: number | null}> = [];
-  hongosCampoTable: Array<{tipoHongo: string, repeticion: number | null, valor: number | null, incidencia: number | null}> = [];
-  hongosAlmacenajeTable: Array<{tipoHongo: string, repeticion: number | null, valor: number | null, incidencia: number | null}> = [];
+  hongosTable: Array<{tipoHongo: string, repeticion: number , valor: number , incidencia: number}> = [];
+  hongosCampoTable: Array<{tipoHongo: string, repeticion: number, valor: number , incidencia: number}> = [];
+  hongosAlmacenajeTable: Array<{tipoHongo: string, repeticion: number, valor: number, incidencia: number}> = [];
 
   // Estado anterior para comparación (solo en modo edición)
   hongosOriginales: SanitarioHongoDTO[] = [];
@@ -254,9 +259,9 @@ export class SanitarioComponent implements OnInit {
         const valoresPreservados = valoresExistentes.get(hongo.nombre);
         this.hongosTable.push({
           tipoHongo: hongo.nombre,
-          repeticion: valoresPreservados?.repeticion || null,
-          valor: valoresPreservados?.valor || null,
-          incidencia: valoresPreservados?.incidencia || null
+          repeticion: valoresPreservados?.repeticion || 0,
+          valor: valoresPreservados?.valor || 0,
+          incidencia: valoresPreservados?.incidencia || 0
         });
       }
     });
@@ -327,9 +332,9 @@ export class SanitarioComponent implements OnInit {
         const valoresPreservados = valoresExistentes.get(hongo.nombre);
         this.hongosCampoTable.push({
           tipoHongo: hongo.nombre,
-          repeticion: valoresPreservados?.repeticion || null,
-          valor: valoresPreservados?.valor || null,
-          incidencia: valoresPreservados?.incidencia || null
+          repeticion: valoresPreservados?.repeticion || 0,
+          valor: valoresPreservados?.valor || 0,
+          incidencia: valoresPreservados?.incidencia || 0
         });
       }
     });
@@ -400,9 +405,9 @@ export class SanitarioComponent implements OnInit {
         const valoresPreservados = valoresExistentes.get(hongo.nombre);
         this.hongosAlmacenajeTable.push({
           tipoHongo: hongo.nombre,
-          repeticion: valoresPreservados?.repeticion || null,
-          valor: valoresPreservados?.valor || null,
-          incidencia: valoresPreservados?.incidencia || null
+          repeticion: valoresPreservados?.repeticion || 0,
+          valor: valoresPreservados?.valor || 0,
+          incidencia: valoresPreservados?.incidencia || 0
         });
       }
     });
@@ -474,8 +479,8 @@ export class SanitarioComponent implements OnInit {
 
     const sanitarioData: SanitarioDto = {
       id: this.isEditing ? this.editingId : null,
-      fechaSiembra: this.fechaSiembra,
-      fecha: this.fecha,
+      fechaSiembra: DateService.ajustarFecha(this.fechaSiembra),
+      fecha: DateService.ajustarFecha(this.fecha),
       metodo: this.metodo,
       temperatura: this.temperatura,
       horasLuz: this.horasLuz,
@@ -489,8 +494,8 @@ export class SanitarioComponent implements OnInit {
       estandar: this.estandar,
       repetido: this.repetido,
       sanitarioHongoids: null,
-      fechaCreacion: this.fechaCreacion,
-      fechaRepeticion: this.fechaRepeticion
+      fechaCreacion: DateService.ajustarFecha(this.fechaCreacion),
+      fechaRepeticion: DateService.ajustarFecha(this.fechaRepeticion)
     };
 
     // LOG FINAL ANTES DE ENVIAR
@@ -509,12 +514,12 @@ export class SanitarioComponent implements OnInit {
   }
 
   private crearNuevoSanitario(sanitarioData: SanitarioDto) {
-    const fechaActual = new Date().toISOString();
+    const fechaActual = DateService.ajustarFecha(new Date().toISOString());
     
     const sanitarioPayload = {
       id: 0,
-      fechaSiembra: this.fechaSiembra ? new Date(this.fechaSiembra).toISOString() : fechaActual,
-      fecha: this.fecha ? new Date(this.fecha).toISOString() : fechaActual,
+      fechaSiembra: this.fechaSiembra ? DateService.ajustarFecha(new Date(this.fechaSiembra).toISOString()) : fechaActual,
+      fecha: DateService.ajustarFecha(this.fecha) ? DateService.ajustarFecha(new Date(this.fecha).toISOString()) : fechaActual,
       metodo: this.metodo || "METODO_A",
       temperatura: this.temperatura || 0,
       horasLuz: this.horasLuz || 0,
@@ -553,8 +558,8 @@ export class SanitarioComponent implements OnInit {
 
     const sanitarioPayload = {
       id: this.editingId!,
-      fechaSiembra: this.fechaSiembra ? new Date(this.fechaSiembra).toISOString() : new Date().toISOString(),
-      fecha: this.fecha ? new Date(this.fecha).toISOString() : new Date().toISOString(),
+      fechaSiembra: this.fechaSiembra ? DateService.ajustarFecha(new Date(this.fechaSiembra).toISOString()) : new Date().toISOString(),
+      fecha: DateService.ajustarFecha(this.fecha) ? DateService.ajustarFecha(new Date(this.fecha).toISOString()) : new Date().toISOString(),
       metodo: this.metodo || "METODO_A",
       temperatura: this.temperatura || 0,
       horasLuz: this.horasLuz || 0,
@@ -568,7 +573,7 @@ export class SanitarioComponent implements OnInit {
       estandar: this.estandar,
       repetido: this.repetido,
       sanitarioHongosId: [],
-      fechaCreacion: this.fechaCreacion ? new Date(this.fechaCreacion).toISOString() : new Date().toISOString(),
+      fechaCreacion: this.fechaCreacion ? DateService.ajustarFecha(new Date(this.fechaCreacion).toISOString()) : new Date().toISOString(),
       fechaRepeticion: fechaRepeticionFinal
     };
     
@@ -618,18 +623,17 @@ export class SanitarioComponent implements OnInit {
     this.hongosTable.forEach((hongo) => {
       const hongoInfo = this.hongosPatogenos.find(h => h.nombre === hongo.tipoHongo);
       if (hongoInfo) {
-        // Buscar si este hongo ya existía (para preservar su ID en modo edición)
         const hongoOriginal = this.hongosOriginales.find(
           h => h.hongoId === hongoInfo.id && h.tipo === TipoHongoSanitario.PATOGENO
         );
-        
+
         hongosActuales.push({
           id: hongoOriginal?.id ?? null,
           sanitarioId: sanitarioId,
           hongoId: hongoInfo.id ?? null,
-          repeticion: hongo.repeticion,
-          valor: hongo.valor,
-          incidencia: hongo.incidencia,
+          repeticion: hongo.repeticion ?? 0,
+          valor: hongo.valor ?? 0,
+          incidencia: hongo.incidencia ?? 0,
           tipo: TipoHongoSanitario.PATOGENO
         });
       }
@@ -639,18 +643,17 @@ export class SanitarioComponent implements OnInit {
     this.hongosCampoTable.forEach((hongo) => {
       const hongoInfo = this.hongosCampo.find(h => h.nombre === hongo.tipoHongo);
       if (hongoInfo) {
-        // Buscar si este hongo ya existía (para preservar su ID en modo edición)
         const hongoOriginal = this.hongosOriginales.find(
           h => h.hongoId === hongoInfo.id && h.tipo === TipoHongoSanitario.CONTAMINANTE
         );
-        
+
         hongosActuales.push({
           id: hongoOriginal?.id ?? null,
           sanitarioId: sanitarioId,
           hongoId: hongoInfo.id ?? null,
-          repeticion: hongo.repeticion,
-          valor: hongo.valor,
-          incidencia: hongo.incidencia,
+          repeticion: hongo.repeticion ?? 0,
+          valor: hongo.valor ?? 0,
+          incidencia: hongo.incidencia ?? 0,
           tipo: TipoHongoSanitario.CONTAMINANTE
         });
       }
@@ -660,18 +663,17 @@ export class SanitarioComponent implements OnInit {
     this.hongosAlmacenajeTable.forEach((hongo) => {
       const hongoInfo = this.hongosAlmacenaje.find(h => h.nombre === hongo.tipoHongo);
       if (hongoInfo) {
-        // Buscar si este hongo ya existía (para preservar su ID en modo edición)
         const hongoOriginal = this.hongosOriginales.find(
           h => h.hongoId === hongoInfo.id && h.tipo === TipoHongoSanitario.ALMACENAJE
         );
-        
+
         hongosActuales.push({
           id: hongoOriginal?.id ?? null,
           sanitarioId: sanitarioId,
           hongoId: hongoInfo.id ?? null,
-          repeticion: hongo.repeticion,
-          valor: hongo.valor,
-          incidencia: hongo.incidencia,
+          repeticion: hongo.repeticion ?? 0,
+          valor: hongo.valor ?? 0,
+          incidencia: hongo.incidencia ?? 0,
           tipo: TipoHongoSanitario.ALMACENAJE
         });
       }
@@ -713,9 +715,9 @@ export class SanitarioComponent implements OnInit {
 
       const tablaItem = {
         tipoHongo: hongo.nombre,
-        repeticion: sanitarioHongo.repeticion,
-        valor: sanitarioHongo.valor,
-        incidencia: sanitarioHongo.incidencia
+        repeticion: sanitarioHongo.repeticion ?? 0,
+        valor: sanitarioHongo.valor ?? 0,
+        incidencia: sanitarioHongo.incidencia ?? 0
       };
 
       switch (sanitarioHongo.tipo) {
@@ -759,6 +761,72 @@ export class SanitarioComponent implements OnInit {
       console.error('Error al formatear fecha:', fechaISO, error);
       return '';
     }
+  }
+
+  manejarProblemas(): boolean {
+    this.errores = []; // Reiniciar errores
+
+    const hoy = new Date();
+    const fechaSiembra = this.fechaSiembra ? new Date(this.fechaSiembra) : null;
+
+    if (this.temperatura != null && this.temperatura < 0) {
+      this.errores.push('La temperatura no puede ser un número negativo.');
+    }
+
+    if (this.horasLuz != null && this.horasLuz < 0) {
+      this.errores.push('Las horas de luz no pueden ser un número negativo.');
+    }
+
+    if (this.horasOscuridad != null && this.horasOscuridad < 0) {
+      this.errores.push('Las horas de oscuridad no pueden ser un número negativo.');
+    }
+
+    if (this.nroDias != null && this.nroDias < 0) {
+      this.errores.push('El número de días no puede ser un número negativo.');
+    }
+
+    if (this.nroSemillasRepeticion != null && this.nroSemillasRepeticion < 0) {
+      this.errores.push('El número de semillas no puede ser un número negativo.');
+    }
+
+    if (this.hongosTable.some(h => h.repeticion != null && h.repeticion < 0) ||
+        this.hongosCampoTable.some(h => h.repeticion != null && h.repeticion < 0) ||
+        this.hongosAlmacenajeTable.some(h => h.repeticion != null && h.repeticion < 0)
+      ) {
+
+      this.errores.push('Algunos hongos tienen un número de repetición negativo.');
+    }
+
+    if (this.hongosTable.some(h => h.valor != null && h.valor < 0) ||
+        this.hongosCampoTable.some(h => h.valor != null && h.valor < 0) ||
+        this.hongosAlmacenajeTable.some(h => h.valor != null && h.valor < 0)
+      ) {
+          
+        this.errores.push('Algunos hongos tienen un número de valor negativo.');
+      }
+
+    if (this.hongosTable.some(h => h.incidencia != null && h.incidencia < 0) ||
+        this.hongosCampoTable.some(h => h.incidencia != null && h.incidencia < 0) ||
+        this.hongosAlmacenajeTable.some(h => h.incidencia != null && h.incidencia < 0)
+      ) {
+
+        this.errores.push('Algunos hongos tienen un número de incidencia negativo.');
+      }
+
+    if (fechaSiembra != null && fechaSiembra > hoy) {
+      this.errores.push('La fecha no puede ser mayor a la fecha actual.');
+    }
+
+    return this.errores.length > 0;
+  }
+
+  validarFecha(fecha: string | null): boolean {
+    if (!fecha) return false;
+    return new Date(fecha).getTime() > new Date().getTime();
+  }
+
+  validarTablaHongos(hongo: any): boolean {
+    return hongo;
   }
 
 }
