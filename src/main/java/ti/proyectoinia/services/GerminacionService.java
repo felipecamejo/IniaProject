@@ -8,6 +8,7 @@ import ti.proyectoinia.api.responses.ResponseListadoGerminacion;
 import ti.proyectoinia.business.entities.Germinacion;
 import ti.proyectoinia.business.repositories.GerminacionRepository;
 import ti.proyectoinia.dtos.GerminacionDto;
+import ti.proyectoinia.dtos.ConteoGerminacionDto;
 
 
 @Service
@@ -15,14 +16,26 @@ public class GerminacionService {
 
     private final GerminacionRepository germinacionRepository;
     private final MapsDtoEntityService mapsDtoEntityService;
+    private final GerminacionMatrizService germinacionMatrizService;
 
-    public GerminacionService(GerminacionRepository germinacionRepository, MapsDtoEntityService mapsDtoEntityService) {
+    public GerminacionService(GerminacionRepository germinacionRepository, MapsDtoEntityService mapsDtoEntityService, GerminacionMatrizService germinacionMatrizService) {
         this.mapsDtoEntityService = mapsDtoEntityService;
         this.germinacionRepository = germinacionRepository;
+        this.germinacionMatrizService = germinacionMatrizService;
     }
 
     public String crearGerminacion(GerminacionDto germinacionDto) {
-        return "Germinacion creada correctamente ID:" + this.germinacionRepository.save(mapsDtoEntityService.mapToEntityGerminacion(germinacionDto)).getId();
+        // 1) Persistir germinación
+        Germinacion saved = this.germinacionRepository.save(mapsDtoEntityService.mapToEntityGerminacion(germinacionDto));
+        Long germinacionId = saved.getId();
+
+        // 2) Crear automáticamente el Conteo 1 usando la fechaInicio como fechaConteo (si está presente)
+        ConteoGerminacionDto conteoInicial = new ConteoGerminacionDto();
+        conteoInicial.setNumeroConteo(1);
+        conteoInicial.setFechaConteo(saved.getFechaInicio());
+        germinacionMatrizService.addConteo(germinacionId, conteoInicial);
+
+        return "Germinacion creada correctamente ID:" + germinacionId;
     }
 
     public GerminacionDto obtenerGerminacionPorId(Long id) {

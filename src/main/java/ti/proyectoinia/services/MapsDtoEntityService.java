@@ -151,23 +151,7 @@ public class MapsDtoEntityService {
         GerminacionDto dto = new GerminacionDto();
         dto.setId(germinacion.getId());
         dto.setFechaInicio(germinacion.getFechaInicio());
-        dto.setFechaConteo1(germinacion.getFechaConteo1());
-        dto.setFechaConteo2(germinacion.getFechaConteo2());
-        dto.setFechaConteo3(germinacion.getFechaConteo3());
-        dto.setFechaConteo4(germinacion.getFechaConteo4());
-        dto.setFechaConteo5(germinacion.getFechaConteo5());
         dto.setTotalDias(germinacion.getTotalDias());
-        dto.setRepeticionNormal1(germinacion.getRepeticionNormal1());
-        dto.setRepeticionNormal2(germinacion.getRepeticionNormal2());
-        dto.setRepeticionNormal3(germinacion.getRepeticionNormal3());
-        dto.setRepeticionNormal4(germinacion.getRepeticionNormal4());
-        dto.setRepeticionNormal5(germinacion.getRepeticionNormal5());
-        dto.setRepeticionDura(germinacion.getRepeticionDura());
-        dto.setRepeticionFresca(germinacion.getRepeticionFresca());
-        dto.setRepeticionAnormal(germinacion.getRepeticionAnormal());
-        dto.setRepeticionMuerta(germinacion.getRepeticionMuerta());
-        dto.setTotalRepeticion(germinacion.getTotalRepeticion());
-        dto.setPromedioRepeticiones(germinacion.getPromedioRepeticiones());
         dto.setTratamiento(germinacion.getTratamiento());
         dto.setNroSemillaPorRepeticion(germinacion.getNroSemillaPorRepeticion());
         dto.setMetodo(germinacion.getMetodo());
@@ -177,11 +161,18 @@ public class MapsDtoEntityService {
         dto.setNroDias(germinacion.getNroDias());
         dto.setFechaFinal(germinacion.getFechaFinal());
         dto.setPRedondeo(germinacion.getPRedondeo());
-        dto.setPNormal(germinacion.getPNormal());
-        dto.setPAnormal(germinacion.getPAnormal());
-        dto.setPMuertas(germinacion.getPMuertas());
-        dto.setSemillasDuras(germinacion.getSemillasDuras());
-        dto.setGerminacion(germinacion.getGerminacion());
+        dto.setPNormalINIA(germinacion.getPNormalINIA());
+        dto.setPNormalINASE(germinacion.getPNormalINASE());
+        dto.setPAnormalINIA(germinacion.getPAnormalINIA());
+        dto.setPAnormalINASE(germinacion.getPAnormalINASE());
+        dto.setPMuertasINIA(germinacion.getPMuertasINIA());
+        dto.setPMuertasINASE(germinacion.getPMuertasINASE());
+        dto.setPFrescasINIA(germinacion.getPFrescasINIA());
+        dto.setPFrescasINASE(germinacion.getPFrescasINASE());
+        dto.setSemillasDurasINIA(germinacion.getSemillasDurasINIA());
+        dto.setSemillasDurasINASE(germinacion.getSemillasDurasINASE());
+        dto.setGerminacionINIA(germinacion.getGerminacionINIA());
+        dto.setGerminacionINASE(germinacion.getGerminacionINASE());
         dto.setComentarios(germinacion.getComentarios());
         dto.setRepetido(germinacion.isRepetido());
         dto.setFechaCreacion(germinacion.getFechaCreacion());
@@ -206,23 +197,7 @@ public class MapsDtoEntityService {
         Germinacion germinacion = new Germinacion();
         germinacion.setId(dto.getId());
         germinacion.setFechaInicio(dto.getFechaInicio());
-        germinacion.setFechaConteo1(dto.getFechaConteo1());
-        germinacion.setFechaConteo2(dto.getFechaConteo2());
-        germinacion.setFechaConteo3(dto.getFechaConteo3());
-        germinacion.setFechaConteo4(dto.getFechaConteo4());
-        germinacion.setFechaConteo5(dto.getFechaConteo5());
         germinacion.setTotalDias(dto.getTotalDias());
-        germinacion.setRepeticionNormal1(dto.getRepeticionNormal1());
-        germinacion.setRepeticionNormal2(dto.getRepeticionNormal2());
-        germinacion.setRepeticionNormal3(dto.getRepeticionNormal3());
-        germinacion.setRepeticionNormal4(dto.getRepeticionNormal4());
-        germinacion.setRepeticionNormal5(dto.getRepeticionNormal5());
-        germinacion.setRepeticionDura(dto.getRepeticionDura());
-        germinacion.setRepeticionFresca(dto.getRepeticionFresca());
-        germinacion.setRepeticionAnormal(dto.getRepeticionAnormal());
-        germinacion.setRepeticionMuerta(dto.getRepeticionMuerta());
-        germinacion.setTotalRepeticion(dto.getTotalRepeticion());
-        germinacion.setPromedioRepeticiones(dto.getPromedioRepeticiones());
         germinacion.setTratamiento(dto.getTratamiento());
         germinacion.setNroSemillaPorRepeticion(dto.getNroSemillaPorRepeticion());
         germinacion.setMetodo(dto.getMetodo());
@@ -232,20 +207,27 @@ public class MapsDtoEntityService {
         germinacion.setNroDias(dto.getNroDias());
         germinacion.setFechaFinal(dto.getFechaFinal());
         germinacion.setPRedondeo(dto.getPRedondeo());
-        germinacion.setPNormal(dto.getPNormal());
-        germinacion.setPAnormal(dto.getPAnormal());
-        germinacion.setPMuertas(dto.getPMuertas());
-        germinacion.setSemillasDuras(dto.getSemillasDuras());
-        germinacion.setGerminacion(dto.getGerminacion());
+        germinacion.setPNormalINIA(dto.getPNormalINIA());
+        germinacion.setPNormalINASE(dto.getPNormalINASE());
+        germinacion.setPAnormalINIA(dto.getPAnormalINIA());
+        germinacion.setPAnormalINASE(dto.getPAnormalINASE());
+        germinacion.setPMuertasINIA(dto.getPMuertasINIA());
+        germinacion.setPMuertasINASE(dto.getPMuertasINASE());
+        germinacion.setPFrescasINIA(dto.getPFrescasINIA());
+        germinacion.setPFrescasINASE(dto.getPFrescasINASE());
+        germinacion.setSemillasDurasINIA(dto.getSemillasDurasINIA());
+        germinacion.setSemillasDurasINASE(dto.getSemillasDurasINASE());
+        germinacion.setGerminacionINIA(dto.getGerminacionINIA());
+        germinacion.setGerminacionINASE(dto.getGerminacionINASE());
         germinacion.setComentarios(dto.getComentarios());
         germinacion.setRepetido(dto.isRepetido());
         germinacion.setActivo(dto.isActivo());
         germinacion.setFechaCreacion(dto.getFechaCreacion());
         germinacion.setFechaRepeticion(dto.getFechaRepeticion());
 
-        // Validar y obtener el recibo si existe
-        Recibo recibo = getValidRecibo(dto.getReciboId());
-        germinacion.setRecibo(recibo);
+    // Validar y obtener el recibo si existe
+    Recibo recibo = getValidRecibo(dto.getReciboId());
+    germinacion.setRecibo(recibo);
 
 
         return germinacion;
@@ -1273,6 +1255,157 @@ public class MapsDtoEntityService {
         dto.setActivo(entity.isActivo());
 
         return dto;
+    }
+
+    // =============================
+    // Germinación: Conteos y Celdas
+    // =============================
+
+    public ConteoGerminacionDto mapToDtoConteoGerminacion(ConteoGerminacion entity) {
+        if (entity == null) return null;
+        ConteoGerminacionDto dto = new ConteoGerminacionDto();
+        dto.setId(entity.getId());
+        dto.setGerminacionId(entity.getGerminacionId());
+        dto.setNumeroConteo(entity.getNumeroConteo());
+        dto.setFechaConteo(entity.getFechaConteo());
+        dto.setActivo(entity.isActivo());
+        return dto;
+    }
+
+    public ConteoGerminacion mapToEntityConteoGerminacion(ConteoGerminacionDto dto) {
+        if (dto == null) return null;
+        ConteoGerminacion entity = new ConteoGerminacion();
+        // Tratar id=0 como null para forzar INSERT
+        entity.setId(dto.getId() != null && dto.getId() == 0 ? null : dto.getId());
+        entity.setGerminacionId(dto.getGerminacionId());
+        entity.setNumeroConteo(dto.getNumeroConteo());
+        entity.setFechaConteo(dto.getFechaConteo());
+        entity.setActivo(dto.isActivo());
+        return entity;
+    }
+
+    // Nuevos mapeos: Repetición (finales) y NormalPorConteo
+
+    public RepeticionFinalDto mapToDtoRepeticionSinCurar(GerminacionSinCurar e) {
+        if (e == null) return null;
+        RepeticionFinalDto dto = new RepeticionFinalDto();
+        dto.setId(e.getId());
+        dto.setActivo(e.isActivo());
+        dto.setGerminacionId(e.getGerminacionId());
+        dto.setNumeroRepeticion(e.getNumeroRepeticion());
+        dto.setAnormal(e.getAnormal());
+        dto.setDuras(e.getDuras());
+        dto.setFrescas(e.getFrescas());
+        dto.setMuertas(e.getMuertas());
+        dto.setTotales(e.getTotales());
+        dto.setPromedioRedondeado(e.getPromedioRedondeado());
+        return dto;
+    }
+
+    public RepeticionFinalDto mapToDtoRepeticionCuradaPlanta(GerminacionCuradaPlanta e) {
+        if (e == null) return null;
+        RepeticionFinalDto dto = new RepeticionFinalDto();
+        dto.setId(e.getId());
+        dto.setActivo(e.isActivo());
+        dto.setGerminacionId(e.getGerminacionId());
+        dto.setNumeroRepeticion(e.getNumeroRepeticion());
+        dto.setAnormal(e.getAnormal());
+        dto.setDuras(e.getDuras());
+        dto.setFrescas(e.getFrescas());
+        dto.setMuertas(e.getMuertas());
+        dto.setTotales(e.getTotales());
+        dto.setPromedioRedondeado(e.getPromedioRedondeado());
+        return dto;
+    }
+
+    public RepeticionFinalDto mapToDtoRepeticionCuradaLaboratorio(GerminacionCuradaLaboratorio e) {
+        if (e == null) return null;
+        RepeticionFinalDto dto = new RepeticionFinalDto();
+        dto.setId(e.getId());
+        dto.setActivo(e.isActivo());
+        dto.setGerminacionId(e.getGerminacionId());
+        dto.setNumeroRepeticion(e.getNumeroRepeticion());
+        dto.setAnormal(e.getAnormal());
+        dto.setDuras(e.getDuras());
+        dto.setFrescas(e.getFrescas());
+        dto.setMuertas(e.getMuertas());
+        dto.setTotales(e.getTotales());
+        dto.setPromedioRedondeado(e.getPromedioRedondeado());
+        return dto;
+    }
+
+    public GerminacionSinCurar mapToEntityRepeticionSinCurar(RepeticionFinalDto dto) {
+        if (dto == null) return null;
+        GerminacionSinCurar e = new GerminacionSinCurar();
+        e.setId(dto.getId() != null && dto.getId() == 0 ? null : dto.getId());
+        e.setActivo(dto.isActivo());
+        e.setGerminacionId(dto.getGerminacionId());
+        e.setNumeroRepeticion(dto.getNumeroRepeticion());
+        e.setAnormal(dto.getAnormal());
+        e.setDuras(dto.getDuras());
+        e.setFrescas(dto.getFrescas());
+        e.setMuertas(dto.getMuertas());
+        e.setTotales(dto.getTotales());
+        e.setPromedioRedondeado(dto.getPromedioRedondeado());
+        return e;
+    }
+
+    public GerminacionCuradaPlanta mapToEntityRepeticionCuradaPlanta(RepeticionFinalDto dto) {
+        if (dto == null) return null;
+        GerminacionCuradaPlanta e = new GerminacionCuradaPlanta();
+        e.setId(dto.getId() != null && dto.getId() == 0 ? null : dto.getId());
+        e.setActivo(dto.isActivo());
+        e.setGerminacionId(dto.getGerminacionId());
+        e.setNumeroRepeticion(dto.getNumeroRepeticion());
+        e.setAnormal(dto.getAnormal());
+        e.setDuras(dto.getDuras());
+        e.setFrescas(dto.getFrescas());
+        e.setMuertas(dto.getMuertas());
+        e.setTotales(dto.getTotales());
+        e.setPromedioRedondeado(dto.getPromedioRedondeado());
+        return e;
+    }
+
+    public GerminacionCuradaLaboratorio mapToEntityRepeticionCuradaLaboratorio(RepeticionFinalDto dto) {
+        if (dto == null) return null;
+        GerminacionCuradaLaboratorio e = new GerminacionCuradaLaboratorio();
+        e.setId(dto.getId() != null && dto.getId() == 0 ? null : dto.getId());
+        e.setActivo(dto.isActivo());
+        e.setGerminacionId(dto.getGerminacionId());
+        e.setNumeroRepeticion(dto.getNumeroRepeticion());
+        e.setAnormal(dto.getAnormal());
+        e.setDuras(dto.getDuras());
+        e.setFrescas(dto.getFrescas());
+        e.setMuertas(dto.getMuertas());
+        e.setTotales(dto.getTotales());
+        e.setPromedioRedondeado(dto.getPromedioRedondeado());
+        return e;
+    }
+
+    public NormalPorConteoDto mapToDtoNormalPorConteo(NormalPorConteo e) {
+        if (e == null) return null;
+        NormalPorConteoDto dto = new NormalPorConteoDto();
+        dto.setId(e.getId());
+        dto.setActivo(e.isActivo());
+        dto.setGerminacionId(e.getGerminacionId());
+        dto.setTabla(e.getTabla());
+        dto.setNumeroRepeticion(e.getNumeroRepeticion());
+        dto.setConteoId(e.getConteoId());
+        dto.setNormal(e.getNormal());
+        return dto;
+    }
+
+    public NormalPorConteo mapToEntityNormalPorConteo(NormalPorConteoDto dto) {
+        if (dto == null) return null;
+        NormalPorConteo e = new NormalPorConteo();
+        e.setId(dto.getId() != null && dto.getId() == 0 ? null : dto.getId());
+        e.setActivo(dto.isActivo());
+        e.setGerminacionId(dto.getGerminacionId());
+        e.setTabla(dto.getTabla());
+        e.setNumeroRepeticion(dto.getNumeroRepeticion());
+        e.setConteoId(dto.getConteoId());
+        e.setNormal(dto.getNormal());
+        return e;
     }
 
     public ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio mapToEntityViabilidadRepsTetrazolio(ViabilidadRepsTetrazolioDto dto) {
