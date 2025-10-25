@@ -3,7 +3,7 @@
     <button class="back-button" (click)="goToHome()">
         <i class="pi pi-arrow-left"></i>
     </button>
-    
+
     <p-card class="card">
         <ng-template pTemplate="header">
             <h2 class="title">Listado de DOSN</h2>
@@ -42,15 +42,13 @@
         </div>
 
         <!-- Lista de PMS filtrados -->
-        <div class="blue-rectangle" 
-             *ngFor="let item of itemsFiltrados"
-             [ngClass]="{
+        <div class="blue-rectangle" *ngFor="let item of itemsFiltrados" [ngClass]="{
                'pendiente': !item.repetido,
                'repetido': item.repetido
              }">
             <div class="item-header">
                 <div class="item-info">
-                    <h3 class="item-title">DOSN #{{ item.id }}</h3>    
+                    <h3 class="item-title">DOSN #{{ item.id }}</h3>
                 </div>
                 <div class="item-status">
                     <span class="status-badge">
@@ -64,10 +62,13 @@
                     <p>{{ item.observaciones || 'Sin observaciones disponibles' }}</p>
                 </div>
                 <div class="item-actions">
-                    <button *ngIf="!item.repetido" class="action-button edit-button" (click)="navegarAEditar(item)">
+                    <button class="action-button view-button" (click)="navegarAVer(item)" title="Ver">
+                        <i class="pi pi-eye"></i>
+                    </button>
+                    <button *ngIf="!item.repetido" class="action-button edit-button" (click)="navegarAEditar(item)" title="Editar">
                         <i class="pi pi-pencil"></i>
                     </button>
-                    <button *ngIf="!item.repetido" class="action-button delete-button" (click)="eliminarDOSN(item)">
+                    <button *ngIf="!item.repetido" class="action-button delete-button" (click)="eliminarDOSN(item)" title="Eliminar">
                         <i class="pi pi-trash"></i>
                     </button>
                 </div>
@@ -77,6 +78,6 @@
             </div>
         </div>
 
-       
+
     </p-card>
 </div>
