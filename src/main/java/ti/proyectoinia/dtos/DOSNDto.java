@@ -10,6 +10,9 @@ import java.util.List;
 public class DOSNDto {
     private Long id;
 
+    // Relación principal
+    private Long reciboId;
+
     // Fechas INIA / INASE
     private Date fechaINIA;
     private Date fechaINASE;

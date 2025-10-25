@@ -861,6 +861,9 @@ public class MapsDtoEntityService {
 
         DOSNDto dto = new DOSNDto();
         dto.setId(dosn.getId());
+        if (dosn.getRecibo() != null) {
+            dto.setReciboId(dosn.getRecibo().getId());
+        }
         // Fechas
         dto.setFechaINIA(dosn.getFechaINIA());
         dto.setFechaINASE(dosn.getFechaINASE());
@@ -934,11 +937,15 @@ public class MapsDtoEntityService {
         dosn.setDeterminacionCuscutaGramos(dto.getDeterminacionCuscutaGramos());
         // Otros
         dosn.setEstandar(dto.getEstandar());
-        //dosn.setActivo(dto.getActivo());
+        dosn.setActivo(dto.isActivo());
         dosn.setFechaAnalisis(dto.getFechaAnalisis());
-        //dosn.setRepetido(dto.getRepetido());
+        dosn.setRepetido(dto.isRepetido());
         dosn.setFechaCreacion(dto.getFechaCreacion());
         dosn.setFechaRepeticion(dto.getFechaRepeticion());
+
+        // Vincular recibo si viene en el DTO
+        Recibo recibo = getValidRecibo(dto.getReciboId());
+        dosn.setRecibo(recibo);
 
         // Listas de IDs -> colecciones de entidades
         if (dto.getMalezasNormalesINIAId() != null) {

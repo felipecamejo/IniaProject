@@ -1,6 +1,9 @@
 export interface DOSNDto {
   id: number | null;
 
+  // Relación principal
+  reciboId?: number | null;
+
   // Fechas INIA / INASE
   fechaINIA: string | null;
   fechaINASE: string | null;

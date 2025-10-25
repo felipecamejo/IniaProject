@@ -65,14 +65,17 @@ export class ListadoDosnComponent implements OnInit {
 
     cargarDosn() {
         this.dosnService.listarPorRecibo(parseInt(this.reciboId)).subscribe({
-            next: (response) => {
-                this.items = response.DOSN;
+            next: (response: any) => {
+                const lista = response?.DOSN ?? response?.dosn ?? response?.dtos ?? [];
+                this.items = Array.isArray(lista) ? lista : [];
                 console.log('DOSN cargadas:', this.items);
                 // Actualizar años disponibles después de cargar los items
                 this.actualizarAniosDisponibles();
             },
             error: (error) => {
                 console.error('Error al cargar DOSN:', error);
+                // Mantener items como arreglo vacío para evitar errores en template/filtros
+                this.items = [];
             }
         });
     }
@@ -82,10 +85,11 @@ export class ListadoDosnComponent implements OnInit {
      */
     actualizarAniosDisponibles() {
         const aniosSet = new Set<number>();
+        const seguros = Array.isArray(this.items) ? this.items : [];
         
-        this.items.forEach(item => {
+        seguros.forEach(item => {
             const fechaConTipo = this.getFechaConTipo(item);
-            if (fechaConTipo.fecha) {
+            if (fechaConTipo && fechaConTipo.fecha) {
                 const anio = this.getAnioFromFecha(fechaConTipo.fecha);
                 if (!isNaN(anio)) {
                     aniosSet.add(anio);
@@ -106,7 +110,8 @@ export class ListadoDosnComponent implements OnInit {
     }
 
     get itemsFiltrados() {
-      return this.items.filter(item => {
+      const seguros = Array.isArray(this.items) ? this.items : [];
+      return seguros.filter(item => {
         const cumpleId = !this.searchText || item.id?.toString().includes(this.searchText);
         const fechaParaFiltro = this.getFechaConTipo(item).fecha;
         const cumpleMes = !this.selectedMes || this.getMesFromFecha(fechaParaFiltro) === parseInt(this.selectedMes);
@@ -121,8 +126,11 @@ export class ListadoDosnComponent implements OnInit {
     }
 
     getFechaConTipo(item: DOSNDto): { fecha: string, tipo: string } {
+      if (!item) {
+        return { fecha: '', tipo: 'Creación' };
+      }
       if (item.repetido && item.fechaRepeticion) {
-        return { fecha: item.fechaRepeticion, tipo: 'Repetición' };
+        return { fecha: item.fechaRepeticion || '', tipo: 'Repetición' };
       }
       return { fecha: item.fechaCreacion || '', tipo: 'Creación' };
     }

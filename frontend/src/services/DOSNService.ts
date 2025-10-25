@@ -22,12 +22,6 @@ export class DOSNService {
     );
   }
 
-  listar(): Observable<ResponseListadoDOSN> {
-    return this.http.get<ResponseListadoDOSN>(
-      `${this.urlService.baseUrl}${this.endpoint}/listar`
-    );
-  }
-
   listarPorRecibo(reciboId: number): Observable<ResponseListadoDOSN> {
     return this.http.get<ResponseListadoDOSN>(
       `${this.urlService.baseUrl}${this.endpoint}/listar/recibo/${reciboId}`
