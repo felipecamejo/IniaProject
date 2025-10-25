@@ -14,7 +14,7 @@ import { DOSNService } from '../../../services/DOSNService';
   standalone: true,
   imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule],
   templateUrl: './listado-dosn.component.html',
-  styleUrl: './listado-dosn.component.scss'
+  styleUrls: ['./listado-dosn.component.scss']
 })
 export class ListadoDosnComponent implements OnInit {
     constructor(
@@ -68,12 +68,13 @@ export class ListadoDosnComponent implements OnInit {
             next: (response: any) => {
                 const lista = response?.DOSN ?? response?.dosn ?? response?.dtos ?? [];
                 this.items = Array.isArray(lista) ? lista : [];
-                console.log('DOSN cargadas:', this.items);
+                console.log(`Listado de DOSN cargado: ${this.items.length} registro(s).`);
                 // Actualizar años disponibles después de cargar los items
                 this.actualizarAniosDisponibles();
             },
             error: (error) => {
-                console.error('Error al cargar DOSN:', error);
+                const detalle = error?.error || error?.message || error;
+                console.error('Error al cargar DOSN:', detalle);
                 // Mantener items como arreglo vacío para evitar errores en template/filtros
                 this.items = [];
             }
@@ -207,12 +208,20 @@ export class ListadoDosnComponent implements OnInit {
           if (item.id) {
               this.dosnService.eliminar(item.id).subscribe({
                   next: (response) => {
-                      console.log('DOSN eliminado exitosamente:', response);
+                      try {
+                        const texto = typeof response === 'string' ? response : '';
+                        const idMatch = texto.match(/ID\s*:?\s*(\d+)/i);
+                        const id = idMatch ? Number(idMatch[1]) : item.id;
+                        console.log(`DOSN eliminada correctamente. ID: ${id}`);
+                      } catch (_) {
+                        console.log('DOSN eliminada correctamente.');
+                      }
                       // Recargar la lista después de eliminar
                       this.cargarDosn();
                   },
                   error: (error) => {
-                      console.error('Error al eliminar el DOSN:', error);
+                      const detalle = error?.error || error?.message || error;
+                      console.error('Error al eliminar el DOSN:', detalle);
                   }
               });
           }

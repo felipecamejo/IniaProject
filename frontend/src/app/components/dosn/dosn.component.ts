@@ -9,7 +9,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
-import { TabsModule } from 'primeng/tabs';
+// import { TabsModule } from 'primeng/tabs';
+import { CultivoService } from '../../../services/CultivoService';
 
 @Component({
   selector: 'app-dosn.component',
@@ -21,11 +22,10 @@ import { TabsModule } from 'primeng/tabs';
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-    MultiSelectModule,
-    TabsModule
+    MultiSelectModule
       ],
       templateUrl: './dosn.component.html',
-      styleUrl: './dosn.component.scss'
+      styleUrls: ['./dosn.component.scss']
     })
     export class DOSNComponent implements OnInit {
       dosn: DOSNDto | null = null;
@@ -35,7 +35,7 @@ import { TabsModule } from 'primeng/tabs';
       reciboId: number | null = null;
 
       // Todas las propiedades y métodos deben estar dentro de la clase
-  constructor(private dosnService: DOSNService, private route: ActivatedRoute, private router: Router) {}
+  constructor(private dosnService: DOSNService, private cultivoService: CultivoService, private route: ActivatedRoute, private router: Router) {}
 
       brassicaCuscuta = [
         { label: 'Brassica spp.', contiene: false, gramos: 0 },
@@ -101,12 +101,7 @@ import { TabsModule } from 'primeng/tabs';
       getSelectedMalezasCeroTextInia() { if (this.selectedMalezasCeroInia.length === 0) return 'Seleccionar malezas tolerancia cero...'; return this.selectedMalezasCeroInia.map(id => { const item = this.malezasCeroOptions.find(mc => mc.id === id); return item ? item.label : ''; }).join(', '); }
 
       // Opciones globales para los listados
-      cultivosOptions = [
-        { id: 1, label: 'Trigo' },
-        { id: 2, label: 'Cebada' },
-        { id: 3, label: 'Avena' },
-        { id: 4, label: 'Centeno' }
-      ];
+      cultivosOptions: { id: number, label: string }[] = [];
       malezasOptions = [
         { id: 1, label: 'Amaranthus retroflexus' },
         { id: 2, label: 'Chenopodium album' },
@@ -130,6 +125,17 @@ import { TabsModule } from 'primeng/tabs';
       // ...existing code...
 
       ngOnInit(): void {
+        // Cargar cultivos reales desde backend
+        this.cultivoService.listarCultivos().subscribe({
+          next: (cultivos) => {
+            this.cultivosOptions = cultivos
+              .filter(c => c && c.id != null && c.nombre != null)
+              .map(c => ({ id: c.id as number, label: c.nombre }));
+          },
+          error: () => {
+            this.cultivosOptions = [];
+          }
+        });
         this.route.params.subscribe(params => {
           if (params['loteId']) this.loteId = +params['loteId'];
           if (params['reciboId']) this.reciboId = +params['reciboId'];
@@ -170,14 +176,28 @@ import { TabsModule } from 'primeng/tabs';
               : this.dosnService.crear(payload);
 
             obs.subscribe({
-              next: () => {
+              next: (resp) => {
                 this.loading = false;
+                try {
+                  const texto = typeof resp === 'string' ? resp : '';
+                  const idMatch = texto.match(/ID\s*:?\s*(\d+)/i);
+                  const id = idMatch ? Number(idMatch[1]) : this.editingId ?? null;
+                  const accion = this.isEditing ? 'actualizada' : 'creada';
+                  if (id != null) {
+                    console.log(`DOSN ${accion} correctamente. ID: ${id}`);
+                  } else {
+                    console.log(`DOSN ${accion} correctamente.`);
+                  }
+                } catch (e) {
+                  console.log(`DOSN ${this.isEditing ? 'actualizada' : 'creada'} correctamente.`);
+                }
                 if (this.loteId != null && this.reciboId != null) {
                   this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
                 }
               },
               error: (e) => {
-                console.error(`Error al ${this.isEditing ? 'editar' : 'crear'} DOSN`, e);
+                const detalle = e?.error || e?.message || e;
+                console.error(`Error al ${this.isEditing ? 'editar' : 'crear'} DOSN:`, detalle);
                 this.loading = false;
               }
             });
@@ -390,6 +410,7 @@ import { TabsModule } from 'primeng/tabs';
 
     return {
       id: this.isEditing ? this.editingId! : null,
+      reciboId: this.reciboId ?? null,
       // Fechas en formato ISO simple para backend
       fechaINIA: this.fechaInia ? `${this.fechaInia}T00:00:00` : null,
       fechaINASE: this.fechaInase ? `${this.fechaInase}T00:00:00` : null,
