@@ -746,7 +746,7 @@ export class SanitarioComponent implements OnInit {
   }
 
   onCancel() {
-      this.router.navigate([this.loteId, this.reciboId, 'listado-sanitario']);
+    this.router.navigate([this.loteId, this.reciboId, 'listado-sanitario']);
   }
 
   /**

@@ -15,7 +15,7 @@ export class GramosPmsService {
   private endpoint: string = '/gramos-pms';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
-  
+
   /**
    * Crea múltiples GramosPms y devuelve un objeto con created[] y errors[]
    */
@@ -26,39 +26,25 @@ export class GramosPmsService {
     );
   }
 
-  editarMultiplesGramos(payload: GramosPmsDto[]): Observable<{ edited?: GramosPmsDto[]; created?: GramosPmsDto[]; errors?: any[] }> {
-    return this.http.put<{ edited?: GramosPmsDto[]; created?: GramosPmsDto[]; errors?: any[] }>(
-      `${this.urlService.baseUrl}${this.endpoint}/editar-multiple`,
-      payload
-    );
-  }
-
-  /**
-   * Elimina múltiples por id (soft-delete). Backend acepta array de ids en body.
-   */
-  eliminarMultiplesGramos(ids: number[]): Observable<{ deleted?: number[]; notFound?: number[]; errors?: any[] }> {
-    return this.http.request('put', `${this.urlService.baseUrl}${this.endpoint}/eliminar-multiple`, { body: ids }) as Observable<{ deleted?: number[]; notFound?: number[]; errors?: any[] }>;
-  }
 
   /**
    * Lista gramos asociados a un PMS (endpoint: /pms/{pmsId})
    */
   listarGramosPorPms(pmsId: number): Observable<GramosPmsDto[]> {
-    return this.http.get<ResponseListadoGramosPms>(
+    return this.http.get<any>(
       `${this.urlService.baseUrl}${this.endpoint}/pms/${pmsId}`
     ).pipe(
-      map((response: ResponseListadoGramosPms) => {
-        return response.gramosPms || [];
-      })
-    );
-  }
-
-  listar(): Observable<GramosPmsDto[]> {
-    return this.http.get<ResponseListadoGramosPms>(
-      `${this.urlService.baseUrl}${this.endpoint}/listar`
-    ).pipe(
-      map((response: ResponseListadoGramosPms) => {
-        return response.gramosPms || [];
+      map((response: any) => {
+        // El backend actualmente devuelve directamente un array JSON.
+        // Pero en algunos lugares el frontend esperaba { gramosPms: [...] }.
+        // Aceptamos ambos formatos: si es un array, lo devolvemos; si viene envuelto, devolvemos la propiedad.
+        if (Array.isArray(response)) {
+          return response as GramosPmsDto[];
+        }
+        if (response && Array.isArray(response.gramosPms)) {
+          return response.gramosPms as GramosPmsDto[];
+        }
+        return [] as GramosPmsDto[];
       })
     );
   }

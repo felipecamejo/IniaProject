@@ -10,6 +10,9 @@ export interface PMSDto {
   activo: boolean;
   repetido: boolean;
   reciboId: number | null;
+  fechaMedicion: string | null;
   fechaCreacion: string | null;
   fechaRepeticion: string | null;
+  humedadPorcentual: number | null;
+  estandar: boolean
 }

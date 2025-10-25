@@ -113,6 +113,11 @@
         </div>
       </div>
 
+      <div class="comentarios-wrapper" style="margin-top:2rem;">
+        <label for="comentarios" style="font-weight:600; font-size:1.05em; color:#333;">Observaciones:</label>
+        <textarea id="comentarios" [(ngModel)]="comentarios" name="comentarios" rows="4" [readonly]="isReadonly" style="width:100%; border-radius:8px; border:1px solid #bdbdbd; padding:0.75rem; font-size:1em; margin-top:0.5rem; resize:vertical;"></textarea>
+      </div>
+
       <!-- Checkboxes -->
       <div class="checkbox-container" *ngIf="isEditing && !isReadonly">
         <h4 class="checkbox-title">Opciones De Edición</h4>
@@ -130,7 +135,7 @@
               <span class="checkbox-text">Estándar</span>
             </label>
           </div>
-          
+
           <div class="checkbox-item">
             <input 
               type="checkbox" 
@@ -147,10 +152,7 @@
         </div>
       </div>
 
-      <div class="comentarios-wrapper" style="margin-top:2rem;">
-        <label for="comentarios" style="font-weight:600; font-size:1.05em; color:#333;">Observaciones:</label>
-        <textarea id="comentarios" [(ngModel)]="comentarios" name="comentarios" rows="4" [readonly]="isReadonly" style="width:100%; border-radius:8px; border:1px solid #bdbdbd; padding:0.75rem; font-size:1em; margin-top:0.5rem; resize:vertical;"></textarea>
-      </div>
+     
       <div class="submit-btn" style="display: flex; gap: 1rem; margin-top:2rem;">
         <button
           *ngIf="!isReadonly"

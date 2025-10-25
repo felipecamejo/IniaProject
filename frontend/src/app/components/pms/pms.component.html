@@ -9,7 +9,7 @@
       <h2 class="title">{{ isViewing ? 'Ver PMS' : (isEditing ? 'Editar PMS' : 'Crear PMS') }}</h2>
     </ng-template>
 
-    <form (ngSubmit)="onSubmit()">
+    <form (ngSubmit)="onSubmit()" (input)="manejarProblemas()">
       <div class="table-section">
         <h3 class="table-title">Tabla de repeticiones - PMS</h3>
         <div class="table-wrapper">
@@ -38,7 +38,9 @@
                       [name]="'gramos' + i"
                       step="0.0001"
                       [readonly]="isReadonly"
-                    />
+                      [ngClass]="{ 'input-error': repeticiones[i].gramos != null && repeticiones[i].gramos < 0 }"/>
+                    
+                    <span *ngIf="repeticiones[i].gramos != null && repeticiones[i].gramos < 0" class="error-message">La incidencia debe ser mayor a 0.</span>
                   </div>
                 </td>
                 <td *ngIf="!isViewing">
@@ -53,7 +55,7 @@
             </tbody>
           </table>
 
-          <button pButton type="button"
+          <button *ngIf="!isViewing" pButton type="button"
                   label="Agregar repetición"
                   class="btn-agregar-rep"
                   (click)="agregarRepeticion()">
@@ -65,38 +67,51 @@
         <!-- Campos de texto -->
         <div class="form-field">
           <label for="pesoMilSemillas">Peso Mil Semillas</label>
-          <input id="pesoMilSemillas" type="number" [(ngModel)]="pesoMilSemillas" name="pesoMilSemillas" pInputText step="0.0001" [readonly]="isReadonly" />
+          <input id="pesoMilSemillas" type="number" [(ngModel)]="pesoMilSemillas" name="pesoMilSemillas" pInputText step="0.0001" [readonly]="isReadonly" 
+                 [ngClass]="{ 'input-error': pesoMilSemillas != null && pesoMilSemillas < 0 }"/>
+          <span *ngIf="pesoMilSemillas != null && pesoMilSemillas < 0" class="error-message">El valor no puede ser negativo.</span>
         </div>
 
         <div class="form-field">
           <label for="pesoPromedioCienSemillas">Peso Promedio Cien Semillas</label>
-          <input id="pesoPromedioCienSemillas" type="number" [(ngModel)]="pesoPromedioCienSemillas" name="pesoPromedioCienSemillas" pInputText step="0.0001" [readonly]="isReadonly" />
+          <input id="pesoPromedioCienSemillas" type="number" [(ngModel)]="pesoPromedioCienSemillas" name="pesoPromedioCienSemillas" pInputText step="0.0001" [readonly]="isReadonly" 
+                 [ngClass]="{ 'input-error': pesoPromedioCienSemillas != null && pesoPromedioCienSemillas < 0 }"/>
+          <span *ngIf="pesoPromedioCienSemillas != null && pesoPromedioCienSemillas < 0" class="error-message">El valor no puede ser negativo.</span>
         </div>
 
         <div class="form-field">
           <label for="pesoPromedioMilSemillas">Peso Promedio Mil Semillas</label>
-          <input id="pesoPromedioMilSemillas" type="number" [(ngModel)]="pesoPromedioMilSemillas" name="pesoPromedioMilSemillas" pInputText step="0.0001" [readonly]="isReadonly" />
+          <input id="pesoPromedioMilSemillas" type="number" [(ngModel)]="pesoPromedioMilSemillas" name="pesoPromedioMilSemillas" pInputText step="0.0001" [readonly]="isReadonly" 
+                 [ngClass]="{ 'input-error': pesoPromedioMilSemillas != null && pesoPromedioMilSemillas < 0 }"/>
+          <span *ngIf="pesoPromedioMilSemillas != null && pesoPromedioMilSemillas < 0" class="error-message">El valor no puede ser negativo.</span>
         </div>
 
         <div class="form-field">
           <label for="desvioEstandar">Desvío Estándar</label>
-          <input id="desvioEstandar" type="number" [(ngModel)]="desvioEstandar" name="desvioEstandar" pInputText step="0.0001" [readonly]="isReadonly" />
+          <input id="desvioEstandar" type="number" [(ngModel)]="desvioEstandar" name="desvioEstandar" pInputText step="0.0001" [readonly]="isReadonly" 
+                 [ngClass]="{ 'input-error': desvioEstandar != null && desvioEstandar < 0 }"/>
+          <span *ngIf="desvioEstandar != null && desvioEstandar < 0" class="error-message">El valor no puede ser negativo.</span>
         </div>
 
         <div class="form-field">
           <label for="coeficienteVariacion">Coeficiente de Variación</label>
-          <input id="coeficienteVariacion" type="number" [(ngModel)]="coeficienteVariacion" name="coeficienteVariacion" pInputText step="0.0001" [readonly]="isReadonly" />
+          <input id="coeficienteVariacion" type="number" [(ngModel)]="coeficienteVariacion" name="coeficienteVariacion" pInputText step="0.0001" [readonly]="isReadonly" 
+                 [ngClass]="{ 'input-error': coeficienteVariacion != null && coeficienteVariacion < 0 }"/>
+          <span *ngIf="coeficienteVariacion != null && coeficienteVariacion < 0" class="error-message">El valor no puede ser negativo.</span>
         </div>
-
 
         <div class="form-field">
           <label for="humedadPorcentual">% Humedad</label>
-          <input id="humedadPorcentual" type="number" [(ngModel)]="humedadPorcentual" name="humedadPorcentual" pInputText [readonly]="isReadonly" />
+          <input id="humedadPorcentual" type="number" [(ngModel)]="humedadPorcentual" name="humedadPorcentual" pInputText [readonly]="isReadonly" 
+                 [ngClass]="{ 'input-error': humedadPorcentual != null && humedadPorcentual < 0 }"/>
+          <span *ngIf="humedadPorcentual != null && humedadPorcentual < 0" class="error-message">El valor no puede ser negativo.</span>
         </div>
 
         <div class="form-field">
           <label for="fechaMedicion">Fecha Medicion</label>
-          <input id="fechaMedicion" type="date" [(ngModel)]="fechaMedicion" name="fechaMedicion" pInputText [readonly]="isReadonly" />
+          <input id="fechaMedicion" type="date" [(ngModel)]="fechaMedicion" name="fechaMedicion" pInputText [readonly]="isReadonly" 
+                 [ngClass]="{ 'input-error': validarFecha(fechaMedicion) }"/>
+          <span *ngIf="validarFecha(fechaMedicion)" class="error-message">La fecha no puede ser futura.</span>
         </div> 
 
          <div class="form-field">
@@ -149,6 +164,13 @@
 
       </div>
 
+      <div *ngIf="errores.length > 0" class="error-container">
+        <p class="error-message">
+          {{ errores.length === 1 ? '1 error encontrado' : errores.length + ' errores encontrados' }}
+        </p>
+        <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
+      </div>
+
       <div class="submit-btn">
         <button
           *ngIf="!isViewing"
@@ -156,6 +178,7 @@
           type="submit"
           [label]="isEditing ? 'Actualizar PMS' : 'Crear PMS'"
           class="p-button-success"
+          [disabled]="errores.length > 0"
         ></button>
         <button
           pButton

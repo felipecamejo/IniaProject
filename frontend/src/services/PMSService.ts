@@ -14,11 +14,10 @@ export class PMSService {
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
-  crear(payload: PMSDto): Observable<string> {
-    return this.http.post(
+  crear(payload: PMSDto): Observable<number> {
+    return this.http.post<number>(
       `${this.urlService.baseUrl}${this.endpoint}/crear`,
-      payload,
-      { responseType: 'text' }
+      payload
     );
   }
 

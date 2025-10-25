@@ -36,6 +36,9 @@ export class PurezaComponent implements OnInit {
   isViewing: boolean = false;
   editingId: number | null = null;
   repetido: boolean = false;
+
+  // Agregar propiedades para manejar errores
+  errores: string[] = [];
   
   // Variable para prevenir múltiples envíos
   isSubmitting: boolean = false;
@@ -70,6 +73,9 @@ export class PurezaComponent implements OnInit {
   malezasComunesSearchText: string = '';
   malezasToleradasSearchText: string = '';
   cultivosSearchText: string = '';
+
+  gramosInase: number[] = [];
+  gramosInia: number[] = [];
 
   // === MÉTODOS PARA MALEZAS TOLERANCIA CERO ===
   toggleMalezasCeroDropdown() { this.isMalezasCeroDropdownOpen = !this.isMalezasCeroDropdownOpen; }
@@ -941,6 +947,11 @@ export class PurezaComponent implements OnInit {
   }
 
   onSubmit() {
+    if(this.manejarProblemas()) {
+      console.log('Errores encontrados, no se puede enviar el formulario');
+      return;
+    }
+
     // Prevenir múltiples envíos
     if (this.isSubmitting) {
       console.log('Ya se está enviando el formulario, ignorando nueva llamada');
@@ -1094,5 +1105,54 @@ export class PurezaComponent implements OnInit {
   onCancel() {
     this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);
   }
+
+  private validarGramos(): void {
+    for (let i = 0; i < 8; i++) {
+      const gramos = this.getGramosValue(i);
+      if (gramos != null && gramos < 0) {
+        this.errores.push(`Los gramos de inia en la fila ${i + 1} no pueden ser un número negativo.`);
+      }
+    }
+
+    for (let i = 0; i < 8; i++) {
+      const gramos = this.getGramosInaseValue(i);
+      if (gramos != null && gramos < 0) {
+        this.errores.push(`Los gramos de inase en la fila ${i + 1} no pueden ser un número negativo.`);
+      }
+    }
+  }
+
+  manejarProblemas(): boolean {
+      this.errores = []; // Reiniciar errores
+
+      const hoy = new Date();
+      const fechaMedicion = this.fechaMedicion ? new Date(this.fechaMedicion) : null;
+      const fechaInase = this.fechaInase ? new Date(this.fechaInase) : null;
+      const fechaInia = this.fechaInia ? new Date(this.fechaInia) : null;
+
+      if (fechaMedicion != null && fechaMedicion > hoy) {
+        this.errores.push('La fecha no puede ser mayor a la fecha actual.');
+      }
+
+      if (fechaInase != null && fechaInase > hoy) {
+        this.errores.push('La fecha INASE no puede ser mayor a la fecha actual.');
+      }
+
+      if (fechaInia != null && fechaInia > hoy) {
+        this.errores.push('La fecha INIA no puede ser mayor a la fecha actual.');
+      } 
+      
+      // Validar que todos los valores de gramos no sean negativos
+      this.validarGramos();
+
+      return this.errores.length > 0;
+    }
+
+    validarFecha(fecha: string | null): boolean {
+        if (!fecha) return false;
+        const selectedDate = new Date(fecha);
+        const today = new Date();
+        return selectedDate >= today;
+    }
 
 }
