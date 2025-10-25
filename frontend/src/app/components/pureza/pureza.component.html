@@ -4,13 +4,15 @@
       <h2 class="title">{{ isViewing ? 'Ver Pureza' : (isEditing ? 'Editar Pureza' : 'Crear Pureza') }}</h2>
     </ng-template>
 
-    <form>
+    <form (ngSubmit)="onSubmit()" (input)="manejarProblemas()">
 
       <div class="form-grid">
         <!-- Fecha -->
         <div class="form-field">
           <label for="fecha">Fecha Inia</label>
-          <input id="fecha" type="date" [(ngModel)]="fechaInia" name="fecha" pInputText [readonly]="isReadonly" />
+          <input id="fecha" type="date" [(ngModel)]="fechaInia" name="fecha" pInputText [readonly]="isReadonly" 
+             [ngClass]="{ 'input-error': validarFecha(fechaInia) }"/>
+          <span *ngIf="validarFecha(fechaInia)" class="error-message">La fecha no puede ser futura.</span>
         </div>
       </div>
 
@@ -34,16 +36,20 @@
             <tr>
               <td><strong>{{ rowData.label }}</strong></td>
               <td>
-                <div>
-                  <input 
-                    type="number" 
-                    [ngModel]="getGramosValue(rowIndex)"
-                    (ngModelChange)="setGramosValue(rowIndex, $event)"
-                    [name]="'gramos_' + rowIndex" 
-                    pInputText 
-                    [readonly]="isReadonly"
-                  />
-                  <span>g</span>
+                <div style="display: flex; flex-direction: column;">
+                  <div>
+                    <input 
+                      type="number" 
+                      [ngModel]="getGramosValue(rowIndex)"
+                      (ngModelChange)="setGramosValue(rowIndex, $event)"
+                      [name]="'gramos_' + rowIndex" 
+                      pInputText 
+                      [readonly]="isReadonly"
+                      [ngClass]="{ 'input-error': getGramosValue(rowIndex) != null && getGramosValue(rowIndex) < 0 }"/>
+                    <span>g</span>
+                  </div>
+
+                  <span *ngIf="getGramosValue(rowIndex) != null && getGramosValue(rowIndex) < 0" class="error-message">Es negativo.</span>
                 </div>
               </td>
               <td>
@@ -87,7 +93,8 @@
         <!-- Fecha -->
         <div class="form-field">
           <label for="fecha">Fecha Inase</label>
-          <input id="fecha" type="date" [(ngModel)]="fechaInase" name="fecha" pInputText [readonly]="isReadonly" />
+          <input id="fecha" type="date" [(ngModel)]="fechaInase" name="fecha" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarFecha(fechaInase) }"/>
+          <span *ngIf="validarFecha(fechaInase)" class="error-message">La fecha no puede ser futura.</span>
         </div>
       </div>
 
@@ -111,16 +118,19 @@
             <tr>
               <td><strong>{{ rowData.label }}</strong></td>
               <td>
-                <div>
-                  <input 
-                    type="number" 
-                    [ngModel]="getGramosInaseValue(rowIndex)"
-                    (ngModelChange)="setGramosInaseValue(rowIndex, $event)"
-                    [name]="'gramosInase_' + rowIndex" 
-                    pInputText 
-                    [readonly]="isReadonly"
-                  />
-                  <span>g</span>
+                <div style="display: flex; flex-direction: column;">
+                  <div>
+                    <input 
+                      type="number" 
+                      [ngModel]="getGramosInaseValue(rowIndex)"
+                      (ngModelChange)="setGramosInaseValue(rowIndex, $event)"
+                      [name]="'gramosInase_' + rowIndex" 
+                      pInputText 
+                      [readonly]="isReadonly"
+                      [ngClass]="{ 'input-error': getGramosInaseValue(rowIndex) != null && getGramosInaseValue(rowIndex) < 0 }"/>
+                    <span>g</span>
+                  </div>
+                  <span *ngIf="getGramosInaseValue(rowIndex) != null && getGramosInaseValue(rowIndex) < 0" class="error-message">Es negativo.</span>
                 </div>
               </td>
               <td>
@@ -165,7 +175,9 @@
         <!-- Fecha estándar -->
         <div class="form-field">
           <label for="fechaEstandar">Fecha estándar</label>
-          <input id="fechaEstandar" type="date" [(ngModel)]="fechaEstandar" name="fechaEstandar" pInputText [readonly]="isReadonly" />
+          <input id="fechaEstandar" type="date" [(ngModel)]="fechaEstandar" name="fechaEstandar" pInputText [readonly]="isReadonly" 
+            [ngClass]="{ 'input-error': validarFecha(fechaEstandar) }"/>
+          <span *ngIf="validarFecha(fechaEstandar)" class="error-message">La fecha no puede ser futura.</span>
         </div>
 
 
@@ -308,12 +320,18 @@
         </div>
       </div>
 
+      <div *ngIf="errores.length > 0" class="error-container">
+        <p class="error-message">
+          {{ errores.length === 1 ? '1 error encontrado' : errores.length + ' errores encontrados' }}
+        </p>
+        <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
+      </div>
+
       <div class="submit-btn">
         <button
           *ngIf="!isViewing"
           pButton
-          type="button"
-          (click)="onSubmit()"
+          type="submit"
           [label]="isSubmitting ? 'Enviando...' : (isEditing ? 'Actualizar Pureza' : 'Crear Pureza')"
           class="p-button-success"
           [disabled]="isSubmitting"

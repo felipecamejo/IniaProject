@@ -333,42 +333,42 @@ export class PmsComponent implements OnInit {
     }
 
     manejarProblemas(): boolean {
-    this.errores = []; // Reiniciar errores
+      this.errores = []; // Reiniciar errores
 
-    const hoy = new Date();
-    const fecha = this.fechaMedicion ? new Date(this.fechaMedicion) : null;
+      const hoy = new Date();
+      const fecha = this.fechaMedicion ? new Date(this.fechaMedicion) : null;
 
-    if (this.pesoMilSemillas != null && this.pesoMilSemillas < 0) {
-      this.errores.push('El peso de mil semillas no puede ser un número negativo.');
+      if (this.pesoMilSemillas != null && this.pesoMilSemillas < 0) {
+        this.errores.push('El peso de mil semillas no puede ser un número negativo.');
+      }
+
+      if (this.pesoPromedioMilSemillas != null && this.pesoPromedioMilSemillas < 0) {
+        this.errores.push('El peso promedio de mil semillas no puede ser un número negativo.');
+      }
+
+      if (this.pesoPromedioCienSemillas != null && this.pesoPromedioCienSemillas < 0) {
+        this.errores.push('El peso promedio de cien semillas no puede ser un número negativo.');
+      }
+
+      if (this.desvioEstandar != null && this.desvioEstandar < 0) {
+        this.errores.push('El desvío estándar no puede ser un número negativo.');
+      }
+
+      if (this.humedadPorcentual != null && this.humedadPorcentual < 0 && this.humedadPorcentual > 100) {
+        this.errores.push('La humedad porcentual debe estar entre 0 y 100.');
+      }
+
+      if (this.gramosEntries.some(h => h.gramos != null && h.gramos < 0)) {
+
+        this.errores.push('Algunos hongos tienen un número de gramos negativo.');
+      }
+
+      if (fecha != null && fecha > hoy) {
+        this.errores.push('La fecha no puede ser mayor a la fecha actual.');
+      }
+
+      return this.errores.length > 0;
     }
-
-    if (this.pesoPromedioMilSemillas != null && this.pesoPromedioMilSemillas < 0) {
-      this.errores.push('El peso promedio de mil semillas no puede ser un número negativo.');
-    }
-
-    if (this.pesoPromedioCienSemillas != null && this.pesoPromedioCienSemillas < 0) {
-      this.errores.push('El peso promedio de cien semillas no puede ser un número negativo.');
-    }
-
-    if (this.desvioEstandar != null && this.desvioEstandar < 0) {
-      this.errores.push('El desvío estándar no puede ser un número negativo.');
-    }
-
-    if (this.humedadPorcentual != null && this.humedadPorcentual < 0 && this.humedadPorcentual > 100) {
-      this.errores.push('La humedad porcentual debe estar entre 0 y 100.');
-    }
-
-    if (this.gramosEntries.some(h => h.gramos != null && h.gramos < 0)) {
-
-      this.errores.push('Algunos hongos tienen un número de gramos negativo.');
-    }
-
-    if (fecha != null && fecha > hoy) {
-      this.errores.push('La fecha no puede ser mayor a la fecha actual.');
-    }
-
-    return this.errores.length > 0;
-  }
 
     onCancel() {
       const loteId = this.route.snapshot.params['loteId'] || this.loteId || 'default-lote-id';
