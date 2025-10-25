@@ -41,9 +41,18 @@ public class PMS {
     @Column(name = "PMS_REPETIDO")
     private boolean repetido;
 
+    @Column(name = "PMS_ESTANDAR")
+    private boolean estandar;
+
+    @Column(name = "PMS_FECHA_MEDICION")
+    private Date fechaMedicion;
+
     @Column(name = "PMS_FECHA_CREACION")
     private Date fechaCreacion;
 
     @Column(name = "PMS_FECHA_REPETICION")
     private Date fechaRepeticion;
+
+    @Column(name = "PMS_HUMEDAD_PORCENTUAL")
+    private Integer humedadPorcentual;
 }

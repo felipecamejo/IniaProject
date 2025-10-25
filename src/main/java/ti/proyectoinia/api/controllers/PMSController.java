@@ -26,9 +26,9 @@ public class PMSController {
     @Operation(
             description = "Esta Funcion crea un nuevo PMS"
     )
-    public ResponseEntity<String> crearPMS(@RequestBody PMSDto pmsDto) {
+    public ResponseEntity<Long> crearPMS(@RequestBody PMSDto pmsDto) {
         pmsDto.setId((Long) null);
-        String response = this.pmsService.crearPMS(pmsDto);
+        Long response = this.pmsService.crearPMS(pmsDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

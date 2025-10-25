@@ -468,6 +468,7 @@ public class MapsDtoEntityService {
             return null;
         }
         PMSDto pmsDto = new PMSDto();
+
         pmsDto.setId(pms.getId());
         pmsDto.setPesoPromedioCienSemillas(pms.getPesoPromedioCienSemillas());
         pmsDto.setPesoMilSemillas(pms.getPesoMilSemillas());
@@ -479,6 +480,9 @@ public class MapsDtoEntityService {
         pmsDto.setRepetido(pms.isRepetido());
         pmsDto.setFechaCreacion(pms.getFechaCreacion());
         pmsDto.setFechaRepeticion(pms.getFechaRepeticion());
+        pmsDto.setFechaMedicion(pms.getFechaMedicion());
+        pmsDto.setHumedadPorcentual(pms.getHumedadPorcentual());
+        pmsDto.setEstandar(pms.isEstandar());
 
         if (pms.getRecibo() != null) {
             pmsDto.setReciboId(pms.getRecibo().getId());
@@ -492,7 +496,9 @@ public class MapsDtoEntityService {
         if (pmsDto == null) {
             return null;
         }
+
         PMS pms = new PMS();
+
         pms.setId(pmsDto.getId());
         pms.setPesoPromedioCienSemillas(pmsDto.getPesoPromedioCienSemillas());
         pms.setPesoMilSemillas(pmsDto.getPesoMilSemillas());
@@ -504,6 +510,9 @@ public class MapsDtoEntityService {
         pms.setRepetido(pmsDto.isRepetido());
         pms.setFechaCreacion(pmsDto.getFechaCreacion());
         pms.setFechaRepeticion(pmsDto.getFechaRepeticion());
+        pms.setFechaMedicion(pmsDto.getFechaMedicion());
+        pms.setHumedadPorcentual(pmsDto.getHumedadPorcentual());
+        pms.setEstandar(pmsDto.isEstandar());
 
         // Validar y obtener el recibo si existe
         Recibo recibo = getValidRecibo(pmsDto.getReciboId());
@@ -1283,7 +1292,6 @@ public class MapsDtoEntityService {
         if (entity == null) return null;
         GramosPmsDto dto = new GramosPmsDto();
         dto.setId(entity.getId());
-        dto.setActivo(entity.isActivo());
         dto.setPmsId(entity.getPmsId());
         dto.setGramos(entity.getGramos());
         dto.setNumeroRepeticion(entity.getNumeroRepeticion());
@@ -1294,7 +1302,6 @@ public class MapsDtoEntityService {
         if (dto == null) return null;
         ti.proyectoinia.business.entities.GramosPms entity = new ti.proyectoinia.business.entities.GramosPms();
         entity.setId(dto.getId());
-        entity.setActivo(dto.isActivo());
         entity.setPmsId(dto.getPmsId());
         entity.setGramos(dto.getGramos());
         entity.setNumeroRepeticion(dto.getNumeroRepeticion());

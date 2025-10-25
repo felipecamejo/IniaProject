@@ -12,9 +12,6 @@ public class GramosPms {
     @Column(name = "GRAMOS_PMS_ID")
     private Long id;
 
-    @Column(name = "GRAMOS_PMS_ACTIVO")
-    private boolean activo;
-
     @Column(name = "PMS_ID")
     private Long pmsId;
 

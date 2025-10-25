@@ -51,7 +51,6 @@ public class GramosPmsController {
                 errores.add(err);
             } else {
                 dto.setId(null);
-                dto.setActivo(true);
                 validos.add(dto);
             }
         }
@@ -65,56 +64,4 @@ public class GramosPmsController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("/editar-multiple")
-    @Secured({"ADMIN"})
-    @Operation(description = "Edita múltiples GramosPms en una sola llamada")
-    public ResponseEntity<Object> editarMultiples(@RequestBody List<GramosPmsDto> dtos) {
-        List<GramosPmsDto> validos = new java.util.ArrayList<>();
-        List<Map<String, Object>> errores = new java.util.ArrayList<>();
-
-        for (int i = 0; i < dtos.size(); i++) {
-            GramosPmsDto dto = dtos.get(i);
-            if (dto.getPmsId() == null) {
-                Map<String, Object> err = new java.util.HashMap<>();
-                err.put("index", i);
-                err.put("message", "pmsId es obligatorio");
-                err.put("dto", dto);
-                errores.add(err);
-            } else {
-                validos.add(dto);
-            }
-        }
-
-        java.util.Map<String, Object> serviceResult = gramosPmsService.editarMultiplesGramos(validos);
-
-        @SuppressWarnings("unchecked")
-        java.util.List<GramosPmsDto> editadas = (java.util.List<GramosPmsDto>) serviceResult.getOrDefault("edited", new java.util.ArrayList<>());
-        @SuppressWarnings("unchecked")
-        java.util.List<GramosPmsDto> creadas = (java.util.List<GramosPmsDto>) serviceResult.getOrDefault("created", new java.util.ArrayList<>());
-        @SuppressWarnings("unchecked")
-        java.util.List<java.util.Map<String, Object>> serviceErrors = (java.util.List<java.util.Map<String, Object>>) serviceResult.getOrDefault("errors", new java.util.ArrayList<>());
-
-        java.util.List<Object> allErrors = new java.util.ArrayList<>();
-        allErrors.addAll(errores);
-        allErrors.addAll(serviceErrors);
-
-        java.util.Map<String, Object> response = new java.util.HashMap<>();
-        response.put("edited", editadas);
-        response.put("created", creadas);
-        response.put("errors", allErrors);
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    @PutMapping("/eliminar-multiple")
-    @Secured({"ADMIN"})
-    @Operation(description = "Elimina múltiples GramosPms (soft-delete) en una sola llamada")
-    public ResponseEntity<Object> eliminarMultiples(@RequestBody List<Long> ids) {
-        if (ids == null || ids.isEmpty()) {
-            return new ResponseEntity<>(java.util.Collections.singletonMap("message", "No se recibieron ids"), HttpStatus.BAD_REQUEST);
-        }
-
-        java.util.Map<String, Object> result = gramosPmsService.eliminarMultiplesGramos(ids);
-        return new ResponseEntity<>(result, HttpStatus.OK);
-    }
 }

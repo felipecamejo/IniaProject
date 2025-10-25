@@ -29,9 +29,13 @@ public class PMSDto {
 
     private Long reciboId;
 
+    private Date fechaMedicion;
+
     private Date fechaCreacion;
 
     private Date fechaRepeticion;
+
+    private Integer humedadPorcentual;
 
     private boolean estandar;
 

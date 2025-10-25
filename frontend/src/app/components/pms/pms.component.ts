@@ -7,6 +7,7 @@ import { GramosPmsService } from '../../../services/GramosPmsService';
 import { GramosPmsDto } from '../../../models/GramosPms.dto';
 import { UrlService } from '../../../services/url.service';
 import { PMSDto } from '../../../models/PMS.dto';
+import { DateService } from '../../../services/DateService';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -71,6 +72,11 @@ export class PmsComponent implements OnInit {
     fechaMedicion: string = '';
     selectedMetodo: string = '';
 
+    // Agregar propiedades para manejar errores
+    errores: string[] = [];
+
+    isSaving: boolean = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -102,6 +108,8 @@ export class PmsComponent implements OnInit {
               this.comentarios = data.comentarios || '';
               this.activo = data.activo ?? true;
               this.repetido = data.repetido ?? false;
+              this.humedadPorcentual = data.humedadPorcentual ?? null;
+              this.fechaMedicion = data.fechaMedicion ? data.fechaMedicion.split('T')[0] : '';
               this.reciboId = this.route.snapshot.params['reciboId'];
               this.fechaCreacion = data.fechaCreacion || null;
               this.fechaRepeticion = data.fechaRepeticion || null;
@@ -225,6 +233,17 @@ export class PmsComponent implements OnInit {
     }
 
     onSubmit() {
+      if (this.isSaving) return;
+
+      // Verificar si hay errores antes de continuar
+      if (this.manejarProblemas()) {
+        console.error('Errores detectados:', this.errores);
+        this.isSaving = false;
+        return;
+      }
+
+      this.isSaving = true;
+
       // Convertir repeticiones a array de gramos
       this.gramosPorRepeticiones = this.repeticiones.map(rep => rep.gramos);
 
@@ -240,167 +259,128 @@ export class PmsComponent implements OnInit {
         activo: this.activo,
         repetido: this.repetido,
         reciboId: this.route.snapshot.params['reciboId'] ? Number(this.route.snapshot.params['reciboId']) : null,
-        fechaCreacion: this.fechaCreacion,
-        fechaRepeticion: this.fechaRepeticion
+        fechaMedicion: this.fechaMedicion ? this.fechaMedicion.split('T')[0] : null,
+        fechaCreacion: this.fechaCreacion ? this.fechaCreacion.split('T')[0] : null,
+        fechaRepeticion: this.fechaRepeticion ? this.fechaRepeticion.split('T')[0] : null,
+        humedadPorcentual: this.humedadPorcentual ?? null, // Asegurar que se incluya
+        estandar: this.estandar
       };
+
+      console.log("fechaMedicion antes de ajustar:", pmsData.fechaMedicion);
+      console.log("fechaCreacion antes de ajustar:", pmsData.fechaCreacion);
+      console.log("fechaRepeticion antes de ajustar:", pmsData.fechaRepeticion);
+
+      console.log('📋 PMS DTO:', pmsData);
+
       if (this.isEditing && this.editingId) {
-        // Actualizar PMS existente
-        if(this.repetido && (!pmsData.repetido || pmsData.fechaRepeticion == null)) {
-          pmsData.repetido = true;
-          pmsData.fechaRepeticion = new Date().toISOString().split('T')[0]; // Asignar fecha actual si es repetido sin fecha
-        }
-        console.log('Actualizando PMS ID:', this.editingId, 'con datos:', pmsData);
-        this.pmsService.editar(pmsData).subscribe({
-          next: (res) => {
-            console.log('PMS actualizado correctamente:', res);
-            // Ahora procesar los gramos relacionados (editar/crear/eliminar)
-            this.procesarGramosDespuesDeGuardar(this.editingId!).then(() => {
-              this.safeNavigateToListadoPms();
-            }).catch(err => {
-              console.error('Error procesando gramos después de editar PMS:', err);
-              this.safeNavigateToListadoPms();
-            });
-          },
-          error: (err) => {
-            console.error('Error actualizando PMS:', err);
-            // Aquí podrías mostrar un mensaje al usuario
-          }
-        });
+        this.actualizarPms(pmsData);
       } else {
-        // Crear nuevo PMS
-        console.log('Creando nuevo PMS:', pmsData);
-        pmsData.fechaRepeticion = null;
-        pmsData.repetido = false;
-        pmsData.fechaCreacion = new Date().toISOString().split('T')[0];
-        pmsData.reciboId = this.route.snapshot.params['reciboId'] ? Number(this.route.snapshot.params['reciboId']) : null;
-        this.pmsService.crear(pmsData).subscribe({
-          next: (res) => {
-            console.log('PMS creado correctamente:', res);
-            // El endpoint crear devuelve texto; para obtener el PMS creado, listamos por recibo
-            const reciboIdNum = this.route.snapshot.params['reciboId'] ? Number(this.route.snapshot.params['reciboId']) : null;
-            if (reciboIdNum) {
-              this.pmsService.listar(reciboIdNum).subscribe({
-                next: (lista) => {
-                  if (lista && lista.length > 0) {
-                    // Tomar el PMS con mayor id como el recientemente creado
-                    const max = lista.reduce((prev, cur) => (prev.id && cur.id && Number(cur.id) > Number(prev.id) ? cur : prev), lista[0]);
-                    const nuevoId = max?.id ? Number(max.id) : null;
-                    if (nuevoId) {
-                      this.procesarGramosDespuesDeCrear(nuevoId).then(() => {
-                        this.safeNavigateToListadoPms();
-                      }).catch(err => {
-                        console.error('Error creando gramos después de crear PMS:', err);
-                        this.safeNavigateToListadoPms();
-                      });
-                      return;
-                    }
-                  }
-                  // Si no logramos determinar id, redirigir
-                      this.safeNavigateToListadoPms();
-                },
-                error: (err) => {
-                  console.error('Error listando PMS después de crear:', err);
-                  this.safeNavigateToListadoPms();
-                }
-              });
-            } else {
-              this.safeNavigateToListadoPms();
-            }
-          },
-          error: (err) => {
-            console.error('Error creando PMS:', err);
-            // Mostrar feedback si es necesario
-          }
-        });
+        this.crearNuevoPms(pmsData);
       }
     }
 
-    private async procesarGramosDespuesDeCrear(pmsId: number): Promise<void> {
-      // Crear todos los gramosEntries (GramosPmsDto[])
-      const payload: GramosPmsDto[] = this.gramosEntries.map((g: GramosPmsDto, index: number) => ({ 
-        id: g.id ?? null, 
-        activo: g.activo ?? true, 
-        pmsId: pmsId, 
-        gramos: g.gramos
-      } as GramosPmsDto));
-      console.log('GramosEntries antes del mapeo:', this.gramosEntries);
-      console.log('Payload GramosPmsDto[] a crear después de crear PMS:', payload);
-      console.log('PmsId asignado:', pmsId);
-      console.log('Verificando payload:', payload.map(p => ({ id: p.id, gramos: p.gramos })));
-      return new Promise((resolve, reject) => {
-        if (!payload || payload.length === 0) return resolve();
-        this.gramosPmsService.crearMultiplesGramos(payload).subscribe({
-          next: (resp) => {
-            console.log('Gramos creados exitosamente:', resp);
-            resolve();
-          },
-          error: (err) => reject(err)
-        });
-      });
-    }
-
-    private async procesarGramosDespuesDeGuardar(pmsId: number): Promise<void> {
-      // Preparar payload: los que tienen id se consideran edición, los que no tienen id se crean
-      const toSend: GramosPmsDto[] = this.gramosEntries.map((g: GramosPmsDto, index: number) => ({ 
-        id: g.id ?? null, 
-        activo: g.activo ?? true, 
-        pmsId: pmsId, 
-        gramos: g.gramos
-      } as GramosPmsDto));
-      console.log('GramosEntries antes del mapeo (edición):', this.gramosEntries);
-      console.log('Payload GramosPmsDto[] a editar/crear después de guardar PMS:', toSend);
-      console.log('PmsId asignado:', pmsId);
-      console.log('Verificando payload (edición):', toSend.map(p => ({ id: p.id, gramos: p.gramos })));
-      console.log('IDs de gramos a eliminar:', this.deletedGramosIds);
-      return new Promise((resolve, reject) => {
-        if (toSend.length === 0 && this.deletedGramosIds.length === 0) return resolve();
-
-        // Primero editar/crear en lote
-        if (toSend.length > 0) {
-          this.gramosPmsService.editarMultiplesGramos(toSend).subscribe({
-            next: (resp) => {
-              console.log('Gramos editados/creados exitosamente:', resp);
-              // Luego eliminar los marcados
-              if (this.deletedGramosIds && this.deletedGramosIds.length > 0) {
-                this.gramosPmsService.eliminarMultiplesGramos(this.deletedGramosIds).subscribe({
-                  next: () => {
-                    console.log('Gramos eliminados exitosamente');
-                    resolve();
-                  },
-                  error: (err) => reject(err)
-                });
-              } else {
-                resolve();
-              }
-            },
-            error: (err) => reject(err)
-          });
-        } else {
-          // Solo eliminaciones pendientes
-          this.gramosPmsService.eliminarMultiplesGramos(this.deletedGramosIds).subscribe({
-            next: () => {
-              console.log('Gramos eliminados exitosamente (solo eliminaciones)');
-              resolve();
-            },
-            error: (err) => reject(err)
-          });
+    private crearNuevoPms(pmsData: PMSDto) {
+      pmsData.fechaCreacion = DateService.ajustarFecha(new Date().toISOString().split('T')[0]);
+      console.log('Creando nuevo PMS:', pmsData);
+      this.pmsService.crear(pmsData).subscribe({
+        next: (res) => {
+          console.log('PMS creado correctamente:', res);
+          // Guardar gramos asociados al PMS
+          this.guardarGramos(res);
+          this.onCancel();
+        },
+        error: (err) => {
+          console.error('Error creando PMS:', err);
+        },
+        complete: () => {
+          this.isSaving = false;
         }
       });
     }
 
-    onCancel() {
-      this.safeNavigateToListadoPms();
+    private actualizarPms(pmsData: PMSDto) {
+
+      console.log('Actualizando PMS ID:', this.editingId, 'con datos:', pmsData);
+      this.pmsService.editar(pmsData).subscribe({
+        next: (res) => {
+          console.log('PMS actualizado correctamente:', res);
+          // Guardar gramos asociados al PMS
+          this.guardarGramos(this.editingId!);
+          this.onCancel();
+        },
+        error: (err) => {
+          console.error('Error actualizando PMS:', err);
+        },
+        complete: () => {
+          this.isSaving = false;
+        }
+      });
     }
 
-    private safeNavigateToListadoPms() {
-      const lote = this.route.snapshot.params['loteId'];
-      const recibo = this.route.snapshot.params['reciboId'];
-      // Build path segments only when present to avoid null segments
-      const segments = [] as string[];
-      if (lote) segments.push(lote);
-      if (recibo) segments.push(recibo);
-      segments.push('listado-pms');
-      console.log('Navegando a listado PMS con segmentos:', segments);
-      this.router.navigate(segments);
+    private guardarGramos(pmsId: number) {
+      const gramosPayload = this.gramosEntries.map(entry => ({
+        id: entry.id,
+        pmsId: pmsId,
+        gramos: entry.gramos,
+        activo: entry.activo
+      }));
+
+      // Crear o recrear todos los gramos asociados al PMS
+      this.gramosPmsService.crearMultiplesGramos(gramosPayload).subscribe({
+        next: () => console.log('Gramos creados correctamente para el PMS:', pmsId),
+        error: (error: any) => console.error('Error creando gramos para el PMS:', error)
+      });
     }
-}
+
+    manejarProblemas(): boolean {
+    this.errores = []; // Reiniciar errores
+
+    const hoy = new Date();
+    const fecha = this.fechaMedicion ? new Date(this.fechaMedicion) : null;
+
+    if (this.pesoMilSemillas != null && this.pesoMilSemillas < 0) {
+      this.errores.push('El peso de mil semillas no puede ser un número negativo.');
+    }
+
+    if (this.pesoPromedioMilSemillas != null && this.pesoPromedioMilSemillas < 0) {
+      this.errores.push('El peso promedio de mil semillas no puede ser un número negativo.');
+    }
+
+    if (this.pesoPromedioCienSemillas != null && this.pesoPromedioCienSemillas < 0) {
+      this.errores.push('El peso promedio de cien semillas no puede ser un número negativo.');
+    }
+
+    if (this.desvioEstandar != null && this.desvioEstandar < 0) {
+      this.errores.push('El desvío estándar no puede ser un número negativo.');
+    }
+
+    if (this.humedadPorcentual != null && this.humedadPorcentual < 0 && this.humedadPorcentual > 100) {
+      this.errores.push('La humedad porcentual debe estar entre 0 y 100.');
+    }
+
+    if (this.gramosEntries.some(h => h.gramos != null && h.gramos < 0)) {
+
+      this.errores.push('Algunos hongos tienen un número de gramos negativo.');
+    }
+
+    if (fecha != null && fecha > hoy) {
+      this.errores.push('La fecha no puede ser mayor a la fecha actual.');
+    }
+
+    return this.errores.length > 0;
+  }
+
+    onCancel() {
+      const loteId = this.route.snapshot.params['loteId'] || this.loteId || 'default-lote-id';
+      const reciboId = this.route.snapshot.params['reciboId'] || this.reciboId || 'default-recibo-id';
+      console.log('Navigating to listado-pms with:', loteId, reciboId);
+      this.router.navigate([loteId, reciboId, 'listado-pms']);
+    }
+
+    validarFecha(fecha: string): boolean {
+        if (!fecha) return false;
+        const selectedDate = new Date(fecha);
+        const today = new Date();
+        return selectedDate >= today;
+    }
+  }

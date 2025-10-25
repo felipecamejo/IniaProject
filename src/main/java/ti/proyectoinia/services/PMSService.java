@@ -2,7 +2,6 @@ package ti.proyectoinia.services;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import ti.proyectoinia.api.responses.ResponseListadoHongos;
 import ti.proyectoinia.api.responses.ResponseListadoPMS;
 import ti.proyectoinia.business.entities.PMS;
 import ti.proyectoinia.business.repositories.PMSRepository;
@@ -19,8 +18,8 @@ public class PMSService {
         this.pmsRepository = pmsRepository;
     }
 
-    public String crearPMS(PMSDto pmsDto) {
-        return "PMS creado correctamente ID:" + this.pmsRepository.save(mapsDtoEntityService.mapToEntityPMS(pmsDto)).getId();
+    public Long crearPMS(PMSDto pmsDto) {
+        return this.pmsRepository.save(mapsDtoEntityService.mapToEntityPMS(pmsDto)).getId();
     }
 
     public PMSDto obtenerPMSPorId(Long id) {
@@ -55,5 +54,3 @@ public class PMSService {
         return ResponseEntity.ok(responseListadoPMS);
     }
 }
-
-

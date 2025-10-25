@@ -114,4 +114,6 @@ public class LoteController {
                     .body("Asociación incorrecta: Recibo " + reciboId + " no está asociado al Lote " + loteId);
         }
     }
+
+
 }
