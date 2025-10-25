@@ -1,6 +1,6 @@
 package ti.proyectoinia.business.entities;
 
 public enum Tratamiento {
-    BIOLOGICO, QUIMICO, NINGUNO
+    SIN_CURAR, CURADA_PLANTA, CURADA_LABORATORIO
 }
 

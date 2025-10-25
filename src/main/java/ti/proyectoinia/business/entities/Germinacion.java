@@ -18,56 +18,8 @@ public class Germinacion {
     @Column(name = "GERMINACION_FECHAINICIO")
     private Date fechaInicio;
 
-    @Column(name = "GERMINACION_FECHACONTEO_1")
-    private Date fechaConteo1;
-
-    @Column(name = "GERMINACION_FECHACONTEO_2")
-    private Date fechaConteo2;
-
-    @Column(name = "GERMINACION_FECHACONTEO_3")
-    private Date fechaConteo3;
-
-    @Column(name = "GERMINACION_FECHACONTEO_4")
-    private Date fechaConteo4;
-
-    @Column(name = "GERMINACION_FECHACONTEO_5")
-    private Date fechaConteo5;
-
     @Column(name = "GERMINACION_TOTALDIAS")
     private Integer totalDias;
-
-    @Column(name = "GERMINACION_REPETICIONNORMAL_1")
-    private Integer repeticionNormal1;
-
-    @Column(name = "GERMINACION_REPETICIONNORMAL_2")
-    private Integer repeticionNormal2;
-
-    @Column(name = "GERMINACION_REPETICIONNORMAL_3")
-    private Integer repeticionNormal3;
-
-    @Column(name = "GERMINACION_REPETICIONNORMAL_4")
-    private Integer repeticionNormal4;
-
-    @Column(name = "GERMINACION_REPETICIONNORMAL_5")
-    private Integer repeticionNormal5;
-
-    @Column(name = "GERMINACION_REPETICIONDURA")
-    private Integer repeticionDura;
-
-    @Column(name = "GERMINACION_REPETICIONFRESCA")
-    private Integer repeticionFresca;
-
-    @Column(name = "GERMINACION_REPETICIONANORMAL")
-    private Integer repeticionAnormal;
-
-    @Column(name = "GERMINACION_REPETICIONMUERTA")
-    private Integer repeticionMuerta;
-
-    @Column(name = "GERMINACION_TOTALREPETICION")
-    private Integer totalRepeticion;
-
-    @Column(name = "GERMINACION_PROMEDIOREPETICIONES")
-    private Float promedioRepeticiones;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "GERMINACION_TRATAMIENTO")
@@ -100,20 +52,41 @@ public class Germinacion {
     @Column(name = "GERMINACION_PREDONDEO")
     private Integer pRedondeo;
 
-    @Column(name = "GERMINACION_PNORMAL")
-    private Integer pNormal;
+    @Column(name = "INIA_GERMINACION_PNORMAL")
+    private Integer pNormalINIA;
 
-    @Column(name = "GERMINACION_PANORMAL")
-    private Integer pAnormal;
+    @Column(name = "INASE_GERMINACION_PNORMAL")
+    private Integer pNormalINASE;
 
-    @Column(name = "GERMINACION_PMUERTAS")
-    private Integer pMuertas;
+    @Column(name = "INIA_GERMINACION_PANORMAL")
+    private Integer pAnormalINIA;
 
-    @Column(name = "GERMINACION_SEMILLASDURAS")
-    private Integer semillasDuras;
+    @Column(name = "INASE_GERMINACION_PANORMAL")
+    private Integer pAnormalINASE;
 
-    @Column(name = "GERMINACION_GERMINACION")
-    private Integer germinacion;
+    @Column(name = "INIA_GERMINACION_PMUERTAS")
+    private Integer pMuertasINIA;
+
+    @Column(name = "INASE_GERMINACION_PMUERTAS")
+    private Integer pMuertasINASE;
+
+    @Column(name = "INIA_GERMINACION_FRESCAS")
+    private Integer pFrescasINIA;
+
+    @Column(name = "INASE_GERMINACION_FRESCAS")
+    private Integer pFrescasINASE;
+
+    @Column(name = "INIA_GERMINACION_SEMILLASDURAS")
+    private Integer semillasDurasINIA;
+
+    @Column(name = "INASE_GERMINACION_SEMILLASDURAS")
+    private Integer semillasDurasINASE;
+
+    @Column(name = "INIA_GERMINACION_GERMINACION")
+    private Integer germinacionINIA;
+
+    @Column(name = "INASE_GERMINACION_GERMINACION")
+    private Integer germinacionINASE;
 
     @Column(name = "GERMINACION_COMENTARIOS")
     private String comentarios;
