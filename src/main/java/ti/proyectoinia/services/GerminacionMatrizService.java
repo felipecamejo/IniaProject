@@ -463,4 +463,54 @@ public class GerminacionMatrizService {
                 throw new IllegalArgumentException("tabla inválida. Use: SIN_CURAR | CURADA_PLANTA | CURADA_LABORATORIO");
         }
     }
+
+    /**
+     * Inicializa las 3 tablas de tratamiento (SIN_CURAR, CURADA_PLANTA, CURADA_LABORATORIO)
+     * para una germinación recién creada, creando la repetición 1 "vacía" en cada una y
+     * asegurando una celda NormalPorConteo para el Conteo 1. Si no existe Conteo 1, se crea.
+     */
+    public void initializeTablasForGerminacion(Long germinacionId) {
+        if (germinacionId == null) return;
+
+        // Asegurar germinación activa
+        germinacionRepository.findByIdAndActivoTrue(germinacionId)
+                .orElseThrow(() -> new IllegalArgumentException("Germinación no encontrada o inactiva: " + germinacionId));
+
+        // Asegurar al menos un conteo (Conteo 1)
+        List<ConteoGerminacion> conteos = conteoGerminacionRepository.findByGerminacionIdOrderByNumeroConteoAsc(germinacionId);
+        if (conteos.isEmpty()) {
+            addConteo(germinacionId, new ConteoGerminacionDto());
+            conteos = conteoGerminacionRepository.findByGerminacionIdOrderByNumeroConteoAsc(germinacionId);
+        }
+        if (conteos.isEmpty()) return; // fallback de seguridad
+
+        Long conteo1Id = conteos.get(0).getId();
+
+        // Crear repetición 1 en cada tabla si no existe
+        ensureRepeticionExists(germinacionId, "SIN_CURAR", 1);
+        ensureRepeticionExists(germinacionId, "CURADA_PLANTA", 1);
+        ensureRepeticionExists(germinacionId, "CURADA_LABORATORIO", 1);
+
+        // Crear NormalPorConteo para la repetición 1 en el Conteo 1 para cada tabla, si no existe
+        createNormalIfMissing(germinacionId, "SIN_CURAR", 1, conteo1Id);
+        createNormalIfMissing(germinacionId, "CURADA_PLANTA", 1, conteo1Id);
+        createNormalIfMissing(germinacionId, "CURADA_LABORATORIO", 1, conteo1Id);
+    }
+
+    private void createNormalIfMissing(Long germinacionId, String tabla, Integer numeroRepeticion, Long conteoId) {
+        if (germinacionId == null || conteoId == null) return;
+        var existente = normalPorConteoRepository.findByGerminacionIdAndTablaAndNumeroRepeticionAndConteoId(
+                germinacionId, tabla, numeroRepeticion, conteoId);
+        if (existente.isEmpty()) {
+            NormalPorConteo npc = new NormalPorConteo();
+            npc.setId(null);
+            npc.setActivo(true);
+            npc.setGerminacionId(germinacionId);
+            npc.setTabla(tabla);
+            npc.setNumeroRepeticion(numeroRepeticion);
+            npc.setConteoId(conteoId);
+            npc.setNormal(null);
+            normalPorConteoRepository.save(npc);
+        }
+    }
 }

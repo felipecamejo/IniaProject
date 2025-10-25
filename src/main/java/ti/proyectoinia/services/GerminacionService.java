@@ -68,6 +68,9 @@ public class GerminacionService {
         conteoInicial.setFechaConteo(saved.getFechaInicio());
         germinacionMatrizService.addConteo(germinacionId, conteoInicial);
 
+        // 3) Inicializar las 3 tablas de tratamientos (crear repetición 1 vacía para cada una)
+        germinacionMatrizService.initializeTablasForGerminacion(germinacionId);
+
         return "Germinacion creada correctamente ID:" + germinacionId;
     }
 

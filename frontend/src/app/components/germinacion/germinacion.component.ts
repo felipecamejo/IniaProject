@@ -621,8 +621,8 @@ export class GerminacionComponent implements OnInit {
       // Primero actualizar encabezado (DTO germinación)
   this.germSvc.editar(editPayload as any).subscribe({
         next: () => {
-          // Luego persistir conteos/repeticiones/normales/finales del tratamiento seleccionado
-          this.persistirFormularioEnBackend(gid, () => {
+          // Luego persistir conteos/repeticiones/normales/finales para TODOS los tratamientos con datos
+          this.persistirTodosLosTratamientos(gid, () => {
             this.cargarResumenBackend(gid);
           });
         },
@@ -644,8 +644,8 @@ export class GerminacionComponent implements OnInit {
           const rId = this.route.snapshot.paramMap.get('reciboId');
           this.isEditing = true;
           this.editingId = newId;
-          // Persistir datos completos (conteos, repeticiones, normales y finales)
-          this.persistirFormularioEnBackend(newId, () => {
+          // Persistir datos completos (conteos, repeticiones, normales y finales) para TODOS los tratamientos con datos
+          this.persistirTodosLosTratamientos(newId, () => {
             // Mantenerse en la misma página: solo refrescar resumen y quedar en modo edición
             this.cargarResumenBackend(newId);
           });
@@ -735,6 +735,103 @@ export class GerminacionComponent implements OnInit {
                       error: () => { if (done) done(); }
                     });
                   },
+                  error: () => { if (done) done(); }
+                });
+              },
+              error: () => { if (done) done(); }
+            });
+          },
+          error: () => { if (done) done(); }
+        });
+      },
+      error: () => { if (done) done(); }
+    });
+  }
+
+  // Nuevo: persiste los tres tratamientos si el usuario ingresó datos en creación
+  private persistirTodosLosTratamientos(germinacionId: number, done?: () => void) {
+    const deseados = Math.max(1, (this.fechas?.conteos?.length || 1));
+    // 1) Asegurar cantidad de conteos UNA vez
+    this.tablasSvc.listConteos(germinacionId).subscribe({
+      next: (existentes: ConteoGerminacionDto[]) => {
+        const yaHay = existentes?.length || 0;
+        const faltan = Math.max(0, deseados - yaHay);
+        const crear$: any[] = [];
+        for (let i = yaHay; i < deseados; i++) {
+          const fecha = this.fechas.conteos[i] || null;
+          const fechaIso = fecha ? new Date(fecha).toISOString() : null;
+          const body: Partial<ConteoGerminacionDto> = { fechaConteo: fechaIso };
+          crear$.push(this.tablasSvc.addConteo(germinacionId, body).pipe(catchError(err => { console.error('Error creando conteo', err); return of(null); })));
+        }
+        const cuandoCreados = crear$.length ? forkJoin(crear$) : of([] as any[]);
+        cuandoCreados.subscribe({
+          next: () => {
+            // 2) Obtener conteos
+            this.tablasSvc.listConteos(germinacionId).subscribe({
+              next: (conteosActuales: ConteoGerminacionDto[]) => {
+                const conteosOrdenados = (conteosActuales || []).sort((a,b) => (Number(a.numeroConteo||0) - Number(b.numeroConteo||0)));
+
+                const keys = ['SIN_CURAR','CURADA_PLANTA','CURADA_LABORATORIO'];
+                const ops$: any[] = [];
+
+                keys.forEach(k => {
+                  // Obtener snapshot de repeticiones para cada tratamiento
+                  let reps: RepeticionGerminacion[] = [];
+                  const selKey = this.mapUiTablaToKey(this.tratamientoSemillas);
+                  if (k === selKey) {
+                    reps = JSON.parse(JSON.stringify(this.repeticiones || []));
+                  } else {
+                    reps = JSON.parse(JSON.stringify(this.tratamientosData[k]?.repeticiones || []));
+                  }
+                  if (!reps || reps.length === 0) {
+                    return; // nada que persistir; quedará la repetición 1 vacía creada en backend
+                  }
+
+                  // Crear (si falta) la repetición indicada y upsert normales + finales
+                  // Crear repeticiones necesarias (por fila)
+                  reps.forEach(rep => {
+                    ops$.push(
+                      this.tablasSvc.addRepeticionNumero(germinacionId, k, Number(rep.numero || 0))
+                        .pipe(catchError(err => { console.error('Error creando repetición', err); return of(null); }))
+                    );
+                  });
+
+                  // Upsert normales por cada conteo
+                  reps.forEach(rep => {
+                    conteosOrdenados.forEach((c, idx) => {
+                      const body: NormalPorConteoDto = {
+                        germinacionId: germinacionId,
+                        tabla: k,
+                        numeroRepeticion: Number(rep.numero || 0),
+                        conteoId: Number(c.id || 0),
+                        normal: Number(rep.normales?.[idx] || 0)
+                      };
+                      ops$.push(
+                        this.tablasSvc.upsertNormal(k, body).pipe(catchError(err => { console.error('Error guardando normal', err); return of(null); }))
+                      );
+                    });
+                  });
+
+                  // Upsert finales por fila
+                  reps.forEach(rep => {
+                    const finBody: RepeticionFinalDto = {
+                      activo: true,
+                      germinacionId: germinacionId,
+                      numeroRepeticion: Number(rep.numero || 0),
+                      anormal: Number(rep.anormales || 0),
+                      duras: Number(rep.duras || 0),
+                      frescas: Number(rep.frescas || 0),
+                      muertas: Number(rep.muertas || 0)
+                    };
+                    ops$.push(
+                      this.tablasSvc.upsertFinales(k, finBody).pipe(catchError(err => { console.error('Error guardando finales', err); return of(null); }))
+                    );
+                  });
+                });
+
+                const exec$ = ops$.length ? forkJoin(ops$) : of([] as any[]);
+                exec$.subscribe({
+                  next: () => { if (done) done(); },
                   error: () => { if (done) done(); }
                 });
               },
