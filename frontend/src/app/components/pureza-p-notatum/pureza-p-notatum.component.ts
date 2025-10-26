@@ -29,6 +29,9 @@ import { RepeticionPPN } from '../../../models/RepeticionPPN.dto';
   styleUrl: './pureza-p-notatum.component.scss'
 })
 export class PurezaPNotatumComponent implements OnInit {
+  // Agregar propiedades para manejar errores
+  errores: string[] = [];
+
   // Variables para manejar navegación
   isEditing: boolean = false;
   isViewing: boolean = false;
@@ -220,6 +223,12 @@ export class PurezaPNotatumComponent implements OnInit {
   }
 
   onSubmit() {
+
+    if (this.manejarProblemas()) {
+      console.error('Errores de validación:', this.errores);
+      return;
+    }
+
     // Sincronizar repeticiones a repeticionesEntries antes de enviar
     this.repeticionesEntries = this.repeticiones.map(rep => ({...rep}));
     
@@ -250,7 +259,7 @@ export class PurezaPNotatumComponent implements OnInit {
         next: (res) => {
           console.log('Pureza P. notatum actualizado correctamente:', res);
           // Procesar repeticiones
-          this.procesarRepeticionesDespuesDeGuardar(this.editingId!).then(() => {
+          this.procesarRepeticiones(this.editingId!).then(() => {
             this.safeNavigateToListado();
           }).catch(err => {
             console.error('Error procesando repeticiones después de editar:', err);
@@ -271,18 +280,13 @@ export class PurezaPNotatumComponent implements OnInit {
       this.purezaPNotatumService.crear(purezaData).subscribe({
         next: (res) => {
           console.log('Pureza P. notatum creado correctamente:', res);
-          // Asumiendo que el backend devuelve el ID como texto
-          const nuevoId = parseInt(res);
-          if (!isNaN(nuevoId)) {
-            this.procesarRepeticionesDespuesDeCrear(nuevoId).then(() => {
-              this.safeNavigateToListado();
-            }).catch(err => {
-              console.error('Error creando repeticiones después de crear:', err);
-              this.safeNavigateToListado();
-            });
-          } else {
+          // Procesar repeticiones
+          this.procesarRepeticiones(res).then(() => {
             this.safeNavigateToListado();
-          }
+          }).catch(err => {
+            console.error('Error procesando repeticiones después de crear:', err);
+            this.safeNavigateToListado();
+          });
         },
         error: (err) => {
           console.error('Error creando Pureza P. notatum:', err);
@@ -291,7 +295,7 @@ export class PurezaPNotatumComponent implements OnInit {
     }
   }
 
-  private async procesarRepeticionesDespuesDeCrear(purezaPNotatumId: number): Promise<void> {
+  private async procesarRepeticiones(purezaPNotatumId: number): Promise<void> {
     const payload: RepeticionPPN[] = this.repeticionesEntries.map((r) => ({
       ...r,
       purezaPNotatum: purezaPNotatumId
@@ -304,28 +308,6 @@ export class PurezaPNotatumComponent implements OnInit {
       this.purezaPNotatumService.actualizarRepeticiones(purezaPNotatumId, payload).subscribe({
         next: (resp) => {
           console.log('Repeticiones creadas exitosamente:', resp);
-          resolve();
-        },
-        error: (err) => reject(err)
-      });
-    });
-  }
-
-  private async procesarRepeticionesDespuesDeGuardar(purezaPNotatumId: number): Promise<void> {
-    const toSend: RepeticionPPN[] = this.repeticionesEntries.map((r) => ({
-      ...r,
-      purezaPNotatum: purezaPNotatumId
-    }));
-    
-    console.log('Payload repeticiones a editar:', toSend);
-    console.log('IDs de repeticiones a eliminar:', this.deletedRepeticionesIds);
-    
-    return new Promise((resolve, reject) => {
-      if (toSend.length === 0 && this.deletedRepeticionesIds.length === 0) return resolve();
-      
-      this.purezaPNotatumService.actualizarRepeticiones(purezaPNotatumId, toSend).subscribe({
-        next: (resp) => {
-          console.log('Repeticiones actualizadas exitosamente:', resp);
           resolve();
         },
         error: (err) => reject(err)
@@ -347,4 +329,78 @@ export class PurezaPNotatumComponent implements OnInit {
     console.log('Navegando a listado con segmentos:', segments);
     this.router.navigate(segments);
   }
+
+  getControlPesos(rep: any): number {
+    return (rep.gramosSemillasSanas || 0) + (rep.gramosContaminadasYVanas || 0);
+  }
+
+  manejarProblemas(): boolean {
+    this.errores = []; // Reiniciar errores
+
+    // Validaciones para las repeticiones
+    if (this.repeticiones.some(rep => rep.nroSemillasPuras == null || rep.nroSemillasPuras <= 0)) {
+      this.errores.push('Todas las repeticiones deben tener un número de semillas puras válido mayor que 0.');
+    }
+
+    if (this.repeticiones.some(rep => rep.peso == null || rep.peso <= 0)) {
+      this.errores.push('Todas las repeticiones deben tener un peso válido mayor que 0.');
+    }
+
+    if (this.repeticiones.some(rep => rep.cantidadSemillasSanas == null || rep.cantidadSemillasSanas <= 0)) {
+      this.errores.push('Todas las repeticiones deben tener un número de semillas sanas válido mayor que 0.');
+    }
+
+    if (this.repeticiones.some(rep => rep.gramosSemillasSanas == null || rep.gramosSemillasSanas <= 0)) {
+      this.errores.push('Todas las repeticiones deben tener un peso de semillas sanas válido mayor que 0.');
+    }
+
+    if (this.repeticiones.some(rep => rep.contaminadasYVanas == null || rep.contaminadasYVanas <= 0)) {
+      this.errores.push('Todas las repeticiones deben tener un número de semillas contaminadas y vanas válido mayor que 0.');
+    }
+
+    if (this.repeticiones.some(rep => rep.gramosContaminadasYVanas == null || rep.gramosContaminadasYVanas <= 0)) {
+      this.errores.push('Todas las repeticiones deben tener un peso de semillas contaminadas y vanas válido mayor que 0.');
+    }
+
+    // Validaciones para los campos de porcentaje
+    if (this.semillaPuraPct != null && (this.semillaPuraPct < 0 || this.semillaPuraPct > 100)) {
+      this.errores.push('El porcentaje de semilla pura debe estar entre 0 y 100.');
+    }
+
+    if (this.semillaCultivosPct != null && (this.semillaCultivosPct < 0 || this.semillaCultivosPct > 100)) {
+      this.errores.push('El porcentaje de semilla de cultivos debe estar entre 0 y 100.');
+    }
+
+    if (this.semillaMalezasPct != null && (this.semillaMalezasPct < 0 || this.semillaMalezasPct > 100)) {
+      this.errores.push('El porcentaje de semilla de malezas debe estar entre 0 y 100.');
+    }
+
+    if (this.materiaInertePct != null && (this.materiaInertePct < 0 || this.materiaInertePct > 100)) {
+      this.errores.push('El porcentaje de materia inerte debe estar entre 0 y 100.');
+    }
+
+    // Validaciones adicionales para los gramos
+    if (this.semillaPuraGr != null && this.semillaPuraGr < 0) {
+      this.errores.push('Los gramos de semilla pura no pueden ser negativos.');
+    }
+
+    if (this.semillaCultivosGr != null && this.semillaCultivosGr < 0) {
+      this.errores.push('Los gramos de semilla de cultivos no pueden ser negativos.');
+    }
+
+    if (this.semillaMalezasGr != null && this.semillaMalezasGr < 0) {
+      this.errores.push('Los gramos de semilla de malezas no pueden ser negativos.');
+    }
+
+    if (this.materiaInerteGr != null && this.materiaInerteGr < 0) {
+      this.errores.push('Los gramos de materia inerte no pueden ser negativos.');
+    }
+
+    if (this.repeticiones.some(rep => this.getControlPesos(rep) < 0)) {
+      this.errores.push('Los gramos de semillas analizadas no pueden ser negativos.');
+    }
+
+    return this.errores.length > 0;
+  }
+
 }

@@ -32,9 +32,9 @@ public class PurezaPNotatumController {
     @Operation(
             description = "Esta Funcion crea una nueva PurezaPNotatum"
     )
-    public ResponseEntity<String> crearPurezaPNotatum(@RequestBody PurezaPNotatumDto purezaPNotatumDto) {
+    public ResponseEntity<Long> crearPurezaPNotatum(@RequestBody PurezaPNotatumDto purezaPNotatumDto) {
         purezaPNotatumDto.setId((Long)null);
-        String response = this.purezaPNotatumService.crearPurezaPNotatum(purezaPNotatumDto);
+        Long response = this.purezaPNotatumService.crearPurezaPNotatum(purezaPNotatumDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
