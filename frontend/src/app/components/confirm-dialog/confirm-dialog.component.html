@@ -1,0 +1,38 @@
+<div class="modal-overlay" *ngIf="visible" (click)="onCancel()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <h3 class="modal-title">{{ title }}</h3>
+      <button class="close-button" (click)="onCancel()" [disabled]="loading">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="modal-content">
+      <p class="modal-message">{{ message }}</p>
+      <div *ngIf="itemName || itemId" class="item-details">
+        <p *ngIf="itemName" class="item-name"><strong>Elemento:</strong> {{ itemName }}</p>
+        <p *ngIf="itemId" class="item-id"><strong>ID:</strong> #{{ itemId }}</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button 
+        class="btn btn-cancel" 
+        (click)="onCancel()"
+        [disabled]="loading">
+        {{ cancelText }}
+      </button>
+      <button 
+        class="btn btn-delete" 
+        (click)="onConfirm()"
+        [disabled]="loading">
+        <i class="pi pi-spin pi-spinner" *ngIf="loading"></i>
+        <i class="pi pi-trash" *ngIf="!loading"></i>
+        {{ confirmText }}
+      </button>
+    </div>
+  </div>
+</div>

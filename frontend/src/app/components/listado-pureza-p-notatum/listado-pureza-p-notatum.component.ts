@@ -7,11 +7,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PurezaPNotatumDto } from '../../../models/PurezaPNotatum.dto';
 import { PurezaPNotatumService } from '../../../services/PurezaPNotatumService';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-listado-pureza-p-notatum',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, ConfirmDialogComponent],
   templateUrl: './listado-pureza-p-notatum.component.html',
   styleUrl: './listado-pureza-p-notatum.component.scss'
 })
@@ -49,6 +50,11 @@ export class ListadoPurezaPNotatumComponent implements OnInit {
     anios: { label: string, id: number }[] = [];
 
     items: PurezaPNotatumDto[] = [];
+
+    // Propiedades para el popup de confirmación
+    mostrarConfirmEliminar: boolean = false;
+    purezaPNotatumAEliminar: PurezaPNotatumDto | null = null;
+    confirmLoading: boolean = false;
 
     cargarItems() {
       if (this.reciboId == null || isNaN(this.reciboId)) {
@@ -191,23 +197,46 @@ export class ListadoPurezaPNotatumComponent implements OnInit {
 
     eliminarPurezaPNotatum(item: PurezaPNotatumDto) {
       console.log('Eliminar Pureza P. notatum:', item);
-      if (confirm(`¿Estás seguro de que quieres eliminar el Pureza P. notatum #${item.id}?`)) {
-        if (item.id == null) {
-          console.warn('Item no tiene id, no se puede eliminar');
-          return;
-        }
-        this.purezaPNotatumService.eliminar(item.id).subscribe({
-          next: (res) => {
-            console.log('Pureza P. notatum eliminado en backend:', res);
-            // Actualizar lista localmente
-            this.items = this.items.filter(pn => pn.id !== item.id);
-          },
-          error: (err) => {
-            console.error('Error eliminando Pureza P. notatum:', err);
-            // Aquí podrías mostrar un mensaje de error al usuario
-          }
-        });
+      this.purezaPNotatumAEliminar = item;
+      this.mostrarConfirmEliminar = true;
+    }
+
+    confirmarEliminacion() {
+      if (!this.purezaPNotatumAEliminar) return;
+      this.confirmLoading = true;
+      const purezaPNotatum = this.purezaPNotatumAEliminar;
+
+      if (purezaPNotatum.id == null) {
+        console.warn('Item no tiene id, no se puede eliminar');
+        this.confirmLoading = false;
+        this.mostrarConfirmEliminar = false;
+        this.purezaPNotatumAEliminar = null;
+        return;
       }
+
+      this.purezaPNotatumService.eliminar(purezaPNotatum.id).subscribe({
+        next: (res) => {
+          console.log('Pureza P. notatum eliminado en backend:', res);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.purezaPNotatumAEliminar = null;
+          // Actualizar lista localmente
+          this.items = this.items.filter(pn => pn.id !== purezaPNotatum.id);
+        },
+        error: (err) => {
+          console.error('Error eliminando Pureza P. notatum:', err);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.purezaPNotatumAEliminar = null;
+          alert('Error al eliminar la Pureza P. notatum. Por favor, inténtalo de nuevo.');
+        }
+      });
+    }
+
+    cancelarEliminacion() {
+      this.mostrarConfirmEliminar = false;
+      this.purezaPNotatumAEliminar = null;
+      this.confirmLoading = false;
     }
 }
 

@@ -8,11 +8,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PMSDto } from '../../../models/PMS.dto';
 import { DOSNDto } from '../../../models/DOSN.dto';
 import { DOSNService } from '../../../services/DOSNService';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-listado-dosn.component',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, ConfirmDialogComponent],
   templateUrl: './listado-dosn.component.html',
   styleUrls: ['./listado-dosn.component.scss']
 })
@@ -56,6 +57,11 @@ export class ListadoDosnComponent implements OnInit {
     anios: { label: string, id: number }[] = [];
 
     items: DOSNDto[] = [];
+
+    // Propiedades para el popup de confirmación
+    mostrarConfirmEliminar: boolean = false;
+    dosnAEliminar: DOSNDto | null = null;
+    confirmLoading: boolean = false;
 
     ngOnInit() {
        this.loteId = this.route.snapshot.params['loteId'];
@@ -203,28 +209,47 @@ export class ListadoDosnComponent implements OnInit {
 
     eliminarDOSN(item: DOSNDto) {
       console.log('Eliminar DOSN:', item);
-      
-      if (confirm(`¿Estás seguro de que quieres eliminar el DOSN #${item.id}?`)) {
-          if (item.id) {
-              this.dosnService.eliminar(item.id).subscribe({
-                  next: (response) => {
-                      try {
-                        const texto = typeof response === 'string' ? response : '';
-                        const idMatch = texto.match(/ID\s*:?\s*(\d+)/i);
-                        const id = idMatch ? Number(idMatch[1]) : item.id;
-                        console.log(`DOSN eliminada correctamente. ID: ${id}`);
-                      } catch (_) {
-                        console.log('DOSN eliminada correctamente.');
-                      }
-                      // Recargar la lista después de eliminar
-                      this.cargarDosn();
-                  },
-                  error: (error) => {
-                      const detalle = error?.error || error?.message || error;
-                      console.error('Error al eliminar el DOSN:', detalle);
-                  }
-              });
+      this.dosnAEliminar = item;
+      this.mostrarConfirmEliminar = true;
+    }
+
+    confirmarEliminacion() {
+      if (!this.dosnAEliminar) return;
+      this.confirmLoading = true;
+      const dosn = this.dosnAEliminar;
+
+      if (dosn.id) {
+        this.dosnService.eliminar(dosn.id).subscribe({
+          next: (response) => {
+            try {
+              const texto = typeof response === 'string' ? response : '';
+              const idMatch = texto.match(/ID\s*:?\s*(\d+)/i);
+              const id = idMatch ? Number(idMatch[1]) : dosn.id;
+              console.log(`DOSN eliminada correctamente. ID: ${id}`);
+            } catch (_) {
+              console.log('DOSN eliminada correctamente.');
+            }
+            this.confirmLoading = false;
+            this.mostrarConfirmEliminar = false;
+            this.dosnAEliminar = null;
+            // Recargar la lista después de eliminar
+            this.cargarDosn();
+          },
+          error: (error) => {
+            const detalle = error?.error || error?.message || error;
+            console.error('Error al eliminar el DOSN:', detalle);
+            this.confirmLoading = false;
+            this.mostrarConfirmEliminar = false;
+            this.dosnAEliminar = null;
+            alert('Error al eliminar el DOSN. Por favor, inténtalo de nuevo.');
           }
+        });
       }
+    }
+
+    cancelarEliminacion() {
+      this.mostrarConfirmEliminar = false;
+      this.dosnAEliminar = null;
+      this.confirmLoading = false;
     }
 }
