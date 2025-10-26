@@ -34,22 +34,33 @@ export interface RepeticionGerminacion {
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-  MultiSelectModule,
-  TableModule
+    MultiSelectModule,
+    TableModule
   ],
   templateUrl: './germinacion.component.html',
   styleUrl: './germinacion.component.scss'
 })
 export class GerminacionComponent implements OnInit {
+  // Variables para manejar navegación
+  loteId: string | null = '';
+  reciboId: string | null = '';
+  
   inia = { pNormales: 0, pAnormales: 0, duras: 0, frescas: 0, muertas: 0, germinacion: 0 };
   inase = { pNormales: 0, pAnormales: 0, duras: 0, frescas: 0, muertas: 0, germinacion: 0 };
   repeticiones: RepeticionGerminacion[] = [];
   private tratamientoSemillasAnterior: string = 'sin curar';
 
   onTratamientoChange(): void {
+    console.log('=== VALIDACION: Cambio de tratamiento detectado ===');
+    console.log('VALIDACION: Tratamiento anterior:', this.tratamientoSemillasAnterior);
+    console.log('VALIDACION: Tratamiento actual:', this.tratamientoSemillas);
+    
     // Normalizar a clave backend (SIN_CURAR | CURADA_PLANTA | CURADA_LABORATORIO)
     const prevKey = this.mapUiTablaToKey(this.tratamientoSemillasAnterior);
     const currKey = this.mapUiTablaToKey(this.tratamientoSemillas);
+    
+    console.log('VALIDACION: Clave anterior normalizada:', prevKey);
+    console.log('VALIDACION: Clave actual normalizada:', currKey);
 
     // Guardar solo repeticiones del tratamiento anterior
     if (prevKey) {
@@ -249,12 +260,33 @@ export class GerminacionComponent implements OnInit {
   }
 
   ngOnInit() {
+    console.log('=== VALIDACION: Inicializando componente Germinacion ===');
+    
+    // Inicializar variables de navegación
+    this.loteId = this.route.snapshot.paramMap.get('loteId');
+    this.reciboId = this.route.snapshot.paramMap.get('reciboId');
+    console.log('VALIDACION OK: Variables de navegación inicializadas - loteId:', this.loteId, 'reciboId:', this.reciboId);
+    
     this.syncNormalesConConteos();
+    console.log('VALIDACION OK: Sincronización de normales con conteos completada');
+    
     this.onTratamientoChange();
-    this.route.params.subscribe(params => {
+    console.log('VALIDACION OK: Cambio de tratamiento inicial procesado');
+    
+    this.route.params.subscribe((params: any) => {
+      console.log('VALIDACION: Parámetros de ruta recibidos:', params);
+      
       if (params['id']) {
+        console.log('VALIDACION: Modo edición detectado, ID:', params['id']);
         this.isEditing = true;
         this.editingId = parseInt(params['id']);
+        
+        if (isNaN(this.editingId) || this.editingId <= 0) {
+          console.error('VALIDACION ERROR: ID de edición no válido:', params['id']);
+          return;
+        }
+        
+        console.log('VALIDACION OK: ID de edición válido:', this.editingId);
         this.cargarDatosParaEdicion(this.editingId);
         // Cargar resumen desde backend para esta germinación
         this.cargarResumenBackend(this.editingId);
@@ -320,8 +352,17 @@ export class GerminacionComponent implements OnInit {
   }
 
   cargarResumenBackend(germinacionId: number) {
+    console.log('=== VALIDACION: Cargando resumen desde backend ===');
+    console.log('VALIDACION: ID de germinación:', germinacionId);
+    
+    if (!germinacionId || germinacionId <= 0) {
+      console.error('VALIDACION ERROR: ID no válido para cargar resumen');
+      return;
+    }
+    
     this.tablasSvc.getResumen(germinacionId).subscribe({
       next: (res: any) => {
+        console.log('VALIDACION OK: Resumen obtenido del backend:', res);
         const conteos: ConteoGerminacionDto[] = res?.conteos ?? [];
         const conteosLen = (conteos?.length || 0) > 0 ? conteos.length : 1;
         const conteoIds = (conteos ?? []).map(c => c.id as number).filter(Boolean);
@@ -413,30 +454,74 @@ export class GerminacionComponent implements OnInit {
   }
 
   crearConteoBackend() {
-    if (!this.editingId) return;
+    console.log('=== VALIDACION: Creando conteo en backend ===');
+    
+    if (!this.editingId) {
+      console.error('VALIDACION ERROR: No hay ID de edición para crear conteo');
+      return;
+    }
+    
+    console.log('VALIDACION OK: ID de edición válido para crear conteo:', this.editingId);
     this.tablasSvc.addConteo(this.editingId).subscribe({
-      next: (_) => this.cargarResumenBackend(this.editingId!),
-      error: (err) => console.error('Error creando conteo', err)
+      next: (_) => {
+        console.log('VALIDACION OK: Conteo creado exitosamente en backend');
+        this.cargarResumenBackend(this.editingId!);
+      },
+      error: (err) => {
+        console.error('VALIDACION ERROR: Error creando conteo en backend:', err);
+      }
     });
   }
 
   crearRepeticionBackend(auto = true, numero?: number) {
-    if (!this.editingId) return;
+    console.log('=== VALIDACION: Creando repetición en backend ===');
+    console.log('VALIDACION: Modo automático:', auto, 'Número:', numero);
+    
+    if (!this.editingId) {
+      console.error('VALIDACION ERROR: No hay ID de edición para crear repetición');
+      return;
+    }
+    
     const key = this.mapUiTablaToKey(this.tratamientoSemillas);
+    console.log('VALIDACION: Clave de tratamiento:', key);
+    
+    if (!key) {
+      console.error('VALIDACION ERROR: No se pudo mapear el tratamiento de semillas');
+      return;
+    }
+    
     const obs = auto
       ? this.tablasSvc.addRepeticionAuto(this.editingId, key)
       : this.tablasSvc.addRepeticionNumero(this.editingId, key, Number(numero || 0));
+    
+    console.log('VALIDACION OK: Iniciando creación de repetición en backend');
     obs.subscribe({
-      next: (_) => this.cargarResumenBackend(this.editingId!),
-      error: (err) => console.error('Error creando repetición', err)
+      next: (_) => {
+        console.log('VALIDACION OK: Repetición creada exitosamente en backend');
+        this.cargarResumenBackend(this.editingId!);
+      },
+      error: (err) => {
+        console.error('VALIDACION ERROR: Error creando repetición en backend:', err);
+      }
     });
   }
 
   cargarDatosParaEdicion(id: number) {
+    console.log('=== VALIDACION: Cargando datos para edición ===');
+    console.log('VALIDACION: ID de germinación:', id);
+    
+    if (!id || id <= 0) {
+      console.error('VALIDACION ERROR: ID no válido para cargar datos de edición');
+      return;
+    }
+    
     this.syncNormalesConConteos();
+    console.log('VALIDACION OK: Sincronización de normales completada');
+    
     // Cargar datos reales desde backend
     this.germSvc.obtener(id).subscribe({
       next: (dto: any) => {
+        console.log('VALIDACION OK: Datos de germinación obtenidos del backend:', dto);
         // Encabezado / metadata
         this.comentarios = dto?.comentarios ?? '';
         this.numSemillas = dto?.nroSemillaPorRepeticion != null ? String(dto.nroSemillaPorRepeticion) : '';
@@ -493,7 +578,11 @@ export class GerminacionComponent implements OnInit {
   }
 
   cargarDatos() {
-  this.syncNormalesConConteos();
+    console.log('=== VALIDACION: Cargando datos iniciales ===');
+    
+    this.syncNormalesConConteos();
+    console.log('VALIDACION OK: Sincronización de normales completada');
+    
     // Limpiar campos para creación
     this.comentarios = '';
     this.numSemillas = '';
@@ -503,6 +592,9 @@ export class GerminacionComponent implements OnInit {
     this.preTratamiento = '';
     this.productoDosis = '';
     this.tratamientoSemillas = '';
+    
+    console.log('VALIDACION OK: Campos de formulario inicializados');
+    
     this.fechas = {
       inicio: '',
       conteos: [''],
@@ -516,9 +608,13 @@ export class GerminacionComponent implements OnInit {
         return diff >= 0 ? diff : '';
       }
     };
+    
     this.inia = { pNormales: 0, pAnormales: 0, duras: 0, frescas: 0, muertas: 0, germinacion: 0 };
     this.inase = { pNormales: 0, pAnormales: 0, duras: 0, frescas: 0, muertas: 0, germinacion: 0 };
     this.repeticiones = [this.nuevaRepeticion(1)];
+    
+    console.log('VALIDACION OK: Datos iniciales cargados correctamente');
+    console.log('VALIDACION: Repeticiones iniciales:', this.repeticiones.length);
   }
 
   getPromedioNormales(idx: number): number {
@@ -578,8 +674,55 @@ export class GerminacionComponent implements OnInit {
   }
 
   onSubmit() {
+    console.log('=== VALIDACION: Iniciando proceso de envío de germinación ===');
+    
+    // Validar datos básicos requeridos
+    const reciboId = Number(this.reciboId) || null;
+    if (!reciboId) {
+      console.error('VALIDACION ERROR: No se encontró reciboId en la ruta');
+      return;
+    }
+    console.log('VALIDACION OK: ReciboId encontrado:', reciboId);
+
+    // Validar fechas
+    if (!this.fechas?.inicio) {
+      console.error('VALIDACION ERROR: Fecha de inicio es requerida');
+      return;
+    }
+    console.log('VALIDACION OK: Fecha de inicio:', this.fechas.inicio);
+
+    // Validar tratamiento de semillas
+    if (!this.tratamientoSemillas) {
+      console.error('VALIDACION ERROR: Tratamiento de semillas es requerido');
+      return;
+    }
+    console.log('VALIDACION OK: Tratamiento de semillas:', this.tratamientoSemillas);
+
+    // Validar número de semillas
+    if (!this.numSemillas || Number(this.numSemillas) <= 0) {
+      console.error('VALIDACION ERROR: Número de semillas debe ser mayor a 0');
+      return;
+    }
+    console.log('VALIDACION OK: Número de semillas:', this.numSemillas);
+
+    // Validar repeticiones
+    if (!this.repeticiones || this.repeticiones.length === 0) {
+      console.error('VALIDACION ERROR: Debe existir al menos una repetición');
+      return;
+    }
+    console.log('VALIDACION OK: Número de repeticiones:', this.repeticiones.length);
+
+    // Validar datos de repeticiones
+    for (let i = 0; i < this.repeticiones.length; i++) {
+      const rep = this.repeticiones[i];
+      if (!rep.normales || rep.normales.length === 0) {
+        console.error(`VALIDACION ERROR: Repetición ${i + 1} no tiene datos de normales`);
+        return;
+      }
+      console.log(`VALIDACION OK: Repetición ${i + 1} tiene ${rep.normales.length} conteos normales`);
+    }
+
     // Construir payload mínimo compatible con backend (usamos strings cuando aplique)
-    const reciboId = Number(this.route.snapshot.paramMap.get('reciboId')) || null;
     const buildPayload = (forEdit = false) => ({
       id: forEdit ? (this.editingId || null) : null,
       fechaInicio: this.fechas?.inicio || null,
@@ -616,57 +759,84 @@ export class GerminacionComponent implements OnInit {
     const payload: any = buildPayload(false);
 
     if (this.isEditing && this.editingId) {
+      console.log('VALIDACION: Modo edición detectado, ID:', this.editingId);
       const gid = this.editingId;
       const editPayload = buildPayload(true);
+      
+      // Validar payload de edición
+      if (!editPayload.id) {
+        console.error('VALIDACION ERROR: ID de edición no válido');
+        return;
+      }
+      console.log('VALIDACION OK: Payload de edición construido correctamente');
+      
       // Primero actualizar encabezado (DTO germinación)
-  this.germSvc.editar(editPayload as any).subscribe({
+      this.germSvc.editar(editPayload as any).subscribe({
         next: () => {
+          console.log('VALIDACION OK: Germinación actualizada exitosamente en backend');
           // Luego persistir conteos/repeticiones/normales/finales para TODOS los tratamientos con datos
           this.persistirTodosLosTratamientos(gid, () => {
             this.cargarResumenBackend(gid);
           });
         },
         error: (err) => {
-          console.error('Error actualizando germinación', err);
+          console.error('VALIDACION ERROR: Error actualizando germinación en backend:', err);
         }
       });
       return;
     }
 
+    console.log('VALIDACION: Iniciando creación de nueva germinación');
     this.germSvc.crear(payload).subscribe({
       next: (text: string) => {
+        console.log('VALIDACION OK: Respuesta del backend para creación:', text);
         // El backend devuelve texto tipo: "Germinacion creada correctamente ID:1"
         const match = String(text || '').match(/ID\s*:?\s*(\d+)/i);
         const newId = match ? Number(match[1]) : null;
+        
         if (newId) {
+          console.log('VALIDACION OK: ID de germinación creada:', newId);
           // Ir a edición y cargar resumen, y además persistir los conteos/repeticiones del formulario en backend
-          const loteId = this.route.snapshot.paramMap.get('loteId');
-          const rId = this.route.snapshot.paramMap.get('reciboId');
+          const loteId = this.loteId;
+          const rId = this.reciboId;
           this.isEditing = true;
           this.editingId = newId;
+          console.log('VALIDACION: Cambiando a modo edición con ID:', newId);
           // Persistir datos completos (conteos, repeticiones, normales y finales) para TODOS los tratamientos con datos
           this.persistirTodosLosTratamientos(newId, () => {
             // Mantenerse en la misma página: solo refrescar resumen y quedar en modo edición
             this.cargarResumenBackend(newId);
           });
         } else {
-          console.warn('No se pudo parsear el ID de creación de germinación. Respuesta:', text);
+          console.error('VALIDACION ERROR: No se pudo parsear el ID de creación de germinación. Respuesta:', text);
         }
       },
       error: (err) => {
-        console.error('Error creando germinación', err);
+        console.error('VALIDACION ERROR: Error creando germinación en backend:', err);
       }
     });
   }
 
   // Persiste en backend los conteos, repeticiones y valores de la tabla para el tratamiento seleccionado
   private persistirFormularioEnBackend(germinacionId: number, done?: () => void) {
+    console.log('=== VALIDACION: Iniciando persistencia de formulario ===');
+    console.log('VALIDACION: ID de germinación:', germinacionId);
+    
+    if (!germinacionId || germinacionId <= 0) {
+      console.error('VALIDACION ERROR: ID de germinación no válido para persistencia');
+      return;
+    }
+    
     const deseados = Math.max(1, (this.fechas?.conteos?.length || 1));
+    console.log('VALIDACION: Conteos deseados:', deseados);
+    
     // 1) Asegurar cantidad de conteos
     this.tablasSvc.listConteos(germinacionId).subscribe({
       next: (existentes: ConteoGerminacionDto[]) => {
+        console.log('VALIDACION OK: Conteos existentes obtenidos:', existentes?.length || 0);
         const yaHay = existentes?.length || 0;
         const faltan = Math.max(0, deseados - yaHay);
+        console.log('VALIDACION: Conteos faltantes:', faltan);
         const desde = yaHay; // crear desde este índice (0-based)
         const crear$: any[] = [];
         for (let i = desde; i < deseados; i++) {
@@ -846,7 +1016,10 @@ export class GerminacionComponent implements OnInit {
   }
 
   onCancel() {
-    // Navegar de vuelta al listado
-    this.router.navigate(['/listado-germinacion']);
+    console.log('=== VALIDACION: Cancelando operación ===');
+    console.log('VALIDACION: Navegando a listado con loteId:', this.loteId, 'reciboId:', this.reciboId);
+    
+    // Navegar de vuelta al listado de germinaciones del recibo específico
+    this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-germinacion"]);
   }
 }
