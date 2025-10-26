@@ -11,6 +11,7 @@ import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
 // import { TabsModule } from 'primeng/tabs';
 import { CultivoService } from '../../../services/CultivoService';
+import { MalezaService } from '../../../services/MalezaService';
 
 @Component({
   selector: 'app-dosn.component',
@@ -35,7 +36,7 @@ import { CultivoService } from '../../../services/CultivoService';
       reciboId: number | null = null;
 
       // Todas las propiedades y métodos deben estar dentro de la clase
-  constructor(private dosnService: DOSNService, private cultivoService: CultivoService, private route: ActivatedRoute, private router: Router) {}
+  constructor(private dosnService: DOSNService, private cultivoService: CultivoService, private malezaService: MalezaService, private route: ActivatedRoute, private router: Router) {}
 
       brassicaCuscuta = [
         { label: 'Brassica spp.', contiene: false, gramos: 0 },
@@ -102,22 +103,9 @@ import { CultivoService } from '../../../services/CultivoService';
 
       // Opciones globales para los listados
       cultivosOptions: { id: number, label: string }[] = [];
-      malezasOptions = [
-        { id: 1, label: 'Amaranthus retroflexus' },
-        { id: 2, label: 'Chenopodium album' },
-        { id: 3, label: 'Echinochloa crus-galli' },
-        { id: 4, label: 'Solanum nigrum' }
-      ];
-      malezasToleradasOptions = [
-        { id: 1, label: 'Lolium perenne' },
-        { id: 2, label: 'Poa annua' },
-        { id: 3, label: 'Capsella bursa-pastoris' }
-      ];
-      malezasCeroOptions = [
-        { id: 1, label: 'Cuscuta spp.' },
-        { id: 2, label: 'Brassica spp.' },
-        { id: 3, label: 'Orobanche spp.' }
-      ];
+      malezasOptions: { id: number, label: string }[] = [];
+      malezasToleradasOptions: { id: number, label: string }[] = [];
+      malezasCeroOptions: { id: number, label: string }[] = [];
 
       // Variables para manejar navegación
       isEditing: boolean = false;
@@ -140,6 +128,26 @@ import { CultivoService } from '../../../services/CultivoService';
           },
           error: () => {
             this.cultivosOptions = [];
+          }
+        });
+
+        // Cargar todas las malezas desde backend
+        this.malezaService.listar().subscribe({
+          next: (response) => {
+            const malezas = response.malezas || [];
+            this.malezasOptions = malezas
+              .filter(m => m && m.id != null && m.nombre != null)
+              .map(m => ({ id: m.id as number, label: m.nombre }));
+            
+            // Para malezas toleradas y tolerancia cero, usar las mismas malezas por ahora
+            // En el futuro se podría implementar una lógica específica para categorizar malezas
+            this.malezasToleradasOptions = [...this.malezasOptions];
+            this.malezasCeroOptions = [...this.malezasOptions];
+          },
+          error: () => {
+            this.malezasOptions = [];
+            this.malezasToleradasOptions = [];
+            this.malezasCeroOptions = [];
           }
         });
         this.route.params.subscribe(params => {
