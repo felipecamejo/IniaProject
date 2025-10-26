@@ -125,6 +125,12 @@ export class ListadoGerminacionComponent implements OnInit {
       this.router.navigate(['/', this.loteId, this.reciboId, 'germinacion', 'editar', item.id]);
     }
 
+    navegarAVer(item: GerminacionDto) {
+      console.log('Navegando para ver Germinación:', item);
+      if (!this.loteId || !this.reciboId || !item?.id) return;
+      this.router.navigate([this.loteId, this.reciboId, 'germinacion', item.id], { queryParams: { view: 'true' } });
+    }
+
     eliminarGerminacion(item: GerminacionDto) {
       console.log('Eliminar Germinación:', item);
       if (confirm(`¿Estás seguro de que quieres eliminar la Germinación #${item.id}?`)) {

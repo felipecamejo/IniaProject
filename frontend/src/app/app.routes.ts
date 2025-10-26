@@ -85,6 +85,7 @@ export const routes: Routes = [
     { path : ':loteId/:reciboId/pureza-p-notatum/:id', component: PurezaPNotatumComponent }, // Para visualización con query param view=true
     { path : ':loteId/:reciboId/germinacion/crear', component: GerminacionComponent },
     { path : ':loteId/:reciboId/germinacion/editar/:id', component: GerminacionComponent },
+    { path : ':loteId/:reciboId/germinacion/:id', component: GerminacionComponent }, // Para visualización con query param view=true
     { path : ':loteId/:reciboId/tetrazolio/crear', component: TetrazolioComponent },
     { path : ':loteId/:reciboId/tetrazolio/editar/:id', component: TetrazolioComponent },
 ];

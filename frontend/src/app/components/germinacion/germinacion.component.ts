@@ -44,11 +44,17 @@ export class GerminacionComponent implements OnInit {
   // Variables para manejar navegación
   loteId: string | null = '';
   reciboId: string | null = '';
+  isViewing: boolean = false;
   
   inia = { pNormales: 0, pAnormales: 0, duras: 0, frescas: 0, muertas: 0, germinacion: 0 };
   inase = { pNormales: 0, pAnormales: 0, duras: 0, frescas: 0, muertas: 0, germinacion: 0 };
   repeticiones: RepeticionGerminacion[] = [];
   private tratamientoSemillasAnterior: string = 'sin curar';
+
+  // Getter para determinar si está en modo readonly
+  get isReadonly(): boolean {
+    return this.isViewing;
+  }
 
   onTratamientoChange(): void {
     console.log('=== VALIDACION: Cambio de tratamiento detectado ===');
@@ -277,21 +283,28 @@ export class GerminacionComponent implements OnInit {
       console.log('VALIDACION: Parámetros de ruta recibidos:', params);
       
       if (params['id']) {
-        console.log('VALIDACION: Modo edición detectado, ID:', params['id']);
-        this.isEditing = true;
+        console.log('VALIDACION: Modo con ID detectado:', params['id']);
         this.editingId = parseInt(params['id']);
         
         if (isNaN(this.editingId) || this.editingId <= 0) {
-          console.error('VALIDACION ERROR: ID de edición no válido:', params['id']);
+          console.error('VALIDACION ERROR: ID no válido:', params['id']);
           return;
         }
         
-        console.log('VALIDACION OK: ID de edición válido:', this.editingId);
+        // Verificar si es modo visualización por query parameter
+        this.route.queryParams.subscribe(queryParams => {
+          this.isViewing = queryParams['view'] === 'true';
+          this.isEditing = !this.isViewing;
+          console.log('VALIDACION: Modo visualización:', this.isViewing, 'Modo edición:', this.isEditing);
+        });
+        
+        console.log('VALIDACION OK: ID válido:', this.editingId);
         this.cargarDatosParaEdicion(this.editingId);
         // Cargar resumen desde backend para esta germinación
         this.cargarResumenBackend(this.editingId);
       } else {
         this.isEditing = false;
+        this.isViewing = false;
         this.editingId = null;
         this.cargarDatos();
       }
@@ -920,7 +933,21 @@ export class GerminacionComponent implements OnInit {
 
   // Nuevo: persiste los tres tratamientos si el usuario ingresó datos en creación
   private persistirTodosLosTratamientos(germinacionId: number, done?: () => void) {
+    console.log('=== VALIDACION: Iniciando persistencia de todos los tratamientos ===');
+    console.log('VALIDACION: ID de germinación:', germinacionId);
+    console.log('VALIDACION: Fechas de conteo:', this.fechas?.conteos);
+    console.log('VALIDACION: Repeticiones actuales:', this.repeticiones);
+    console.log('VALIDACION: Datos de tratamientos:', this.tratamientosData);
+
+    if (!germinacionId || germinacionId <= 0) {
+      console.error('VALIDACION ERROR: ID de germinación no válido para persistir tratamientos');
+      if (done) done();
+      return;
+    }
+
     const deseados = Math.max(1, (this.fechas?.conteos?.length || 1));
+    console.log('VALIDACION: Conteos deseados:', deseados);
+    
     // 1) Asegurar cantidad de conteos UNA vez
     this.tablasSvc.listConteos(germinacionId).subscribe({
       next: (existentes: ConteoGerminacionDto[]) => {
@@ -945,17 +972,35 @@ export class GerminacionComponent implements OnInit {
                 const ops$: any[] = [];
 
                 keys.forEach(k => {
+                  console.log('VALIDACION: Procesando tratamiento:', k);
+                  
                   // Obtener snapshot de repeticiones para cada tratamiento
                   let reps: RepeticionGerminacion[] = [];
                   const selKey = this.mapUiTablaToKey(this.tratamientoSemillas);
+                  console.log('VALIDACION: Clave seleccionada:', selKey);
+                  
                   if (k === selKey) {
                     reps = JSON.parse(JSON.stringify(this.repeticiones || []));
+                    console.log('VALIDACION: Usando repeticiones actuales para', k, ':', reps);
                   } else {
                     reps = JSON.parse(JSON.stringify(this.tratamientosData[k]?.repeticiones || []));
+                    console.log('VALIDACION: Usando repeticiones guardadas para', k, ':', reps);
                   }
+                  
                   if (!reps || reps.length === 0) {
+                    console.log('VALIDACION: No hay repeticiones para', k, ', saltando');
                     return; // nada que persistir; quedará la repetición 1 vacía creada en backend
                   }
+
+                  // Validar estructura de repeticiones
+                  reps.forEach((rep, index) => {
+                    if (!rep.normales || !Array.isArray(rep.normales)) {
+                      console.error('VALIDACION ERROR: Repetición', index, 'no tiene normales válidos:', rep);
+                    }
+                    if (rep.numero === undefined || rep.numero === null) {
+                      console.error('VALIDACION ERROR: Repetición', index, 'no tiene número válido:', rep);
+                    }
+                  });
 
                   // Crear (si falta) la repetición indicada y upsert normales + finales
                   // Crear repeticiones necesarias (por fila)
@@ -969,6 +1014,17 @@ export class GerminacionComponent implements OnInit {
                   // Upsert normales por cada conteo
                   reps.forEach(rep => {
                     conteosOrdenados.forEach((c, idx) => {
+                      // Validar datos antes de enviar
+                      if (!germinacionId || !c.id || rep.numero === undefined) {
+                        console.error('VALIDACION ERROR: Datos incompletos para normal', {
+                          germinacionId,
+                          conteoId: c.id,
+                          numeroRepeticion: rep.numero,
+                          tabla: k
+                        });
+                        return;
+                      }
+
                       const body: NormalPorConteoDto = {
                         germinacionId: germinacionId,
                         tabla: k,
@@ -976,14 +1032,42 @@ export class GerminacionComponent implements OnInit {
                         conteoId: Number(c.id || 0),
                         normal: Number(rep.normales?.[idx] || 0)
                       };
+
+                      console.log('VALIDACION: Enviando datos normales:', {
+                        tabla: k,
+                        body: body,
+                        repeticion: rep,
+                        conteo: c
+                      });
+
                       ops$.push(
-                        this.tablasSvc.upsertNormal(k, body).pipe(catchError(err => { console.error('Error guardando normal', err); return of(null); }))
+                        this.tablasSvc.upsertNormal(k, body).pipe(
+                          catchError(err => { 
+                            console.error('VALIDACION ERROR: Error guardando normal', {
+                              error: err,
+                              tabla: k,
+                              body: body,
+                              url: `${this.tablasSvc['urls'].baseUrl}${this.tablasSvc['base']}/normales/${encodeURIComponent(k)}`
+                            }); 
+                            return of(null); 
+                          })
+                        )
                       );
                     });
                   });
 
                   // Upsert finales por fila
                   reps.forEach(rep => {
+                    // Validar datos antes de enviar
+                    if (!germinacionId || rep.numero === undefined) {
+                      console.error('VALIDACION ERROR: Datos incompletos para finales', {
+                        germinacionId,
+                        numeroRepeticion: rep.numero,
+                        tabla: k
+                      });
+                      return;
+                    }
+
                     const finBody: RepeticionFinalDto = {
                       activo: true,
                       germinacionId: germinacionId,
@@ -993,16 +1077,41 @@ export class GerminacionComponent implements OnInit {
                       frescas: Number(rep.frescas || 0),
                       muertas: Number(rep.muertas || 0)
                     };
+
+                    console.log('VALIDACION: Enviando datos finales:', {
+                      tabla: k,
+                      body: finBody,
+                      repeticion: rep
+                    });
+
                     ops$.push(
-                      this.tablasSvc.upsertFinales(k, finBody).pipe(catchError(err => { console.error('Error guardando finales', err); return of(null); }))
+                      this.tablasSvc.upsertFinales(k, finBody).pipe(
+                        catchError(err => { 
+                          console.error('VALIDACION ERROR: Error guardando finales', {
+                            error: err,
+                            tabla: k,
+                            body: finBody,
+                            url: `${this.tablasSvc['urls'].baseUrl}${this.tablasSvc['base']}/finales/${encodeURIComponent(k)}`
+                          }); 
+                          return of(null); 
+                        })
+                      )
                     );
                   });
                 });
 
+                console.log('VALIDACION: Total de operaciones a ejecutar:', ops$.length);
+                
                 const exec$ = ops$.length ? forkJoin(ops$) : of([] as any[]);
                 exec$.subscribe({
-                  next: () => { if (done) done(); },
-                  error: () => { if (done) done(); }
+                  next: (results) => { 
+                    console.log('VALIDACION OK: Todas las operaciones completadas:', results);
+                    if (done) done(); 
+                  },
+                  error: (err) => { 
+                    console.error('VALIDACION ERROR: Error en operaciones batch:', err);
+                    if (done) done(); 
+                  }
                 });
               },
               error: () => { if (done) done(); }
