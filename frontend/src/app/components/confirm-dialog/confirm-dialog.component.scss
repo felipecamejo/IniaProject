@@ -1,0 +1,260 @@
+// Modal overlay
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+// Modal dialog - usando estilos del proyecto
+.modal-dialog {
+  background-color: var(--azul);
+  border-radius: 20px;
+  box-shadow: 0 6px 32px rgba(0, 40, 85, 0.3);
+  max-width: 450px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modalSlideIn 0.3s ease-out;
+  border: 2px solid var(--gris);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+// Header - usando estilos del proyecto
+.modal-header {
+  background-color: var(--azul);
+  padding: 20px 24px 16px 24px;
+  border-bottom: 1px solid var(--gris);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.modal-title {
+  color: white;
+  font-size: 1.4rem;
+  font-weight: bold;
+  font-style: italic;
+  margin: 0;
+  letter-spacing: 0.5px;
+  font-family: var(--font-main);
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Content - usando estilos del proyecto
+.modal-content {
+  padding: 20px 24px;
+  background-color: var(--azul);
+}
+
+.modal-message {
+  color: white;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+  text-align: center;
+  font-family: var(--font-main);
+}
+
+.item-details {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--gris);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.item-name,
+.item-id {
+  margin: 8px 0;
+  color: white;
+  font-size: 0.95rem;
+  font-family: var(--font-main);
+  
+  strong {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+  }
+}
+
+// Footer - usando estilos del proyecto
+.modal-footer {
+  background-color: var(--azul);
+  padding: 16px 24px 20px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid var(--gris);
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+// Buttons - usando estilos del proyecto
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+  justify-content: center;
+  font-family: var(--font-main);
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-cancel {
+  background-color: white;
+  color: var(--azul);
+  border: 2px solid var(--gris);
+  
+  &:hover:not(:disabled) {
+    background-color: #f5f5f5;
+    border-color: var(--celeste);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+.btn-delete {
+  background-color: var(--rojo);
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--rojo);
+    filter: brightness(0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(218, 105, 106, 0.3);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+// Responsive - usando breakpoints del proyecto
+@media (max-width: 768px) {
+  .modal-dialog {
+    width: 95%;
+    margin: 20px;
+    max-width: 400px;
+  }
+  
+  .modal-header,
+  .modal-content,
+  .modal-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .modal-title {
+    font-size: 1.2rem;
+  }
+  
+  .modal-message {
+    font-size: 0.9rem;
+  }
+  
+  .btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-dialog {
+    width: 95%;
+    margin: 10px;
+    max-width: 350px;
+  }
+  
+  .modal-header,
+  .modal-content,
+  .modal-footer {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px;
+    
+    .btn {
+      width: 100%;
+      min-width: unset;
+    }
+  }
+  
+  .modal-title {
+    font-size: 1.1rem;
+  }
+  
+  .modal-message {
+    font-size: 0.85rem;
+  }
+  
+  .item-details {
+    padding: 12px;
+  }
+  
+  .item-name,
+  .item-id {
+    font-size: 0.85rem;
+  }
+}

@@ -80,4 +80,18 @@
 
 
     </p-card>
+
+    <!-- Popup de confirmación de eliminación -->
+    <app-confirm-dialog
+        [visible]="mostrarConfirmEliminar"
+        title="Eliminar DOSN"
+        [message]="'¿Estás seguro de que quieres eliminar este DOSN?'"
+        [itemName]="dosnAEliminar?.id ? 'DOSN #' + dosnAEliminar!.id : ''"
+        [itemId]="dosnAEliminar?.id ?? ''"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        [loading]="confirmLoading"
+        (confirm)="confirmarEliminacion()"
+        (cancel)="cancelarEliminacion()">
+    </app-confirm-dialog>
 </div>

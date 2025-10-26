@@ -10,12 +10,13 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { LoteDto } from '../../../models/Lote.dto';
 import { LoteService } from '../../../services/LoteService';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 
 @Component({
   selector: 'app-listado-lotes.component',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule, ConfirmDialogComponent],
   templateUrl: './listado-lotes.component.html',
   styleUrl: './listado-lotes.component.scss'
 })
@@ -106,6 +107,10 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
     }
 
     loteAEliminar: LoteDto | null = null;
+
+    // Propiedades para el popup de confirmación
+    mostrarConfirmEliminar: boolean = false;
+    confirmLoading: boolean = false;
 
     ngOnInit(): void {
         this.cargarLotes();
@@ -207,34 +212,39 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
 
 
     eliminarItem(lote: LoteDto) {
+      console.log('Eliminar Lote:', lote);
       this.loteAEliminar = lote;
+      this.mostrarConfirmEliminar = true;
     }
 
     confirmarEliminacion() {
-
       if (!this.loteAEliminar || this.loteAEliminar.id == null) return;
+      this.confirmLoading = true;
+      const lote = this.loteAEliminar;
+      const loteId = lote.id;
 
-      const loteId = this.loteAEliminar.id;
-      console.log('Eliminar Lote:', this.loteAEliminar);
-
-      if (confirm(`¿Estás seguro de que quieres eliminar el Lote #${loteId}?`)) {
-        this.loteService.eliminarLote(loteId).subscribe({
-          next: (res) => {
-            console.log('Lote eliminado en backend:', res);
-            // Actualizar lista localmente
-            this.items = this.items.filter(lote => lote.id !== loteId);
-          },
-          error: (err) => {
-            console.error('Error eliminando Lote:', err);
-            // Aquí podrías mostrar un mensaje de error al usuario
-          }
-        });
-      }
-      this.loteAEliminar = null;
+      this.loteService.eliminarLote(loteId!).subscribe({
+        next: (res) => {
+          console.log('Lote eliminado en backend:', res);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.loteAEliminar = null;
+          // Actualizar lista localmente
+          this.items = this.items.filter(loteItem => loteItem.id !== loteId);
+        },
+        error: (err) => {
+          console.error('Error eliminando Lote:', err);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.loteAEliminar = null;
+          alert('Error al eliminar el lote. Por favor, inténtalo de nuevo.');
+        }
+      });
     }
 
-
     cancelarEliminacion() {
+      this.mostrarConfirmEliminar = false;
       this.loteAEliminar = null;
+      this.confirmLoading = false;
     }
 }

@@ -1,6 +1,6 @@
 package ti.proyectoinia.dtos;
 
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import ti.proyectoinia.business.entities.Metodo;
 import ti.proyectoinia.business.entities.PreFrio;
@@ -16,67 +16,54 @@ public class GerminacionDto {
 
     private Date fechaInicio;
 
-    private Date fechaConteo1;
-
-    private Date fechaConteo2;
-
-    private Date fechaConteo3;
-
-    private Date fechaConteo4;
-
-    private Date fechaConteo5;
-
-    private int totalDias;
-
-    private int repeticionNormal1;
-
-    private int repeticionNormal2;
-
-    private int repeticionNormal3;
-
-    private int repeticionNormal4;
-
-    private int repeticionNormal5;
-
-    private int repeticionDura;
-
-    private int repeticionFresca;
-
-    private int repeticionAnormal;
-
-    private int repeticionMuerta;
-
-    private int totalRepeticion;
-
-    private float promedioRepeticiones;
+    private Integer totalDias;
 
     private Tratamiento tratamiento;
 
-    private int nroSemillaPorRepeticion;
+    private Integer nroSemillaPorRepeticion;
 
+    // Mantener el mismo tipo que la entidad para minimizar cambios en mapeos actuales
     private Metodo metodo;
 
-    private float temperatura;
+    private Float temperatura;
 
     private PreFrio preFrio;
 
     private PreTratamiento preTratamiento;
 
-    private int nroDias;
+    private Integer nroDias;
 
     private Date fechaFinal;
 
-    private int pRedondeo;
+    @JsonProperty("pRedondeo")
+    private Integer pRedondeo;
 
-    private int pNormal;
+    // Métricas INIA / INASE
+    @JsonProperty("pNormalINIA")
+    private Integer pNormalINIA;
+    @JsonProperty("pNormalINASE")
+    private Integer pNormalINASE;
 
-    private int pAnormal;
+    @JsonProperty("pAnormalINIA")
+    private Integer pAnormalINIA;
+    @JsonProperty("pAnormalINASE")
+    private Integer pAnormalINASE;
 
-    private int pMuertas;
+    @JsonProperty("pMuertasINIA")
+    private Integer pMuertasINIA;
+    @JsonProperty("pMuertasINASE")
+    private Integer pMuertasINASE;
 
-    private int semillasDuras;
+    @JsonProperty("pFrescasINIA")
+    private Integer pFrescasINIA;
+    @JsonProperty("pFrescasINASE")
+    private Integer pFrescasINASE;
 
-    private int germinacion;
+    private Integer semillasDurasINIA;
+    private Integer semillasDurasINASE;
+
+    private Integer germinacionINIA;
+    private Integer germinacionINASE;
 
     private String comentarios;
 

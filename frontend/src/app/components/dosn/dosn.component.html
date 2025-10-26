@@ -1,7 +1,7 @@
 <div class="container">
   <p-card class="card">
     <ng-template pTemplate="header">
-      <h2 class="title">DOSN</h2>
+      <h2 class="title">{{ isViewing ? 'Ver DOSN' : (isEditing ? 'Editar DOSN' : 'Crear DOSN') }}</h2>
     </ng-template>
 
     <!-- Se eliminó la sección de listado de DOSN, este componente solo carga y muestra un DOSN específico -->
@@ -12,15 +12,15 @@
   <div class="form-grid inase-section">
         <div class="form-field">
           <label for="fechaInase">Fecha</label>
-          <input id="fechaInase" type="date" [(ngModel)]="fechaInase" name="fechaInase" pInputText />
+          <input id="fechaInase" type="date" [(ngModel)]="fechaInase" name="fechaInase" pInputText [readonly]="isReadonly" />
         </div>
         <div class="form-field">
           <label for="gramosInase">Gramos analizados</label>
-          <input id="gramosInase" type="number" [(ngModel)]="gramosInase" name="gramosInase" pInputText />
+          <input id="gramosInase" type="number" [(ngModel)]="gramosInase" name="gramosInase" pInputText [readonly]="isReadonly" />
         </div>
         <div class="form-field">
           <label for="tipoAnalisisInase">Tipo de análisis</label>
-          <select id="tipoAnalisisInase" [(ngModel)]="tipoAnalisisInase" name="tipoAnalisisInase" pInputText>
+          <select id="tipoAnalisisInase" [(ngModel)]="tipoAnalisisInase" name="tipoAnalisisInase" pInputText [disabled]="isReadonly">
             <option value="Completo">Completo</option>
             <option value="Reducido">Reducido</option>
             <option value="Limitado">Limitado</option>
@@ -30,8 +30,8 @@
         <!-- Listados INASE -->
         <div class="form-field">
           <label>Malezas</label>
-          <div class="custom-multiselect" [class.open]="isMalezasDropdownOpenInase">
-            <div class="multiselect-trigger" (click)="toggleMalezasDropdownInase()">
+          <div class="custom-multiselect" [class.open]="isMalezasDropdownOpenInase" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleMalezasDropdownInase()">
               <span class="selected-text">
                 {{ getSelectedMalezasTextInase() }}
               </span>
@@ -54,8 +54,8 @@
         </div>
         <div class="form-field">
           <label>Otros cultivos</label>
-          <div class="custom-multiselect" [class.open]="isCultivosDropdownOpenInase">
-            <div class="multiselect-trigger" (click)="toggleCultivosDropdownInase()">
+          <div class="custom-multiselect" [class.open]="isCultivosDropdownOpenInase" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleCultivosDropdownInase()">
               <span class="selected-text">
                 {{ getSelectedCultivosTextInase() }}
               </span>
@@ -78,8 +78,8 @@
         </div>
         <div class="form-field">
           <label>Malezas toleradas</label>
-          <div class="custom-multiselect" [class.open]="isMalezasToleradasDropdownOpenInase">
-            <div class="multiselect-trigger" (click)="toggleMalezasToleradasDropdownInase()">
+          <div class="custom-multiselect" [class.open]="isMalezasToleradasDropdownOpenInase" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleMalezasToleradasDropdownInase()">
               <span class="selected-text">
                 {{ getSelectedMalezasToleradasTextInase() }}
               </span>
@@ -102,8 +102,8 @@
         </div>
         <div class="form-field">
           <label>Malezas tolerancia cero</label>
-          <div class="custom-multiselect" [class.open]="isMalezasCeroDropdownOpenInase">
-            <div class="multiselect-trigger" (click)="toggleMalezasCeroDropdownInase()">
+          <div class="custom-multiselect" [class.open]="isMalezasCeroDropdownOpenInase" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleMalezasCeroDropdownInase()">
               <span class="selected-text">
                 {{ getSelectedMalezasCeroTextInase() }}
               </span>
@@ -131,15 +131,15 @@
   <div class="form-grid inia-section">
         <div class="form-field">
           <label for="fechaInia">Fecha</label>
-          <input id="fechaInia" type="date" [(ngModel)]="fechaInia" name="fechaInia" pInputText />
+          <input id="fechaInia" type="date" [(ngModel)]="fechaInia" name="fechaInia" pInputText [readonly]="isReadonly" />
         </div>
         <div class="form-field">
           <label for="gramosInia">Gramos analizados</label>
-          <input id="gramosInia" type="number" [(ngModel)]="gramosInia" name="gramosInia" pInputText />
+          <input id="gramosInia" type="number" [(ngModel)]="gramosInia" name="gramosInia" pInputText [readonly]="isReadonly" />
         </div>
         <div class="form-field">
           <label for="tipoAnalisisInia">Tipo de análisis</label>
-          <select id="tipoAnalisisInia" [(ngModel)]="tipoAnalisisInia" name="tipoAnalisisInia" pInputText>
+          <select id="tipoAnalisisInia" [(ngModel)]="tipoAnalisisInia" name="tipoAnalisisInia" pInputText [disabled]="isReadonly">
             <option value="Completo">Completo</option>
             <option value="Reducido">Reducido</option>
             <option value="Limitado">Limitado</option>
@@ -149,8 +149,8 @@
         <!-- Listados INIA -->
         <div class="form-field">
           <label>Malezas</label>
-          <div class="custom-multiselect" [class.open]="isMalezasDropdownOpenInia">
-            <div class="multiselect-trigger" (click)="toggleMalezasDropdownInia()">
+          <div class="custom-multiselect" [class.open]="isMalezasDropdownOpenInia" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleMalezasDropdownInia()">
               <span class="selected-text">
                 {{ getSelectedMalezasTextInia() }}
               </span>
@@ -173,8 +173,8 @@
         </div>
         <div class="form-field">
           <label>Otros cultivos</label>
-          <div class="custom-multiselect" [class.open]="isCultivosDropdownOpenInia">
-            <div class="multiselect-trigger" (click)="toggleCultivosDropdownInia()">
+          <div class="custom-multiselect" [class.open]="isCultivosDropdownOpenInia" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleCultivosDropdownInia()">
               <span class="selected-text">
                 {{ getSelectedCultivosTextInia() }}
               </span>
@@ -197,8 +197,8 @@
         </div>
         <div class="form-field">
           <label>Malezas toleradas</label>
-          <div class="custom-multiselect" [class.open]="isMalezasToleradasDropdownOpenInia">
-            <div class="multiselect-trigger" (click)="toggleMalezasToleradasDropdownInia()">
+          <div class="custom-multiselect" [class.open]="isMalezasToleradasDropdownOpenInia" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleMalezasToleradasDropdownInia()">
               <span class="selected-text">
                 {{ getSelectedMalezasToleradasTextInia() }}
               </span>
@@ -221,8 +221,8 @@
         </div>
         <div class="form-field">
           <label>Malezas tolerancia cero</label>
-          <div class="custom-multiselect" [class.open]="isMalezasCeroDropdownOpenInia">
-            <div class="multiselect-trigger" (click)="toggleMalezasCeroDropdownInia()">
+          <div class="custom-multiselect" [class.open]="isMalezasCeroDropdownOpenInia" [class.disabled]="isReadonly">
+            <div class="multiselect-trigger" (click)="!isReadonly && toggleMalezasCeroDropdownInia()">
               <span class="selected-text">
                 {{ getSelectedMalezasCeroTextInia() }}
               </span>
@@ -260,13 +260,13 @@
             <tr *ngFor="let item of brassicaCuscuta">
               <td>{{ item.label }}</td>
               <td>
-                <select [(ngModel)]="item.contiene" [name]="'contiene_' + item.label">
+                <select [(ngModel)]="item.contiene" [name]="'contiene_' + item.label" [disabled]="isReadonly">
                   <option [ngValue]="false">No contiene</option>
                   <option [ngValue]="true">Contiene</option>
                 </select>
               </td>
               <td *ngIf="item.contiene">
-                <input type="number" [(ngModel)]="item.gramos" [name]="'gramos_' + item.label" min="0" placeholder="Gramos" />
+                <input type="number" [(ngModel)]="item.gramos" [name]="'gramos_' + item.label" min="0" placeholder="Gramos" [readonly]="isReadonly" />
               </td>
             </tr>
           </tbody>
@@ -274,6 +274,7 @@
       </div>
       <div class="submit-btn" style="display: flex; gap: 1rem;">
         <button
+          *ngIf="!isViewing"
           pButton
           type="button"
           [label]="isEditing ? 'Editar DOSN' : 'Crear DOSN'"
@@ -283,7 +284,7 @@
         <button
           pButton
           type="button"
-          label="Cancelar"
+          [label]="isViewing ? 'Volver' : 'Cancelar'"
           class="p-button-secondary"
           (click)="onCancel()"
         ></button>

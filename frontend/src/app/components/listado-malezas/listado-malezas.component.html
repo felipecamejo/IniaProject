@@ -112,4 +112,18 @@
             <div *ngIf="modalError" class="error">{{ modalError }}</div>
         </form>
     </p-dialog>
+
+    <!-- Popup de confirmación de eliminación -->
+    <app-confirm-dialog
+        [visible]="mostrarConfirmEliminar"
+        title="Eliminar Maleza"
+        [message]="'¿Estás seguro de que quieres eliminar esta Maleza?'"
+        [itemName]="malezaAEliminar?.nombre ? 'Maleza: ' + malezaAEliminar!.nombre : ''"
+        [itemId]="malezaAEliminar?.id ?? ''"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        [loading]="confirmLoading"
+        (confirm)="confirmarEliminacion()"
+        (cancel)="cancelarEliminacion()">
+    </app-confirm-dialog>
 </div>

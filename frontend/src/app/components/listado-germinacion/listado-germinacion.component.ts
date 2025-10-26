@@ -1,26 +1,29 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { Router } from '@angular/router';
-import { PMSDto } from '../../../models/PMS.dto';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GerminacionDto } from '../../../models/Germinacion.dto';
+import { GerminacionService } from '../../../services/GerminacionService';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-listado-germinacion',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, ConfirmDialogComponent],
   templateUrl: './listado-germinacion.component.html',
   styleUrl: './listado-germinacion.component.scss'
 })
-export class ListadoGerminacionComponent {
-    constructor(private router: Router) {}
+export class ListadoGerminacionComponent implements OnInit {
+  constructor(private router: Router, private route: ActivatedRoute, private germSvc: GerminacionService) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
     searchText: string = '';
+  loteId: string | null = null;
+  reciboId: string | null = null;
 
     meses = [
       { label: 'Enero', id: 1 },
@@ -45,131 +48,32 @@ export class ListadoGerminacionComponent {
       { label: '2024', id: 2024 }
     ];
 
-    items: GerminacionDto[] = [
-      {
-        id: 1,
-        reciboId: 101,
-        activo: true,
-        fechaInicio: '2023-01-15',
-        fechaConteo1: '2023-01-16',
-        fechaConteo2: '2023-01-17',
-        fechaConteo3: null,
-        fechaConteo4: null,
-        fechaConteo5: null,
-        totalDias: 7,
-        repeticionNormal1: 10,
-        repeticionNormal2: 12,
-        repeticionNormal3: 0,
-        repeticionNormal4: 0,
-        repeticionNormal5: 0,
-        repeticionDura: 2,
-        repeticionFresca: 1,
-        repeticionAnormal: 0,
-        repeticionMuerta: 0,
-        totalRepeticion: 25,
-        promedioRepeticiones: 12.5,
-        tratamiento: 'T1',
-        nroSemillaPorRepeticion: 50,
-        metodo: 'A',
-        temperatura: 20,
-        preFrio: 'NINGUNO',
-        preTratamiento: 'NINGUNO',
-        nroDias: 7,
-        fechaFinal: '2023-01-22',
-        pRedondeo: 0,
-        pNormal: 80,
-        pAnormal: 0,
-        pMuertas: 0,
-        semillasDuras: 2,
-        germinacion: 96,
-        comentarios: 'Control de calidad mensual - Muestra estándar',
-        repetido: false,
-        fechaCreacion: '2023-01-15',
-        fechaRepeticion: null
-      },
-      {
-        id: 2,
-        reciboId: 102,
-        activo: true,
-        fechaInicio: '2022-02-20',
-        fechaConteo1: '2022-02-21',
-        fechaConteo2: '2022-02-22',
-        fechaConteo3: null,
-        fechaConteo4: null,
-        fechaConteo5: null,
-        totalDias: 7,
-        repeticionNormal1: 11,
-        repeticionNormal2: 13,
-        repeticionNormal3: 0,
-        repeticionNormal4: 0,
-        repeticionNormal5: 0,
-        repeticionDura: 1,
-        repeticionFresca: 2,
-        repeticionAnormal: 0,
-        repeticionMuerta: 0,
-        totalRepeticion: 27,
-        promedioRepeticiones: 13.5,
-        tratamiento: 'T2',
-        nroSemillaPorRepeticion: 50,
-        metodo: 'B',
-        temperatura: 22,
-        preFrio: 'CORTO',
-        preTratamiento: 'X',
-        nroDias: 7,
-        fechaFinal: '2022-02-27',
-        pRedondeo: 0,
-        pNormal: 85,
-        pAnormal: 0,
-        pMuertas: 0,
-        semillasDuras: 1,
-        germinacion: 98,
-        comentarios: 'Lote especial - Requiere repetición',
-        repetido: true,
-        fechaCreacion: '2022-02-20',
-        fechaRepeticion: '2022-02-22'
-      },
-      {
-        id: 3,
-        reciboId: 103,
-        activo: true,
-        fechaInicio: '2023-03-10',
-        fechaConteo1: '2023-03-11',
-        fechaConteo2: '2023-03-12',
-        fechaConteo3: null,
-        fechaConteo4: null,
-        fechaConteo5: null,
-        totalDias: 7,
-        repeticionNormal1: 12,
-        repeticionNormal2: 14,
-        repeticionNormal3: 0,
-        repeticionNormal4: 0,
-        repeticionNormal5: 0,
-        repeticionDura: 3,
-        repeticionFresca: 1,
-        repeticionAnormal: 0,
-        repeticionMuerta: 0,
-        totalRepeticion: 30,
-        promedioRepeticiones: 15,
-        tratamiento: 'T1',
-        nroSemillaPorRepeticion: 50,
-        metodo: 'C',
-        temperatura: 24,
-        preFrio: 'LARGO',
-        preTratamiento: 'Y',
-        nroDias: 7,
-        fechaFinal: '2023-03-17',
-        pRedondeo: 0,
-        pNormal: 90,
-        pAnormal: 0,
-        pMuertas: 0,
-        semillasDuras: 3,
-        germinacion: 99,
-        comentarios: 'Inspección rutinaria de equipos - Repetir análisis',
-        repetido: true,
-        fechaCreacion: '2023-03-10',
-        fechaRepeticion: '2023-03-12'
+    items: GerminacionDto[] = [];
+
+    // Propiedades para el popup de confirmación
+    mostrarConfirmEliminar: boolean = false;
+    germinacionAEliminar: GerminacionDto | null = null;
+    confirmLoading: boolean = false;
+
+    ngOnInit(): void {
+      this.loteId = this.route.snapshot.paramMap.get('loteId');
+      this.reciboId = this.route.snapshot.paramMap.get('reciboId');
+      const rid = Number(this.reciboId);
+      if (rid) {
+        this.germSvc.listarPorRecibo(rid).subscribe({
+          next: (resp: any) => {
+            // API devuelve { germinacion: GerminacionDto[] }
+            this.items = Array.isArray(resp?.germinacion) ? resp.germinacion : [];
+          },
+          error: (err) => {
+            console.error('Error listando germinaciones por recibo', err);
+            this.items = [];
+          }
+        });
+      } else {
+        this.items = [];
       }
-    ];
+    }
 
     get itemsFiltrados() {
       return this.items.filter(item => {
@@ -194,13 +98,19 @@ export class ListadoGerminacionComponent {
     }
 
     getMesFromFecha(fecha: string): number {
+      if (!fecha) return NaN;
+      const d = new Date(fecha);
+      if (!isNaN(d.getTime())) return d.getMonth() + 1;
       const partes = fecha.split('-');
-      return parseInt(partes[1]); // El mes está en la posición 1 (YYYY-MM-DD)
+      return partes.length > 1 ? parseInt(partes[1], 10) : NaN;
     }
 
     getAnioFromFecha(fecha: string): number {
+      if (!fecha) return NaN;
+      const d = new Date(fecha);
+      if (!isNaN(d.getTime())) return d.getFullYear();
       const partes = fecha.split('-');
-      return parseInt(partes[0]); // El año está en la posición 0 (YYYY-MM-DD)
+      return partes.length > 0 ? parseInt(partes[0], 10) : NaN;
     }
 
     onAnioChange() {
@@ -212,20 +122,44 @@ export class ListadoGerminacionComponent {
     }
 
     crearGerminacion() {
-      console.log('Navegando para crear nueva Germinación');
-      this.router.navigate(['/germinacion/crear']);
+      if (!this.loteId || !this.reciboId) return;
+      this.router.navigate(['/', this.loteId, this.reciboId, 'germinacion', 'crear']);
     }
 
     navegarAEditar(item: GerminacionDto) {
-      console.log('Navegando para editar Germinación:', item);
-      this.router.navigate(['/germinacion/editar', item.id]);
+      if (!this.loteId || !this.reciboId || !item?.id) return;
+      this.router.navigate(['/', this.loteId, this.reciboId, 'germinacion', 'editar', item.id]);
+    }
+
+    navegarAVer(item: GerminacionDto) {
+      console.log('Navegando para ver Germinación:', item);
+      if (!this.loteId || !this.reciboId || !item?.id) return;
+      this.router.navigate([this.loteId, this.reciboId, 'germinacion', item.id], { queryParams: { view: 'true' } });
     }
 
     eliminarGerminacion(item: GerminacionDto) {
       console.log('Eliminar Germinación:', item);
-      if (confirm(`¿Estás seguro de que quieres eliminar la Germinación #${item.id}?`)) {
-        this.items = this.items.filter(germ => germ.id !== item.id);
-        console.log('Germinación eliminada');
-      }
+      this.germinacionAEliminar = item;
+      this.mostrarConfirmEliminar = true;
+    }
+
+    confirmarEliminacion() {
+      if (!this.germinacionAEliminar) return;
+      this.confirmLoading = true;
+      const germinacion = this.germinacionAEliminar;
+
+      // Simular eliminación local (ya que no hay servicio de eliminación implementado)
+      this.items = this.items.filter(germ => germ.id !== germinacion.id);
+      console.log('Germinación eliminada');
+      
+      this.confirmLoading = false;
+      this.mostrarConfirmEliminar = false;
+      this.germinacionAEliminar = null;
+    }
+
+    cancelarEliminacion() {
+      this.mostrarConfirmEliminar = false;
+      this.germinacionAEliminar = null;
+      this.confirmLoading = false;
     }
 }

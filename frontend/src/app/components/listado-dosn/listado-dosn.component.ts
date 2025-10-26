@@ -8,13 +8,14 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PMSDto } from '../../../models/PMS.dto';
 import { DOSNDto } from '../../../models/DOSN.dto';
 import { DOSNService } from '../../../services/DOSNService';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-listado-dosn.component',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, ConfirmDialogComponent],
   templateUrl: './listado-dosn.component.html',
-  styleUrl: './listado-dosn.component.scss'
+  styleUrls: ['./listado-dosn.component.scss']
 })
 export class ListadoDosnComponent implements OnInit {
     constructor(
@@ -57,6 +58,11 @@ export class ListadoDosnComponent implements OnInit {
 
     items: DOSNDto[] = [];
 
+    // Propiedades para el popup de confirmación
+    mostrarConfirmEliminar: boolean = false;
+    dosnAEliminar: DOSNDto | null = null;
+    confirmLoading: boolean = false;
+
     ngOnInit() {
        this.loteId = this.route.snapshot.params['loteId'];
        this.reciboId = this.route.snapshot.params['reciboId'];
@@ -68,12 +74,13 @@ export class ListadoDosnComponent implements OnInit {
             next: (response: any) => {
                 const lista = response?.DOSN ?? response?.dosn ?? response?.dtos ?? [];
                 this.items = Array.isArray(lista) ? lista : [];
-                console.log('DOSN cargadas:', this.items);
+                console.log(`Listado de DOSN cargado: ${this.items.length} registro(s).`);
                 // Actualizar años disponibles después de cargar los items
                 this.actualizarAniosDisponibles();
             },
             error: (error) => {
-                console.error('Error al cargar DOSN:', error);
+                const detalle = error?.error || error?.message || error;
+                console.error('Error al cargar DOSN:', detalle);
                 // Mantener items como arreglo vacío para evitar errores en template/filtros
                 this.items = [];
             }
@@ -202,20 +209,47 @@ export class ListadoDosnComponent implements OnInit {
 
     eliminarDOSN(item: DOSNDto) {
       console.log('Eliminar DOSN:', item);
-      
-      if (confirm(`¿Estás seguro de que quieres eliminar el DOSN #${item.id}?`)) {
-          if (item.id) {
-              this.dosnService.eliminar(item.id).subscribe({
-                  next: (response) => {
-                      console.log('DOSN eliminado exitosamente:', response);
-                      // Recargar la lista después de eliminar
-                      this.cargarDosn();
-                  },
-                  error: (error) => {
-                      console.error('Error al eliminar el DOSN:', error);
-                  }
-              });
+      this.dosnAEliminar = item;
+      this.mostrarConfirmEliminar = true;
+    }
+
+    confirmarEliminacion() {
+      if (!this.dosnAEliminar) return;
+      this.confirmLoading = true;
+      const dosn = this.dosnAEliminar;
+
+      if (dosn.id) {
+        this.dosnService.eliminar(dosn.id).subscribe({
+          next: (response) => {
+            try {
+              const texto = typeof response === 'string' ? response : '';
+              const idMatch = texto.match(/ID\s*:?\s*(\d+)/i);
+              const id = idMatch ? Number(idMatch[1]) : dosn.id;
+              console.log(`DOSN eliminada correctamente. ID: ${id}`);
+            } catch (_) {
+              console.log('DOSN eliminada correctamente.');
+            }
+            this.confirmLoading = false;
+            this.mostrarConfirmEliminar = false;
+            this.dosnAEliminar = null;
+            // Recargar la lista después de eliminar
+            this.cargarDosn();
+          },
+          error: (error) => {
+            const detalle = error?.error || error?.message || error;
+            console.error('Error al eliminar el DOSN:', detalle);
+            this.confirmLoading = false;
+            this.mostrarConfirmEliminar = false;
+            this.dosnAEliminar = null;
+            alert('Error al eliminar el DOSN. Por favor, inténtalo de nuevo.');
           }
+        });
       }
+    }
+
+    cancelarEliminacion() {
+      this.mostrarConfirmEliminar = false;
+      this.dosnAEliminar = null;
+      this.confirmLoading = false;
     }
 }

@@ -9,7 +9,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
-import { TabsModule } from 'primeng/tabs';
+// import { TabsModule } from 'primeng/tabs';
+import { CultivoService } from '../../../services/CultivoService';
 
 @Component({
   selector: 'app-dosn.component',
@@ -21,34 +22,20 @@ import { TabsModule } from 'primeng/tabs';
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-    MultiSelectModule,
-    TabsModule
+    MultiSelectModule
       ],
       templateUrl: './dosn.component.html',
-      styleUrl: './dosn.component.scss'
+      styleUrls: ['./dosn.component.scss']
     })
     export class DOSNComponent implements OnInit {
       dosn: DOSNDto | null = null;
       loading: boolean = false;
       editingId: number | null = null;
-
-      // Variables para manejar navegación
-      isEditing: boolean = false;
-      isViewing: boolean = false;
-      isSubmitting: boolean = false;
-      
-      loteId: string | null = '';
-      reciboId: string | null = '';
-      
-      // Campo para mantener fechaCreacion original durante edición
-      fechaCreacionOriginal: string | null = null;
-
-      // Campos adicionales del formulario
-      estandar: boolean = false;
-      fechaAnalisis: string = '';
+      loteId: number | null = null;
+      reciboId: number | null = null;
 
       // Todas las propiedades y métodos deben estar dentro de la clase
-      constructor(private dosnService: DOSNService, private route: ActivatedRoute, private router: Router) {}
+  constructor(private dosnService: DOSNService, private cultivoService: CultivoService, private route: ActivatedRoute, private router: Router) {}
 
       brassicaCuscuta = [
         { label: 'Brassica spp.', contiene: false, gramos: 0 },
@@ -114,12 +101,7 @@ import { TabsModule } from 'primeng/tabs';
       getSelectedMalezasCeroTextInia() { if (this.selectedMalezasCeroInia.length === 0) return 'Seleccionar malezas tolerancia cero...'; return this.selectedMalezasCeroInia.map(id => { const item = this.malezasCeroOptions.find(mc => mc.id === id); return item ? item.label : ''; }).join(', '); }
 
       // Opciones globales para los listados
-      cultivosOptions = [
-        { id: 1, label: 'Trigo' },
-        { id: 2, label: 'Cebada' },
-        { id: 3, label: 'Avena' },
-        { id: 4, label: 'Centeno' }
-      ];
+      cultivosOptions: { id: number, label: string }[] = [];
       malezasOptions = [
         { id: 1, label: 'Amaranthus retroflexus' },
         { id: 2, label: 'Chenopodium album' },
@@ -137,44 +119,61 @@ import { TabsModule } from 'primeng/tabs';
         { id: 3, label: 'Orobanche spp.' }
       ];
 
+      // Variables para manejar navegación
+      isEditing: boolean = false;
+      isViewing: boolean = false;
+
+      // Getter para determinar si está en modo readonly
+      get isReadonly(): boolean {
+        return this.isViewing;
+      }
+
       // ...existing code...
 
       ngOnInit(): void {
-        this.loteId = this.route.snapshot.paramMap.get('loteId');
-        this.reciboId = this.route.snapshot.paramMap.get('reciboId');
-
-        // Verificar si estamos en modo edición basado en la ruta
+        // Cargar cultivos reales desde backend
+        this.cultivoService.listarCultivos().subscribe({
+          next: (cultivos) => {
+            this.cultivosOptions = cultivos
+              .filter(c => c && c.id != null && c.nombre != null)
+              .map(c => ({ id: c.id as number, label: c.nombre }));
+          },
+          error: () => {
+            this.cultivosOptions = [];
+          }
+        });
         this.route.params.subscribe(params => {
-          if (params['id']) {
-            this.editingId = parseInt(params['id']);
+          if (params['loteId']) this.loteId = +params['loteId'];
+          if (params['reciboId']) this.reciboId = +params['reciboId'];
+          this.isEditing = !!params['id'];
+          if (this.isEditing) {
             // Verificar si es modo visualización por query parameter
             this.route.queryParams.subscribe(queryParams => {
               this.isViewing = queryParams['view'] === 'true';
               this.isEditing = !this.isViewing;
-              if (this.editingId) {
-                this.cargarDatosParaEdicion(this.editingId);
-              }
             });
+            // Modo edición/visualización: cargar DOSN existente
+            this.editingId = +params['id'];
+            this.cargarDOSN(this.editingId);
+          } else {
+            // Modo creación: limpiar/valores por defecto si hace falta
+            this.editingId = null;
+            this.dosn = null;
+            this.isViewing = false;
           }
         });
       }
 
-      private cargarDatosParaEdicion(id: number): void {
+      cargarDOSN(id: number): void {
         this.loading = true;
         this.dosnService.obtener(id).subscribe({
-          next: (item: DOSNDto) => {
-            console.log('Cargando datos DOSN para edición:', item);
-            this.dosn = item;
-            
-            // Guardar fechaCreacion original para edición
-            this.fechaCreacionOriginal = item.fechaCreacion;
-            
-            // Mapear DTO -> estado de la vista
-            this.mapDtoToView(item);
+          next: (resp) => {
+            this.dosn = resp;
+            // Mapear DTO -> estado de la vista (solo para mostrar)
+            this.mapDtoToView(resp);
             this.loading = false;
           },
-          error: (error) => {
-            console.error('Error al cargar DOSN:', error);
+          error: () => {
             this.dosn = null;
             this.loading = false;
           }
@@ -182,110 +181,45 @@ import { TabsModule } from 'primeng/tabs';
       }
 
       onSubmit() {
-        // Prevenir múltiples envíos
-        if (this.isSubmitting) {
-          console.log('Ya se está enviando el formulario, ignorando nueva llamada');
-          return;
-        }
-        
-        this.isSubmitting = true;
-        let dosnData: DOSNDto = this.buildDosnDto();
+            const payload = this.buildPayloadFromView();
+            this.loading = true;
+            const obs = this.isEditing
+              ? this.dosnService.editar(payload)
+              : this.dosnService.crear(payload);
 
-        // Debugging: mostrar exactamente qué datos se están enviando
-        console.log('=== DATOS ENVIADOS AL BACKEND ===');
-        console.log('isEditing:', this.isEditing);
-        console.log('editingId:', this.editingId);
-
-        if (this.isEditing && this.editingId) {
-          // Actualizar DOSN existente - mantener valores no editables
-          console.log('Editando DOSN existente con ID:', this.editingId);
-          console.log('dosnData:', JSON.stringify(dosnData, null, 2));
-
-          dosnData.fechaCreacion = this.fechaCreacionOriginal ? this.convertirFechaAISO(this.fechaCreacionOriginal) : null;
-          console.log("reciboId:", this.getReciboId());
-          this.dosnService.editar(dosnData).subscribe({
-            next: (response: any) => {
-              console.log('DOSN actualizada exitosamente:', response);
-              this.isSubmitting = false;
-              this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-dosn"]);
-            },
-            error: (error: any) => {
-              console.error('Error al actualizar el DOSN:', error);
-              this.isSubmitting = false;
-            }
-          });
-        } else {
-          // Crear nueva DOSN - establecer valores por defecto para creación
-          dosnData.id = 0;
-          dosnData.activo = true; 
-          dosnData.repetido = false; 
-          dosnData.fechaCreacion = new Date().toISOString();
-          dosnData.fechaRepeticion = null;
-          
-          console.log('Creando nueva DOSN');
-          console.log('dosnData:', JSON.stringify(dosnData, null, 2));
-          
-          this.dosnService.crear(dosnData).subscribe({
-            next: (response: any) => {
-              console.log('DOSN creada exitosamente:', response);
-              this.isSubmitting = false;
-              this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-dosn"]);
-            },
-            error: (error: any) => {
-              console.error('Error al crear el DOSN:', error);
-              this.isSubmitting = false;
-            }
-          });
-        }
+            obs.subscribe({
+              next: (resp) => {
+                this.loading = false;
+                try {
+                  const texto = typeof resp === 'string' ? resp : '';
+                  const idMatch = texto.match(/ID\s*:?\s*(\d+)/i);
+                  const id = idMatch ? Number(idMatch[1]) : this.editingId ?? null;
+                  const accion = this.isEditing ? 'actualizada' : 'creada';
+                  if (id != null) {
+                    console.log(`DOSN ${accion} correctamente. ID: ${id}`);
+                  } else {
+                    console.log(`DOSN ${accion} correctamente.`);
+                  }
+                } catch (e) {
+                  console.log(`DOSN ${this.isEditing ? 'actualizada' : 'creada'} correctamente.`);
+                }
+                if (this.loteId != null && this.reciboId != null) {
+                  this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
+                }
+              },
+              error: (e) => {
+                const detalle = e?.error || e?.message || e;
+                console.error(`Error al ${this.isEditing ? 'editar' : 'crear'} DOSN:`, detalle);
+                this.loading = false;
+              }
+            });
       }
 
       onCancel() {
-        // Implementar lógica de cancelación aquí
-        console.log('Formulario DOSN cancelado');
-      }
-
-      private buildDosnDto(): DOSNDto {
-        return {
-          id: this.isEditing && this.editingId ? this.editingId : 0,
-          reciboId: this.getReciboId(),
-          
-          // Fechas INIA / INASE
-          fechaINIA: this.fechaInia ? this.convertirFechaAISO(this.fechaInia) : null,
-          fechaINASE: this.fechaInase ? this.convertirFechaAISO(this.fechaInase) : null,
-          
-          // Gramos analizados INIA / INASE
-          gramosAnalizadosINIA: this.gramosInia || 0,
-          gramosAnalizadosINASE: this.gramosInase || 0,
-          
-          // Tipos de análisis
-          tiposDeanalisisINIA: this.labelToEnum(this.tipoAnalisisInia),
-          tiposDeanalisisINASE: this.labelToEnum(this.tipoAnalisisInase),
-          
-          // Determinaciones
-          determinacionBrassica: this.brassicaCuscuta.find(b => b.label === 'Brassica spp.')?.contiene || false,
-          determinacionBrassicaGramos: this.brassicaCuscuta.find(b => b.label === 'Brassica spp.')?.gramos || 0,
-          determinacionCuscuta: this.brassicaCuscuta.find(b => b.label === 'Cuscuta spp.')?.contiene || false,
-          determinacionCuscutaGramos: this.brassicaCuscuta.find(b => b.label === 'Cuscuta spp.')?.gramos || 0,
-          
-          estandar: this.estandar || false,
-          fechaAnalisis: this.fechaAnalisis ? this.convertirFechaAISO(this.fechaAnalisis) : null,
-          
-          // Colecciones (IDs)
-          malezasNormalesINIAId: this.selectedMalezasInia || [],
-          malezasNormalesINASEId: this.selectedMalezasInase || [],
-          malezasToleradasINIAId: this.selectedMalezasToleradasInia || [],
-          malezasToleradasINASEId: this.selectedMalezasToleradasInase || [],
-          malezasToleranciaCeroINIAId: this.selectedMalezasCeroInia || [],
-          malezasToleranciaCeroINASEId: this.selectedMalezasCeroInase || [],
-          cultivosINIAId: this.selectedCultivosInia || [],
-          cultivosINASEId: this.selectedCultivosInase || [],
-          
-          // Campos de control
-          activo: true,
-          repetido: false,
-          fechaCreacion: null, // Se establecerá en onSubmit
-          fechaRepeticion: null
-        };
+        // Navegar de vuelta al listado
+        if (this.loteId != null && this.reciboId != null) {
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
+        }
       }
 
 
@@ -469,7 +403,7 @@ import { TabsModule } from 'primeng/tabs';
     }
   }
 
-  private labelToEnum(value: string | null): string | null {
+  private labelToEnum(value: string): string | null {
     switch (value) {
       case 'Completo':
         return 'COMPLETO';
@@ -484,17 +418,44 @@ import { TabsModule } from 'primeng/tabs';
     }
   }
 
-  private getReciboId(): number {
-    return this.reciboId ? parseInt(this.reciboId) : 0;
-  }
+  private buildPayloadFromView(): DOSNDto {
+    const brassica = this.brassicaCuscuta.find(b => b.label === 'Brassica spp.');
+    const cuscuta = this.brassicaCuscuta.find(b => b.label === 'Cuscuta spp.');
 
-  private convertirFechaAISO(fecha: string): string {
-    if (!fecha) return '';
-    // Si la fecha ya tiene formato ISO completo, la devolvemos tal como está
-    if (fecha.includes('T')) {
-      return fecha;
-    }
-    // Si es formato YYYY-MM-DD, agregamos la hora
-    return fecha + 'T00:00:00';
+    return {
+      id: this.isEditing ? this.editingId! : null,
+      reciboId: this.reciboId ?? null,
+      // Fechas en formato ISO simple para backend
+      fechaINIA: this.fechaInia ? `${this.fechaInia}T00:00:00` : null,
+      fechaINASE: this.fechaInase ? `${this.fechaInase}T00:00:00` : null,
+      // Gramos analizados
+      gramosAnalizadosINIA: this.gramosInia ?? null,
+      gramosAnalizadosINASE: this.gramosInase ?? null,
+      // Tipos de análisis (enum backend)
+      tiposDeanalisisINIA: this.labelToEnum(this.tipoAnalisisInia),
+      tiposDeanalisisINASE: this.labelToEnum(this.tipoAnalisisInase),
+      // Determinaciones
+      determinacionBrassica: brassica ? Boolean(brassica.contiene) : null,
+      determinacionBrassicaGramos: brassica && brassica.contiene ? Number(brassica.gramos) : 0,
+      determinacionCuscuta: cuscuta ? Boolean(cuscuta.contiene) : null,
+      determinacionCuscutaGramos: cuscuta && cuscuta.contiene ? Number(cuscuta.gramos) : 0,
+      // Estandar y fecha análisis (preservar si existe)
+      estandar: this.dosn?.estandar ?? null,
+      fechaAnalisis: this.dosn?.fechaAnalisis ?? null,
+      // Colecciones por organismo
+      malezasNormalesINIAId: this.selectedMalezasInia ?? [],
+      malezasNormalesINASEId: this.selectedMalezasInase ?? [],
+      malezasToleradasINIAId: this.selectedMalezasToleradasInia ?? [],
+      malezasToleradasINASEId: this.selectedMalezasToleradasInase ?? [],
+      malezasToleranciaCeroINIAId: this.selectedMalezasCeroInia ?? [],
+      malezasToleranciaCeroINASEId: this.selectedMalezasCeroInase ?? [],
+      cultivosINIAId: this.selectedCultivosInia ?? [],
+      cultivosINASEId: this.selectedCultivosInase ?? [],
+      // Preservar flags y metadatos
+      activo: this.dosn?.activo ?? true,
+      repetido: this.dosn?.repetido ?? false,
+      fechaCreacion: this.dosn?.fechaCreacion ?? null,
+      fechaRepeticion: this.dosn?.fechaRepeticion ?? null
+    };
   }
 }

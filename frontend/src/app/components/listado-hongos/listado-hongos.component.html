@@ -57,28 +57,18 @@
     </p-card>
 
     <!-- Popup de confirmación de eliminación -->
-    <p-dialog 
-        header="Confirmación" 
-        [(visible)]="mostrarConfirmEliminar" 
-        [modal]="true" 
-        [draggable]="false" 
-        [resizable]="false"
-        [closable]="true"
-        [style]="{width: '90vw', maxWidth: '420px'}"
-        styleClass="confirm-modal">
-        <div class="confirm-content">
-            <p>
-                ¿Seguro que deseas eliminar el hongo 
-                <strong>{{ hongoAEliminar?.nombre }}</strong>?
-            </p>
-        </div>
-        <ng-template pTemplate="footer">
-            <div class="confirm-footer">
-                <button pButton type="button" class="p-button-secondary" (click)="cancelarEliminacion()" [disabled]="confirmLoading" label="Cancelar"></button>
-                <button pButton type="button" class="p-button-danger" (click)="confirmarEliminacion()" [disabled]="confirmLoading" [label]="confirmLoading ? 'Eliminando...' : 'Eliminar'"></button>
-            </div>
-        </ng-template>
-    </p-dialog>
+    <app-confirm-dialog
+        [visible]="mostrarConfirmEliminar"
+        title="Eliminar Hongo"
+        [message]="'¿Estás seguro de que quieres eliminar este Hongo?'"
+        [itemName]="hongoAEliminar?.nombre ? 'Hongo: ' + hongoAEliminar!.nombre : ''"
+        [itemId]="hongoAEliminar?.id ?? ''"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        [loading]="confirmLoading"
+        (confirm)="confirmarEliminacion()"
+        (cancel)="cancelarEliminacion()">
+    </app-confirm-dialog>
 
     <p-dialog 
         header="{{ modalTitulo }}" 
