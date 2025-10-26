@@ -5,9 +5,8 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import ti.proyectoinia.business.entities.GramosPms;
-import ti.proyectoinia.business.entities.HumedadRecibo;
 
 @Repository
 public interface GramosPmsRepos extends JpaRepository<GramosPms, Long>{
-    List<GramosPms> findByActivoTrueAndPmsId(Long pmsId);
+    List<GramosPms> findByPmsId(Long pmsId);
 }

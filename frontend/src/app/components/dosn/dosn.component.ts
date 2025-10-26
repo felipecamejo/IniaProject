@@ -121,6 +121,12 @@ import { CultivoService } from '../../../services/CultivoService';
 
       // Variables para manejar navegación
       isEditing: boolean = false;
+      isViewing: boolean = false;
+
+      // Getter para determinar si está en modo readonly
+      get isReadonly(): boolean {
+        return this.isViewing;
+      }
 
       // ...existing code...
 
@@ -141,13 +147,19 @@ import { CultivoService } from '../../../services/CultivoService';
           if (params['reciboId']) this.reciboId = +params['reciboId'];
           this.isEditing = !!params['id'];
           if (this.isEditing) {
-            // Modo edición: cargar DOSN existente
+            // Verificar si es modo visualización por query parameter
+            this.route.queryParams.subscribe(queryParams => {
+              this.isViewing = queryParams['view'] === 'true';
+              this.isEditing = !this.isViewing;
+            });
+            // Modo edición/visualización: cargar DOSN existente
             this.editingId = +params['id'];
             this.cargarDOSN(this.editingId);
           } else {
             // Modo creación: limpiar/valores por defecto si hace falta
             this.editingId = null;
             this.dosn = null;
+            this.isViewing = false;
           }
         });
       }
@@ -204,8 +216,10 @@ import { CultivoService } from '../../../services/CultivoService';
       }
 
       onCancel() {
-        // Implementar lógica de cancelación aquí
-        console.log('Formulario DOSN cancelado');
+        // Navegar de vuelta al listado
+        if (this.loteId != null && this.reciboId != null) {
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
+        }
       }
 
 
