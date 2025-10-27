@@ -27,8 +27,8 @@ public class PurezaPNotatumService {
         this.repeticionPPNRepository = repeticionPPNRepository;
     }
 
-    public String crearPurezaPNotatum(PurezaPNotatumDto purezaPNotatumDto) {
-        return "PurezaPNotatum creada correctamente ID:" + this.purezaPNotatumRepository.save(mapsDtoEntityService.mapToEntityPurezaPNotatum(purezaPNotatumDto)).getId();
+    public Long crearPurezaPNotatum(PurezaPNotatumDto purezaPNotatumDto) {
+        return this.purezaPNotatumRepository.save(mapsDtoEntityService.mapToEntityPurezaPNotatum(purezaPNotatumDto)).getId();
     }
 
     public PurezaPNotatumDto obtenerPurezaPNotatumPorId(Long id) {

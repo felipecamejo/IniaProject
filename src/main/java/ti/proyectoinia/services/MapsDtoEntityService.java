@@ -1289,20 +1289,24 @@ public class MapsDtoEntityService {
     public GramosPmsDto mapToDtoGramosPms(ti.proyectoinia.business.entities.GramosPms entity) {
         if (entity == null) return null;
         GramosPmsDto dto = new GramosPmsDto();
+
         dto.setId(entity.getId());
         dto.setPmsId(entity.getPmsId());
         dto.setGramos(entity.getGramos());
         dto.setNumeroRepeticion(entity.getNumeroRepeticion());
+
         return dto;
     }
 
     public ti.proyectoinia.business.entities.GramosPms mapToEntityGramosPms(GramosPmsDto dto) {
         if (dto == null) return null;
-        ti.proyectoinia.business.entities.GramosPms entity = new ti.proyectoinia.business.entities.GramosPms();
+        GramosPms entity = new ti.proyectoinia.business.entities.GramosPms();
+
         entity.setId(dto.getId());
         entity.setPmsId(dto.getPmsId());
         entity.setGramos(dto.getGramos());
         entity.setNumeroRepeticion(dto.getNumeroRepeticion());
+
         return entity;
     }
 

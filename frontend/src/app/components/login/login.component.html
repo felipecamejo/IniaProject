@@ -21,7 +21,7 @@
                 <button pButton type="submit" [disabled]="loading || form.invalid" label="{{ loading ? 'Ingresando...' : 'Iniciar Sesión' }}" class="p-button-primary"></button>
             </div>
 
-            <div *ngIf="error" class="error">{{ error }}</div>
+            <div *ngIf="error" class="error-message">{{ error }}</div>
         </form>
     </p-card>
 </div>

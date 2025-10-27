@@ -15,11 +15,10 @@ export class PurezaPNotatumService {
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
-  crear(payload: PurezaPNotatumDto): Observable<string> {
-    return this.http.post(
+  crear(payload: PurezaPNotatumDto): Observable<number> {
+    return this.http.post<number>(
       `${this.urlService.baseUrl}${this.endpoint}/crear`,
-      payload,
-      { responseType: 'text' }
+      payload
     );
   }
 

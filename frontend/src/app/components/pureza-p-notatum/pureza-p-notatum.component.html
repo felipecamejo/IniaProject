@@ -3,7 +3,8 @@
     <ng-template pTemplate="header">
       <h2 class="title">{{ isEditing ? 'Editar Pureza P. notatum' : 'Crear Pureza P. notatum' }}</h2>
     </ng-template>
-    <form>
+    
+    <form (ngSubmit)="onSubmit()" (input)="manejarProblemas()">
       
 
       <!-- Tabla: Examen de semillas pura por corte -->
@@ -32,14 +33,38 @@
               </tr>
               <tr *ngFor="let rep of repeticiones; let i = index">
                 <td>{{ i + 1 }}</td>
-                <td><input type="number" [(ngModel)]="rep.nroSemillasPuras" name="nroSemillasPuras{{i}}" (ngModelChange)="onRepeticionChange(i, 'nroSemillasPuras', $event)" [readonly]="isReadonly" pInputText /></td>
-                <td><input type="number" [(ngModel)]="rep.peso" name="peso{{i}}" (ngModelChange)="onRepeticionChange(i, 'peso', $event)" [readonly]="isReadonly" pInputText /></td>
-                <td><input type="number" [(ngModel)]="rep.cantidadSemillasSanas" name="cantidadSemillasSanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'cantidadSemillasSanas', $event)" [readonly]="isReadonly" pInputText /></td>
-                <td><input type="number" [(ngModel)]="rep.gramosSemillasSanas" name="gramosSemillasSanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'gramosSemillasSanas', $event)" [readonly]="isReadonly" pInputText /></td>
-                <td><input type="number" [(ngModel)]="rep.contaminadasYVanas" name="contaminadasYVanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'contaminadasYVanas', $event)" [readonly]="isReadonly" pInputText /></td>
-                <td><input type="number" [(ngModel)]="rep.gramosContaminadasYVanas" name="gramosContaminadasYVanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'gramosContaminadasYVanas', $event)" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="rep.nroSemillasPuras" name="nroSemillasPuras{{i}}" (ngModelChange)="onRepeticionChange(i, 'nroSemillasPuras', $event)" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': rep.nroSemillasPuras != null && rep.nroSemillasPuras < 0 }"/></td>
+                  
+                
+                <td><input type="number" [(ngModel)]="rep.peso" name="peso{{i}}" (ngModelChange)="onRepeticionChange(i, 'peso', $event)" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': rep.peso != null && rep.peso < 0 }"/></td>
+                  
+                
+                <td><input type="number" [(ngModel)]="rep.cantidadSemillasSanas" name="cantidadSemillasSanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'cantidadSemillasSanas', $event)" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': rep.cantidadSemillasSanas != null && rep.cantidadSemillasSanas < 0 }"/></td>
+                  
+                
+                <td><input type="number" [(ngModel)]="rep.gramosSemillasSanas" name="gramosSemillasSanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'gramosSemillasSanas', $event)" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': rep.gramosSemillasSanas != null && rep.gramosSemillasSanas < 0 }"/></td>
+                  
+
+                <td><input type="number" [(ngModel)]="rep.contaminadasYVanas" name="contaminadasYVanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'contaminadasYVanas', $event)" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': rep.contaminadasYVanas != null && rep.contaminadasYVanas < 0 }"/></td>
+                  
+
+                <td><input type="number" [(ngModel)]="rep.gramosContaminadasYVanas" name="gramosContaminadasYVanas{{i}}" (ngModelChange)="onRepeticionChange(i, 'gramosContaminadasYVanas', $event)" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': rep.gramosContaminadasYVanas != null && rep.gramosContaminadasYVanas < 0 }"/></td>
+                  
                 <td>
-                  {{ (rep.gramosSemillasSanas || 0) + (rep.gramosContaminadasYVanas || 0) }}
+                  <input
+                    type="number"
+                    [value]="getControlPesos(rep)"
+                    name="controlPesos{{i}}"
+                    [readonly]="true"
+                    [ngClass]="{ 'input-error': getControlPesos(rep) != null && getControlPesos(rep) < 0 }"
+                    pInputText
+                  />
                 </td>
                 <td>
                   <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="eliminarRepeticion(i)" title="Eliminar" *ngIf="!isReadonly"></button>
@@ -90,23 +115,38 @@
             <tbody>
               <tr>
                 <td>Semilla pura</td>
-                <td><input type="number" [(ngModel)]="semillaPuraGr" name="semillaPuraGr" [readonly]="isReadonly" pInputText /></td>
-                <td><input type="number" [(ngModel)]="semillaPuraPct" name="semillaPuraPct" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="semillaPuraGr" name="semillaPuraGr" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': semillaPuraGr != null && semillaPuraGr < 0 }"/></td>
+                  
+                <td><input type="number" [(ngModel)]="semillaPuraPct" name="semillaPuraPct" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': semillaPuraPct != null && (semillaPuraPct < 0 || semillaPuraPct > 100) }"/></td>
+                
               </tr>
               <tr>
                 <td>Semilla cultivos</td>
-                <td><input type="number" [(ngModel)]="semillaCultivosGr" name="semillaCultivosGr" [readonly]="isReadonly" pInputText /></td>
-                <td><input type="number" [(ngModel)]="semillaCultivosPct" name="semillaCultivosPct" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="semillaCultivosGr" name="semillaCultivosGr" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': semillaCultivosGr != null && semillaCultivosGr < 0 }"/></td>
+                  
+                <td><input type="number" [(ngModel)]="semillaCultivosPct" name="semillaCultivosPct" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': semillaCultivosPct != null && (semillaCultivosPct < 0 || semillaCultivosPct > 100) }"/></td>
+                  
               </tr>
               <tr>
                 <td>Semilla malezas</td>
-                <td><input type="number" [(ngModel)]="semillaMalezasGr" name="semillaMalezasGr" [readonly]="isReadonly" pInputText /></td>
-                <td><input type="number" [(ngModel)]="semillaMalezasPct" name="semillaMalezasPct" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="semillaMalezasGr" name="semillaMalezasGr" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': semillaMalezasGr != null && semillaMalezasGr < 0 }"/></td>
+                
+                <td><input type="number" [(ngModel)]="semillaMalezasPct" name="semillaMalezasPct" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': semillaMalezasPct != null && (semillaMalezasPct < 0 || semillaMalezasPct > 100) }"/></td>
               </tr>
               <tr>
                 <td>Materia inerte</td>
-                <td><input type="number" [(ngModel)]="materiaInerteGr" name="materiaInerteGr" [readonly]="isReadonly" pInputText /></td>
-                <td><input type="number" [(ngModel)]="materiaInertePct" name="materiaInertePct" [readonly]="isReadonly" pInputText /></td>
+                <td><input type="number" [(ngModel)]="materiaInerteGr" name="materiaInerteGr" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': materiaInerteGr != null && materiaInerteGr < 0 }"/></td>
+                  
+                <td><input type="number" [(ngModel)]="materiaInertePct" name="materiaInertePct" [readonly]="isReadonly" pInputText 
+                  [ngClass]="{ 'input-error': materiaInertePct != null && (materiaInertePct < 0 || materiaInertePct > 100) }"/></td>
+                 
               </tr>
             </tbody>
           </table>
@@ -152,15 +192,21 @@
         </div>
       </div>
 
-     
+      <div *ngIf="errores.length > 0" class="error-container">
+        <p class="error-message">
+          {{ errores.length === 1 ? '1 error encontrado' : errores.length + ' errores encontrados' }}
+        </p>
+        <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
+      </div>
+
       <div class="submit-btn" style="display: flex; gap: 1rem; margin-top:2rem;">
         <button
           *ngIf="!isReadonly"
           pButton
-          type="button"
+          type="submit"
           [label]="isEditing ? 'Editar Pureza P. notatum' : 'Crear Pureza P. notatum'"
           class="p-button-success"
-          (click)="onSubmit()"
+          [disabled]="errores.length > 0"
         ></button>
         <button
           pButton
