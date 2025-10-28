@@ -97,6 +97,10 @@ export class TetrazolioComponent implements OnInit {
   editingId: number | null = null;
   repetido: boolean = false;
 
+  // IDs de contexto
+  loteId: string | null = null;
+  reciboId: string | null = null;
+
   repeticiones: RepeticionTetrazolio[] = [
     { numero: 1, viables: 0, noViables: 0, duras: 0 }
   ];
@@ -207,6 +211,8 @@ export class TetrazolioComponent implements OnInit {
   ngOnInit() {
     // Verificar si estamos en modo edición basado en la ruta
     this.route.params.subscribe(params => {
+      this.loteId = params['loteId'] ?? null;
+      this.reciboId = params['reciboId'] ?? null;
       if (params['id']) {
         this.isEditing = true;
         this.editingId = parseInt(params['id']);
@@ -398,12 +404,20 @@ export class TetrazolioComponent implements OnInit {
       console.log('Creando nuevo Tetrazolio:', tetrazolioData);
     }
 
-    // Navegar de vuelta al listado
-    this.router.navigate(['/listado-tetrazolio']);
+    // Navegar de vuelta al listado del recibo
+    if (this.loteId && this.reciboId) {
+      this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-tetrazolio`]);
+    } else {
+      this.router.navigate(['/home']);
+    }
   }
 
   onCancel() {
-    // Navegar de vuelta al listado
-    this.router.navigate(['/listado-tetrazolio']);
+    // Navegar de vuelta al listado del recibo
+    if (this.loteId && this.reciboId) {
+      this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-tetrazolio`]);
+    } else {
+      this.router.navigate(['/home']);
+    }
   }
 }

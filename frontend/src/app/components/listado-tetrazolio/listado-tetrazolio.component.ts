@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TetrazolioDto } from '../../../models/Tetrazolio.dto';
 
 
@@ -16,7 +16,7 @@ import { TetrazolioDto } from '../../../models/Tetrazolio.dto';
   styleUrl: './listado-tetrazolio.component.scss'
 })
 export class ListadoTetrazolioComponent {
-    constructor(private router: Router) {}
+    constructor(private router: Router, private route: ActivatedRoute) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
@@ -194,12 +194,24 @@ export class ListadoTetrazolioComponent {
 
     crearTetrazolio() {
       console.log('Navegando para crear nuevo Tetrazolio');
-      this.router.navigate(['/tetrazolio/crear']);
+      const loteId = this.route.snapshot.paramMap.get('loteId');
+      const reciboId = this.route.snapshot.paramMap.get('reciboId');
+      if (loteId && reciboId) {
+        this.router.navigate([`/${loteId}/${reciboId}/tetrazolio/crear`]);
+      } else {
+        this.router.navigate(['/home']);
+      }
     }
 
     navegarAEditar(item: TetrazolioDto) {
       console.log('Navegando para editar Tetrazolio:', item);
-      this.router.navigate(['/tetrazolio/editar', item.id]);
+      const loteId = this.route.snapshot.paramMap.get('loteId');
+      const reciboId = this.route.snapshot.paramMap.get('reciboId');
+      if (loteId && reciboId) {
+        this.router.navigate([`/${loteId}/${reciboId}/tetrazolio/editar`, item.id]);
+      } else {
+        this.router.navigate(['/home']);
+      }
     }
 
     eliminarTetrazolio(item: TetrazolioDto) {
