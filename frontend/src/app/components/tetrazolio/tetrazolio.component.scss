@@ -33,6 +33,52 @@
   border-color: #1746a0 !important;
 }
 
+/* Botón clonar tabla: estética similar a agregar-rep pero más compacto */
+.btn-clonar-tabla.p-button {
+  background: var(--celeste, #2563eb) !important;
+  color: #fff !important;
+  border: 1.5px solid var(--celeste, #2563eb) !important;
+  border-radius: 16px !important;
+  font-weight: 500 !important;
+  font-size: 0.95em !important;
+  padding: 0.35rem 0.9rem !important;
+  box-shadow: 0 1px 4px rgba(38,99,235,0.10) !important;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.btn-clonar-tabla.p-button:hover,
+.btn-clonar-tabla.p-button:focus {
+  background: #1746a0 !important;
+  border-color: #1746a0 !important;
+}
+
+/* Encabezado fila por tabla con botón eliminar */
+.tabla-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0.4rem 0 0.4rem 0;
+}
+
+.tabla-titulo {
+  margin: 0;
+  color: #555;
+}
+
+.btn-eliminar-tabla.p-button {
+  background: #fff !important;
+  color: var(--rojo, #DA696A) !important;
+  border: 1.5px solid var(--rojo, #DA696A) !important;
+  border-radius: 50% !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  padding: 0 !important;
+  box-shadow: 0 1px 4px rgba(218,105,106,0.12) !important;
+}
+.btn-eliminar-tabla.p-button:hover,
+.btn-eliminar-tabla.p-button:focus {
+  background: color-mix(in srgb, var(--rojo, #DA696A) 8%, #fff) !important;
+}
+
 
 .p-table {
   border: none;
@@ -202,4 +248,16 @@
       border-collapse: collapse;
       table-layout: auto;
     }
+}
+/* Separador discreto entre secciones */
+.section-divider {
+  border: 0;
+  height: 1px;
+  background: #e5e7eb;
+  margin: 1.5rem 0;
+}
+
+.detalle-actions {
+  display: flex;
+  align-items: center;
 }
