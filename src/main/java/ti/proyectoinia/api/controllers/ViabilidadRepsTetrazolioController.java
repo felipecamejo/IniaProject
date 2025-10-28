@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -115,16 +116,5 @@ public class ViabilidadRepsTetrazolioController {
 
         java.util.Map<String, Object> result = viabilidadRepsTetrazolioService.eliminarMultiplesViabilidad(ids);
         return new ResponseEntity<>(result, HttpStatus.OK);
-    }
-
-    @PutMapping("/actualizar-completo/{tetrazolioId}")
-    //@Secured({"ADMIN"})
-    @Operation(description = "Sincroniza todas las repeticiones de un Tetrazolio (upsert + soft-delete)")
-    public ResponseEntity<Object> actualizarCompleto(
-            @PathVariable Long tetrazolioId,
-            @RequestBody java.util.List<ViabilidadRepsTetrazolioDto> dtos) {
-
-        java.util.Map<String, Object> res = viabilidadRepsTetrazolioService.actualizarRepeticionesCompleto(tetrazolioId, dtos);
-        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

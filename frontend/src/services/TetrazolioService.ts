@@ -10,7 +10,7 @@ interface ResponseListadoTetrazolio {
 
 @Injectable({ providedIn: 'root' })
 export class TetrazolioService {
-  private endpoint: string = '/Tetrazolio';
+  private endpoint: string = '/tetrazolio';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
