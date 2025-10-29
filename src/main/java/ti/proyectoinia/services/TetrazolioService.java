@@ -2,11 +2,20 @@ package ti.proyectoinia.services;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import ti.proyectoinia.api.responses.ResponseListadoSanitario;
 import ti.proyectoinia.api.responses.ResponseListadoTetrazolio;
 import ti.proyectoinia.business.entities.Tetrazolio;
+import ti.proyectoinia.business.entities.DetalleSemillasTetrazolio;
+import ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio;
 import ti.proyectoinia.business.repositories.TetrazolioRepository;
+import ti.proyectoinia.business.repositories.ViabilidadRepsTetrazolioRepository;
+import ti.proyectoinia.business.repositories.DetalleSemillasTetrazolioRepository;
 import ti.proyectoinia.dtos.TetrazolioDto;
+import ti.proyectoinia.dtos.RepeticionTetrazolioDto;
+import ti.proyectoinia.dtos.DetalleSemillasTetrazolioDto;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -14,10 +23,17 @@ public class TetrazolioService {
 
     private final TetrazolioRepository tetrazolioRepository;
     private final MapsDtoEntityService mapsDtoEntityService;
+    private final ViabilidadRepsTetrazolioRepository repeticionRepository;
+    private final DetalleSemillasTetrazolioRepository detalleRepository;
 
-    public TetrazolioService(TetrazolioRepository tetrazolioRepository, MapsDtoEntityService mapsDtoEntityService) {
+    public TetrazolioService(TetrazolioRepository tetrazolioRepository, 
+                           MapsDtoEntityService mapsDtoEntityService,
+                           ViabilidadRepsTetrazolioRepository repeticionRepository,
+                           DetalleSemillasTetrazolioRepository detalleRepository) {
         this.mapsDtoEntityService = mapsDtoEntityService;
         this.tetrazolioRepository = tetrazolioRepository;
+        this.repeticionRepository = repeticionRepository;
+        this.detalleRepository = detalleRepository;
     }
 
     public String crearTetrazolio(TetrazolioDto tetrazolioDto) {
@@ -54,6 +70,83 @@ public class TetrazolioService {
                 .toList();
         ResponseListadoTetrazolio responseListadoTetrazolio = new ResponseListadoTetrazolio(dtos);
         return ResponseEntity.ok(responseListadoTetrazolio);
+    }
 
+    // Métodos para manejar repeticiones de Tetrazolio
+    public List<RepeticionTetrazolioDto> listarRepeticionesPorTetrazolio(Long tetrazolioId) {
+        List<ViabilidadRepsTetrazolio> repeticiones = repeticionRepository.findByActivoTrueAndTetrazolioId(tetrazolioId);
+        return repeticiones.stream()
+                .map(mapsDtoEntityService::mapToDtoRepeticionTetrazolio)
+                .toList();
+    }
+
+    public void actualizarRepeticionesCompleto(Long tetrazolioId, List<RepeticionTetrazolioDto> repeticionesActuales) {
+        Tetrazolio tetrazolio = tetrazolioRepository.findById(tetrazolioId).orElse(null);
+        if (tetrazolio == null) throw new RuntimeException("Tetrazolio no encontrado");
+        
+        List<ViabilidadRepsTetrazolio> actuales = repeticionRepository.findByActivoTrueAndTetrazolioId(tetrazolioId);
+        
+        // Usar la lista entrante para calcular los ids que deben permanecer
+        Set<Long> nuevosIds = repeticionesActuales.stream()
+                .map(h -> h.getId() != null ? h.getId() : -1L)
+                .collect(Collectors.toSet());
+
+        // Eliminar los que no están en la nueva lista
+        for (ViabilidadRepsTetrazolio actual : actuales) {
+            if (!nuevosIds.contains(actual.getId())) {
+                repeticionRepository.delete(actual);
+            }
+        }
+        
+        // Crear o actualizar los recibidos
+        for (RepeticionTetrazolioDto dto : repeticionesActuales) {
+            ViabilidadRepsTetrazolio repeticion;
+            if (dto.getId() != null) {
+                repeticion = repeticionRepository.findById(dto.getId()).orElse(new ViabilidadRepsTetrazolio());
+            } else {
+                repeticion = new ViabilidadRepsTetrazolio();
+            }
+
+            repeticion.setViables(dto.getViables() != null ? dto.getViables() : 0);
+            repeticion.setNoViables(dto.getNoViables() != null ? dto.getNoViables() : 0);
+            repeticion.setDuras(dto.getDuras() != null ? dto.getDuras() : 0);
+            repeticion.setNumeroRepeticion(dto.getNumero() != null ? dto.getNumero() : 1);
+            repeticion.setActivo(true);
+            repeticion.setTetrazolio(tetrazolio);
+
+            repeticionRepository.save(repeticion);
+        }
+    }
+
+    // Detalles de semillas
+    public List<DetalleSemillasTetrazolioDto> listarDetalles(Long tetrazolioId) {
+        List<DetalleSemillasTetrazolio> detalles = detalleRepository.findByActivoTrueAndTetrazolioId(tetrazolioId);
+        return detalles.stream()
+                .map(mapsDtoEntityService::mapToDtoDetalleSemillasTetrazolio)
+                .toList();
+    }
+
+    public void actualizarDetallesCompleto(Long tetrazolioId, List<DetalleSemillasTetrazolioDto> detallesActuales) {
+        Tetrazolio tetrazolio = tetrazolioRepository.findById(tetrazolioId).orElse(null);
+        if (tetrazolio == null) throw new RuntimeException("Tetrazolio no encontrado");
+
+        List<DetalleSemillasTetrazolio> actuales = detalleRepository.findByActivoTrueAndTetrazolioId(tetrazolioId);
+
+        Set<Long> nuevosIds = detallesActuales.stream()
+                .map(h -> h.getId() != null ? h.getId() : -1L)
+                .collect(Collectors.toSet());
+
+        for (DetalleSemillasTetrazolio actual : actuales) {
+            if (!nuevosIds.contains(actual.getId())) {
+                detalleRepository.delete(actual);
+            }
+        }
+
+        for (DetalleSemillasTetrazolioDto dto : detallesActuales) {
+            DetalleSemillasTetrazolio mapped = mapsDtoEntityService.mapToEntityDetalleSemillasTetrazolio(dto);
+            mapped.setTetrazolio(tetrazolio);
+
+            detalleRepository.save(mapped);
+        }
     }
 }

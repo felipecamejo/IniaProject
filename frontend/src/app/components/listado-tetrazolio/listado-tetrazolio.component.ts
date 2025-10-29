@@ -1,11 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TetrazolioDto } from '../../../models/Tetrazolio.dto';
+import { TetrazolioService } from '../../../services/TetrazolioService';
 
 
 @Component({
@@ -15,8 +16,12 @@ import { TetrazolioDto } from '../../../models/Tetrazolio.dto';
   templateUrl: './listado-tetrazolio.component.html',
   styleUrl: './listado-tetrazolio.component.scss'
 })
-export class ListadoTetrazolioComponent {
-    constructor(private router: Router) {}
+export class ListadoTetrazolioComponent implements OnInit {
+    constructor(
+        private router: Router, 
+        private route: ActivatedRoute,
+        private tetrazolioService: TetrazolioService
+    ) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
@@ -45,104 +50,51 @@ export class ListadoTetrazolioComponent {
       { label: '2024', id: 2024 }
     ];
 
-    items: TetrazolioDto[] = [
-      {
-        id: 1,
-        repeticion: 1,
-        nroSemillasPorRepeticion: 100,
-        pretratamientoId: 1,
-        concentracion: 1.0,
-        tincionHoras: 24,
-        tincionGrados: 30,
-        fecha: '2023-01-15',
-        viables: 85,
-        noViables: 10,
-        duras: 5,
-        total: 100,
-        promedio: 85.0,
-        porcentaje: 85.0,
-        viabilidadPorTetrazolio: 'ALTA',
-        nroSemillas: 100,
-        daniosNroSemillas: 10,
-        daniosMecanicos: 3,
-        danioAmbiente: 2,
-        daniosChinches: 1,
-        daniosFracturas: 2,
-        daniosOtros: 2,
-        daniosDuras: 5,
-        viabilidadVigorTz: 'ALTO',
-        porcentajeFinal: 85.0,
-        daniosPorPorcentajes: 10.0,
-        activo: true,
-        repetido: false,
-        fechaCreacion: '2023-01-15',
-        fechaRepeticion: null
-      },
-      {
-        id: 2,
-        repeticion: 2,
-        nroSemillasPorRepeticion: 100,
-        pretratamientoId: 2,
-        concentracion: 0.75,
-        tincionHoras: 18,
-        tincionGrados: 25,
-        fecha: '2022-02-20',
-        viables: 72,
-        noViables: 20,
-        duras: 8,
-        total: 100,
-        promedio: 72.0,
-        porcentaje: 72.0,
-        viabilidadPorTetrazolio: 'MEDIA',
-        nroSemillas: 100,
-        daniosNroSemillas: 20,
-        daniosMecanicos: 5,
-        danioAmbiente: 4,
-        daniosChinches: 3,
-        daniosFracturas: 4,
-        daniosOtros: 4,
-        daniosDuras: 8,
-        viabilidadVigorTz: 'MEDIO',
-        porcentajeFinal: 72.0,
-        daniosPorPorcentajes: 20.0,
-        activo: true,
-        repetido: true,
-        fechaCreacion: '2022-02-20',
-        fechaRepeticion: '2022-02-22'
-      },
-      {
-        id: 3,
-        repeticion: 1,
-        nroSemillasPorRepeticion: 100,
-        pretratamientoId: 3,
-        concentracion: 1.25,
-        tincionHoras: 30,
-        tincionGrados: 35,
-        fecha: '2023-03-10',
-        viables: 92,
-        noViables: 6,
-        duras: 2,
-        total: 100,
-        promedio: 92.0,
-        porcentaje: 92.0,
-        viabilidadPorTetrazolio: 'ALTA',
-        nroSemillas: 100,
-        daniosNroSemillas: 6,
-        daniosMecanicos: 1,
-        danioAmbiente: 1,
-        daniosChinches: 1,
-        daniosFracturas: 1,
-        daniosOtros: 2,
-        daniosDuras: 2,
-        viabilidadVigorTz: 'ALTO',
-        porcentajeFinal: 92.0,
-        daniosPorPorcentajes: 6.0,
-        activo: true,
-        repetido: true,
-        fechaCreacion: '2023-03-10',
-        fechaRepeticion: '2023-03-12'
-      }
-    ];
+    items: TetrazolioDto[] = [];
+    loading: boolean = false;
+    error: string | null = null;
+
+    ngOnInit() {
+        this.cargarDatos();
+    }
+
+    private cargarDatos() {
+        this.loading = true;
+        this.error = null;
+        
+        // Obtener reciboId de los parámetros de la ruta
+        const reciboId = this.route.snapshot.paramMap.get('reciboId');
+        
+        if (reciboId) {
+            // Cargar tetrazolios por recibo específico
+            this.tetrazolioService.listarPorRecibo(parseInt(reciboId)).subscribe({
+                next: (response) => {
+                    this.items = response.tetrazolio || [];
+                    this.loading = false;
+                    console.log('Tetrazolios cargados:', this.items);
+                },
+                error: (err) => {
+                    console.error('Error cargando tetrazolios:', err);
+                    this.error = 'Error al cargar los tetrazolios';
+                    this.loading = false;
+                }
+            });
+        } else {
+            // Cargar todos los tetrazolios
+            this.tetrazolioService.listar().subscribe({
+                next: (response) => {
+                    this.items = response.tetrazolio || [];
+                    this.loading = false;
+                    console.log('Tetrazolios cargados:', this.items);
+                },
+                error: (err) => {
+                    console.error('Error cargando tetrazolios:', err);
+                    this.error = 'Error al cargar los tetrazolios';
+                    this.loading = false;
+                }
+            });
+        }
+    }
 
     get itemsFiltrados() {
       return this.items.filter(item => {
@@ -194,21 +146,48 @@ export class ListadoTetrazolioComponent {
 
     crearTetrazolio() {
       console.log('Navegando para crear nuevo Tetrazolio');
-      this.router.navigate(['/tetrazolio/crear']);
+      const loteId = this.route.snapshot.paramMap.get('loteId');
+      const reciboId = this.route.snapshot.paramMap.get('reciboId');
+      if (loteId && reciboId) {
+        this.router.navigate([`/${loteId}/${reciboId}/tetrazolio/crear`]);
+      } else {
+        this.router.navigate(['/home']);
+      }
     }
 
     navegarAEditar(item: TetrazolioDto) {
       console.log('Navegando para editar Tetrazolio:', item);
-      this.router.navigate(['/tetrazolio/editar', item.id]);
+      const loteId = this.route.snapshot.paramMap.get('loteId');
+      const reciboId = this.route.snapshot.paramMap.get('reciboId');
+      if (loteId && reciboId && item.id) {
+        this.router.navigate([`/${loteId}/${reciboId}/tetrazolio/editar/${item.id}`]);
+      } else {
+        console.error('No se puede navegar a edición: faltan parámetros o ID');
+        this.router.navigate(['/home']);
+      }
     }
 
     eliminarTetrazolio(item: TetrazolioDto) {
       console.log('Eliminar Tetrazolio:', item);
-      // Aquí puedes implementar la lógica para eliminar el Tetrazolio
-      // Por ejemplo, mostrar un modal de confirmación
+      
       if (confirm(`¿Estás seguro de que quieres eliminar el Tetrazolio #${item.id}?`)) {
-        this.items = this.items.filter(tetrazolio => tetrazolio.id !== item.id);
-        console.log('Tetrazolio eliminado');
+        if (item.id) {
+          this.tetrazolioService.eliminar(item.id).subscribe({
+            next: (response) => {
+              console.log('Tetrazolio eliminado correctamente:', response);
+              // Recargar los datos para reflejar los cambios
+              this.cargarDatos();
+            },
+            error: (err) => {
+              console.error('Error eliminando tetrazolio:', err);
+              this.error = 'Error al eliminar el tetrazolio';
+            }
+          });
+        }
       }
+    }
+
+    recargarDatos() {
+        this.cargarDatos();
     }
 }

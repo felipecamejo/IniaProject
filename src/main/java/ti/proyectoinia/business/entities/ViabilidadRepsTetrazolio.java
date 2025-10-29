@@ -15,8 +15,9 @@ public class ViabilidadRepsTetrazolio {
     @Column(name = "VIABILIDAD_REPS_TETRAZOLIO_ACTIVO")
     private boolean activo;
 
-    @Column(name = "Tetrazolio_ID")
-    private Long tetrazolioId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "TETRAZOLIO_ID")
+    private Tetrazolio tetrazolio;
 
     @Column(name = "Viables")
     private int viables;

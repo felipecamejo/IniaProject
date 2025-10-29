@@ -1,20 +1,25 @@
 export type ViabilidadPorTz = 'ALTA' | 'MEDIA' | 'BAJA';
 export type ViabilidadVigorTZ = 'ALTO' | 'MEDIO' | 'BAJO';
 
+export interface PreTratamiento {
+  id: number;
+  nombre: string;
+}
+
 export interface TetrazolioDto {
   id: number | null;
   repeticion: number | null;
   nroSemillasPorRepeticion: number | null;
-  pretratamientoId: number | null;
-  concentracion: number;
-  tincionHoras: number;
-  tincionGrados: number;
+  pretratamiento: PreTratamiento | null;
+  concentracion: string | null;
+  tincionHoras: string | null;
+  tincionGrados: string | null;
   fecha: string | null;
-  viables: number;
-  noViables: number;
-  duras: number;
-  total: number;
-  promedio: number;
+  viables: string | null;
+  noViables: string | null;
+  duras: string | null;
+  total: string | null;
+  promedio: string | null;
   porcentaje: number | null;
   viabilidadPorTetrazolio: ViabilidadPorTz | null;
   nroSemillas: number | null;
@@ -32,4 +37,5 @@ export interface TetrazolioDto {
   repetido: boolean;
   fechaCreacion: string | null;
   fechaRepeticion: string | null;
+  reciboId: number | null;
 }

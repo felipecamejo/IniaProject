@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UrlService } from './url.service';
 import { TetrazolioDto } from '../models/Tetrazolio.dto';
+import { RepeticionTetrazolioDto } from '../models/RepeticionTetrazolioDto';
+import { DetalleSemillasTetrazolioDto } from '../models/DetalleSemillasTetrazolioDto';
 
 interface ResponseListadoTetrazolio {
   tetrazolio: TetrazolioDto[];
@@ -52,6 +54,36 @@ export class TetrazolioService {
     return this.http.put(
       `${this.urlService.baseUrl}${this.endpoint}/eliminar/${id}`,
       {},
+      { responseType: 'text' }
+    );
+  }
+
+  // Métodos para manejar repeticiones de Tetrazolio
+  listarRepeticiones(tetrazolioId: number): Observable<RepeticionTetrazolioDto[]> {
+    return this.http.get<RepeticionTetrazolioDto[]>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar-repeticiones/${tetrazolioId}`
+    );
+  }
+
+  actualizarRepeticiones(tetrazolioId: number, repeticiones: RepeticionTetrazolioDto[]): Observable<string> {
+    return this.http.put(
+      `${this.urlService.baseUrl}${this.endpoint}/actualizar-repeticiones/${tetrazolioId}`,
+      repeticiones,
+      { responseType: 'text' }
+    );
+  }
+
+  // Detalles de semillas
+  listarDetalles(tetrazolioId: number): Observable<DetalleSemillasTetrazolioDto[]> {
+    return this.http.get<DetalleSemillasTetrazolioDto[]>(
+      `${this.urlService.baseUrl}${this.endpoint}/listar-detalles/${tetrazolioId}`
+    );
+  }
+
+  actualizarDetalles(tetrazolioId: number, detalles: DetalleSemillasTetrazolioDto[]): Observable<string> {
+    return this.http.put(
+      `${this.urlService.baseUrl}${this.endpoint}/actualizar-detalles/${tetrazolioId}`,
+      detalles,
       { responseType: 'text' }
     );
   }

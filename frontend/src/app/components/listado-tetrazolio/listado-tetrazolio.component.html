@@ -3,7 +3,7 @@
     <button class="back-button" (click)="goToHome()">
         <i class="pi pi-arrow-left"></i>
     </button>
-    
+
     <p-card class="card">
         <ng-template pTemplate="header">
             <h2 class="title">Listado de Tetrazolio</h2>
@@ -30,10 +30,32 @@
                     <button pButton type="button" (click)="crearTetrazolio()" label="Crear Tetrazolio" class="p-button-primary"></button>
                 </div>
             </div>
+            <div class="filter-dropdown">
+                <div class="submit-btn">
+                    <button pButton type="button" (click)="recargarDatos()" label="Recargar" class="p-button-secondary" [disabled]="loading"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicador de carga -->
+        <div class="loading-message" *ngIf="loading">
+            <div class="loading-content">
+                <i class="pi pi-spin pi-spinner"></i>
+                <p>Cargando tetrazolios...</p>
+            </div>
+        </div>
+
+        <!-- Mensaje de error -->
+        <div class="error-message" *ngIf="error && !loading">
+            <div class="error-content">
+                <i class="pi pi-exclamation-triangle"></i>
+                <p>{{ error }}</p>
+                <button pButton type="button" (click)="recargarDatos()" label="Reintentar" class="p-button-secondary"></button>
+            </div>
         </div>
 
         <!-- Mensaje cuando no hay elementos -->
-        <div class="no-results-message" *ngIf="itemsFiltrados.length === 0">
+        <div class="no-results-message" *ngIf="!loading && !error && itemsFiltrados.length === 0">
             <div class="no-results-content">
                 <h3>No se encontraron Tetrazolios</h3>
                 <p>No hay análisis de Tetrazolio que coincidan con los filtros seleccionados.</p>
@@ -42,41 +64,41 @@
         </div>
 
         <!-- Lista de Tetrazolios filtrados -->
-        <div class="blue-rectangle" 
-             *ngFor="let item of itemsFiltrados"
-             [ngClass]="{
-               'pendiente': !item.repetido,
-               'repetido': item.repetido
-             }">
-            <div class="item-header">
-                <div class="item-info">
-                    <h3 class="item-title">Tetrazolio #{{ item.id }}</h3>    
-                </div>
-                <div class="item-status">
-                    <span class="status-badge">
+        <ng-container *ngIf="!loading">
+            <div class="blue-rectangle" *ngFor="let item of itemsFiltrados" [ngClass]="{
+                   'pendiente': !item.repetido,
+                   'repetido': item.repetido
+                 }">
+                <div class="item-header">
+                    <div class="item-info">
+                        <h3 class="item-title">Tetrazolio #{{ item.id }}</h3>
+                    </div>
+                    <div class="item-status">
+                        <span class="status-badge">
                         {{ item.repetido ? 'Repetido' : 'Pendiente' }}
                     </span>
+                    </div>
                 </div>
-            </div>
-            <div class="divider-line"></div>
-            <div class="item-content">
-                <div class="item-description">
-                    <p>Viabilidad: {{ item.viabilidadPorTetrazolio }} - Porcentaje final: {{ item.porcentajeFinal }}%</p>
-                </div>
-                <div class="item-actions">
-                    <button *ngIf="!item.repetido" class="action-button edit-button" (click)="navegarAEditar(item)">
+                <div class="divider-line"></div>
+                <div class="item-content">
+                    <div class="item-description">
+                        <p>Viabilidad: {{ item.viabilidadPorTetrazolio }} - Porcentaje final: {{ item.porcentajeFinal }}%</p>
+                    </div>
+                    <div class="item-actions">
+                        <button *ngIf="!item.repetido" class="action-button edit-button" (click)="navegarAEditar(item)">
                         <i class="pi pi-pencil"></i>
                     </button>
-                    <button *ngIf="!item.repetido" class="action-button delete-button" (click)="eliminarTetrazolio(item)">
+                        <button *ngIf="!item.repetido" class="action-button delete-button" (click)="eliminarTetrazolio(item)">
                         <i class="pi pi-trash"></i>
                     </button>
-                </div>
-                <div class="item-date">
-                    <span class="fecha">{{ getFechaConTipo(item).fecha }} ({{ getFechaConTipo(item).tipo }})</span>
+                    </div>
+                    <div class="item-date">
+                        <span class="fecha">{{ getFechaConTipo(item).fecha }} ({{ getFechaConTipo(item).tipo }})</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        </ng-container>
 
-       
+
     </p-card>
 </div>
