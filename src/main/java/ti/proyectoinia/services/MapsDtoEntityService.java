@@ -1191,6 +1191,107 @@ public class MapsDtoEntityService {
     }
 
 
+    public DetalleSemillasTetrazolioDto mapToDtoDetalleSemillasTetrazolio(DetalleSemillasTetrazolio entity) {
+        if (entity == null) return null;
+        DetalleSemillasTetrazolioDto dto = new DetalleSemillasTetrazolioDto();
+        dto.setId(entity.getId());
+        dto.setTetrazolioId(entity.getTetrazolio() != null ? entity.getTetrazolio().getId() : null);
+        dto.setNumeroTabla(entity.getNumeroTabla());
+
+        dto.setVsd_total(entity.getVsd_total());
+        dto.setVsd_mecanico(entity.getVsd_mecanico());
+        dto.setVsd_ambiente(entity.getVsd_ambiente());
+        dto.setVsd_chinches(entity.getVsd_chinches());
+        dto.setVsd_fracturas(entity.getVsd_fracturas());
+        dto.setVsd_otros(entity.getVsd_otros());
+        dto.setVsd_duras(entity.getVsd_duras());
+
+        dto.setVl_total(entity.getVl_total());
+        dto.setVl_mecanico(entity.getVl_mecanico());
+        dto.setVl_ambiente(entity.getVl_ambiente());
+        dto.setVl_chinches(entity.getVl_chinches());
+        dto.setVl_fracturas(entity.getVl_fracturas());
+        dto.setVl_otros(entity.getVl_otros());
+        dto.setVl_duras(entity.getVl_duras());
+
+        dto.setVm_total(entity.getVm_total());
+        dto.setVm_mecanico(entity.getVm_mecanico());
+        dto.setVm_ambiente(entity.getVm_ambiente());
+        dto.setVm_chinches(entity.getVm_chinches());
+        dto.setVm_fracturas(entity.getVm_fracturas());
+        dto.setVm_otros(entity.getVm_otros());
+        dto.setVm_duras(entity.getVm_duras());
+
+        dto.setVs_total(entity.getVs_total());
+        dto.setVs_mecanico(entity.getVs_mecanico());
+        dto.setVs_ambiente(entity.getVs_ambiente());
+        dto.setVs_chinches(entity.getVs_chinches());
+        dto.setVs_fracturas(entity.getVs_fracturas());
+        dto.setVs_otros(entity.getVs_otros());
+        dto.setVs_duras(entity.getVs_duras());
+
+        dto.setNv_total(entity.getNv_total());
+        dto.setNv_mecanico(entity.getNv_mecanico());
+        dto.setNv_ambiente(entity.getNv_ambiente());
+        dto.setNv_chinches(entity.getNv_chinches());
+        dto.setNv_fracturas(entity.getNv_fracturas());
+        dto.setNv_otros(entity.getNv_otros());
+        dto.setNv_duras(entity.getNv_duras());
+
+        dto.setActivo(entity.isActivo());
+        return dto;
+    }
+
+    public DetalleSemillasTetrazolio mapToEntityDetalleSemillasTetrazolio(DetalleSemillasTetrazolioDto dto) {
+        if (dto == null) return null;
+        DetalleSemillasTetrazolio entity = new DetalleSemillasTetrazolio();
+        entity.setId(dto.getId());
+        entity.setNumeroTabla(dto.getNumeroTabla());
+
+        entity.setVsd_total(dto.getVsd_total());
+        entity.setVsd_mecanico(dto.getVsd_mecanico());
+        entity.setVsd_ambiente(dto.getVsd_ambiente());
+        entity.setVsd_chinches(dto.getVsd_chinches());
+        entity.setVsd_fracturas(dto.getVsd_fracturas());
+        entity.setVsd_otros(dto.getVsd_otros());
+        entity.setVsd_duras(dto.getVsd_duras());
+
+        entity.setVl_total(dto.getVl_total());
+        entity.setVl_mecanico(dto.getVl_mecanico());
+        entity.setVl_ambiente(dto.getVl_ambiente());
+        entity.setVl_chinches(dto.getVl_chinches());
+        entity.setVl_fracturas(dto.getVl_fracturas());
+        entity.setVl_otros(dto.getVl_otros());
+        entity.setVl_duras(dto.getVl_duras());
+
+        entity.setVm_total(dto.getVm_total());
+        entity.setVm_mecanico(dto.getVm_mecanico());
+        entity.setVm_ambiente(dto.getVm_ambiente());
+        entity.setVm_chinches(dto.getVm_chinches());
+        entity.setVm_fracturas(dto.getVm_fracturas());
+        entity.setVm_otros(dto.getVm_otros());
+        entity.setVm_duras(dto.getVm_duras());
+
+        entity.setVs_total(dto.getVs_total());
+        entity.setVs_mecanico(dto.getVs_mecanico());
+        entity.setVs_ambiente(dto.getVs_ambiente());
+        entity.setVs_chinches(dto.getVs_chinches());
+        entity.setVs_fracturas(dto.getVs_fracturas());
+        entity.setVs_otros(dto.getVs_otros());
+        entity.setVs_duras(dto.getVs_duras());
+
+        entity.setNv_total(dto.getNv_total());
+        entity.setNv_mecanico(dto.getNv_mecanico());
+        entity.setNv_ambiente(dto.getNv_ambiente());
+        entity.setNv_chinches(dto.getNv_chinches());
+        entity.setNv_fracturas(dto.getNv_fracturas());
+        entity.setNv_otros(dto.getNv_otros());
+        entity.setNv_duras(dto.getNv_duras());
+
+        entity.setActivo(dto.isActivo());
+        return entity;
+    }
+
     public SanitarioHongoDto mapToDtoSanitarioHongo(SanitarioHongo entity) {
 
         if (entity == null) return null;

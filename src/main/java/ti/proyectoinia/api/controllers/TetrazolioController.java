@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ti.proyectoinia.api.responses.ResponseListadoTetrazolio;
 import ti.proyectoinia.dtos.TetrazolioDto;
 import ti.proyectoinia.dtos.RepeticionTetrazolioDto;
+import ti.proyectoinia.dtos.DetalleSemillasTetrazolioDto;
 import ti.proyectoinia.services.TetrazolioService;
 
 import java.util.List;
@@ -94,6 +95,29 @@ public class TetrazolioController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error al actualizar repeticiones: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/listar-detalles/{tetrazolioId}")
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Operation(description = "Lista todos los detalles de semillas asociados a un Tetrazolio específico")
+    public ResponseEntity<List<DetalleSemillasTetrazolioDto>> listarDetallesPorTetrazolio(@PathVariable Long tetrazolioId) {
+        List<DetalleSemillasTetrazolioDto> dtos = tetrazolioService.listarDetalles(tetrazolioId);
+        return ResponseEntity.ok(dtos);
+    }
+
+    @PutMapping("/actualizar-detalles/{tetrazolioId}")
+    @Secured({"ADMIN"})
+    @Operation(description = "Actualiza los detalles de semillas asociados a un Tetrazolio, creando, actualizando y eliminando según la lista recibida")
+    public ResponseEntity<String> actualizarDetallesCompleto(
+            @PathVariable Long tetrazolioId,
+            @RequestBody List<DetalleSemillasTetrazolioDto> detallesActuales) {
+        try {
+            tetrazolioService.actualizarDetallesCompleto(tetrazolioId, detallesActuales);
+            return ResponseEntity.ok("Detalles actualizados correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error al actualizar detalles: " + e.getMessage());
         }
     }
 

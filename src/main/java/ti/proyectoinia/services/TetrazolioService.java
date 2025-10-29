@@ -4,11 +4,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ti.proyectoinia.api.responses.ResponseListadoTetrazolio;
 import ti.proyectoinia.business.entities.Tetrazolio;
+import ti.proyectoinia.business.entities.DetalleSemillasTetrazolio;
 import ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio;
 import ti.proyectoinia.business.repositories.TetrazolioRepository;
 import ti.proyectoinia.business.repositories.ViabilidadRepsTetrazolioRepository;
+import ti.proyectoinia.business.repositories.DetalleSemillasTetrazolioRepository;
 import ti.proyectoinia.dtos.TetrazolioDto;
 import ti.proyectoinia.dtos.RepeticionTetrazolioDto;
+import ti.proyectoinia.dtos.DetalleSemillasTetrazolioDto;
 
 import java.util.List;
 import java.util.Set;
@@ -21,13 +24,16 @@ public class TetrazolioService {
     private final TetrazolioRepository tetrazolioRepository;
     private final MapsDtoEntityService mapsDtoEntityService;
     private final ViabilidadRepsTetrazolioRepository repeticionRepository;
+    private final DetalleSemillasTetrazolioRepository detalleRepository;
 
     public TetrazolioService(TetrazolioRepository tetrazolioRepository, 
                            MapsDtoEntityService mapsDtoEntityService,
-                           ViabilidadRepsTetrazolioRepository repeticionRepository) {
+                           ViabilidadRepsTetrazolioRepository repeticionRepository,
+                           DetalleSemillasTetrazolioRepository detalleRepository) {
         this.mapsDtoEntityService = mapsDtoEntityService;
         this.tetrazolioRepository = tetrazolioRepository;
         this.repeticionRepository = repeticionRepository;
+        this.detalleRepository = detalleRepository;
     }
 
     public String crearTetrazolio(TetrazolioDto tetrazolioDto) {
@@ -109,6 +115,38 @@ public class TetrazolioService {
             repeticion.setTetrazolio(tetrazolio);
 
             repeticionRepository.save(repeticion);
+        }
+    }
+
+    // Detalles de semillas
+    public List<DetalleSemillasTetrazolioDto> listarDetalles(Long tetrazolioId) {
+        List<DetalleSemillasTetrazolio> detalles = detalleRepository.findByActivoTrueAndTetrazolioId(tetrazolioId);
+        return detalles.stream()
+                .map(mapsDtoEntityService::mapToDtoDetalleSemillasTetrazolio)
+                .toList();
+    }
+
+    public void actualizarDetallesCompleto(Long tetrazolioId, List<DetalleSemillasTetrazolioDto> detallesActuales) {
+        Tetrazolio tetrazolio = tetrazolioRepository.findById(tetrazolioId).orElse(null);
+        if (tetrazolio == null) throw new RuntimeException("Tetrazolio no encontrado");
+
+        List<DetalleSemillasTetrazolio> actuales = detalleRepository.findByActivoTrueAndTetrazolioId(tetrazolioId);
+
+        Set<Long> nuevosIds = detallesActuales.stream()
+                .map(h -> h.getId() != null ? h.getId() : -1L)
+                .collect(Collectors.toSet());
+
+        for (DetalleSemillasTetrazolio actual : actuales) {
+            if (!nuevosIds.contains(actual.getId())) {
+                detalleRepository.delete(actual);
+            }
+        }
+
+        for (DetalleSemillasTetrazolioDto dto : detallesActuales) {
+            DetalleSemillasTetrazolio mapped = mapsDtoEntityService.mapToEntityDetalleSemillasTetrazolio(dto);
+            mapped.setTetrazolio(tetrazolio);
+
+            detalleRepository.save(mapped);
         }
     }
 }

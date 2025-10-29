@@ -418,8 +418,9 @@ export class TetrazolioComponent implements OnInit {
           d.viablesSinDefectos.duras = item.daniosDuras ?? 0;
         }
 
-        // Cargar repeticiones desde el backend
+        // Cargar repeticiones y detalles desde el backend
         this.cargarRepeticiones(id);
+        this.cargarDetalles(id);
         
         // Log de verificación de datos cargados
         console.log('=== DATOS CARGADOS PARA EDICIÓN ===');
@@ -466,6 +467,31 @@ export class TetrazolioComponent implements OnInit {
         // Mantener estructura por defecto en caso de error
         this.repeticiones = [{ numero: 1, viables: 0, noViables: 0, duras: 0 }];
         this.repeticionesEntries = [];
+      }
+    });
+  }
+
+  private cargarDetalles(tetrazolioId: number) {
+    this.tetrazolioService.listarDetalles(tetrazolioId).subscribe({
+      next: (detDtos: any[]) => {
+        console.log('Detalles cargados:', detDtos);
+        if (detDtos && detDtos.length > 0) {
+          this.detalles = detDtos
+            .sort((a, b) => (a.numeroTabla || 0) - (b.numeroTabla || 0))
+            .map(dto => ({
+              viablesSinDefectos: { total: dto.vsd_total || 0, mecanico: dto.vsd_mecanico || 0, ambiente: dto.vsd_ambiente || 0, chinches: dto.vsd_chinches || 0, fracturas: dto.vsd_fracturas || 0, otros: dto.vsd_otros || 0, duras: dto.vsd_duras || 0 },
+              viablesLeves:        { total: dto.vl_total || 0,  mecanico: dto.vl_mecanico || 0,  ambiente: dto.vl_ambiente || 0,  chinches: dto.vl_chinches || 0,  fracturas: dto.vl_fracturas || 0,  otros: dto.vl_otros || 0,  duras: dto.vl_duras || 0 },
+              viablesModerados:    { total: dto.vm_total || 0,  mecanico: dto.vm_mecanico || 0,  ambiente: dto.vm_ambiente || 0,  chinches: dto.vm_chinches || 0,  fracturas: dto.vm_fracturas || 0,  otros: dto.vm_otros || 0,  duras: dto.vm_duras || 0 },
+              viablesSeveros:      { total: dto.vs_total || 0,  mecanico: dto.vs_mecanico || 0,  ambiente: dto.vs_ambiente || 0,  chinches: dto.vs_chinches || 0,  fracturas: dto.vs_fracturas || 0,  otros: dto.vs_otros || 0,  duras: dto.vs_duras || 0 },
+              noViables:           { total: dto.nv_total || 0,  mecanico: dto.nv_mecanico || 0,  ambiente: dto.nv_ambiente || 0,  chinches: dto.nv_chinches || 0,  fracturas: dto.nv_fracturas || 0,  otros: dto.nv_otros || 0,  duras: dto.nv_duras || 0 },
+            }));
+        } else {
+          this.detalles = [this.crearDetalleVacio()];
+        }
+      },
+      error: (err) => {
+        console.error('Error obteniendo detalles:', err);
+        this.detalles = [this.crearDetalleVacio()];
       }
     });
   }
@@ -606,18 +632,20 @@ export class TetrazolioComponent implements OnInit {
           console.log('Tetrazolio actualizado correctamente en el backend');
           console.log('Respuesta del servidor:', res);
           
-          // Procesar repeticiones
-          console.log('Procesando repeticiones...');
-          this.procesarRepeticiones(this.editingId!).then(() => {
-            console.log('Repeticiones procesadas correctamente');
-            console.log('Navegando al listado...');
-            this.isSubmitting = false;
-            this.safeNavigateToListado();
-          }).catch(err => {
-            console.error('Error procesando repeticiones después de editar:', err);
-            this.isSubmitting = false;
-            this.safeNavigateToListado();
-          });
+          // Procesar repeticiones y detalles
+          console.log('Procesando repeticiones y detalles...');
+          this.procesarRepeticiones(this.editingId!)
+            .then(() => this.procesarDetalles(this.editingId!))
+            .then(() => {
+              console.log('Repeticiones y detalles procesados correctamente');
+              this.isSubmitting = false;
+              this.safeNavigateToListado();
+            })
+            .catch(err => {
+              console.error('Error procesando datos después de editar:', err);
+              this.isSubmitting = false;
+              this.safeNavigateToListado();
+            });
         },
         error: (err) => {
           console.error('Error actualizando Tetrazolio en el backend:', err);
@@ -677,18 +705,20 @@ export class TetrazolioComponent implements OnInit {
           const tetrazolioId = parseInt(res.split('ID:')[1]);
           console.log('ID del tetrazolio creado:', tetrazolioId);
           
-          // Procesar repeticiones
-          console.log('Procesando repeticiones...');
-          this.procesarRepeticiones(tetrazolioId).then(() => {
-            console.log('Repeticiones procesadas correctamente');
-            console.log('Navegando al listado...');
-            this.isSubmitting = false;
-            this.safeNavigateToListado();
-          }).catch(err => {
-            console.error('Error procesando repeticiones después de crear:', err);
-            this.isSubmitting = false;
-            this.safeNavigateToListado();
-          });
+          // Procesar repeticiones y detalles
+          console.log('Procesando repeticiones y detalles...');
+          this.procesarRepeticiones(tetrazolioId)
+            .then(() => this.procesarDetalles(tetrazolioId))
+            .then(() => {
+              console.log('Repeticiones y detalles procesados correctamente');
+              this.isSubmitting = false;
+              this.safeNavigateToListado();
+            })
+            .catch(err => {
+              console.error('Error procesando datos después de crear:', err);
+              this.isSubmitting = false;
+              this.safeNavigateToListado();
+            });
         },
         error: (err) => {
           console.error('Error creando Tetrazolio en el backend:', err);
@@ -855,6 +885,70 @@ export class TetrazolioComponent implements OnInit {
           }
         });
       }
+    });
+  }
+
+  private async procesarDetalles(tetrazolioId: number): Promise<void> {
+    console.log('Procesando detalles para tetrazolio ID:', tetrazolioId);
+
+    const payload = this.detalles.map((d, idx) => ({
+      id: null,
+      tetrazolioId,
+      numeroTabla: idx + 1,
+      vsd_total: d.viablesSinDefectos.total,
+      vsd_mecanico: d.viablesSinDefectos.mecanico,
+      vsd_ambiente: d.viablesSinDefectos.ambiente,
+      vsd_chinches: d.viablesSinDefectos.chinches,
+      vsd_fracturas: d.viablesSinDefectos.fracturas,
+      vsd_otros: d.viablesSinDefectos.otros,
+      vsd_duras: d.viablesSinDefectos.duras,
+      vl_total: d.viablesLeves.total,
+      vl_mecanico: d.viablesLeves.mecanico,
+      vl_ambiente: d.viablesLeves.ambiente,
+      vl_chinches: d.viablesLeves.chinches,
+      vl_fracturas: d.viablesLeves.fracturas,
+      vl_otros: d.viablesLeves.otros,
+      vl_duras: d.viablesLeves.duras,
+      vm_total: d.viablesModerados.total,
+      vm_mecanico: d.viablesModerados.mecanico,
+      vm_ambiente: d.viablesModerados.ambiente,
+      vm_chinches: d.viablesModerados.chinches,
+      vm_fracturas: d.viablesModerados.fracturas,
+      vm_otros: d.viablesModerados.otros,
+      vm_duras: d.viablesModerados.duras,
+      vs_total: d.viablesSeveros.total,
+      vs_mecanico: d.viablesSeveros.mecanico,
+      vs_ambiente: d.viablesSeveros.ambiente,
+      vs_chinches: d.viablesSeveros.chinches,
+      vs_fracturas: d.viablesSeveros.fracturas,
+      vs_otros: d.viablesSeveros.otros,
+      vs_duras: d.viablesSeveros.duras,
+      nv_total: d.noViables.total,
+      nv_mecanico: d.noViables.mecanico,
+      nv_ambiente: d.noViables.ambiente,
+      nv_chinches: d.noViables.chinches,
+      nv_fracturas: d.noViables.fracturas,
+      nv_otros: d.noViables.otros,
+      nv_duras: d.noViables.duras,
+      activo: true
+    }));
+
+    return new Promise((resolve, reject) => {
+      if (!payload || payload.length === 0) {
+        console.log('No hay detalles para procesar, continuando...');
+        return resolve();
+      }
+
+      this.tetrazolioService.actualizarDetalles(tetrazolioId, payload).subscribe({
+        next: (resp) => {
+          console.log('Detalles guardados/actualizados:', resp);
+          resolve();
+        },
+        error: (err) => {
+          console.error('Error guardando detalles:', err);
+          reject(err);
+        }
+      });
     });
   }
 
