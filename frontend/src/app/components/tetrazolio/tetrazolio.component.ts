@@ -314,10 +314,31 @@ export class TetrazolioComponent implements OnInit {
   ];
 
   private cargarDatosParaEdicion(id: number) {
+    console.log('=== INICIANDO CARGA DE DATOS PARA EDICIÓN ===');
+    console.log('ID del tetrazolio a cargar:', id);
+    
     // Cargar datos del Tetrazolio desde el backend
     this.tetrazolioService.obtener(id).subscribe({
       next: (item) => {
-        console.log('Cargando datos para edición:', item);
+        console.log('Datos del tetrazolio cargados desde el backend:', item);
+        console.log('Tipo de fecha recibida:', typeof item.fecha);
+        console.log('Valor de fecha:', item.fecha);
+        
+        // Verificar que el tetrazolio existe y está activo
+        if (!item) {
+          console.error('No se encontró el tetrazolio con ID:', id);
+          alert('No se encontró el tetrazolio seleccionado');
+          this.safeNavigateToListado();
+          return;
+        }
+        
+        if (!item.activo) {
+          console.error('El tetrazolio no está activo:', item);
+          alert('El tetrazolio seleccionado no está disponible para edición');
+          this.safeNavigateToListado();
+          return;
+        }
+        
         // Cargar datos básicos
         this.cantidadSemillas = item.nroSemillasPorRepeticion ?? item.nroSemillas ?? null;
 
@@ -357,8 +378,23 @@ export class TetrazolioComponent implements OnInit {
         // Tinción grados (ingreso manual)
         this.tincionC = item.tincionGrados ? parseFloat(item.tincionGrados) : null;
 
-        // Fecha
-        this.fecha = item.fecha ?? null;
+        // Fecha - convertir Date a string si es necesario
+        if (item.fecha) {
+          if (typeof item.fecha === 'string') {
+            this.fecha = item.fecha;
+          } else {
+            // Asumir que es un objeto Date o similar
+            try {
+              const dateObj = new Date(item.fecha as any);
+              this.fecha = dateObj.toISOString().split('T')[0];
+            } catch (error) {
+              console.warn('Error convirtiendo fecha:', error);
+              this.fecha = null;
+            }
+          }
+        } else {
+          this.fecha = null;
+        }
 
         this.repetido = item.repetido || false;
 
@@ -378,6 +414,18 @@ export class TetrazolioComponent implements OnInit {
 
         // Cargar repeticiones desde el backend
         this.cargarRepeticiones(id);
+        
+        // Log de verificación de datos cargados
+        console.log('=== DATOS CARGADOS PARA EDICIÓN ===');
+        console.log('Cantidad de semillas:', this.cantidadSemillas);
+        console.log('Pretratamiento seleccionado:', this.selectedPretratamiento);
+        console.log('Concentración:', this.selectedConcentracion);
+        console.log('Tinción horas:', this.selectedTincionHs);
+        console.log('Tinción grados:', this.tincionC);
+        console.log('Fecha:', this.fecha);
+        console.log('Repetido:', this.repetido);
+        console.log('Repeticiones:', this.repeticiones);
+        console.log('Detalles:', this.detalles);
       },
       error: (err) => {
         console.error('Error obteniendo Tetrazolio:', err);
@@ -467,6 +515,11 @@ export class TetrazolioComponent implements OnInit {
       reciboId: this.reciboId ? parseInt(this.reciboId) : null
     };
 
+    // Agregar ID para edición
+    if (this.isEditing && this.editingId) {
+      tetrazolioData.id = this.editingId;
+    }
+
     // Agregar campos nuevos si están definidos
     if (this.cantidadSemillas !== null && this.cantidadSemillas !== undefined) {
       // Preferimos guardar por repetición si aplica
@@ -474,10 +527,12 @@ export class TetrazolioComponent implements OnInit {
     }
 
     // Pretratamiento: crear objeto PreTratamiento completo
-    if (typeof this.selectedPretratamiento === 'string' && this.selectedPretratamiento !== 'custom') {
+    if (this.selectedPretratamiento && this.selectedPretratamiento !== 'custom') {
       (tetrazolioData as any).pretratamiento = this.selectedPretratamiento;
     } else if (this.selectedPretratamiento === 'custom' && this.pretratamientoCustom.trim()) {
       (tetrazolioData as any).pretratamiento = 'OTRO';
+    } else if (this.selectedPretratamiento === null || this.selectedPretratamiento === undefined) {
+      (tetrazolioData as any).pretratamiento = 'NINGUNO';
     }
 
     // Concentración
