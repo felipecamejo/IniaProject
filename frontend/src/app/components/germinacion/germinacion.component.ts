@@ -45,6 +45,9 @@ export class GerminacionComponent implements OnInit {
   loteId: string | null = '';
   reciboId: string | null = '';
   isViewing: boolean = false;
+
+  // Agregar propiedades para manejar errores
+  errores: string[] = [];
   
   inia = { pNormales: 0, pAnormales: 0, duras: 0, frescas: 0, muertas: 0, germinacion: 0 };
   inase = { pNormales: 0, pAnormales: 0, duras: 0, frescas: 0, muertas: 0, germinacion: 0 };
@@ -687,6 +690,13 @@ export class GerminacionComponent implements OnInit {
   }
 
   onSubmit() {
+
+    // Verificar si hay errores antes de continuar
+    if (this.manejarProblemas()) {
+      console.error('Errores detectados:', this.errores);
+      return;
+    }
+
     console.log('=== VALIDACION: Iniciando proceso de envío de germinación ===');
     
     // Validar datos básicos requeridos
@@ -1131,4 +1141,119 @@ export class GerminacionComponent implements OnInit {
     // Navegar de vuelta al listado de germinaciones del recibo específico
     this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-germinacion"]);
   }
+
+  validarNumeroNegativo(valor: number): boolean {
+    return valor < 0;
+  }
+
+  validarPromedioNegativoOMayoraCiento(promedio: number): boolean {
+    return promedio < 0 || promedio > 100;
+  }
+
+  manejarProblemas(): boolean {
+    this.errores = []; // Reiniciar errores
+
+    const hoy = new Date();
+    const fecha = this.fechas.inicio ? new Date(this.fechas.inicio ) : null;
+
+    if (this.validarFecha(this.fechas.inicio)) {
+      this.errores.push('La fecha de inicio no puede ser futura.');
+    }
+
+    if (this.fechas.conteos.some(fecha => this.validarFecha(fecha))) {
+      this.errores.push('Las fechas de conteo no pueden ser futuras.');
+    }
+
+    
+    if (this.validarNumeroNegativo(this.fechas.totalDias || 0)) {
+      this.errores.push('El total de días no puede ser negativo.');
+    }
+    
+    // Validar que el número de repetición no sea negativo
+    if (this.repeticiones.some(rep => this.validarNumeroNegativo(Number(rep.numero || 0)) || this.validarNumeroNegativo(Number(rep.anormales || 0)) || this.validarNumeroNegativo(Number(rep.duras || 0)) || this.validarNumeroNegativo(Number(rep.frescas || 0)) || this.validarNumeroNegativo(Number(rep.muertas || 0)) || this.getTotal(rep) < 0)) {
+      this.errores.push('Las repeticiones no pueden ser negativas.');
+    }
+
+    for (let i = 0; i < this.fechas.conteos.length; i++) {
+      if (this.validarPromedioNegativoOMayoraCiento(this.getPromedioNormales(i))) {
+        this.errores.push('El promedio de normales no puede ser negativo o mayor a 100.');
+      }
+
+      if ((this.validarPromedioNegativoOMayoraCiento(this.promedioManualNormales[i] ?? 0))) {
+        this.errores.push('El promedio manual de normales no puede ser negativo o mayor a 100.');
+      }
+    }
+
+    if (this.validarPromedioNegativoOMayoraCiento(this.getPromedioAnormales())) {
+      this.errores.push('El promedio de anormales no puede ser negativo o mayor a 100.');
+    }
+
+    if (this.validarPromedioNegativoOMayoraCiento(this.getPromedioDuras())) {
+      this.errores.push('El promedio de duras no puede ser negativo o mayor a 100.');
+    }
+
+    if (this.validarPromedioNegativoOMayoraCiento(this.getPromedioFrescas())) {
+      this.errores.push('El promedio de frescas no puede ser negativo o mayor a 100.');
+    }
+
+    if (this.validarPromedioNegativoOMayoraCiento(this.getPromedioMuertas())) {
+      this.errores.push('El promedio de muertas global no puede ser negativo o mayor a 100.');
+    }
+
+    if (this.validarPromedioNegativoOMayoraCiento(this.getPromedioNormalesGlobal())) {
+      this.errores.push('El promedio de normales global no puede ser negativo o mayor a 100.');
+    }
+
+    if (this.validarPromedioNegativoOMayoraCiento(this.promedioManualAnormales)) {
+      this.errores.push('El promedio manual de anormales no puede ser negativo o mayor a 100.');
+    }
+
+    if (this.validarPromedioNegativoOMayoraCiento(this.promedioManualDuras)) {
+      this.errores.push('El promedio manual de duras no puede ser negativo o mayor a 100.');
+    }
+
+    if (this.validarPromedioNegativoOMayoraCiento(this.promedioManualFrescas)) {
+      this.errores.push('El promedio manual de frescas no puede ser negativo o mayor a 100.');
+    }
+
+    if (this.validarPromedioNegativoOMayoraCiento(this.promedioManualMuertas)) {
+      this.errores.push('El promedio manual de muertas no puede ser negativo o mayor a 100.');
+    }
+
+    if (this.validarPromedioNegativoOMayoraCiento(this.promedioManualTotal)) {
+      this.errores.push('El promedio manual total no puede ser negativo o mayor a 100.');
+    }
+
+    if (this.validarNumeroNegativo(this.inia.pNormales)|| this.validarNumeroNegativo(this.inia.pAnormales) || this.validarNumeroNegativo(this.inia.duras) || this.validarNumeroNegativo(this.inia.frescas) || this.validarNumeroNegativo(this.inia.muertas) || this.validarNumeroNegativo(this.inia.germinacion)) {
+      this.errores.push('Los valores de INIA no pueden ser negativos.');
+    }
+
+    if (this.validarNumeroNegativo(this.inase.pNormales) || this.validarNumeroNegativo(this.inase.pAnormales) || this.validarNumeroNegativo(this.inase.duras) || this.validarNumeroNegativo(this.inase.frescas) || this.validarNumeroNegativo(this.inase.muertas) || this.validarNumeroNegativo(this.inase.germinacion)) {
+      this.errores.push('Los valores de INASE no pueden ser negativos.');
+    }
+
+    return this.errores.length > 0;
+  }
+
+  validarFecha(fecha: string): boolean {
+    if (!fecha) return false;
+    const selectedDate = new Date(fecha);
+    const today = new Date();
+    
+    // Ignorar la hora para comparar solo las fechas
+    today.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    // Devuelve true si la fecha es inválida (futura)
+    return selectedDate > today;
+  }
+
+  getTotalDias(): boolean {
+    if (this.fechas.totalDias == null || isNaN(Number(this.fechas.totalDias))) {
+      return false;
+    }
+
+    return Number(this.fechas.totalDias) < 0;
+  }
+
 }
