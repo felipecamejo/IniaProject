@@ -183,12 +183,12 @@ export class TetrazolioComponent implements OnInit {
     
     // Sincronizar con repeticionesEntries
     const nuevaRepeticionDto: RepeticionTetrazolioDto = {
-      id: null,
+      id: null, // null indica que es una nueva repetición que se creará en el backend
       numero: nuevaRepeticion.numero,
       viables: nuevaRepeticion.viables,
       noViables: nuevaRepeticion.noViables,
       duras: nuevaRepeticion.duras,
-      tetrazolioId: this.editingId
+      tetrazolioId: this.editingId || null // Se asignará correctamente en onSubmit
     };
     this.repeticionesEntries.push(nuevaRepeticionDto);
   }
