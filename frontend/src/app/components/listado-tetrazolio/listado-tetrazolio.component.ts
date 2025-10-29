@@ -159,9 +159,10 @@ export class ListadoTetrazolioComponent implements OnInit {
       console.log('Navegando para editar Tetrazolio:', item);
       const loteId = this.route.snapshot.paramMap.get('loteId');
       const reciboId = this.route.snapshot.paramMap.get('reciboId');
-      if (loteId && reciboId) {
-        this.router.navigate([`/${loteId}/${reciboId}/tetrazolio/editar`, item.id]);
+      if (loteId && reciboId && item.id) {
+        this.router.navigate([`/${loteId}/${reciboId}/tetrazolio/editar/${item.id}`]);
       } else {
+        console.error('No se puede navegar a edición: faltan parámetros o ID');
         this.router.navigate(['/home']);
       }
     }

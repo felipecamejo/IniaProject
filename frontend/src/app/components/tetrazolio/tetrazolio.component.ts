@@ -98,6 +98,9 @@ export class TetrazolioComponent implements OnInit {
   isEditing: boolean = false;
   editingId: number | null = null;
   repetido: boolean = false;
+  
+  // Prevención de doble envío
+  isSubmitting: boolean = false;
 
   // IDs de contexto
   loteId: string | null = null;
@@ -256,13 +259,18 @@ export class TetrazolioComponent implements OnInit {
     this.route.params.subscribe((params: any) => {
       this.loteId = params['loteId'] ?? null;
       this.reciboId = params['reciboId'] ?? null;
-      if (params['id']) {
+      
+      // Verificar si hay un ID en la ruta para determinar modo de edición
+      const id = params['id'];
+      if (id && !isNaN(parseInt(id))) {
         this.isEditing = true;
-        this.editingId = parseInt(params['id']);
+        this.editingId = parseInt(id);
+        console.log('Modo edición detectado, ID:', this.editingId);
         this.cargarDatosParaEdicion(this.editingId);
       } else {
         this.isEditing = false;
         this.editingId = null;
+        console.log('Modo creación detectado');
         this.cargarDatos();
       }
     });
@@ -428,6 +436,15 @@ export class TetrazolioComponent implements OnInit {
   }
 
   onSubmit() {
+    // Prevenir doble envío
+    if (this.isSubmitting) {
+      console.warn('Ya se está procesando una solicitud, ignorando...');
+      return;
+    }
+    
+    this.isSubmitting = true;
+    console.log('Iniciando envío del formulario...');
+    
     // Sincronizar repeticiones a repeticionesEntries antes de enviar
     this.repeticionesEntries = this.repeticiones.map((rep, index) => ({
       id: this.repeticionesEntries[index]?.id || null,
@@ -520,9 +537,11 @@ export class TetrazolioComponent implements OnInit {
           this.procesarRepeticiones(this.editingId!).then(() => {
             console.log('Repeticiones procesadas correctamente');
             console.log('Navegando al listado...');
+            this.isSubmitting = false;
             this.safeNavigateToListado();
           }).catch(err => {
             console.error('Error procesando repeticiones después de editar:', err);
+            this.isSubmitting = false;
             this.safeNavigateToListado();
           });
         },
@@ -533,6 +552,8 @@ export class TetrazolioComponent implements OnInit {
             message: err.message,
             error: err.error
           });
+          
+          this.isSubmitting = false;
           
           let errorMessage = 'Error al actualizar el Tetrazolio.';
           if (err.error && err.error.message) {
@@ -585,9 +606,11 @@ export class TetrazolioComponent implements OnInit {
           this.procesarRepeticiones(tetrazolioId).then(() => {
             console.log('Repeticiones procesadas correctamente');
             console.log('Navegando al listado...');
+            this.isSubmitting = false;
             this.safeNavigateToListado();
           }).catch(err => {
             console.error('Error procesando repeticiones después de crear:', err);
+            this.isSubmitting = false;
             this.safeNavigateToListado();
           });
         },
@@ -598,6 +621,8 @@ export class TetrazolioComponent implements OnInit {
             message: err.message,
             error: err.error
           });
+          
+          this.isSubmitting = false;
           
           let errorMessage = 'Error al crear el Tetrazolio.';
           if (err.error && err.error.message) {
@@ -717,22 +742,43 @@ export class TetrazolioComponent implements OnInit {
       }
       
       console.log('Enviando repeticiones al backend...');
-      this.tetrazolioService.actualizarRepeticiones(tetrazolioId, payload).subscribe({
-        next: (resp) => {
-          console.log('Repeticiones creadas exitosamente en el backend');
-          console.log('Respuesta del servidor:', resp);
-          resolve();
-        },
-        error: (err) => {
-          console.error('Error creando repeticiones:', err);
-          console.error('Detalles del error:', {
-            status: err.status,
-            message: err.message,
-            error: err.error
-          });
-          reject(err);
-        }
-      });
+      // Usar el método apropiado según el modo (creación vs edición)
+      if (this.isEditing) {
+        this.tetrazolioService.actualizarRepeticiones(tetrazolioId, payload).subscribe({
+          next: (resp) => {
+            console.log('Repeticiones actualizadas exitosamente en el backend');
+            console.log('Respuesta del servidor:', resp);
+            resolve();
+          },
+          error: (err) => {
+            console.error('Error actualizando repeticiones:', err);
+            console.error('Detalles del error:', {
+              status: err.status,
+              message: err.message,
+              error: err.error
+            });
+            reject(err);
+          }
+        });
+      } else {
+        // Para creación, usar el mismo método pero con lógica diferente
+        this.tetrazolioService.actualizarRepeticiones(tetrazolioId, payload).subscribe({
+          next: (resp) => {
+            console.log('Repeticiones creadas exitosamente en el backend');
+            console.log('Respuesta del servidor:', resp);
+            resolve();
+          },
+          error: (err) => {
+            console.error('Error creando repeticiones:', err);
+            console.error('Detalles del error:', {
+              status: err.status,
+              message: err.message,
+              error: err.error
+            });
+            reject(err);
+          }
+        });
+      }
     });
   }
 
