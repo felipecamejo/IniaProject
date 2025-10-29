@@ -323,6 +323,7 @@ export class TetrazolioComponent implements OnInit {
         console.log('Datos del tetrazolio cargados desde el backend:', item);
         console.log('Tipo de fecha recibida:', typeof item.fecha);
         console.log('Valor de fecha:', item.fecha);
+        console.log('Fecha como string:', String(item.fecha));
         
         // Verificar que el tetrazolio existe y está activo
         if (!item) {
@@ -378,19 +379,24 @@ export class TetrazolioComponent implements OnInit {
         // Tinción grados (ingreso manual)
         this.tincionC = item.tincionGrados ? parseFloat(item.tincionGrados) : null;
 
-        // Fecha - convertir Date a string si es necesario
+        // Fecha - convertir cualquier formato a yyyy-MM-dd para el input HTML
         if (item.fecha) {
-          if (typeof item.fecha === 'string') {
-            this.fecha = item.fecha;
-          } else {
-            // Asumir que es un objeto Date o similar
-            try {
-              const dateObj = new Date(item.fecha as any);
-              this.fecha = dateObj.toISOString().split('T')[0];
-            } catch (error) {
-              console.warn('Error convirtiendo fecha:', error);
+          try {
+            // Crear objeto Date desde cualquier formato
+            const dateObj = new Date(item.fecha);
+            
+            // Verificar que la fecha es válida
+            if (isNaN(dateObj.getTime())) {
+              console.warn('Fecha inválida recibida:', item.fecha);
               this.fecha = null;
+            } else {
+              // Convertir a formato yyyy-MM-dd
+              this.fecha = dateObj.toISOString().split('T')[0];
+              console.log('Fecha convertida para input HTML:', this.fecha);
             }
+          } catch (error) {
+            console.warn('Error convirtiendo fecha:', error, 'Valor original:', item.fecha);
+            this.fecha = null;
           }
         } else {
           this.fecha = null;
@@ -552,9 +558,20 @@ export class TetrazolioComponent implements OnInit {
       (tetrazolioData as any).tincionGrados = this.tincionC.toString();
     }
 
-    // Fecha
+    // Fecha - convertir string a Date para el backend
     if (this.fecha) {
-      (tetrazolioData as any).fecha = this.fecha; // ya en formato yyyy-MM-dd
+      try {
+        // Crear objeto Date desde el string yyyy-MM-dd
+        // Usar UTC para evitar problemas de zona horaria
+        const fechaDate = new Date(this.fecha + 'T00:00:00.000Z');
+        (tetrazolioData as any).fecha = fechaDate;
+        console.log('Fecha original (string):', this.fecha);
+        console.log('Fecha convertida para envío (Date):', fechaDate);
+        console.log('Fecha ISO string:', fechaDate.toISOString());
+      } catch (error) {
+        console.error('Error convirtiendo fecha:', error);
+        console.log('Fecha original:', this.fecha);
+      }
     }
 
     if (this.isEditing && this.editingId) {
@@ -567,7 +584,8 @@ export class TetrazolioComponent implements OnInit {
       console.log('Concentración:', this.selectedConcentracion === 'custom' ? this.concentracionCustom : this.selectedConcentracion);
       console.log('Tinción horas:', this.selectedTincionHs === 'custom' ? this.tincionHsCustom : this.selectedTincionHs);
       console.log('Tinción grados:', this.tincionC);
-      console.log('Fecha:', this.fecha);
+      console.log('Fecha (string):', this.fecha);
+      console.log('Fecha (Date):', tetrazolioData.fecha);
       console.log('Repeticiones:', this.repeticiones);
       console.log('Repeticiones entries:', this.repeticionesEntries);
       console.log('Detalles de semillas:', this.detalles);
@@ -581,6 +599,7 @@ export class TetrazolioComponent implements OnInit {
       
       console.log('Validaciones pasadas correctamente');
       console.log('Enviando petición de actualización al backend...');
+      console.log('Datos finales a enviar:', JSON.stringify(tetrazolioData, null, 2));
       
       this.tetrazolioService.editar(tetrazolioData as TetrazolioDto).subscribe({
         next: (res) => {
@@ -628,7 +647,8 @@ export class TetrazolioComponent implements OnInit {
       console.log('Concentración:', this.selectedConcentracion === 'custom' ? this.concentracionCustom : this.selectedConcentracion);
       console.log('Tinción horas:', this.selectedTincionHs === 'custom' ? this.tincionHsCustom : this.selectedTincionHs);
       console.log('Tinción grados:', this.tincionC);
-      console.log('Fecha:', this.fecha);
+      console.log('Fecha (string):', this.fecha);
+      console.log('Fecha (Date):', tetrazolioData.fecha);
       console.log('Repeticiones:', this.repeticiones);
       console.log('Repeticiones entries:', this.repeticionesEntries);
       console.log('Detalles de semillas:', this.detalles);
@@ -642,11 +662,12 @@ export class TetrazolioComponent implements OnInit {
       
       console.log('Validaciones pasadas correctamente');
       
-      tetrazolioData.fechaCreacion = new Date().toISOString().split('T')[0];
+      (tetrazolioData as any).fechaCreacion = new Date();
       tetrazolioData.repetido = false;
       tetrazolioData.reciboId = this.reciboId ? parseInt(this.reciboId) : null;
       
       console.log('Enviando petición de creación al backend...');
+      console.log('Datos finales a enviar:', JSON.stringify(tetrazolioData, null, 2));
       
       this.tetrazolioService.crear(tetrazolioData as TetrazolioDto).subscribe({
         next: (res) => {
