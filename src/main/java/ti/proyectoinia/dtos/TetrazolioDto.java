@@ -19,23 +19,23 @@ public class TetrazolioDto {
     
     private PreTratamiento pretratamiento;
     
-    private float concentracion;
+    private String concentracion;
     
-    private float tincionHoras;
+    private String tincionHoras;
     
-    private float tincionGrados;
+    private String tincionGrados;
     
     private Date fecha;
     
-    private float viables;
+    private String viables;
     
-    private float noViables;
+    private String noViables;
     
-    private float duras;
+    private String duras;
     
-    private float total;
+    private String total;
     
-    private float promedio;
+    private String promedio;
     
     private Integer porcentaje;
     
@@ -70,6 +70,8 @@ public class TetrazolioDto {
     private Date fechaCreacion;
 
     private Date fechaRepeticion;
+
+    private Long reciboId;
 
     @Generated
     public boolean equals(final Object o) {

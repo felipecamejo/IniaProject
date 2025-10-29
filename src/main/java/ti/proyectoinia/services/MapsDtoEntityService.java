@@ -1104,15 +1104,15 @@ public class MapsDtoEntityService {
         if (tetrazolio.getPretratamiento() != null) {
             dto.setPretratamiento(tetrazolio.getPretratamiento());
         }
-        dto.setConcentracion(tetrazolio.getConcentracion());
-        dto.setTincionHoras(tetrazolio.getTincionHoras());
-        dto.setTincionGrados(tetrazolio.getTincionGrados());
+        dto.setConcentracion(tetrazolio.getConcentracion() != null ? tetrazolio.getConcentracion().toString() : null);
+        dto.setTincionHoras(tetrazolio.getTincionHoras() != null ? tetrazolio.getTincionHoras().toString() : null);
+        dto.setTincionGrados(tetrazolio.getTincionGrados() != null ? tetrazolio.getTincionGrados().toString() : null);
         dto.setFecha(tetrazolio.getFecha());
-        dto.setViables(tetrazolio.getViables());
-        dto.setNoViables(tetrazolio.getNoViables());
-        dto.setDuras(tetrazolio.getDuras());
-        dto.setTotal(tetrazolio.getTotal());
-        dto.setPromedio(tetrazolio.getPromedio());
+        dto.setViables(tetrazolio.getViables() != null ? tetrazolio.getViables().toString() : null);
+        dto.setNoViables(tetrazolio.getNoViables() != null ? tetrazolio.getNoViables().toString() : null);
+        dto.setDuras(tetrazolio.getDuras() != null ? tetrazolio.getDuras().toString() : null);
+        dto.setTotal(tetrazolio.getTotal() != null ? tetrazolio.getTotal().toString() : null);
+        dto.setPromedio(tetrazolio.getPromedio() != null ? tetrazolio.getPromedio().toString() : null);
         dto.setPorcentaje(tetrazolio.getPorcentaje());
         dto.setFechaCreacion(tetrazolio.getFechaCreacion());
         dto.setFechaRepeticion(tetrazolio.getFechaRepeticion());
@@ -1138,8 +1138,7 @@ public class MapsDtoEntityService {
         dto.setDaniosPorPorcentajes(tetrazolio.getDaniosPorPorcentajes());
         dto.setActivo(tetrazolio.isActivo());
         dto.setRepetido(tetrazolio.isRepetido());
-        dto.setFechaCreacion(tetrazolio.getFechaCreacion());
-        dto.setFechaRepeticion(tetrazolio.getFechaRepeticion());
+        dto.setReciboId(tetrazolio.getRecibo() != null ? tetrazolio.getRecibo().getId() : null);
 
         return dto;
     }
@@ -1157,15 +1156,15 @@ public class MapsDtoEntityService {
             tetrazolio.setPretratamiento(dto.getPretratamiento());
         }
 
-        tetrazolio.setConcentracion(dto.getConcentracion());
-        tetrazolio.setTincionHoras(dto.getTincionHoras());
-        tetrazolio.setTincionGrados(dto.getTincionGrados());
+        tetrazolio.setConcentracion(dto.getConcentracion() != null ? Float.parseFloat(dto.getConcentracion()) : null);
+        tetrazolio.setTincionHoras(dto.getTincionHoras() != null ? Float.parseFloat(dto.getTincionHoras()) : null);
+        tetrazolio.setTincionGrados(dto.getTincionGrados() != null ? Float.parseFloat(dto.getTincionGrados()) : null);
         tetrazolio.setFecha(dto.getFecha());
-        tetrazolio.setViables(dto.getViables());
-        tetrazolio.setNoViables(dto.getNoViables());
-        tetrazolio.setDuras(dto.getDuras());
-        tetrazolio.setTotal(dto.getTotal());
-        tetrazolio.setPromedio(dto.getPromedio());
+        tetrazolio.setViables(dto.getViables() != null ? Float.parseFloat(dto.getViables()) : null);
+        tetrazolio.setNoViables(dto.getNoViables() != null ? Float.parseFloat(dto.getNoViables()) : null);
+        tetrazolio.setDuras(dto.getDuras() != null ? Float.parseFloat(dto.getDuras()) : null);
+        tetrazolio.setTotal(dto.getTotal() != null ? Float.parseFloat(dto.getTotal()) : null);
+        tetrazolio.setPromedio(dto.getPromedio() != null ? Float.parseFloat(dto.getPromedio()) : null);
         tetrazolio.setPorcentaje(dto.getPorcentaje());
         tetrazolio.setViabilidadPorTetrazolio(dto.getViabilidadPorTetrazolio());
         tetrazolio.setViabilidadVigorTz(dto.getViabilidadVigorTz());
@@ -1183,6 +1182,10 @@ public class MapsDtoEntityService {
         tetrazolio.setRepetido(dto.isRepetido());
         tetrazolio.setFechaCreacion(dto.getFechaCreacion());
         tetrazolio.setFechaRepeticion(dto.getFechaRepeticion());
+
+        // Validar y obtener el recibo si existe
+        Recibo recibo = getValidRecibo(dto.getReciboId());
+        tetrazolio.setRecibo(recibo);
 
         return tetrazolio;
     }
@@ -1483,27 +1486,42 @@ public class MapsDtoEntityService {
         return e;
     }
 
-    public ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio mapToEntityViabilidadRepsTetrazolio(ViabilidadRepsTetrazolioDto dto) {
+
+    // Métodos de mapeo para RepeticionTetrazolio
+    public ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio mapToEntityRepeticionTetrazolio(RepeticionTetrazolioDto dto) {
         if (dto == null) return null;
+        
         ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio entity = new ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio();
         entity.setId(dto.getId());
-        entity.setActivo(dto.isActivo());
-        entity.setTetrazolioId(dto.getTetrazolioId());
-        entity.setViables(dto.getViables());
-        entity.setNoViables(dto.getNoViables());
-        entity.setDuras(dto.getDuras());
+        entity.setViables(dto.getViables() != null ? dto.getViables() : 0);
+        entity.setNoViables(dto.getNoViables() != null ? dto.getNoViables() : 0);
+        entity.setDuras(dto.getDuras() != null ? dto.getDuras() : 0);
+        entity.setNumeroRepeticion(dto.getNumero() != null ? dto.getNumero() : 1);
+        entity.setActivo(true);
+        
+        // Manejar la relación con Tetrazolio
+        if (dto.getTetrazolioId() != null) {
+            ti.proyectoinia.business.entities.Tetrazolio tetrazolio = new ti.proyectoinia.business.entities.Tetrazolio();
+            tetrazolio.setId(dto.getTetrazolioId());
+            entity.setTetrazolio(tetrazolio);
+        }
+        
         return entity;
     }
 
-    public ViabilidadRepsTetrazolioDto mapToDtoViabilidadRepsTetrazolio(ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio entity) {
+    public RepeticionTetrazolioDto mapToDtoRepeticionTetrazolio(ti.proyectoinia.business.entities.ViabilidadRepsTetrazolio entity) {
         if (entity == null) return null;
-        ViabilidadRepsTetrazolioDto dto = new ViabilidadRepsTetrazolioDto();
+        
+        RepeticionTetrazolioDto dto = new RepeticionTetrazolioDto();
         dto.setId(entity.getId());
-        dto.setActivo(entity.isActivo());
-        dto.setTetrazolioId(entity.getTetrazolioId());
         dto.setViables(entity.getViables());
         dto.setNoViables(entity.getNoViables());
         dto.setDuras(entity.getDuras());
+        dto.setNumero(entity.getNumeroRepeticion());
+        
+        // Mapear el ID de la relación
+        dto.setTetrazolioId(entity.getTetrazolio() != null ? entity.getTetrazolio().getId() : null);
+        
         return dto;
     }
 }
