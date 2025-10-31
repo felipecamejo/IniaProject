@@ -15,7 +15,6 @@
 
         <div class="form-field">
           <label for="fechaSiembra">Fecha Siembra</label>
-          <span *ngIf="validarFecha(fechaSiembra)" class="error-message">La fecha no puede ser mayor a hoy.</span>
           <input 
             id="fechaSiembra" 
             type="date" 
@@ -23,13 +22,13 @@
             name="fechaSiembra" 
             pInputText 
             [readonly]="isReadonly" 
-            [ngClass]="{ 'input-error': validarFecha(fechaSiembra) }" 
+            
           />
         </div>
 
         <div class="form-field">
           <label for="fecha">Fecha</label>
-          <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" pInputText [readonly]="true" />
+          <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" pInputText [readonly]="isReadonly" />
         </div>
 
         <div class="form-field">
@@ -39,7 +38,6 @@
 
         <div class="form-field">
           <label for="temperatura">Temperatura</label>
-          <span *ngIf="temperatura != null && temperatura < 0" class="error-message">La temperatura no puede ser negativa.</span>
           <input 
             id="temperatura" 
             type="number" 
@@ -47,13 +45,12 @@
             name="temperatura" 
             pInputText 
             [readonly]="isReadonly" 
-            [ngClass]="{ 'input-error': temperatura != null && temperatura < 0 }" 
+            
           />
         </div>
 
         <div class="form-field">
           <label for="horasOscuridad">Horas Oscuridad</label>
-          <span *ngIf="horasOscuridad != null && horasOscuridad < 0" class="error-message">Las horas de oscuridad no pueden ser negativas.</span>
           <input 
             id="horasOscuridad" 
             type="number" 
@@ -61,13 +58,12 @@
             name="horasOscuridad" 
             pInputText 
             [readonly]="isReadonly" 
-            [ngClass]="{ 'input-error': horasOscuridad != null && horasOscuridad < 0 }" 
+            
           />
         </div>
 
         <div class="form-field">
           <label for="horasLuz">Horas Luz</label>
-          <span *ngIf="horasLuz != null && horasLuz < 0" class="error-message">Las horas de luz no pueden ser negativas.</span>
           <input 
             id="horasLuz" 
             type="number" 
@@ -75,13 +71,12 @@
             name="horasLuz" 
             pInputText 
             [readonly]="isReadonly" 
-            [ngClass]="{ 'input-error': horasLuz != null && horasLuz < 0 }" 
+            
           />
         </div>
 
         <div class="form-field">
           <label for="numeroDias">Numero de Dias</label>
-          <span *ngIf="nroDias != null && nroDias < 0" class="error-message">El número de días no puede ser negativo.</span>
           <input 
             id="nroDias" 
             type="number" 
@@ -89,7 +84,7 @@
             name="nroDias" 
             pInputText 
             [readonly]="isReadonly" 
-            [ngClass]="{ 'input-error': nroDias != null && nroDias < 0 }" 
+            
           />
         </div>
 
@@ -105,7 +100,6 @@
 
         <div class="form-field">
           <label for="numeroSemillasRepeticion">Numero de Semillas por Repeticion</label>
-          <span *ngIf="nroSemillasRepeticion != null && nroSemillasRepeticion < 0" class="error-message">El número de semillas no puede ser negativo.</span>
           <input 
             id="nroSemillasRepeticion" 
             type="number" 
@@ -113,7 +107,7 @@
             name="nroSemillasRepeticion" 
             pInputText 
             [readonly]="isReadonly" 
-            [ngClass]="{ 'input-error': nroSemillasRepeticion != null && nroSemillasRepeticion < 0 }" 
+            
           />
         </div>
 
@@ -178,9 +172,9 @@
                       name="repeticion_{{i}}" 
                       placeholder="Repetición" 
                       [readonly]="isReadonly" 
-                      [ngClass]="{ 'input-error': hongosTable[i].repeticion != null && hongosTable[i].repeticion < 0 }" 
+                      
                     />
-                    <span *ngIf="hongosTable[i].repeticion != null && hongosTable[i].repeticion < 0" class="error-message">La repetición no es válido.</span>
+                    
                   </td>
                   <td>
                     <input 
@@ -189,9 +183,9 @@
                       name="valor_{{i}}" 
                       placeholder="Valor" 
                       [readonly]="isReadonly" 
-                      [ngClass]="{ 'input-error': hongosTable[i].valor != null && hongosTable[i].valor < 0 }" 
+                      
                     />
-                    <span *ngIf="hongosTable[i].valor != null && hongosTable[i].valor < 0" class="error-message">El valor no es válido.</span>
+                    
                   </td>
                   <td>
                     <input 
@@ -202,9 +196,9 @@
                       min="0" 
                       max="100" 
                       [readonly]="isReadonly" 
-                      [ngClass]="{ 'input-error': hongosTable[i].incidencia != null && (hongosTable[i].incidencia < 0 || hongosTable[i].incidencia > 100) }" 
+                      
                     />
-                    <span *ngIf="hongosTable[i].incidencia != null && (hongosTable[i].incidencia < 0 || hongosTable[i].incidencia > 100)" class="error-message">La incidencia debe estar entre 0 y 100.</span>
+                    
                   </td>
                 </tr>
               </tbody>
@@ -274,9 +268,9 @@
                       name="repeticionCampo_{{i}}"
                       placeholder="Repetición"
                       [readonly]="isReadonly"
-                      [ngClass]="{ 'input-error': hongosCampoTable[i].repeticion != null && hongosCampoTable[i].repeticion < 0 }"
+                      
                     />
-                    <span *ngIf="hongosCampoTable[i].repeticion != null && hongosCampoTable[i].repeticion < 0" class="error-message">La repetición no puede ser negativa.</span>
+                    
                   </td>
                   <td>
                     <input 
@@ -285,9 +279,9 @@
                       name="valorCampo_{{i}}" 
                       placeholder="Valor" 
                       [readonly]="isReadonly" 
-                      [ngClass]="{ 'input-error': hongosCampoTable[i].valor != null && hongosCampoTable[i].valor < 0 }" 
+                      
                     />
-                    <span *ngIf="hongosCampoTable[i].valor != null && hongosCampoTable[i].valor < 0" class="error-message">El valor no puede ser negativo.</span>
+                    
                   </td>
                   <td>
                     <input 
@@ -298,9 +292,9 @@
                       min="0" 
                       max="100" 
                       [readonly]="isReadonly" 
-                      [ngClass]="{ 'input-error': hongosCampoTable[i].incidencia != null && (hongosCampoTable[i].incidencia < 0 || hongosCampoTable[i].incidencia > 100) }" 
+                      
                     />
-                    <span *ngIf="hongosCampoTable[i].incidencia != null && (hongosCampoTable[i].incidencia < 0 || hongosCampoTable[i].incidencia > 100)" class="error-message">La incidencia debe estar entre 0 y 100.</span>
+                    
                   </td>
                 </tr>
               </tbody>
@@ -370,9 +364,9 @@
                       name="repeticionAlmacenaje_{{i}}" 
                       placeholder="Repetición" 
                       [readonly]="isReadonly" 
-                      [ngClass]="{ 'input-error': hongosAlmacenajeTable[i].repeticion != null && hongosAlmacenajeTable[i].repeticion < 0 }" 
+                      
                     />
-                    <span *ngIf="hongosAlmacenajeTable[i].repeticion != null && hongosAlmacenajeTable[i].repeticion < 0" class="error-message">La repetición no puede ser negativa.</span>
+                    
                   </td>
                   <td>
                     <input 
@@ -381,9 +375,9 @@
                       name="valorAlmacenaje_{{i}}" 
                       placeholder="Valor" 
                       [readonly]="isReadonly" 
-                      [ngClass]="{ 'input-error': hongosAlmacenajeTable[i].valor != null && hongosAlmacenajeTable[i].valor < 0 }" 
+                      
                     />
-                    <span *ngIf="hongosAlmacenajeTable[i].valor != null && hongosAlmacenajeTable[i].valor < 0" class="error-message">El valor no puede ser negativo.</span>
+                    
                   </td>
                   <td>
                     <input 
@@ -394,9 +388,9 @@
                       min="0" 
                       max="100"
                       [readonly]="isReadonly"
-                      [ngClass]="{ 'input-error': hongosAlmacenajeTable[i].incidencia != null && (hongosAlmacenajeTable[i].incidencia < 0 || hongosAlmacenajeTable[i].incidencia > 100) }"
+                      
                     />
-                    <span *ngIf="hongosAlmacenajeTable[i].incidencia != null && (hongosAlmacenajeTable[i].incidencia < 0 || hongosAlmacenajeTable[i].incidencia > 100)" class="error-message">La incidencia debe estar entre 0 y 100.</span>
+                    
                   </td>
                 </tr>
               </tbody>
@@ -440,13 +434,7 @@
           </div>
         </div>
 
-        <!-- Contenedor de errores - visible solo si hay errores -->
-        <div *ngIf="errores.length > 0" class="error-container">
-          <p class="error-message">
-            {{ errores.length === 1 ? '1 error encontrado' : errores.length + ' errores encontrados' }}
-          </p>
-          <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
-        </div>
+        
 
         <div class="submit-btn">
             <button

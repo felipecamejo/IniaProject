@@ -1,8 +1,8 @@
 export class DateService {
   /**
-   * Ajusta la fecha incrementando el día en 1 y devuelve el resultado en formato ISO.
+   * Normaliza la fecha recibida (YYYY-MM-DD) a inicio de día sin desplazarla.
    * @param fecha - Fecha en formato string (YYYY-MM-DD).
-   * @returns Fecha ajustada en formato ISO string.
+   * @returns Fecha en formato ISO local sin zona (YYYY-MM-DDT00:00:00).
    */
   static ajustarFecha(fecha: string | null): string {
     if (!fecha) {
@@ -11,7 +11,6 @@ export class DateService {
 
     const [year, month, day] = fecha.split('-').map(Number);
     const adjustedDate = new Date(year, month - 1, day);
-    adjustedDate.setDate(adjustedDate.getDate() + 1); // Incrementar el día
 
     const adjustedYear = adjustedDate.getFullYear();
     const adjustedMonth = String(adjustedDate.getMonth() + 1).padStart(2, '0');

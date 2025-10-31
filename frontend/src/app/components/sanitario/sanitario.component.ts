@@ -477,6 +477,13 @@ export class SanitarioComponent implements OnInit {
     
     this.isSaving = true;
 
+    // Ejecutar validaciones finales antes de armar el payload
+    if (this.manejarProblemas()) {
+      // Hay errores: cancelar envío y permitir correcciones
+      this.isSaving = false;
+      return;
+    }
+
     const sanitarioData: SanitarioDto = {
       id: this.isEditing ? this.editingId : null,
       fechaSiembra: DateService.ajustarFecha(this.fechaSiembra),
@@ -514,12 +521,13 @@ export class SanitarioComponent implements OnInit {
   }
 
   private crearNuevoSanitario(sanitarioData: SanitarioDto) {
-    const fechaActual = DateService.ajustarFecha(new Date().toISOString());
-    
+    const hoyYmd = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const fechaActual = DateService.ajustarFecha(hoyYmd);
+
     const sanitarioPayload = {
       id: 0,
-      fechaSiembra: this.fechaSiembra ? DateService.ajustarFecha(new Date(this.fechaSiembra).toISOString()) : fechaActual,
-      fecha: DateService.ajustarFecha(this.fecha) ? DateService.ajustarFecha(new Date(this.fecha).toISOString()) : fechaActual,
+      fechaSiembra: this.fechaSiembra ? DateService.ajustarFecha(this.fechaSiembra) : fechaActual,
+      fecha: this.fecha ? DateService.ajustarFecha(this.fecha) : fechaActual,
       metodo: this.metodo || "METODO_A",
       temperatura: this.temperatura || 0,
       horasLuz: this.horasLuz || 0,
@@ -552,14 +560,15 @@ export class SanitarioComponent implements OnInit {
   }
 
   private actualizarSanitario(sanitarioData: SanitarioDto) {
-    const fechaRepeticionFinal = this.repetido && !sanitarioData.fechaRepeticion ? 
-      new Date().toISOString() : 
-      (sanitarioData.fechaRepeticion ? new Date(sanitarioData.fechaRepeticion).toISOString() : null);
+    const hoyYmd = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const fechaRepeticionFinal = this.repetido && !sanitarioData.fechaRepeticion
+      ? DateService.ajustarFecha(hoyYmd)
+      : (sanitarioData.fechaRepeticion || null);
 
     const sanitarioPayload = {
       id: this.editingId!,
-      fechaSiembra: this.fechaSiembra ? DateService.ajustarFecha(new Date(this.fechaSiembra).toISOString()) : new Date().toISOString(),
-      fecha: DateService.ajustarFecha(this.fecha) ? DateService.ajustarFecha(new Date(this.fecha).toISOString()) : new Date().toISOString(),
+      fechaSiembra: this.fechaSiembra ? DateService.ajustarFecha(this.fechaSiembra) : DateService.ajustarFecha(hoyYmd),
+      fecha: this.fecha ? DateService.ajustarFecha(this.fecha) : DateService.ajustarFecha(hoyYmd),
       metodo: this.metodo || "METODO_A",
       temperatura: this.temperatura || 0,
       horasLuz: this.horasLuz || 0,
@@ -573,7 +582,7 @@ export class SanitarioComponent implements OnInit {
       estandar: this.estandar,
       repetido: this.repetido,
       sanitarioHongosId: [],
-      fechaCreacion: this.fechaCreacion ? DateService.ajustarFecha(new Date(this.fechaCreacion).toISOString()) : new Date().toISOString(),
+      fechaCreacion: this.fechaCreacion ? DateService.ajustarFecha(this.fechaCreacion.slice(0, 10)) : DateService.ajustarFecha(hoyYmd),
       fechaRepeticion: fechaRepeticionFinal
     };
     
@@ -768,6 +777,11 @@ export class SanitarioComponent implements OnInit {
 
     const hoy = new Date();
     const fechaSiembra = this.fechaSiembra ? new Date(this.fechaSiembra) : null;
+
+    // Validación: fecha obligatoria
+    if (!this.fecha || this.fecha.trim() === '') {
+      this.errores.push('Debes ingresar una fecha.');
+    }
 
     if (this.temperatura != null && this.temperatura < 0) {
       this.errores.push('La temperatura no puede ser un número negativo.');
