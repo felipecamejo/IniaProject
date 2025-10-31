@@ -44,20 +44,27 @@ public class MapsDtoEntityService {
         if (value == null || value.isBlank()) {
             return null;
         }
-        
+        // Proteger contra valores inválidos provenientes del frontend
+        String cleanValue = value.trim();
+        if (cleanValue.contains("NaN")) {
+            return null;
+        }
+
         // Remover milisegundos y zona horaria para evitar problemas de parsing
-        String cleanValue = value;
         if (cleanValue.contains(".")) {
-            // Remover milisegundos (ej: .917)
             cleanValue = cleanValue.substring(0, cleanValue.indexOf("."));
         }
         if (cleanValue.endsWith("Z")) {
-            // Remover Z de zona horaria UTC
             cleanValue = cleanValue.substring(0, cleanValue.length() - 1);
         }
-        
-        LocalDateTime localDateTime = LocalDateTime.parse(cleanValue, ISO_LOCAL_DATE_TIME);
-        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+
+        try {
+            LocalDateTime localDateTime = LocalDateTime.parse(cleanValue, ISO_LOCAL_DATE_TIME);
+            return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        } catch (Exception ignored) {
+            // Si no matchea el formato esperado, devolver null de forma segura
+            return null;
+        }
     }
 
     public Recibo getValidRecibo(Long reciboId) {
@@ -387,8 +394,8 @@ public class MapsDtoEntityService {
         }
         SanitarioDto sanitarioDto = new SanitarioDto();
         sanitarioDto.setId(sanitario.getId());
-        sanitarioDto.setFechaSiembra(sanitario.getFechaSiembra());
-        sanitarioDto.setFecha(sanitario.getFecha());
+        sanitarioDto.setFechaSiembra(formatDate(sanitario.getFechaSiembra()));
+        sanitarioDto.setFecha(formatDate(sanitario.getFecha()));
         sanitarioDto.setMetodo(sanitario.getMetodo());
         sanitarioDto.setTemperatura(sanitario.getTemperatura());
         sanitarioDto.setHorasLuz(sanitario.getHorasLuz());
@@ -400,8 +407,8 @@ public class MapsDtoEntityService {
         sanitarioDto.setActivo(sanitario.isActivo());
         sanitarioDto.setEstandar(sanitario.isEstandar());
         sanitarioDto.setRepetido(sanitario.isRepetido());
-        sanitarioDto.setFechaCreacion(sanitario.getFechaCreacion());
-        sanitarioDto.setFechaRepeticion(sanitario.getFechaRepeticion());
+        sanitarioDto.setFechaCreacion(formatDate(sanitario.getFechaCreacion()));
+        sanitarioDto.setFechaRepeticion(formatDate(sanitario.getFechaRepeticion()));
 
         if (sanitario.getRecibo() != null) {
             sanitarioDto.setReciboId(sanitario.getRecibo().getId());
@@ -423,8 +430,8 @@ public class MapsDtoEntityService {
         }
         Sanitario sanitario = new Sanitario();
         sanitario.setId(sanitarioDto.getId());
-        sanitario.setFechaSiembra(sanitarioDto.getFechaSiembra());
-        sanitario.setFecha(sanitarioDto.getFecha());
+        sanitario.setFechaSiembra(parseDate(sanitarioDto.getFechaSiembra()));
+        sanitario.setFecha(parseDate(sanitarioDto.getFecha()));
         sanitario.setMetodo(sanitarioDto.getMetodo());
         sanitario.setTemperatura(sanitarioDto.getTemperatura());
         sanitario.setHorasLuz(sanitarioDto.getHorasLuz());
@@ -436,8 +443,8 @@ public class MapsDtoEntityService {
         sanitario.setActivo(sanitarioDto.isActivo());
         sanitario.setEstandar(sanitarioDto.isEstandar());
         sanitario.setRepetido(sanitarioDto.isRepetido());
-        sanitario.setFechaCreacion(sanitarioDto.getFechaCreacion());
-        sanitario.setFechaRepeticion(sanitarioDto.getFechaRepeticion());
+        sanitario.setFechaCreacion(parseDate(sanitarioDto.getFechaCreacion()));
+        sanitario.setFechaRepeticion(parseDate(sanitarioDto.getFechaRepeticion()));
 
         if (sanitarioDto.getReciboId() != null) {
             Recibo recibo = getValidRecibo(sanitarioDto.getReciboId());
