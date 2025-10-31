@@ -12,10 +12,18 @@
                     <input id="nombre" type="text" [(ngModel)]="nombre" name="nombre" pInputText />
                 </div>
 
-                <div class="form-field">
-                    <label for="descripcion">Descripcion</label>
-                    <input id="descripcion" type="number" [(ngModel)]="descripcion" name="descripcion" pInputText />
-                </div>
+              <div class="form-field">
+                <label for="descripcion">Descripcion</label>
+                <input id="descripcion" type="number" [(ngModel)]="descripcion" name="descripcion" pInputText />
+              </div>
+
+              <div class="form-field">
+                <label for="categoria">Categoria</label>
+                 <select [(ngModel)]="selectedCategoria" name="categoria">
+                    <option value="">Seleccione una categoría</option>
+                    <option *ngFor="let opcion of categoriaOpciones" [value]="opcion">{{ opcion }}</option>
+                </select>
+              </div>
 
             </div>
 

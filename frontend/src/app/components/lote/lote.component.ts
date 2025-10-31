@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { LoteDto } from '../../../models/Lote.dto';
 import { LoteService } from '../../../services/LoteService';
+import { loteCategoria } from '../../../models/Lote.dto';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -26,17 +27,22 @@ import { ButtonModule } from 'primeng/button';
 })
 
 export class LoteComponent {
-    metodos = [
-      { label: 'Metodo A', id: 1 },
-      { label: 'Metodo B', id: 2 },
-      { label: 'Metodo C', id: 3 }
-    ];
+  categoriaOpciones: loteCategoria[] = [
+    loteCategoria.P,
+    loteCategoria.FT,
+    loteCategoria.M,
+    loteCategoria.B,
+    loteCategoria.PB,
+    loteCategoria.C1,
+    loteCategoria.C2,
+    loteCategoria.CO
+  ];
 
-    selectedMetodo: string = '';
 
     nombre: string = '';
     descripcion: string = '';
-    
+    selectedCategoria: loteCategoria | null = null;
+
 
     constructor(
       private loteService: LoteService,
@@ -52,7 +58,8 @@ export class LoteComponent {
         fechaCreacion: new Date().toISOString(),
         fechaFinalizacion: null,
         usuariosId: [],
-        activo: true
+        activo: true,
+        categoria: this.selectedCategoria || null
       };
 
       this.loteService.crearLote(lote).subscribe({

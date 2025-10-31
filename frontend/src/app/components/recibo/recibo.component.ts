@@ -56,7 +56,6 @@ export class ReciboComponent implements OnInit {
 
   kilos: number = 0;
   fechaRecibo: string = '';
-  rec: string = '';
 
   // Campos de texto simples
   nLab: string = '';
@@ -141,7 +140,7 @@ export class ReciboComponent implements OnInit {
     this.route.paramMap.subscribe(params => {
       const idParam = params.get('reciboId');
       const idParamLote = params.get('loteId');
-      
+
       this.reciboId = idParam ? Number(idParam) : 0;
       this.lote2 = idParamLote ? Number(idParamLote) : 0;
       this.isEditing = this.reciboId !== 0;
@@ -163,7 +162,6 @@ export class ReciboComponent implements OnInit {
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
     this.fechaRecibo = `${year}-${month}-${day}`;
-    this.rec = '';
     this.nLab = '';
     this.articulo = null;
     this.especie = '';
@@ -210,7 +208,6 @@ export class ReciboComponent implements OnInit {
       } else {
         this.fechaRecibo = '';
       }
-      this.rec = recibo.analisisSolicitados || '';
       this.especie = recibo.especie || '';
       this.ficha = recibo.ficha || '';
       this.lote = recibo.loteId || null;
@@ -319,7 +316,7 @@ export class ReciboComponent implements OnInit {
         cultivar: this.selectedCultivar || null,
         loteId: Number(this.lote2) || null,
         kgLimpios: Number(this.kilos) || null,
-        analisisSolicitados: this.rec || null,
+        analisisSolicitados: null,
         articulo: this.articulo,
         activo: true
     };
@@ -435,7 +432,7 @@ export class ReciboComponent implements OnInit {
 
   guardarHumedades(reciboId: number) {
     // Filtrar humedades válidas (que tengan al menos lugar o número)
-    const humedadesValidas = this.humedades.filter(h => 
+    const humedadesValidas = this.humedades.filter(h =>
       h.numero !== null || h.lugar !== null
     );
 
@@ -453,11 +450,11 @@ export class ReciboComponent implements OnInit {
     this.humedadReciboService.HumedadesRecibo(reciboId, humedadesDtos).subscribe({
       next: (resp: { created: HumedadReciboDto[]; errors: any[] }) => {
         console.log('Respuesta del servicio de humedades:', resp);
-        
+
         if (resp.created && resp.created.length > 0) {
           console.log('Humedades procesadas correctamente:', resp.created.length);
         }
-        
+
         if (resp.errors && resp.errors.length > 0) {
           console.warn('Algunos elementos tuvieron errores:', resp.errors);
         }
@@ -470,16 +467,16 @@ export class ReciboComponent implements OnInit {
 
   // Métodos para manejo de tabla de humedades
   agregarHumedad() {
-    this.humedades.push({ 
-      id: null, 
-      reciboId: null, 
-      numero: null, 
+    this.humedades.push({
+      id: null,
+      reciboId: null,
+      numero: null,
       lugar: null
     } as HumedadReciboDto);
     console.log('Humedad agregada. Total humedades:', this.humedades.length);
   }
 
- 
+
 
   /**
    * Verifica que el recibo se haya asociado correctamente al lote
@@ -489,7 +486,7 @@ export class ReciboComponent implements OnInit {
   verificarAsociacionReciboLote(loteId: number, reciboId: number): void {
     console.log('=== VALIDACIÓN FRONTEND: Verificando asociación recibo-lote ===');
     console.log('LoteId:', loteId, 'ReciboId:', reciboId);
-    
+
     this.loteService.verificarAsociacionReciboLote(loteId, reciboId).subscribe({
       next: (asociacionCorrecta: boolean) => {
         if (asociacionCorrecta) {
