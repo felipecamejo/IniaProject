@@ -76,12 +76,9 @@
         </div>
         <div class="form-field" style="margin-bottom: 0;">
           <label for="metodo" style="font-weight:600; margin-right:0.5rem;">Método:</label>
-          <select id="metodo" [(ngModel)]="metodo" name="metodo" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
-            <option value="SP">SP</option>
-            <option value="EP">EP</option>
-            <option value="A">A</option>
-            <option value="RPT">RPT</option>
-            <option value="Tierra">Tierra</option>
+          <select id="metodo" [(ngModel)]="metodoId" name="metodoId" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
+            <option [ngValue]="null">Seleccione...</option>
+            <option *ngFor="let m of metodos" [ngValue]="m.id">{{ m.nombre }}</option>
           </select>
         </div>
         <div class="form-field" style="margin-bottom: 0;">

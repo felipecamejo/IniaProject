@@ -11,6 +11,8 @@ import { TableModule } from 'primeng/table';
 import { GerminacionTablasService } from '../../../services/GerminacionTablasService';
 import { GerminacionService } from '../../../services/GerminacionService';
 import { ConteoGerminacionDto } from '../../../models/ConteoGerminacion.dto';
+import { MetodoService } from '../../../services/MetodoService';
+import { MetodoDto } from '../../../models/Metodo.dto';
 import { NormalPorConteoDto } from '../../../models/NormalPorConteo.dto';
 import { RepeticionFinalDto } from '../../../models/RepeticionFinal.dto';
 import { forkJoin, of } from 'rxjs';
@@ -176,6 +178,9 @@ export class GerminacionComponent implements OnInit {
   // Variables actuales (se actualizan según el tratamiento seleccionado)
   comentarios: string = '';
   numSemillas: string = '';
+  // Listado de métodos expuestos por backend y selección actual
+  metodos: MetodoDto[] = [];
+  metodoId: number | null = null;
   metodo: string = '';
   temperatura: string = '';
   preFrio: string = '';
@@ -260,7 +265,8 @@ export class GerminacionComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private tablasSvc: GerminacionTablasService,
-    private germSvc: GerminacionService
+    private germSvc: GerminacionService,
+    private metodoService: MetodoService
   ) {
     // Inicializar con 1 repetición por defecto
     this.repeticiones.push(this.nuevaRepeticion(1));
@@ -281,6 +287,17 @@ export class GerminacionComponent implements OnInit {
     
     this.onTratamientoChange();
     console.log('VALIDACION OK: Cambio de tratamiento inicial procesado');
+
+    // Cargar métodos desde backend
+    this.metodoService.listar().subscribe({
+      next: (lista) => {
+        this.metodos = Array.isArray(lista) ? lista : [];
+        console.log('VALIDACION OK: Métodos cargados:', this.metodos);
+      },
+      error: (err) => {
+        console.error('VALIDACION ERROR: No se pudieron cargar métodos:', err);
+      }
+    });
     
     this.route.params.subscribe((params: any) => {
       console.log('VALIDACION: Parámetros de ruta recibidos:', params);
@@ -324,8 +341,8 @@ export class GerminacionComponent implements OnInit {
 
   private mapKeyToUiTabla(key: string | null | undefined): string {
     const k = String(key || '').toUpperCase();
-    if (k === 'CURADA_PLANTA') return 'curada planta';
-    if (k === 'CURADA_LABORATORIO') return 'curada laboratorio';
+    if (k === 'CURADA_PLANTA') return 'curada en planta';
+    if (k === 'CURADA_LABORATORIO') return 'curada en laboratorio';
     return 'sin curar';
   }
 
@@ -351,6 +368,15 @@ export class GerminacionComponent implements OnInit {
       return isNaN(num) ? null : num;
     }
     return null;
+  }
+
+  // Normaliza números escritos con coma o con espacios ("0,5" -> 0.5)
+  private parseNumLocale(v: any): number {
+    if (v === null || v === undefined) return 0;
+    if (typeof v === 'number') return isNaN(v) ? 0 : v;
+    const s = String(v).trim().replace(',', '.');
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
   }
 
   private toDateOnlyString(value: any): string {
@@ -379,6 +405,46 @@ export class GerminacionComponent implements OnInit {
     this.tablasSvc.getResumen(germinacionId).subscribe({
       next: (res: any) => {
         console.log('VALIDACION OK: Resumen obtenido del backend:', res);
+        // === DEBUG RESUMEN GERMINACION: estructura y conteos ===
+        console.groupCollapsed('DEBUG RESUMEN GERMINACION');
+        try {
+          const keys = Object.keys(res || {});
+          console.log('Claves en respuesta:', keys);
+
+          const conteos = res?.conteos ?? [];
+          console.table((conteos || []).map((c: any) => ({
+            id: c?.id, numeroConteo: c?.numeroConteo, fechaConteo: c?.fechaConteo
+          })));
+          console.log('Total conteos:', conteos?.length ?? 0);
+
+          const muestras = {
+            normalesSinCurar: res?.normalesSinCurar ? Object.entries(res.normalesSinCurar).slice(0, 1) : [],
+            normalesCuradaPlanta: res?.normalesCuradaPlanta ? Object.entries(res.normalesCuradaPlanta).slice(0, 1) : [],
+            normalesCuradaLaboratorio: res?.normalesCuradaLaboratorio ? Object.entries(res.normalesCuradaLaboratorio).slice(0, 1) : [],
+            finalesSinCurar: (res?.finalesSinCurar || []).slice(0, 3),
+            finalesCuradaPlanta: (res?.finalesCuradaPlanta || []).slice(0, 3),
+            finalesCuradaLaboratorio: (res?.finalesCuradaLaboratorio || []).slice(0, 3),
+          } as any;
+          console.log('Muestras normales por conteo (primer conteo por tabla):', muestras.normalesSinCurar, muestras.normalesCuradaPlanta, muestras.normalesCuradaLaboratorio);
+          console.table(muestras.finalesSinCurar, ['germinacionId','numeroRepeticion','anormal','duras','frescas','muertas']);
+          console.table(muestras.finalesCuradaPlanta, ['germinacionId','numeroRepeticion','anormal','duras','frescas','muertas']);
+          console.table(muestras.finalesCuradaLaboratorio, ['germinacionId','numeroRepeticion','anormal','duras','frescas','muertas']);
+
+          // Validar correlación: por cada conteoId, normales deben ser arrays
+          const conteoIds = (conteos || []).map((c: any) => c?.id).filter(Boolean);
+          ['normalesSinCurar','normalesCuradaPlanta','normalesCuradaLaboratorio'].forEach((k) => {
+            const seccion: any = (res as any)?.[k] || {};
+            conteoIds.forEach((cid: number) => {
+              const lista = seccion?.[cid as any];
+              if (!Array.isArray(lista)) {
+                console.warn(`Sección ${k}[${cid}] debería ser array, recibido:`, typeof lista, lista);
+              }
+            });
+          });
+        } catch (e) {
+          console.error('DEBUG RESUMEN GERMINACION - Error validando:', e);
+        }
+        console.groupEnd();
         const conteos: ConteoGerminacionDto[] = res?.conteos ?? [];
         const conteosLen = (conteos?.length || 0) > 0 ? conteos.length : 1;
         const conteoIds = (conteos ?? []).map(c => c.id as number).filter(Boolean);
@@ -538,14 +604,96 @@ export class GerminacionComponent implements OnInit {
     this.germSvc.obtener(id).subscribe({
       next: (dto: any) => {
         console.log('VALIDACION OK: Datos de germinación obtenidos del backend:', dto);
+        // === DEBUG GERMINACION DTO: validación de estructura y tipos ===
+        console.groupCollapsed('DEBUG GERMINACION DTO');
+        try {
+          const pick = (o: any, keys: string[]) =>
+            Object.fromEntries(keys.map(k => [k, (o as any)?.[k]]));
+
+          const resumenBasico = pick(dto || {}, [
+            'id','reciboId','fechaInicio','fechaFinal','nroDias','totalDias',
+            'nroSemillaPorRepeticion','temperatura','tratamiento','comentarios',
+            'pNormalINIA','pAnormalINIA','pMuertasINIA','pFrescasINIA','semillasDurasINIA','germinacionINIA',
+            'pNormalINASE','pAnormalINASE','pMuertasINASE','pFrescasINASE','semillasDurasINASE','germinacionINASE'
+          ]);
+          console.table(resumenBasico);
+
+          console.log('metodo (objeto completo):', dto?.metodo);
+          console.log('metodo.nombre:', dto?.metodo?.nombre);
+
+          // Tipos esperados
+          const checks = [
+            ['id', 'number'],
+            ['reciboId', 'number'],
+            ['nroSemillaPorRepeticion', 'number'],
+            ['temperatura', 'number'],
+            ['nroDias', 'number'],
+            ['totalDias', 'number'],
+            ['tratamiento', 'string'],
+            ['comentarios', 'string'],
+            ['pNormalINIA', 'number'],
+            ['pNormalINASE', 'number'],
+          ] as const;
+
+          const problemas: string[] = [];
+          for (const [k, t] of checks) {
+            const v = (dto as any)?.[k as any];
+            const tipo = v === null || v === undefined ? 'nullish' : typeof v;
+            if (tipo !== t && !(t === 'number' && typeof v === 'string' && !isNaN(Number(v as any)))) {
+              problemas.push(`Campo ${k} con tipo inesperado: ${tipo} (valor=${JSON.stringify(v)})`);
+            }
+          }
+
+          // Fechas
+          const fechaInicioOk = (dto as any)?.fechaInicio ? !isNaN(new Date((dto as any).fechaInicio).getTime()) : true;
+          const fechaFinalOk = (dto as any)?.fechaFinal ? !isNaN(new Date((dto as any).fechaFinal).getTime()) : true;
+          if (!fechaInicioOk) problemas.push(`fechaInicio inválida: ${(dto as any)?.fechaInicio}`);
+          if (!fechaFinalOk) problemas.push(`fechaFinal inválida: ${(dto as any)?.fechaFinal}`);
+
+          // Metodo
+          if ((dto as any)?.metodo && typeof (dto as any).metodo !== 'object') {
+            problemas.push(`metodo debería ser objeto, recibido: ${typeof (dto as any).metodo}`);
+          }
+
+          if (problemas.length) {
+            console.warn('DEBUG GERMINACION DTO - Problemas detectados:');
+            problemas.forEach(p => console.warn(' -', p));
+          } else {
+            console.log('DEBUG GERMINACION DTO - Sin problemas de estructura/Tipos detectados');
+          }
+        } catch (e) {
+          console.error('DEBUG GERMINACION DTO - Error validando:', e);
+        }
+        console.groupEnd();
         // Encabezado / metadata
         this.comentarios = dto?.comentarios ?? '';
         this.numSemillas = dto?.nroSemillaPorRepeticion != null ? String(dto.nroSemillaPorRepeticion) : '';
-        // El backend devuelve un objeto Metodo; mostrar su nombre si existe
+        // Método: seleccionar por id si viene del backend
+        this.metodoId = dto?.metodo?.id ?? null;
         this.metodo = dto?.metodo?.nombre ?? '';
-        this.temperatura = dto?.temperatura != null ? String(dto.temperatura) : '';
-        this.preFrio = (dto?.preFrio === 'PREFRIO') ? 'PREFRIO' : 'No';
-        this.preTratamiento = dto?.preTratamiento ?? '';
+        // Temperatura: mapear número del backend a opción del selector
+        if (dto?.temperatura != null) {
+          const t = Number(dto.temperatura);
+          if ([15, 20, 25].includes(t)) {
+            this.temperatura = `${t}°C`;
+          } else {
+            this.temperatura = String(dto.temperatura);
+          }
+        } else {
+          this.temperatura = '';
+        }
+        // Pre-frío: el backend solo reporta enum (PREFRIO | SIN_PREFRIO). El selector usa 'No' o días.
+        // Si viene PREFRIO, seleccionar el primer valor disponible de días para reflejar "sí hay pre-frío".
+        this.preFrio = (dto?.preFrio === 'PREFRIO')
+          ? (this.diasPreFrio && this.diasPreFrio.length ? String(this.diasPreFrio[0]) : 'No')
+          : 'No';
+        // Pre-tratamiento: mapear NINGUNO a 'No', otros a una opción visible (usamos 'KNO3' como comodín UI)
+        if (dto?.preTratamiento === 'NINGUNO' || dto?.preTratamiento === 'SIN_PRETRATAMIENTO') {
+          this.preTratamiento = 'No';
+        } else {
+          // Valores como ESCARIFICADO, EP_16_HORAS, AGUA_7_HORAS, OTRO → mostrar una opción válida
+          this.preTratamiento = 'KNO3';
+        }
         this.productoDosis = '';
         // Tratamiento (mapear enum a etiqueta UI)
         this.tratamientoSemillas = this.mapKeyToUiTabla(dto?.tratamiento);
@@ -752,7 +900,7 @@ export class GerminacionComponent implements OnInit {
       totalDias: Number(this.fechas?.totalDias) || 0,
       tratamiento: this.mapUiTablaToKey(this.tratamientoSemillas),
       nroSemillaPorRepeticion: Number(this.numSemillas) || 0,
-      metodo: null,
+      metodo: this.metodoId ? { id: Number(this.metodoId) } : null,
       temperatura: this.parseTemperaturaToFloat(this.temperatura),
       preFrio: this.mapPreFrioToEnum(this.preFrio),
       preTratamiento: this.mapPreTratamientoToEnum(this.preTratamiento),
@@ -850,6 +998,9 @@ export class GerminacionComponent implements OnInit {
       return;
     }
     
+    // Alinear largos de normales con cantidad de conteos actuales
+    this.syncNormalesConConteos();
+    
     const deseados = Math.max(1, (this.fechas?.conteos?.length || 1));
     console.log('VALIDACION: Conteos deseados:', deseados);
     
@@ -879,28 +1030,36 @@ export class GerminacionComponent implements OnInit {
 
                 // 3) Crear repeticiones necesarias (por número de fila)
                 const crearReps$: any[] = (this.repeticiones || []).map(rep =>
-                  this.tablasSvc.addRepeticionNumero(germinacionId, tablaKey, Number(rep.numero || 0))
+                  this.tablasSvc.addRepeticionNumero(germinacionId, tablaKey, this.parseNumLocale(rep.numero))
                     .pipe(catchError(err => { console.error('Error creando repetición', err); return of(null); }))
                 );
                 const repsListo$ = crearReps$.length ? forkJoin(crearReps$) : of([] as any[]);
 
                 repsListo$.subscribe({
                   next: () => {
-                    // 4) Upsert de normales (por celda)
+                    // 4) Upsert de normales (por celda) mapeando por numeroConteo
                     const upsertsNormales$: any[] = [];
+                    const mapaConteo = new Map<number, ConteoGerminacionDto>();
+                    conteosOrdenados.forEach(c => {
+                      const n = Number((c as any)?.numeroConteo || 0);
+                      if (n > 0) mapaConteo.set(n, c);
+                    });
                     (this.repeticiones || []).forEach(rep => {
-                      conteosOrdenados.forEach((c, idx) => {
+                      for (let n = 1; n <= conteosOrdenados.length; n++) {
+                        const c = mapaConteo.get(n) || conteosOrdenados[n - 1];
+                        if (!c?.id) { console.error('VALIDACION ERROR: Conteo sin id para numeroConteo', n, c); continue; }
+                        const idx = n - 1;
                         const body: NormalPorConteoDto = {
                           germinacionId: germinacionId,
                           tabla: tablaKey,
-                          numeroRepeticion: Number(rep.numero || 0),
-                          conteoId: Number(c.id || 0),
-                          normal: Number(rep.normales?.[idx] || 0)
+                          numeroRepeticion: this.parseNumLocale(rep.numero),
+                          conteoId: Number(c.id),
+                          normal: this.parseNumLocale(rep.normales?.[idx])
                         };
                         upsertsNormales$.push(
-                          this.tablasSvc.upsertNormal(tablaKey, body).pipe(catchError(err => { console.error('Error guardando normal', err); return of(null); }))
+                          this.tablasSvc.upsertNormal(tablaKey, body).pipe(catchError(err => { console.error('Error guardando normal', err, body); return of(null); }))
                         );
-                      });
+                      }
                     });
 
                     const normalesListo$ = upsertsNormales$.length ? forkJoin(upsertsNormales$) : of([] as any[]);
@@ -911,11 +1070,11 @@ export class GerminacionComponent implements OnInit {
                           const finBody: RepeticionFinalDto = {
                             activo: true,
                             germinacionId: germinacionId,
-                            numeroRepeticion: Number(rep.numero || 0),
-                            anormal: Number(rep.anormales || 0),
-                            duras: Number(rep.duras || 0),
-                            frescas: Number(rep.frescas || 0),
-                            muertas: Number(rep.muertas || 0)
+                            numeroRepeticion: this.parseNumLocale(rep.numero),
+                            anormal: this.parseNumLocale(rep.anormales),
+                            duras: this.parseNumLocale(rep.duras),
+                            frescas: this.parseNumLocale(rep.frescas),
+                            muertas: this.parseNumLocale(rep.muertas)
                           };
                           return this.tablasSvc.upsertFinales(tablaKey, finBody).pipe(catchError(err => { console.error('Error guardando finales', err); return of(null); }));
                         });
@@ -1002,6 +1161,14 @@ export class GerminacionComponent implements OnInit {
                     return; // nada que persistir; quedará la repetición 1 vacía creada en backend
                   }
 
+                  // Alinear largos de normales con cantidad de conteos
+                  reps.forEach(r => {
+                    if (!Array.isArray(r.normales)) r.normales = [] as any;
+                    const need = conteosOrdenados.length;
+                    while (r.normales.length < need) { r.normales.push(0); }
+                    if (r.normales.length > need) { r.normales = r.normales.slice(0, need); }
+                  });
+
                   // Validar estructura de repeticiones
                   reps.forEach((rep, index) => {
                     if (!rep.normales || !Array.isArray(rep.normales)) {
@@ -1016,54 +1183,41 @@ export class GerminacionComponent implements OnInit {
                   // Crear repeticiones necesarias (por fila)
                   reps.forEach(rep => {
                     ops$.push(
-                      this.tablasSvc.addRepeticionNumero(germinacionId, k, Number(rep.numero || 0))
+                      this.tablasSvc.addRepeticionNumero(germinacionId, k, this.parseNumLocale(rep.numero))
                         .pipe(catchError(err => { console.error('Error creando repetición', err); return of(null); }))
                     );
                   });
 
-                  // Upsert normales por cada conteo
+                  // Upsert normales por cada conteo mapeando por numeroConteo
+                  const mapaConteo = new Map<number, ConteoGerminacionDto>();
+                  conteosOrdenados.forEach(c => {
+                    const n = Number((c as any)?.numeroConteo || 0);
+                    if (n > 0) mapaConteo.set(n, c);
+                  });
                   reps.forEach(rep => {
-                    conteosOrdenados.forEach((c, idx) => {
-                      // Validar datos antes de enviar
-                      if (!germinacionId || !c.id || rep.numero === undefined) {
-                        console.error('VALIDACION ERROR: Datos incompletos para normal', {
-                          germinacionId,
-                          conteoId: c.id,
-                          numeroRepeticion: rep.numero,
-                          tabla: k
-                        });
-                        return;
+                    for (let n = 1; n <= conteosOrdenados.length; n++) {
+                      const c = mapaConteo.get(n) || conteosOrdenados[n - 1];
+                      if (!germinacionId || !c?.id || rep.numero === undefined) {
+                        console.error('VALIDACION ERROR: Datos incompletos para normal', { germinacionId, conteoId: c?.id, numeroRepeticion: rep.numero, tabla: k });
+                        continue;
                       }
-
+                      const idx = n - 1;
                       const body: NormalPorConteoDto = {
                         germinacionId: germinacionId,
                         tabla: k,
-                        numeroRepeticion: Number(rep.numero || 0),
-                        conteoId: Number(c.id || 0),
-                        normal: Number(rep.normales?.[idx] || 0)
+                        numeroRepeticion: this.parseNumLocale(rep.numero),
+                        conteoId: Number(c.id),
+                        normal: this.parseNumLocale(rep.normales?.[idx])
                       };
-
-                      console.log('VALIDACION: Enviando datos normales:', {
-                        tabla: k,
-                        body: body,
-                        repeticion: rep,
-                        conteo: c
-                      });
-
                       ops$.push(
                         this.tablasSvc.upsertNormal(k, body).pipe(
                           catchError(err => { 
-                            console.error('VALIDACION ERROR: Error guardando normal', {
-                              error: err,
-                              tabla: k,
-                              body: body,
-                              url: `${this.tablasSvc['urls'].baseUrl}${this.tablasSvc['base']}/normales/${encodeURIComponent(k)}`
-                            }); 
+                            console.error('VALIDACION ERROR: Error guardando normal', { error: err, tabla: k, body: body }); 
                             return of(null); 
                           })
                         )
                       );
-                    });
+                    }
                   });
 
                   // Upsert finales por fila
@@ -1081,11 +1235,11 @@ export class GerminacionComponent implements OnInit {
                     const finBody: RepeticionFinalDto = {
                       activo: true,
                       germinacionId: germinacionId,
-                      numeroRepeticion: Number(rep.numero || 0),
-                      anormal: Number(rep.anormales || 0),
-                      duras: Number(rep.duras || 0),
-                      frescas: Number(rep.frescas || 0),
-                      muertas: Number(rep.muertas || 0)
+                      numeroRepeticion: this.parseNumLocale(rep.numero),
+                      anormal: this.parseNumLocale(rep.anormales),
+                      duras: this.parseNumLocale(rep.duras),
+                      frescas: this.parseNumLocale(rep.frescas),
+                      muertas: this.parseNumLocale(rep.muertas)
                     };
 
                     console.log('VALIDACION: Enviando datos finales:', {
