@@ -53,6 +53,8 @@ export interface RepeticionTetrazolio {
 export class TetrazolioComponent implements OnInit {
   // Campos nuevos del formulario
   cantidadSemillas: number | null = null;
+  // Errores de validación mostrados en UI (estilo login)
+  erroresValidacion: string[] = [];
 
   // Pretratamiento: seleccionar o especificar
   pretratamientoOptions: { label: string; value: any }[] = [
@@ -523,6 +525,7 @@ export class TetrazolioComponent implements OnInit {
     }
     
     this.isSubmitting = true;
+    this.erroresValidacion = [];
     console.log('Iniciando envío del formulario...');
     
     // Sincronizar repeticiones a repeticionesEntries antes de enviar
@@ -620,6 +623,9 @@ export class TetrazolioComponent implements OnInit {
       const validaciones = this.validarDatosCreacion();
       if (!validaciones.esValido) {
         console.error('VALIDACIONES FALLIDAS:', validaciones.errores);
+        // Restablecer estado de envío para reactivar los botones y mostrar errores en pantalla
+        this.isSubmitting = false;
+        this.erroresValidacion = validaciones.errores || [];
         return;
       }
       
@@ -685,6 +691,9 @@ export class TetrazolioComponent implements OnInit {
       const validaciones = this.validarDatosCreacion();
       if (!validaciones.esValido) {
         console.error('VALIDACIONES FALLIDAS:', validaciones.errores);
+        // Restablecer estado de envío para reactivar los botones y mostrar errores en pantalla
+        this.isSubmitting = false;
+        this.erroresValidacion = validaciones.errores || [];
         return;
       }
       

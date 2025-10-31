@@ -258,6 +258,13 @@
                 <button pButton type="button" (click)="onCancel()" label="Cancelar" class="p-button-secondary" style="margin-left: 10px;" [disabled]="isSubmitting"></button>
             </div>
 
+            <!-- Mensajes de error al estilo login: listado en rojo debajo del formulario -->
+            <div *ngIf="erroresValidacion?.length" class="error-message" style="margin-top: 12px;">
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li *ngFor="let e of erroresValidacion">{{ e }}</li>
+                </ul>
+            </div>
+
         </form>
     </p-card>
 </div>
