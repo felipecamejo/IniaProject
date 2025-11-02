@@ -707,6 +707,7 @@ public class MapsDtoEntityService {
         loteDto.setFechaCreacion(formatDate(lote.getFechaCreacion()));
         loteDto.setFechaFinalizacion(formatDate(lote.getFechaFinalizacion()));
         loteDto.setEstado(lote.getEstado());
+        loteDto.setCategoria(lote.getCategoria());
 
         if (lote.getUsuarios() != null) {
             loteDto.setUsuariosId(lote.getUsuarios().stream().map(Usuario::getId).collect(Collectors.toList()));
@@ -730,6 +731,7 @@ public class MapsDtoEntityService {
         lote.setFechaCreacion(parseDate(loteDto.getFechaCreacion()));
         lote.setFechaFinalizacion(parseDate(loteDto.getFechaFinalizacion()));
         lote.setEstado(loteDto.getEstado());
+        lote.setCategoria(loteDto.getCategoria());
 
         if (loteDto.getUsuariosId() != null) {
             lote.setUsuarios(loteDto.getUsuariosId().stream().map(id -> {
@@ -855,6 +857,7 @@ public class MapsDtoEntityService {
         LoteDto dto = new LoteDto();
         dto.setId(lote.getId());
         dto.setNombre(lote.getNombre());
+        dto.setCategoria(lote.getCategoria());
 
         return dto;
     }
@@ -864,6 +867,7 @@ public class MapsDtoEntityService {
         Lote lote = new Lote();
         lote.setId(loteDto.getId());
         lote.setNombre(loteDto.getNombre());
+        lote.setCategoria(loteDto.getCategoria());
 
         return lote;
     }

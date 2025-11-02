@@ -10,7 +10,7 @@
         </ng-template>
 
         <form (ngSubmit)="guardarRecibo()" (input)="manejarProblemas()">
-           
+
 
             <div class="form-grid">
                 <!-- Campos de texto -->
@@ -35,7 +35,7 @@
                 <div class="form-field">
                     <label for="articulo">Artículo</label>
                     <span *ngIf="articulo != null && articulo < 0" class="error-message">El artículo no puede ser negativo.</span>
-                    <input id="articulo" type="number" [(ngModel)]="articulo" name="articulo" pInputText 
+                    <input id="articulo" type="number" [(ngModel)]="articulo" name="articulo" pInputText
                            [ngClass]="{ 'input-error': articulo != null && articulo < 0 }"/>
                 </div>
 
@@ -69,18 +69,13 @@
                 <div class="form-field">
                     <label for="kilos">Kilos Limpios</label>
                     <span *ngIf="kilos != null && kilos < 0" class="error-message">Los kilos no pueden ser negativos.</span>
-                    <input id="kilos" type="number" [(ngModel)]="kilos" name="kilos" pInputText 
+                    <input id="kilos" type="number" [(ngModel)]="kilos" name="kilos" pInputText
                            [ngClass]="{ 'input-error': kilos != null && kilos < 0 }"/>
                 </div>
 
                 <div class="form-field">
                     <label for="remite">Remitente</label>
                     <input id="remite" type="text" [(ngModel)]="remite" name="remite" pInputText />
-                </div>
-
-                <div class="form-field">
-                    <label for="rec">REC</label>
-                    <textarea id="rec" rows="3" placeholder="Agregar nuevo rec..." [(ngModel)]="rec" name="rec" pInputText></textarea>
                 </div>
 
                 <div class="form-field">
@@ -103,7 +98,7 @@
                     </select>
                 </div>
 
-                
+
             </div>
 
             <!-- Tabla de Humedades -->
@@ -124,30 +119,30 @@
                         </tr>
                         <tr *ngFor="let humedad of humedades; let i = index">
                             <td>
-                                <select [(ngModel)]="humedad.lugar" 
-                                        name="humedadLugar{{i}}" 
+                                <select [(ngModel)]="humedad.lugar"
+                                        name="humedadLugar{{i}}"
                                         class="form-control">
                                     <option [value]="null">Seleccionar lugar</option>
-                                    <option *ngFor="let lugar of lugaresHumedad" 
+                                    <option *ngFor="let lugar of lugaresHumedad"
                                             [value]="lugar.value">
                                         {{lugar.label}}
                                     </option>
                                 </select>
                             </td>
                             <td>
-                                <input type="number" 
-                                       [(ngModel)]="humedad.numero" 
-                                       name="humedadNumero{{i}}" 
-                                       placeholder="Número" 
+                                <input type="number"
+                                       [(ngModel)]="humedad.numero"
+                                       name="humedadNumero{{i}}"
+                                       placeholder="Número"
                                        [ngClass]="{ 'input-error': humedad.numero != null && humedad.numero < 0 }"/>
                                 <span *ngIf="humedad.numero != null && humedad.numero < 0" class="error-message">El número no puede ser negativo.</span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
-                <button pButton type="button" 
-                        label="Agregar Humedad" 
-                        class="btn-agregar-rep" 
+                <button pButton type="button"
+                        label="Agregar Humedad"
+                        class="btn-agregar-rep"
                         (click)="agregarHumedad()">
                 </button>
             </div>
@@ -164,6 +159,6 @@
             </div>
         </form>
 
-        
+
     </p-card>
 </div>

@@ -41,4 +41,8 @@ public class Lote {
 
     @ManyToMany(mappedBy = "lotes")
     private List<Usuario> usuarios;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "LOTE_CATEGORIA")
+    private loteCategoria categoria;
 }
