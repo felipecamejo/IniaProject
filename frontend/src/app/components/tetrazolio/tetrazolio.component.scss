@@ -262,11 +262,32 @@
   align-items: center;
 }
 
-/* Mensajes de error de validación (consistente con login) */
+/* Mensajes de error de validación */
+.error-container {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #fef2f2;
+  border: 1px solid var(--rojo, #DA696A);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(218, 105, 106, 0.1);
+}
+
 .error-message {
   color: var(--rojo, #DA696A);
-  background: color-mix(in srgb, #DA696A 6%, #fff);
-  border: 1px solid color-mix(in srgb, #DA696A 35%, transparent);
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
+  font-size: 0.95em;
+  margin: 0.25rem 0;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.error-message:first-child {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Estilos para inputs con error */
+.input-error {
+  border-color: var(--rojo, #DA696A) !important;
+  background-color: #fef2f2 !important;
+  box-shadow: 0 0 0 2px rgba(218, 105, 106, 0.1) !important;
 }

@@ -761,6 +761,10 @@ export class TetrazolioComponent implements OnInit {
       errores.push('La cantidad de semillas debe ser mayor a 0');
       console.warn('Cantidad de semillas inválida:', this.cantidadSemillas);
     }
+    if (this.cantidadSemillas !== null && this.cantidadSemillas < 0) {
+      errores.push('La cantidad de semillas no puede ser menor que cero');
+      console.warn('Cantidad de semillas negativa:', this.cantidadSemillas);
+    }
     
     // Validar pretratamiento
     if (this.selectedPretratamiento === null || this.selectedPretratamiento === undefined) {
@@ -770,9 +774,12 @@ export class TetrazolioComponent implements OnInit {
     
     // Validar concentración
     const concentracion = this.selectedConcentracion === 'custom' ? this.concentracionCustom : this.selectedConcentracion;
-    if (concentracion === null || concentracion === undefined || concentracion < 0) {
-      errores.push('La concentración debe ser un valor válido mayor o igual a 0');
-      console.warn('Concentración inválida:', concentracion);
+    if (concentracion === null || concentracion === undefined) {
+      errores.push('La concentración es requerida');
+      console.warn('Concentración no definida');
+    } else if (concentracion < 0) {
+      errores.push('La concentración no puede ser menor que cero');
+      console.warn('Concentración negativa:', concentracion);
     }
     
     // Validar tinción horas
@@ -781,11 +788,19 @@ export class TetrazolioComponent implements OnInit {
       errores.push('Las horas de tinción deben ser un valor válido mayor a 0');
       console.warn('Tinción horas inválida:', tincionHoras);
     }
+    if (tincionHoras !== null && tincionHoras !== undefined && tincionHoras < 0) {
+      errores.push('Las horas de tinción no pueden ser menores que cero');
+      console.warn('Tinción horas negativa:', tincionHoras);
+    }
     
     // Validar tinción grados
     if (this.tincionC === null || this.tincionC === undefined || this.tincionC <= 0) {
       errores.push('Los grados de tinción deben ser un valor válido mayor a 0');
       console.warn('Tinción grados inválida:', this.tincionC);
+    }
+    if (this.tincionC !== null && this.tincionC !== undefined && this.tincionC < 0) {
+      errores.push('Los grados de tinción no pueden ser menores que cero');
+      console.warn('Tinción grados negativa:', this.tincionC);
     }
     
     // Validar fecha
@@ -809,7 +824,7 @@ export class TetrazolioComponent implements OnInit {
       // Validar que todas las repeticiones tengan datos válidos
       this.repeticiones.forEach((rep, index) => {
         if (rep.viables < 0 || rep.noViables < 0 || rep.duras < 0) {
-          errores.push(`La repetición ${index + 1} tiene valores negativos`);
+          errores.push(`La repetición ${index + 1} tiene valores negativos. Los valores no pueden ser menores que cero`);
           console.warn(`Repetición ${index + 1} con valores negativos:`, rep);
         }
         
@@ -821,10 +836,58 @@ export class TetrazolioComponent implements OnInit {
       });
     }
     
+    // Validar promedios: deben estar entre 0 y 100
+    if (this.repeticiones && this.repeticiones.length > 0) {
+      const promedioViables = parseFloat(this.getPromedioViables(false));
+      if (!isNaN(promedioViables)) {
+        if (promedioViables < 0 || promedioViables > 100) {
+          errores.push(`El promedio de viables (${promedioViables.toFixed(2)}%) debe estar entre 0 y 100`);
+          console.warn('Promedio de viables fuera de rango:', promedioViables);
+        }
+      }
+      
+      const promedioNoViables = parseFloat(this.getPromedioNoViables(false));
+      if (!isNaN(promedioNoViables)) {
+        if (promedioNoViables < 0 || promedioNoViables > 100) {
+          errores.push(`El promedio de no viables (${promedioNoViables.toFixed(2)}%) debe estar entre 0 y 100`);
+          console.warn('Promedio de no viables fuera de rango:', promedioNoViables);
+        }
+      }
+      
+      const promedioDuras = parseFloat(this.getPromedioDuras(false));
+      if (!isNaN(promedioDuras)) {
+        if (promedioDuras < 0 || promedioDuras > 100) {
+          errores.push(`El promedio de duras (${promedioDuras.toFixed(2)}%) debe estar entre 0 y 100`);
+          console.warn('Promedio de duras fuera de rango:', promedioDuras);
+        }
+      }
+    }
+    
     // Validar detalles de semillas
     if (!this.detalles || this.detalles.length === 0) {
       errores.push('Debe tener al menos una tabla de detalles de semillas');
       console.warn('No hay detalles de semillas definidos');
+    } else {
+      // Validar que todos los valores en detalles sean >= 0
+      this.detalles.forEach((det, tablaIndex) => {
+        const categorias: Array<{nombre: string, categoria: DetalleCategoria}> = [
+          { nombre: 'viables sin defectos', categoria: det.viablesSinDefectos },
+          { nombre: 'viables leves', categoria: det.viablesLeves },
+          { nombre: 'viables moderados', categoria: det.viablesModerados },
+          { nombre: 'viables severos', categoria: det.viablesSeveros },
+          { nombre: 'no viables', categoria: det.noViables }
+        ];
+        
+        categorias.forEach(cat => {
+          if (cat.categoria.total < 0 || cat.categoria.mecanico < 0 || 
+              cat.categoria.ambiente < 0 || cat.categoria.chinches < 0 || 
+              cat.categoria.fracturas < 0 || cat.categoria.otros < 0 || 
+              cat.categoria.duras < 0) {
+            errores.push(`La tabla ${tablaIndex + 1} en ${cat.nombre} tiene valores negativos. Los valores no pueden ser menores que cero`);
+            console.warn(`Tabla ${tablaIndex + 1} - ${cat.nombre} con valores negativos:`, cat.categoria);
+          }
+        });
+      });
     }
     
     const esValido = errores.length === 0;
