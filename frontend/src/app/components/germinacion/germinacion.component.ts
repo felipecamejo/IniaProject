@@ -1160,11 +1160,6 @@ export class GerminacionComponent implements OnInit {
       this.errores.push('La fecha de inicio no puede ser futura.');
     }
 
-    if (this.fechas.conteos.some(fecha => this.validarFecha(fecha))) {
-      this.errores.push('Las fechas de conteo no pueden ser futuras.');
-    }
-
-    
     if (this.validarNumeroNegativo(this.fechas.totalDias || 0)) {
       this.errores.push('El total de días no puede ser negativo.');
     }

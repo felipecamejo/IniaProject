@@ -28,7 +28,6 @@
                   <td class="col-fecha">
                     <div class="col-fecha-flex">
                       <input type="date" [(ngModel)]="fechas.conteos[i]" [name]="'fechaConteo'+i" pInputText [readonly]="isReadonly" 
-                      [ngClass]="{ 'input-error': validarFecha(fechas.conteos[i]) }"
                       />
                       <button type="button" (click)="removeConteo(i)" style="margin-left:4px; color:#e11d48; background:none; border:none; font-size:1.2em; cursor:pointer;" *ngIf="fechas.conteos.length > 1 && !isReadonly">✕</button>
                     </div>

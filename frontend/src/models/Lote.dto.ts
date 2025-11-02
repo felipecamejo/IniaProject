@@ -1,3 +1,14 @@
+export enum loteCategoria {
+  P = 'P',
+  FT = 'FT',
+  M = 'M',
+  B = 'B',
+  PB = 'PB',
+  C1 = 'C1',
+  C2 = 'C2',
+  CO = 'CO'
+}
+
 export interface LoteDto {
     id: number | null;
     nombre: string;
@@ -9,4 +20,5 @@ export interface LoteDto {
     estado?: string;
     autor?: string;
     fecha?: string;
+    categoria?: loteCategoria | null;
 }

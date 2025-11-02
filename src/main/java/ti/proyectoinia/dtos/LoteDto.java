@@ -5,6 +5,7 @@ import java.util.List;
 import lombok.Data;
 import lombok.Generated;
 import ti.proyectoinia.business.entities.Estado;
+import ti.proyectoinia.business.entities.loteCategoria;
 
 @Data
 public class LoteDto {
@@ -23,6 +24,8 @@ public class LoteDto {
     private boolean activo;
 
     private List<Long> usuariosId;
+
+    private loteCategoria categoria;
 
     @Generated
     public boolean equals(final Object o) {
