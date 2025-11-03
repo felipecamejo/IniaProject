@@ -73,6 +73,8 @@ public class TetrazolioDto {
 
     private Long reciboId;
 
+    private ReporteTetrazolioDto reporte;
+
     @Generated
     public boolean equals(final Object o) {
         if (o == this) return true;

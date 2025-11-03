@@ -20,7 +20,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TetrazolioDto } from '../../../models/Tetrazolio.dto';
+import { TetrazolioDto, ReporteTetrazolio } from '../../../models/Tetrazolio.dto';
 import { RepeticionTetrazolioDto } from '../../../models/RepeticionTetrazolioDto';
 import { TetrazolioService } from '../../../services/TetrazolioService';
 import { CardModule } from 'primeng/card';
@@ -125,6 +125,17 @@ export class TetrazolioComponent implements OnInit {
       noViables: { total: 0, mecanico: 0, ambiente: 0, chinches: 0, fracturas: 0, otros: 0, duras: 0 }
     }
   ];
+
+  // Estructura para la tabla de reporte
+  reporte: ReporteTetrazolio = {
+    vigorAlto: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+    vigorMedio: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+    vigorBajo: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+    limiteCritico: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+    noViables: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+    viabilidad: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+    vigorAcumulado: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } }
+  };
 
   // Suma de N° de semillas (todas las filas)
   getSumaTotal(det: DetalleSemillas): number {
@@ -420,6 +431,22 @@ export class TetrazolioComponent implements OnInit {
           d.viablesSinDefectos.duras = item.daniosDuras ?? 0;
         }
 
+        // Cargar reporte desde el backend si existe
+        if (item.reporte) {
+          this.reporte = item.reporte;
+        } else {
+          // Inicializar reporte con valores por defecto
+          this.reporte = {
+            vigorAlto: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+            vigorMedio: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+            vigorBajo: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+            limiteCritico: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+            noViables: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+            viabilidad: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+            vigorAcumulado: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } }
+          };
+        }
+
         // Cargar repeticiones y detalles desde el backend
         this.cargarRepeticiones(id);
         this.cargarDetalles(id);
@@ -515,6 +542,16 @@ export class TetrazolioComponent implements OnInit {
       { numero: 1, viables: 0, noViables: 0, duras: 0 }
     ];
     this.detalles = [this.crearDetalleVacio()];
+    // Inicializar reporte con valores por defecto
+    this.reporte = {
+      vigorAlto: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+      vigorMedio: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+      vigorBajo: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+      limiteCritico: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+      noViables: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+      viabilidad: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
+      vigorAcumulado: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } }
+    };
   }
 
   onSubmit() {
@@ -602,6 +639,9 @@ export class TetrazolioComponent implements OnInit {
         console.log('Fecha original:', this.fecha);
       }
     }
+
+    // Agregar reporte al DTO
+    tetrazolioData.reporte = this.reporte;
 
     if (this.isEditing && this.editingId) {
       // Actualizar Tetrazolio existente

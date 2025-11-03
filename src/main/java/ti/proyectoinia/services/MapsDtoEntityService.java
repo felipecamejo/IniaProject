@@ -1151,6 +1151,9 @@ public class MapsDtoEntityService {
         dto.setRepetido(tetrazolio.isRepetido());
         dto.setReciboId(tetrazolio.getRecibo() != null ? tetrazolio.getRecibo().getId() : null);
 
+        // El reporte puede ser null y no está en la entidad aún, se inicializa como null
+        dto.setReporte(null);
+
         return dto;
     }
 

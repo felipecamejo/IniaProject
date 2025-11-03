@@ -235,6 +235,117 @@
             </div>
             }
 
+            <!-- Separador discreto entre secciones -->
+            <hr class="section-divider" />
+
+            <!-- Tabla de Reporte -->
+            <h3 style="margin-top:2.5rem;">Reporte</h3>
+            <div class="table-wrapper">
+                <table class="p-table tetrazolio-table reporte-table">
+                    <thead>
+                        <tr>
+                            <th colspan="2" class="reporte-header">REPORTE</th>
+                            <th colspan="7" class="reporte-header">Deberia salir asi en %</th>
+                        </tr>
+                        <tr>
+                            <th class="reporte-subheader">Viabilidad y Vigor por tetrazolio</th>
+                            <th class="reporte-subheader">%</th>
+                            <th colspan="7" class="reporte-subheader">Daños %</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th>Mecánicos</th>
+                            <th>Ambiente</th>
+                            <th>Chinches</th>
+                            <th>Fracturas</th>
+                            <th>Otros</th>
+                            <th>Duras</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="footer-label">Vigor Alto</td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.porcentaje" name="reporte_vigorAlto_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.mecanicos" name="reporte_vigorAlto_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.ambiente" name="reporte_vigorAlto_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.chinches" name="reporte_vigorAlto_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.fracturas" name="reporte_vigorAlto_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.otros" name="reporte_vigorAlto_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.duras" name="reporte_vigorAlto_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">Vigor Medio</td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.porcentaje" name="reporte_vigorMedio_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.mecanicos" name="reporte_vigorMedio_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.ambiente" name="reporte_vigorMedio_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.chinches" name="reporte_vigorMedio_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.fracturas" name="reporte_vigorMedio_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.otros" name="reporte_vigorMedio_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.duras" name="reporte_vigorMedio_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">Vigor Bajo</td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.porcentaje" name="reporte_vigorBajo_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.mecanicos" name="reporte_vigorBajo_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.ambiente" name="reporte_vigorBajo_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.chinches" name="reporte_vigorBajo_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.fracturas" name="reporte_vigorBajo_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.otros" name="reporte_vigorBajo_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.duras" name="reporte_vigorBajo_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">Limite Crítico</td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.porcentaje" name="reporte_limiteCritico_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.mecanicos" name="reporte_limiteCritico_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.ambiente" name="reporte_limiteCritico_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.chinches" name="reporte_limiteCritico_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.fracturas" name="reporte_limiteCritico_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.otros" name="reporte_limiteCritico_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.duras" name="reporte_limiteCritico_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">No viables</td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.porcentaje" name="reporte_noViables_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.mecanicos" name="reporte_noViables_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.ambiente" name="reporte_noViables_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.chinches" name="reporte_noViables_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.fracturas" name="reporte_noViables_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.otros" name="reporte_noViables_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.duras" name="reporte_noViables_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">Viabilidad</td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.porcentaje" name="reporte_viabilidad_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.mecanicos" name="reporte_viabilidad_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.ambiente" name="reporte_viabilidad_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.chinches" name="reporte_viabilidad_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.fracturas" name="reporte_viabilidad_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.otros" name="reporte_viabilidad_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.duras" name="reporte_viabilidad_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">Vigor Acumulado</td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.porcentaje" name="reporte_vigorAcumulado_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.mecanicos" name="reporte_vigorAcumulado_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.ambiente" name="reporte_vigorAcumulado_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.chinches" name="reporte_vigorAcumulado_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.fracturas" name="reporte_vigorAcumulado_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.otros" name="reporte_vigorAcumulado_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.duras" name="reporte_vigorAcumulado_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <!-- Checkbox Repetido - solo visible al editar -->
             @if (isEditing) {
             <div class="form-field">
