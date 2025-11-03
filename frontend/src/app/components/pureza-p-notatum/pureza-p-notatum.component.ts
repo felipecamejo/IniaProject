@@ -331,7 +331,7 @@ export class PurezaPNotatumComponent implements OnInit {
   }
 
   getControlPesos(rep: any): number {
-    return (rep.gramosSemillasSanas || 0) + (rep.gramosContaminadasYVanas || 0);
+    return (rep.peso || 0) + (rep.gramosSemillasSanas || 0) + (rep.gramosContaminadasYVanas || 0);
   }
 
   manejarProblemas(): boolean {
