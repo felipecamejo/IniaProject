@@ -26,6 +26,8 @@ public class PurezaDto {
     private Float materialInerteInase;
     private Float materialInertePorcentajeRedondeo;
     private Float materialInertePorcentajeRedondeoInase;
+    private String materiaInerteTipo;
+    private String materiaInerteTipoInase;
 
     private Float otrosCultivos;
     private Float otrosCultivosInase;
@@ -46,9 +48,6 @@ public class PurezaDto {
     private Float malezasToleranciaCeroInase;
     private Float malezasToleranciaCeroPorcentajeRedondeo;
     private Float malezasToleranciaCeroPorcentajeRedondeoInase;
-
-    private Float pesoTotal;
-    private Float pesoTotalInase;
 
     private Float otrosCultivo;
 
@@ -86,7 +85,6 @@ public class PurezaDto {
                 Float.compare(otrosCultivos, that.otrosCultivos) == 0 &&
                 Float.compare(malezas, that.malezas) == 0 &&
                 Float.compare(malezasToleradas, that.malezasToleradas) == 0 &&
-                Float.compare(pesoTotal, that.pesoTotal) == 0 &&
                 java.util.Objects.equals(fechaEstandar, that.fechaEstandar) &&
                 estandar == that.estandar &&
                 activo == that.activo;
@@ -112,7 +110,6 @@ public class PurezaDto {
         result = result * 59 + Float.floatToIntBits(this.getOtrosCultivos());
         result = result * 59 + Float.floatToIntBits(this.getMalezas());
         result = result * 59 + Float.floatToIntBits(this.getMalezasToleradas());
-        result = result * 59 + Float.floatToIntBits(this.getPesoTotal());
         Object $fechaEstandar = this.getFechaEstandar();
         result = result * 59 + ($fechaEstandar == null ? 43 : $fechaEstandar.hashCode());
         result = result * 59 + (this.isEstandar() ? 79 : 97);

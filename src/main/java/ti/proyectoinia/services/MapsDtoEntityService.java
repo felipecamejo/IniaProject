@@ -553,8 +553,6 @@ public class MapsDtoEntityService {
         dto.setMalezasToleranciaCeroInase(pureza.getMalezasToleranciaCeroInase());
         dto.setMalezasToleranciaCeroPorcentajeRedondeo(pureza.getMalezasToleranciaCeroPorcentajeRedondeo());
         dto.setMalezasToleranciaCeroPorcentajeRedondeoInase(pureza.getMalezasToleranciaCeroPorcentajeRedondeoInase());
-        dto.setPesoTotal(pureza.getPesoTotal());
-        dto.setPesoTotalInase(pureza.getPesoTotalInase());
         dto.setOtrosCultivo(pureza.getOtrosCultivo());
         dto.setFechaEstandar(pureza.getFechaEstandar());
         dto.setEstandar(pureza.getEstandar());
@@ -562,6 +560,8 @@ public class MapsDtoEntityService {
         dto.setRepetido(pureza.isRepetido());
         dto.setFechaCreacion(pureza.getFechaCreacion());
         dto.setFechaRepeticion(pureza.getFechaRepeticion());
+        dto.setMateriaInerteTipo(pureza.getMateriaInerteTipo());
+        dto.setMateriaInerteTipoInase(pureza.getMateriaInerteTipoInase());
 
         // Mapeo de cultivos
         if (pureza.getCultivos() != null) {
@@ -634,8 +634,6 @@ public class MapsDtoEntityService {
         pureza.setMalezasToleranciaCeroInase(dto.getMalezasToleranciaCeroInase());
         pureza.setMalezasToleranciaCeroPorcentajeRedondeo(dto.getMalezasToleranciaCeroPorcentajeRedondeo());
         pureza.setMalezasToleranciaCeroPorcentajeRedondeoInase(dto.getMalezasToleranciaCeroPorcentajeRedondeoInase());
-        pureza.setPesoTotal(dto.getPesoTotal());
-        pureza.setPesoTotalInase(dto.getPesoTotalInase());
         pureza.setOtrosCultivo(dto.getOtrosCultivo());
         pureza.setFechaEstandar(dto.getFechaEstandar());
         pureza.setEstandar(dto.isEstandar());
@@ -643,6 +641,8 @@ public class MapsDtoEntityService {
         pureza.setRepetido(dto.isRepetido());
         pureza.setFechaCreacion(dto.getFechaCreacion());
         pureza.setFechaRepeticion(dto.getFechaRepeticion());
+        pureza.setMateriaInerteTipo(dto.getMateriaInerteTipo());
+        pureza.setMateriaInerteTipoInase(dto.getMateriaInerteTipoInase());
 
         // Mapeo de cultivos
         if (dto.getCultivosId() != null) {

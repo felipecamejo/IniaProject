@@ -16,6 +16,8 @@ export interface PurezaDto {
   materialInerteInase: number | null;
   materialInertePorcentajeRedondeo: number | null;
   materialInertePorcentajeRedondeoInase: number | null;
+  materiaInerteTipo: string | null;
+  materiaInerteTipoInase: string | null;
 
   otrosCultivos: number | null;
   otrosCultivosInase: number | null;
@@ -36,9 +38,6 @@ export interface PurezaDto {
   malezasToleranciaCeroInase: number | null;
   malezasToleranciaCeroPorcentajeRedondeo: number | null;
   malezasToleranciaCeroPorcentajeRedondeoInase: number | null;
-
-  pesoTotal: number | null;
-  pesoTotalInase: number | null;
 
   otrosCultivo: number | null;
 
