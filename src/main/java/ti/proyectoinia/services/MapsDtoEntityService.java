@@ -1308,7 +1308,7 @@ public class MapsDtoEntityService {
         dto.setHongoId(entity.getHongo() != null ? entity.getHongo().getId() : null);
         dto.setRepeticion(entity.getRepeticion());
         dto.setValor(entity.getValor());
-        dto.setIncidencia(entity.getIncidencia());
+
         // Mapeo del tipo
         dto.setTipo(entity.getTipo());
         return dto;
@@ -1338,7 +1338,6 @@ public class MapsDtoEntityService {
         }
         entity.setRepeticion(dto.getRepeticion());
         entity.setValor(dto.getValor());
-        entity.setIncidencia(dto.getIncidencia());
 
         entity.setTipo(dto.getTipo());
         return entity;

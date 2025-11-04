@@ -445,7 +445,6 @@ export class SanitarioComponent implements OnInit {
         console.error('Error al cargar sanitario:', error);
         this.isLoading = false;
         this.isCargandoDatosIniciales = false;
-        alert('Error al cargar los datos del sanitario');
       }
     });
   }
@@ -614,13 +613,11 @@ export class SanitarioComponent implements OnInit {
       next: (response) => {
         console.log('✅ Hongos guardados exitosamente:', response);
         this.isSaving = false;
-        alert('Sanitario y hongos guardados exitosamente');
         this.volverAlListado();
       },
       error: (error) => {
         console.error('❌ Error al guardar hongos:', error);
         this.isSaving = false;
-        alert('Sanitario guardado, pero hubo errores al guardar algunos hongos');
       }
     });
   }
@@ -642,7 +639,6 @@ export class SanitarioComponent implements OnInit {
           hongoId: hongoInfo.id ?? null,
           repeticion: hongo.repeticion ?? 0,
           valor: hongo.valor ?? 0,
-          incidencia: hongo.incidencia ?? 0,
           tipo: TipoHongoSanitario.PATOGENO
         });
       }
@@ -662,7 +658,6 @@ export class SanitarioComponent implements OnInit {
           hongoId: hongoInfo.id ?? null,
           repeticion: hongo.repeticion ?? 0,
           valor: hongo.valor ?? 0,
-          incidencia: hongo.incidencia ?? 0,
           tipo: TipoHongoSanitario.CONTAMINANTE
         });
       }
@@ -682,7 +677,6 @@ export class SanitarioComponent implements OnInit {
           hongoId: hongoInfo.id ?? null,
           repeticion: hongo.repeticion ?? 0,
           valor: hongo.valor ?? 0,
-          incidencia: hongo.incidencia ?? 0,
           tipo: TipoHongoSanitario.ALMACENAJE
         });
       }
@@ -710,6 +704,81 @@ export class SanitarioComponent implements OnInit {
     });
   }
 
+  /**
+   * Calcula el porcentaje de incidencia para todas las tablas
+   * Fórmula: (Valor / Número de semillas por repetición) * 100
+   */
+  CalcularPorcentajeIncidencia(): void {
+    if (!this.nroSemillasRepeticion || this.nroSemillasRepeticion === 0) {
+      console.warn('No se puede calcular el porcentaje de incidencia: nroSemillasRepeticion no está definido o es 0');
+      return;
+    }
+
+    // Calcular porcentaje de incidencia para hongosTable (Patógenos)
+    this.hongosTable.forEach(item => {
+      if (item.valor !== undefined && item.valor !== null) {
+        item.incidencia = (item.valor / this.nroSemillasRepeticion!) * 100;
+      }
+    });
+
+    // Calcular porcentaje de incidencia para hongosCampoTable (Contaminantes)
+    this.hongosCampoTable.forEach(item => {
+      if (item.valor !== undefined && item.valor !== null) {
+        item.incidencia = (item.valor / this.nroSemillasRepeticion!) * 100;
+      }
+    });
+
+    // Calcular porcentaje de incidencia para hongosAlmacenajeTable
+    this.hongosAlmacenajeTable.forEach(item => {
+      if (item.valor !== undefined && item.valor !== null) {
+        item.incidencia = (item.valor / this.nroSemillasRepeticion!) * 100;
+      }
+    });
+  }
+
+  /**
+   * Actualiza el porcentaje de incidencia cuando cambia el valor en hongosTable (Patógenos)
+   */
+  onValorPatogenoChange(index: number): void {
+    if (!this.nroSemillasRepeticion || this.nroSemillasRepeticion === 0) {
+      this.hongosTable[index].incidencia = 0;
+      return;
+    }
+    const valor = this.hongosTable[index].valor ?? 0;
+    this.hongosTable[index].incidencia = (valor / this.nroSemillasRepeticion) * 100;
+  }
+
+  /**
+   * Actualiza el porcentaje de incidencia cuando cambia el valor en hongosCampoTable (Contaminantes)
+   */
+  onValorContaminanteChange(index: number): void {
+    if (!this.nroSemillasRepeticion || this.nroSemillasRepeticion === 0) {
+      this.hongosCampoTable[index].incidencia = 0;
+      return;
+    }
+    const valor = this.hongosCampoTable[index].valor ?? 0;
+    this.hongosCampoTable[index].incidencia = (valor / this.nroSemillasRepeticion) * 100;
+  }
+
+  /**
+   * Actualiza el porcentaje de incidencia cuando cambia el valor en hongosAlmacenajeTable
+   */
+  onValorAlmacenajeChange(index: number): void {
+    if (!this.nroSemillasRepeticion || this.nroSemillasRepeticion === 0) {
+      this.hongosAlmacenajeTable[index].incidencia = 0;
+      return;
+    }
+    const valor = this.hongosAlmacenajeTable[index].valor ?? 0;
+    this.hongosAlmacenajeTable[index].incidencia = (valor / this.nroSemillasRepeticion) * 100;
+  }
+
+  /**
+   * Cuando cambia el número de semillas por repetición, recalcula todas las incidencias
+   */
+  onNroSemillasRepeticionChange(): void {
+    this.CalcularPorcentajeIncidencia();
+  }
+
   private cargarHongosEnTablas(hongosAsociados: SanitarioHongoDTO[]): void {
     this.selectedHongosPatogenos = [];
     this.selectedHongosContaminantes = [];
@@ -722,11 +791,17 @@ export class SanitarioComponent implements OnInit {
       const hongo = this.hongos.find(h => h.id === sanitarioHongo.hongoId);
       if (!hongo) return;
 
+      // Calcular incidencia: (valor / nroSemillasRepeticion) * 100
+      const valor = sanitarioHongo.valor ?? 0;
+      const incidencia = this.nroSemillasRepeticion && this.nroSemillasRepeticion > 0
+        ? (valor / this.nroSemillasRepeticion) * 100
+        : 0;
+
       const tablaItem = {
         tipoHongo: hongo.nombre,
         repeticion: sanitarioHongo.repeticion ?? 0,
-        valor: sanitarioHongo.valor ?? 0,
-        incidencia: sanitarioHongo.incidencia ?? 0
+        valor: valor,
+        incidencia: incidencia
       };
 
       switch (sanitarioHongo.tipo) {

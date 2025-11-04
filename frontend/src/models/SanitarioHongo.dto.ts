@@ -6,6 +6,5 @@ export interface SanitarioHongoDTO {
   hongoId: number | null;
   repeticion: number | null;
   valor: number | null;
-  incidencia: number | null;
   tipo: TipoHongoSanitario | null;
 }

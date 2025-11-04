@@ -16,8 +16,6 @@ public class SanitarioHongoDto {
 
     private Integer valor;
 
-    private Integer incidencia;
-
     private boolean activo;
 
     private TipoSanitarioHongo tipo;
