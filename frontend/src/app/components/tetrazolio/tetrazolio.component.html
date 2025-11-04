@@ -111,17 +111,17 @@
                             <td></td>
                         </tr>
                         <tr>
-                            <td class="footer-label">Prom. redondeado</td>
-                            <td><input type="number" [value]="getPromedioViables(true)" readonly /></td>
-                            <td><input type="number" [value]="getPromedioNoViables(true)" readonly /></td>
-                            <td><input type="number" [value]="getPromedioDuras(true)" readonly /></td>
-                            <td></td>
-                        </tr>
-                        <tr>
                             <td class="footer-label">Prom. sin redondeo</td>
                             <td><input type="number" [value]="getPromedioViables(false)" readonly /></td>
                             <td><input type="number" [value]="getPromedioNoViables(false)" readonly /></td>
                             <td><input type="number" [value]="getPromedioDuras(false)" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">Prom. redondeado</td>
+                            <td><input type="number" [value]="getPromedioViables(true)" readonly /></td>
+                            <td><input type="number" [value]="getPromedioNoViables(true)" readonly /></td>
+                            <td><input type="number" [value]="getPromedioDuras(true)" readonly /></td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -130,6 +130,24 @@
             </div>
             <!-- Separador discreto entre secciones -->
             <hr class="section-divider" />
+
+            <!-- Resumen de Vigor -->
+            <div class="porcentajes-wrapper" style="margin-top: 1rem; display: flex; gap: 2rem; align-items: center; background: #f6f9ff; border-radius: 8px; padding: 0.8rem 1.2rem;">
+              <div style="display:flex; gap:0.4rem; align-items:center;">
+                <span style="font-weight:600; color:#1746a0;">Vigor ponderado:</span>
+                <span>{{ getVigorTetrazolioPonderado() | number:'1.2-2' }} %</span>
+                <span style="color:#667;">(red: {{ getVigorTetrazolioPonderadoRed() }}%)</span>
+              </div>
+              <div style="display:flex; gap:0.4rem; align-items:center;">
+                <span style="font-weight:600; color:#1746a0;">Clasificación:</span>
+                <span>{{ getVigorClasificado() }}</span>
+              </div>
+              <div style="display:flex; gap:0.4rem; align-items:center;">
+                <span style="font-weight:600; color:#1746a0;">No viables (%):</span>
+                <span>{{ getPorcentajeNoViablesPonderado() | number:'1.2-2' }} %</span>
+                <span style="color:#667;">{{ getNoViablesClasificado() }}</span>
+              </div>
+            </div>
 
 
             <!-- Nueva tabla de detalles de semillas -->

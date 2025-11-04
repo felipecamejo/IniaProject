@@ -137,6 +137,98 @@ export class TetrazolioComponent implements OnInit {
     vigorAcumulado: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } }
   };
 
+  // --- Cálculos de Vigor (promedio de: sin defectos, defectos leves y defectos moderados) ---
+  private getVigorTabla(det: DetalleSemillas): number {
+    const favorables = (det.viablesSinDefectos.total || 0)
+      + (det.viablesLeves.total || 0)
+      + (det.viablesModerados.total || 0);
+    const total = this.getSumaTotal(det);
+    if (!total) return 0;
+    return (favorables / total) * 100;
+  }
+
+  // Promedio ponderado por cantidad de semillas
+  getVigorTetrazolioPonderado(): number {
+    if (!this.detalles || this.detalles.length === 0) return 0;
+    let sumaFavorables = 0;
+    let sumaTotales = 0;
+    for (const det of this.detalles) {
+      const total = this.getSumaTotal(det);
+      const favor = (det.viablesSinDefectos.total || 0)
+        + (det.viablesLeves.total || 0)
+        + (det.viablesModerados.total || 0);
+      sumaFavorables += favor;
+      sumaTotales += total;
+    }
+    if (!sumaTotales) return 0;
+    return (sumaFavorables / sumaTotales) * 100;
+  }
+
+  // Promedio simple de los porcentajes por tabla
+  getVigorTetrazolioPromedioSimple(): number {
+    if (!this.detalles || this.detalles.length === 0) return 0;
+    let acumulado = 0;
+    let n = 0;
+    for (const det of this.detalles) {
+      const total = this.getSumaTotal(det);
+      if (total > 0) {
+        acumulado += this.getVigorTabla(det);
+        n++;
+      }
+    }
+    return n ? (acumulado / n) : 0;
+  }
+
+  getVigorTetrazolioPonderadoRed(): number {
+    return Math.round(this.getVigorTetrazolioPonderado());
+  }
+
+  getVigorTetrazolioPromedioSimpleRed(): number {
+    return Math.round(this.getVigorTetrazolioPromedioSimple());
+  }
+
+  // Clasificación por vigor
+  getClasificacionVigor(vigorPct: number): string {
+    if (vigorPct == null || isNaN(vigorPct)) return 'Sin clasificación';
+    if (vigorPct >= 85) return 'Lote de muy alto vigor';
+    if (vigorPct >= 75) return 'Lote de vigor alto';
+    if (vigorPct >= 60) return 'Lote de vigor medio';
+    if (vigorPct >= 50) return 'Lote de vigor bajo';
+    return 'Lote de vigor muy bajo';
+  }
+
+  getVigorClasificado(): string {
+    const v = this.getVigorTetrazolioPonderado();
+    return this.getClasificacionVigor(v);
+  }
+
+  // --- Daños de semillas no viables (global, ponderado) ---
+  getPorcentajeNoViablesPonderado(): number {
+    if (!this.detalles || this.detalles.length === 0) return 0;
+    let sumaNoViables = 0;
+    let sumaTotal = 0;
+    for (const det of this.detalles) {
+      const total = this.getSumaTotal(det);
+      const noV = det.noViables.total || 0;
+      sumaNoViables += noV;
+      sumaTotal += total;
+    }
+    if (!sumaTotal) return 0;
+    return (sumaNoViables / sumaTotal) * 100;
+  }
+
+  getClasificacionNoViables(pctNoViables: number): string {
+    if (pctNoViables == null || isNaN(pctNoViables)) return 'Sin clasificación';
+    if (pctNoViables <= 6) return 'Sin problema';
+    if (pctNoViables <= 10) return 'Problema serio';
+    return 'Muy serio';
+  }
+
+  getNoViablesClasificado(): string {
+    const pct = this.getPorcentajeNoViablesPonderado();
+    return this.getClasificacionNoViables(pct);
+  }
+
   // Suma de N° de semillas (todas las filas)
   getSumaTotal(det: DetalleSemillas): number {
     return det.viablesSinDefectos.total + det.viablesLeves.total +

@@ -73,6 +73,45 @@ export class PurezaPNotatumComponent implements OnInit {
     return this.repeticiones.reduce((acc, rep) => acc + (rep.gramosContaminadasYVanas || 0), 0);
   }
 
+  // Cálculos automáticos según planilla Excel
+  // Pi: peso total de semillas analizadas (suma de peso por repetición)
+  get totalPesoAnalizado(): number {
+    return this.repeticiones.reduce((acc, rep) => acc + (rep.peso || 0), 0);
+  }
+
+  // At: peso total de semillas contaminadas y vanas
+  get totalPesoContaminadasYVanas(): number {
+    return this.repeticiones.reduce((acc, rep) => acc + (rep.gramosContaminadasYVanas || 0), 0);
+  }
+
+  // A% = (At / Pi) * Pu%  (Pu% proviene del bloque superior ISTA)
+  get aPct(): number | null {
+    const pi = this.totalPesoAnalizado;
+    const at = this.totalPesoContaminadasYVanas;
+    const pu = this.semillaPuraPct; // porcentaje de semilla pura (Pu%)
+    if (!pi || pu == null) return null;
+    return (at / pi) * pu;
+  }
+
+  // Alias para compatibilidad con el template si usa A% total
+  get aPctTotal(): number | null {
+    const a = this.aPct;
+    const mi = this.materiaInertePct; // porcentaje de materia inerte del bloque ISTA
+    if (a == null || mi == null) return null;
+    const total = a + mi;
+    if (total < 0) return 0;
+    return total > 100 ? 100 : total;
+  }
+
+  // % semillas llenas y sanas = Pu% - A%
+  get pctSemillasLlenasYSanas(): number | null {
+    const atotal = this.aPctTotal;
+    const pu = this.semillaPuraPct;
+    if (atotal == null || pu == null) return null;
+    const value = pu - atotal;
+    return value < 0 ? 0 : value;
+  }
+
   constructor(
     private route: ActivatedRoute, 
     private router: Router,

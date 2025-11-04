@@ -89,15 +89,15 @@
       <div class="porcentajes-wrapper" style="margin-top: 1.5rem; display: flex; gap: 3rem; justify-content: flex-start; align-items: center; background: #e3f2fd; border-radius: 8px; padding: 1rem 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
           <span style="font-weight: 600; color: #1565c0; font-size: 1.1em;">A%:</span>
-          <span style="font-size: 1.1em; color: #333;">--</span>
+          <span style="font-size: 1.1em; color: #333;">{{ aPct !== null ? (aPct | number:'1.2-2') + '%' : '--' }}</span>
         </div>
         <div style="display: flex; align-items: center; gap: 0.5rem;">
           <span style="font-weight: 600; color: #1565c0; font-size: 1.1em;">A% total:</span>
-          <span style="font-size: 1.1em; color: #333;">--</span>
+          <span style="font-size: 1.1em; color: #333;">{{ aPctTotal !== null ? (aPctTotal | number:'1.2-2') + '%' : '--' }}</span>
         </div>
         <div style="display: flex; align-items: center; gap: 0.5rem;">
           <span style="font-weight: 600; color: #1565c0; font-size: 1.1em;">% semillas llenas y sanas:</span>
-          <span style="font-size: 1.1em; color: #333;">--</span>
+          <span style="font-size: 1.1em; color: #333;">{{ pctSemillasLlenasYSanas !== null ? (pctSemillasLlenasYSanas | number:'1.2-2') + '%' : '--' }}</span>
         </div>
       </div>
 
