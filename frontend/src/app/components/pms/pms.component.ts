@@ -42,16 +42,25 @@ export class PmsComponent implements OnInit {
     isViewing: boolean = false;
     editingId: number | null = null;
 
+    
     loteId: string | null = '';
     reciboId: string | null = '';
 
     // Tabla de repeticiones PMS
     repeticiones: RepeticionPMS[] = [];
+    
+    // Constantes para repeticiones
+    readonly REPETICIONES_INICIALES = 8;
+    readonly REPETICIONES_EXTENDIDAS = 16;
+    readonly CV_UMBRAL = 4.0; // Valor umbral del coeficiente de variación
+    
+    // Control de alerta CV
+    mostrarAlertaCV: boolean = false;
 
-  // Mantener ids de GramosPms (si existen) para edición
-  gramosEntries: GramosPmsDto[] = [];
-  // IDs de gramos marcados para eliminación en edición
-  deletedGramosIds: number[] = [];
+    // Mantener ids de GramosPms (si existen) para edición
+    gramosEntries: GramosPmsDto[] = [];
+    // IDs de gramos marcados para eliminación en edición
+    deletedGramosIds: number[] = [];
 
     // Campos del nuevo DTO
     gramosPorRepeticiones: number[] = [];
@@ -67,8 +76,6 @@ export class PmsComponent implements OnInit {
     fechaCreacion: string | null = null;
     fechaRepeticion: string | null = null;
 
-    // Properties referenced in template
-    humedadPorcentual: number | null = null;
     fechaMedicion: string = '';
     selectedMetodo: string = '';
 
@@ -100,15 +107,12 @@ export class PmsComponent implements OnInit {
             next: (data: PMSDto) => {
               console.log('PMS obtenido para editar:', data);
               // Mapear los campos del DTO al formulario local (campos en PMSDto)
-              this.pesoPromedioCienSemillas = data.pesoPromedioCienSemillas;
               this.pesoMilSemillas = data.pesoMilSemillas;
               this.pesoPromedioMilSemillas = data.pesoPromedioMilSemillas;
-              this.desvioEstandar = data.desvioEstandar;
-              this.coeficienteVariacion = data.coeficienteVariacion;
               this.comentarios = data.comentarios || '';
               this.activo = data.activo ?? true;
               this.repetido = data.repetido ?? false;
-              this.humedadPorcentual = data.humedadPorcentual ?? null;
+              this.estandar = data.estandar ?? false;
               this.fechaMedicion = data.fechaMedicion ? data.fechaMedicion.split('T')[0] : '';
               this.reciboId = this.route.snapshot.params['reciboId'];
               this.fechaCreacion = data.fechaCreacion || null;
@@ -128,17 +132,22 @@ export class PmsComponent implements OnInit {
                     console.log('Gramos del backend:', grams);
                     console.log('GramosEntries mapeados:', this.gramosEntries);
                     console.log('Repeticiones mapeadas:', this.repeticiones);
+                    
+                    // Calcular automáticamente el desvío estándar y el coeficiente de variación
+                    this.desvioEstandar = this.calcularDesvioEstandar();
+                    this.coeficienteVariacion = this.calcularCoeficienteVariacion();
+                    
+                    // Verificar y ajustar repeticiones según el coeficiente de variación
+                    this.verificarCoeficienteVariacion();
                   } else {
-                    // fallback a lo local si no hay registros - sin repeticiones por defecto
-                    this.gramosEntries = [];
-                    this.repeticiones = [];
+                    // fallback a lo local si no hay registros - inicializar con 8 repeticiones
+                    this.inicializarRepeticiones(this.REPETICIONES_INICIALES);
                   }
                 },
                 error: (err) => {
                   console.error('Error cargando gramos PMS:', err);
-                  // Sin repeticiones por defecto en caso de error
-                  this.gramosEntries = [];
-                  this.repeticiones = [];
+                  // Inicializar con 8 repeticiones en caso de error
+                  this.inicializarRepeticiones(this.REPETICIONES_INICIALES);
                 }
               });
             },
@@ -153,6 +162,8 @@ export class PmsComponent implements OnInit {
                 this.isViewing = false;
                 this.editingId = null;
                 this.limpiarCampos();
+                // Inicializar con 8 repeticiones para nuevo PMS
+                this.inicializarRepeticiones(this.REPETICIONES_INICIALES);
             }
         });
     }
@@ -160,6 +171,25 @@ export class PmsComponent implements OnInit {
     // Getter para determinar si está en modo readonly
     get isReadonly(): boolean {
         return this.isViewing;
+    }
+
+    // Inicializar repeticiones con cantidad especificada
+    inicializarRepeticiones(cantidad: number) {
+        this.repeticiones = [];
+        this.gramosEntries = [];
+        for (let i = 0; i < cantidad; i++) {
+            this.repeticiones.push({
+                numero: i + 1,
+                gramos: 0
+            });
+            this.gramosEntries.push({ 
+                id: null, 
+                pmsId: null, 
+                gramos: 0, 
+                activo: true
+            } as GramosPmsDto);
+        }
+        console.log(`Inicializadas ${cantidad} repeticiones`);
     }
 
     // Métodos para manejar las repeticiones
@@ -178,24 +208,6 @@ export class PmsComponent implements OnInit {
         console.log('Repetición agregada. Total repeticiones:', this.repeticiones.length);
     }
 
-    eliminarRepeticion(index: number) {
-        if (this.repeticiones.length > 0) {
-            this.repeticiones.splice(index, 1);
-            // Re-enumerar repeticiones
-            this.repeticiones.forEach((r, i) => r.numero = i + 1);
-            
-            // sincronizar gramosEntries (GramosPmsDto[])
-            const removed: GramosPmsDto[] = this.gramosEntries.splice(index, 1);
-            if (removed && removed.length > 0 && removed[0].id) {
-                this.deletedGramosIds.push(removed[0].id as number);
-            }
-            
-            // Los gramosEntries se mantienen sincronizados por índice con las repeticiones
-            console.log('Repetición eliminada. Total repeticiones:', this.repeticiones.length);
-            console.log('GramosEntries después de eliminar (GramosPmsDto[]):', this.gramosEntries);
-        }
-    }
-
     // Método para sincronizar cambios de gramos desde el input
     onGramosChange(index: number, value: any) {
         const numericValue = parseFloat(value) || 0;
@@ -211,8 +223,121 @@ export class PmsComponent implements OnInit {
         }
         console.log('Repeticiones actualizadas:', this.repeticiones);
         console.log('GramosEntries actualizados (GramosPmsDto[]):', this.gramosEntries);
+        
+        // Calcular automáticamente el desvío estándar y el coeficiente de variación
+        this.desvioEstandar = this.calcularDesvioEstandar();
+        this.coeficienteVariacion = this.calcularCoeficienteVariacion();
+        
+        // Verificar y ajustar repeticiones según el coeficiente de variación
+        this.verificarCoeficienteVariacion();
     }
-
+    
+    // Método para verificar el coeficiente de variación
+    verificarCoeficienteVariacion(): boolean {
+        // Calcular CV solo de las primeras 8 repeticiones
+        const primeras8 = this.repeticiones.slice(0, this.REPETICIONES_INICIALES);
+        
+        // Verificar que tengamos al menos 8 repeticiones
+        if (primeras8.length === this.REPETICIONES_INICIALES) {
+            // Contar cuántas repeticiones tienen valores válidos (> 0)
+            const conValores = primeras8.filter(r => r.gramos != null && r.gramos > 0);
+            
+            // Solo calcular si todas las 8 primeras tienen valores válidos
+            if (conValores.length === this.REPETICIONES_INICIALES) {
+                // Calcular promedio de las primeras 8
+                const sumaPrimeras8 = primeras8.reduce((sum, r) => sum + r.gramos, 0);
+                const promedio = sumaPrimeras8 / this.REPETICIONES_INICIALES;
+                
+                console.log(`Promedio de las primeras 8 repeticiones: ${promedio}`);
+                
+                if (promedio > 0) {
+                    // Calcular desviación estándar de las primeras 8
+                    const sumaCuadrados = primeras8.reduce((sum, r) => 
+                        sum + Math.pow(r.gramos - promedio, 2), 0);
+                    const desviacion = Math.sqrt(sumaCuadrados / (this.REPETICIONES_INICIALES - 1));
+                    
+                    // Calcular coeficiente de variación
+                    const cv = (desviacion / promedio) * 100;
+                    
+                    console.log(`CV calculado (primeras 8): ${cv}%`);
+                    console.log(`CV umbral: ${this.CV_UMBRAL}%`);
+                    console.log(`¿CV > umbral?: ${cv > this.CV_UMBRAL}`);
+                    
+                    // Si el CV es mayor al umbral
+                    if (cv > this.CV_UMBRAL) {
+                        this.mostrarAlertaCV = true;
+                        console.log('✅ Alerta CV activada');
+                        
+                        // Si aún no tenemos 16 repeticiones, expandir automáticamente
+                        if (this.repeticiones.length === this.REPETICIONES_INICIALES) {
+                            for (let i = this.REPETICIONES_INICIALES; i < this.REPETICIONES_EXTENDIDAS; i++) {
+                                this.repeticiones.push({
+                                    numero: i + 1,
+                                    gramos: 0
+                                });
+                                this.gramosEntries.push({ 
+                                    id: null, 
+                                    pmsId: null, 
+                                    gramos: 0, 
+                                    activo: true
+                                } as GramosPmsDto);
+                            }
+                            console.log(`🔧 Expandidas automáticamente a ${this.REPETICIONES_EXTENDIDAS} repeticiones debido a CV=${cv}%`);
+                        }
+                        return true;
+                    } else {
+                        // CV <= umbral
+                        this.mostrarAlertaCV = false;
+                        console.log('❌ Alerta CV desactivada');
+                        
+                        // Si tenemos más de 8 repeticiones, reducir a 8
+                        if (this.repeticiones.length > this.REPETICIONES_INICIALES) {
+                            // Marcar para eliminación los gramos de las repeticiones extra que tienen ID
+                            for (let i = this.REPETICIONES_INICIALES; i < this.gramosEntries.length; i++) {
+                                if (this.gramosEntries[i].id !== null) {
+                                    this.deletedGramosIds.push(this.gramosEntries[i].id!);
+                                }
+                            }
+                            
+                            // Eliminar las repeticiones extra (de la 9 en adelante)
+                            this.repeticiones = this.repeticiones.slice(0, this.REPETICIONES_INICIALES);
+                            this.gramosEntries = this.gramosEntries.slice(0, this.REPETICIONES_INICIALES);
+                            console.log(`🔧 Reducidas a ${this.REPETICIONES_INICIALES} repeticiones debido a CV=${cv}% <= ${this.CV_UMBRAL}%`);
+                            console.log(`IDs marcados para eliminación:`, this.deletedGramosIds);
+                        }
+                        return false;
+                    }
+                }
+            } else {
+                console.log(`⏳ Esperando valores válidos: ${conValores.length}/8 repeticiones completadas`);
+                
+                // Si no se han completado todas las 8 primeras repeticiones pero tenemos más de 8
+                // resetear el estado y reducir a 8 (evita que queden repeticiones extra)
+                if (this.repeticiones.length > this.REPETICIONES_INICIALES) {
+                    this.mostrarAlertaCV = false;
+                    
+                    // Marcar para eliminación los gramos de las repeticiones extra que tienen ID
+                    for (let i = this.REPETICIONES_INICIALES; i < this.gramosEntries.length; i++) {
+                        if (this.gramosEntries[i].id !== null) {
+                            this.deletedGramosIds.push(this.gramosEntries[i].id!);
+                        }
+                    }
+                    
+                    this.repeticiones = this.repeticiones.slice(0, this.REPETICIONES_INICIALES);
+                    this.gramosEntries = this.gramosEntries.slice(0, this.REPETICIONES_INICIALES);
+                    console.log(`🔧 Reducidas a ${this.REPETICIONES_INICIALES} repeticiones porque las 8 primeras no están completas`);
+                }
+            }
+        }
+        
+        // Si no se cumplen las condiciones, mantener estado actual
+        return this.mostrarAlertaCV;
+    }
+    
+    // Getter para usar en el template
+    get debeAlertarCV(): boolean {
+        return this.mostrarAlertaCV;
+    }
 
     limpiarCampos() {
       this.repeticiones = [];
@@ -250,11 +375,8 @@ export class PmsComponent implements OnInit {
       const pmsData: PMSDto = {
         id: this.editingId ?? null,
         gramosPorRepeticiones: this.gramosPorRepeticiones,
-        pesoPromedioCienSemillas: this.pesoPromedioCienSemillas,
         pesoMilSemillas: this.pesoMilSemillas,
         pesoPromedioMilSemillas: this.pesoPromedioMilSemillas,
-        desvioEstandar: this.desvioEstandar,
-        coeficienteVariacion: this.coeficienteVariacion,
         comentarios: this.comentarios,
         activo: this.activo,
         repetido: this.repetido,
@@ -262,7 +384,6 @@ export class PmsComponent implements OnInit {
         fechaMedicion: this.fechaMedicion ? this.fechaMedicion.split('T')[0] : null,
         fechaCreacion: this.fechaCreacion ? this.fechaCreacion.split('T')[0] : null,
         fechaRepeticion: this.fechaRepeticion ? this.fechaRepeticion.split('T')[0] : null,
-        humedadPorcentual: this.humedadPorcentual ?? null, // Asegurar que se incluya
         estandar: this.estandar
       };
 
@@ -318,6 +439,8 @@ export class PmsComponent implements OnInit {
     }
 
     private guardarGramos(pmsId: number) {
+      // Preparar el payload solo con los gramos actuales
+      // Los gramos eliminados (que están en deletedGramosIds) simplemente no se incluyen
       const gramosPayload = this.gramosEntries.map(entry => ({
         id: entry.id,
         pmsId: pmsId,
@@ -325,10 +448,16 @@ export class PmsComponent implements OnInit {
         activo: entry.activo
       }));
 
+      if (this.deletedGramosIds.length > 0) {
+        console.log('Gramos eliminados (no se incluyen en el payload):', this.deletedGramosIds);
+        // Limpiar la lista después de procesarla
+        this.deletedGramosIds = [];
+      }
+
       // Crear o recrear todos los gramos asociados al PMS
       this.gramosPmsService.crearMultiplesGramos(gramosPayload).subscribe({
-        next: () => console.log('Gramos creados correctamente para el PMS:', pmsId),
-        error: (error: any) => console.error('Error creando gramos para el PMS:', error)
+        next: () => console.log('Gramos guardados correctamente para el PMS:', pmsId),
+        error: (error: any) => console.error('Error guardando gramos para el PMS:', error)
       });
     }
 
@@ -352,10 +481,6 @@ export class PmsComponent implements OnInit {
 
       if (this.desvioEstandar != null && this.desvioEstandar < 0) {
         this.errores.push('El desvío estándar no puede ser un número negativo.');
-      }
-
-      if (this.humedadPorcentual != null && this.humedadPorcentual < 0 && this.humedadPorcentual > 100) {
-        this.errores.push('La humedad porcentual debe estar entre 0 y 100.');
       }
 
       if (this.gramosEntries.some(h => h.gramos != null && h.gramos < 0)) {
@@ -383,4 +508,39 @@ export class PmsComponent implements OnInit {
         const today = new Date();
         return selectedDate >= today;
     }
-  }
+
+    promedioCienSemillas(): number | null {
+      const cant = this.repeticiones.length;
+      if (cant === 0) return null;
+      const gramosTotales = this.repeticiones.reduce((sum, r) => sum + (r.gramos ?? 0), 0);
+      return gramosTotales / cant;
+    }
+
+    // Calcular el desvío estándar a partir de las repeticiones y el promedio
+    calcularDesvioEstandar(): number | null {
+      const promedio = this.promedioCienSemillas();
+      if (promedio === null || this.repeticiones.length === 0) return null;
+      
+      // Calcular la suma de las diferencias al cuadrado
+      const sumaCuadrados = this.repeticiones.reduce((sum, r) => 
+        sum + Math.pow((r.gramos ?? 0) - promedio, 2), 0);
+      
+      // Desvío estándar (desviación estándar muestral)
+      const desvio = Math.sqrt(sumaCuadrados / (this.repeticiones.length - 1));
+      
+      return desvio;
+    }
+
+    // Calcular el coeficiente de variación a partir del desvío estándar y el promedio
+    calcularCoeficienteVariacion(): number | null {
+      const promedio = this.promedioCienSemillas();
+      const desvio = this.calcularDesvioEstandar();
+      
+      if (promedio === null || desvio === null || promedio === 0) return null;
+      
+      // Coeficiente de variación: (desvío / promedio) * 100
+      const cv = (desvio / promedio) * 100;
+      
+      return cv;
+    }
+}

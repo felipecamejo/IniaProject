@@ -96,7 +96,6 @@ public class SanitarioService {
             sanitarioHongo.setHongo(hongoEntity);
             sanitarioHongo.setRepeticion(dto.getRepeticion());
             sanitarioHongo.setValor(dto.getValor());
-            sanitarioHongo.setIncidencia(dto.getIncidencia());
             sanitarioHongo.setTipo(dto.getTipo());
             sanitarioHongoRepository.save(sanitarioHongo);
         }

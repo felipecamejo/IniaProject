@@ -2,7 +2,6 @@ package ti.proyectoinia.dtos;
 
 import lombok.Data;
 
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -10,9 +9,9 @@ public class SanitarioDto {
 
     private Long id;
 
-    private Date fechaSiembra;
+    private String fechaSiembra;
 
-    private Date fecha;
+    private String fecha;
 
     private String metodo;
 
@@ -40,8 +39,8 @@ public class SanitarioDto {
 
     private List<Long> sanitarioHongosId;
 
-    private Date fechaCreacion;
+    private String fechaCreacion;
 
-    private Date fechaRepeticion;
+    private String fechaRepeticion;
 
 }

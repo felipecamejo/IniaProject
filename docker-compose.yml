@@ -1,9 +1,9 @@
-version: '3.8'
+version: '3.9'
 
 services:
   # Base de datos PostgreSQL
   database:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: inia-database
     environment:
       POSTGRES_DB: Inia

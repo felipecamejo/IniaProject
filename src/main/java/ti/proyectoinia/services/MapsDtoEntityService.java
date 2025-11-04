@@ -44,20 +44,27 @@ public class MapsDtoEntityService {
         if (value == null || value.isBlank()) {
             return null;
         }
-        
+        // Proteger contra valores inválidos provenientes del frontend
+        String cleanValue = value.trim();
+        if (cleanValue.contains("NaN")) {
+            return null;
+        }
+
         // Remover milisegundos y zona horaria para evitar problemas de parsing
-        String cleanValue = value;
         if (cleanValue.contains(".")) {
-            // Remover milisegundos (ej: .917)
             cleanValue = cleanValue.substring(0, cleanValue.indexOf("."));
         }
         if (cleanValue.endsWith("Z")) {
-            // Remover Z de zona horaria UTC
             cleanValue = cleanValue.substring(0, cleanValue.length() - 1);
         }
-        
-        LocalDateTime localDateTime = LocalDateTime.parse(cleanValue, ISO_LOCAL_DATE_TIME);
-        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+
+        try {
+            LocalDateTime localDateTime = LocalDateTime.parse(cleanValue, ISO_LOCAL_DATE_TIME);
+            return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        } catch (Exception ignored) {
+            // Si no matchea el formato esperado, devolver null de forma segura
+            return null;
+        }
     }
 
     public Recibo getValidRecibo(Long reciboId) {
@@ -387,8 +394,8 @@ public class MapsDtoEntityService {
         }
         SanitarioDto sanitarioDto = new SanitarioDto();
         sanitarioDto.setId(sanitario.getId());
-        sanitarioDto.setFechaSiembra(sanitario.getFechaSiembra());
-        sanitarioDto.setFecha(sanitario.getFecha());
+        sanitarioDto.setFechaSiembra(formatDate(sanitario.getFechaSiembra()));
+        sanitarioDto.setFecha(formatDate(sanitario.getFecha()));
         sanitarioDto.setMetodo(sanitario.getMetodo());
         sanitarioDto.setTemperatura(sanitario.getTemperatura());
         sanitarioDto.setHorasLuz(sanitario.getHorasLuz());
@@ -400,8 +407,8 @@ public class MapsDtoEntityService {
         sanitarioDto.setActivo(sanitario.isActivo());
         sanitarioDto.setEstandar(sanitario.isEstandar());
         sanitarioDto.setRepetido(sanitario.isRepetido());
-        sanitarioDto.setFechaCreacion(sanitario.getFechaCreacion());
-        sanitarioDto.setFechaRepeticion(sanitario.getFechaRepeticion());
+        sanitarioDto.setFechaCreacion(formatDate(sanitario.getFechaCreacion()));
+        sanitarioDto.setFechaRepeticion(formatDate(sanitario.getFechaRepeticion()));
 
         if (sanitario.getRecibo() != null) {
             sanitarioDto.setReciboId(sanitario.getRecibo().getId());
@@ -423,8 +430,8 @@ public class MapsDtoEntityService {
         }
         Sanitario sanitario = new Sanitario();
         sanitario.setId(sanitarioDto.getId());
-        sanitario.setFechaSiembra(sanitarioDto.getFechaSiembra());
-        sanitario.setFecha(sanitarioDto.getFecha());
+        sanitario.setFechaSiembra(parseDate(sanitarioDto.getFechaSiembra()));
+        sanitario.setFecha(parseDate(sanitarioDto.getFecha()));
         sanitario.setMetodo(sanitarioDto.getMetodo());
         sanitario.setTemperatura(sanitarioDto.getTemperatura());
         sanitario.setHorasLuz(sanitarioDto.getHorasLuz());
@@ -436,8 +443,8 @@ public class MapsDtoEntityService {
         sanitario.setActivo(sanitarioDto.isActivo());
         sanitario.setEstandar(sanitarioDto.isEstandar());
         sanitario.setRepetido(sanitarioDto.isRepetido());
-        sanitario.setFechaCreacion(sanitarioDto.getFechaCreacion());
-        sanitario.setFechaRepeticion(sanitarioDto.getFechaRepeticion());
+        sanitario.setFechaCreacion(parseDate(sanitarioDto.getFechaCreacion()));
+        sanitario.setFechaRepeticion(parseDate(sanitarioDto.getFechaRepeticion()));
 
         if (sanitarioDto.getReciboId() != null) {
             Recibo recibo = getValidRecibo(sanitarioDto.getReciboId());
@@ -468,18 +475,14 @@ public class MapsDtoEntityService {
         PMSDto pmsDto = new PMSDto();
 
         pmsDto.setId(pms.getId());
-        pmsDto.setPesoPromedioCienSemillas(pms.getPesoPromedioCienSemillas());
         pmsDto.setPesoMilSemillas(pms.getPesoMilSemillas());
         pmsDto.setPesoPromedioMilSemillas(pms.getPesoPromedioMilSemillas());
-        pmsDto.setDesvioEstandar(pms.getDesvioEstandar());
-        pmsDto.setCoeficienteVariacion(pms.getCoeficienteVariacion());
         pmsDto.setComentarios(pms.getComentarios());
         pmsDto.setActivo(pms.isActivo());
         pmsDto.setRepetido(pms.isRepetido());
         pmsDto.setFechaCreacion(pms.getFechaCreacion());
         pmsDto.setFechaRepeticion(pms.getFechaRepeticion());
         pmsDto.setFechaMedicion(pms.getFechaMedicion());
-        pmsDto.setHumedadPorcentual(pms.getHumedadPorcentual());
         pmsDto.setEstandar(pms.isEstandar());
 
         if (pms.getRecibo() != null) {
@@ -498,18 +501,15 @@ public class MapsDtoEntityService {
         PMS pms = new PMS();
 
         pms.setId(pmsDto.getId());
-        pms.setPesoPromedioCienSemillas(pmsDto.getPesoPromedioCienSemillas());
+
         pms.setPesoMilSemillas(pmsDto.getPesoMilSemillas());
         pms.setPesoPromedioMilSemillas(pmsDto.getPesoPromedioMilSemillas());
-        pms.setDesvioEstandar(pmsDto.getDesvioEstandar());
-        pms.setCoeficienteVariacion(pmsDto.getCoeficienteVariacion());
         pms.setComentarios(pmsDto.getComentarios());
         pms.setActivo(pmsDto.isActivo());
         pms.setRepetido(pmsDto.isRepetido());
         pms.setFechaCreacion(pmsDto.getFechaCreacion());
         pms.setFechaRepeticion(pmsDto.getFechaRepeticion());
         pms.setFechaMedicion(pmsDto.getFechaMedicion());
-        pms.setHumedadPorcentual(pmsDto.getHumedadPorcentual());
         pms.setEstandar(pmsDto.isEstandar());
 
         // Validar y obtener el recibo si existe
@@ -553,8 +553,6 @@ public class MapsDtoEntityService {
         dto.setMalezasToleranciaCeroInase(pureza.getMalezasToleranciaCeroInase());
         dto.setMalezasToleranciaCeroPorcentajeRedondeo(pureza.getMalezasToleranciaCeroPorcentajeRedondeo());
         dto.setMalezasToleranciaCeroPorcentajeRedondeoInase(pureza.getMalezasToleranciaCeroPorcentajeRedondeoInase());
-        dto.setPesoTotal(pureza.getPesoTotal());
-        dto.setPesoTotalInase(pureza.getPesoTotalInase());
         dto.setOtrosCultivo(pureza.getOtrosCultivo());
         dto.setFechaEstandar(pureza.getFechaEstandar());
         dto.setEstandar(pureza.getEstandar());
@@ -562,6 +560,8 @@ public class MapsDtoEntityService {
         dto.setRepetido(pureza.isRepetido());
         dto.setFechaCreacion(pureza.getFechaCreacion());
         dto.setFechaRepeticion(pureza.getFechaRepeticion());
+        dto.setMateriaInerteTipo(pureza.getMateriaInerteTipo());
+        dto.setMateriaInerteTipoInase(pureza.getMateriaInerteTipoInase());
 
         // Mapeo de cultivos
         if (pureza.getCultivos() != null) {
@@ -634,8 +634,6 @@ public class MapsDtoEntityService {
         pureza.setMalezasToleranciaCeroInase(dto.getMalezasToleranciaCeroInase());
         pureza.setMalezasToleranciaCeroPorcentajeRedondeo(dto.getMalezasToleranciaCeroPorcentajeRedondeo());
         pureza.setMalezasToleranciaCeroPorcentajeRedondeoInase(dto.getMalezasToleranciaCeroPorcentajeRedondeoInase());
-        pureza.setPesoTotal(dto.getPesoTotal());
-        pureza.setPesoTotalInase(dto.getPesoTotalInase());
         pureza.setOtrosCultivo(dto.getOtrosCultivo());
         pureza.setFechaEstandar(dto.getFechaEstandar());
         pureza.setEstandar(dto.isEstandar());
@@ -643,6 +641,8 @@ public class MapsDtoEntityService {
         pureza.setRepetido(dto.isRepetido());
         pureza.setFechaCreacion(dto.getFechaCreacion());
         pureza.setFechaRepeticion(dto.getFechaRepeticion());
+        pureza.setMateriaInerteTipo(dto.getMateriaInerteTipo());
+        pureza.setMateriaInerteTipoInase(dto.getMateriaInerteTipoInase());
 
         // Mapeo de cultivos
         if (dto.getCultivosId() != null) {
@@ -1144,6 +1144,9 @@ public class MapsDtoEntityService {
         dto.setRepetido(tetrazolio.isRepetido());
         dto.setReciboId(tetrazolio.getRecibo() != null ? tetrazolio.getRecibo().getId() : null);
 
+        // El reporte puede ser null y no está en la entidad aún, se inicializa como null
+        dto.setReporte(null);
+
         return dto;
     }
 
@@ -1305,7 +1308,7 @@ public class MapsDtoEntityService {
         dto.setHongoId(entity.getHongo() != null ? entity.getHongo().getId() : null);
         dto.setRepeticion(entity.getRepeticion());
         dto.setValor(entity.getValor());
-        dto.setIncidencia(entity.getIncidencia());
+
         // Mapeo del tipo
         dto.setTipo(entity.getTipo());
         return dto;
@@ -1335,7 +1338,6 @@ public class MapsDtoEntityService {
         }
         entity.setRepeticion(dto.getRepeticion());
         entity.setValor(dto.getValor());
-        entity.setIncidencia(dto.getIncidencia());
 
         entity.setTipo(dto.getTipo());
         return entity;

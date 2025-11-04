@@ -6,6 +6,30 @@ export interface PreTratamiento {
   nombre: string;
 }
 
+export interface ReporteFilaDanios {
+  mecanicos: number | null;
+  ambiente: number | null;
+  chinches: number | null;
+  fracturas: number | null;
+  otros: number | null;
+  duras: number | null;
+}
+
+export interface ReporteFila {
+  porcentaje: number | null;
+  danios: ReporteFilaDanios;
+}
+
+export interface ReporteTetrazolio {
+  vigorAlto: ReporteFila;
+  vigorMedio: ReporteFila;
+  vigorBajo: ReporteFila;
+  limiteCritico: ReporteFila;
+  noViables: ReporteFila;
+  viabilidad: ReporteFila;
+  vigorAcumulado: ReporteFila;
+}
+
 export interface TetrazolioDto {
   id: number | null;
   repeticion: number | null;
@@ -38,4 +62,5 @@ export interface TetrazolioDto {
   fechaCreacion: string | null;
   fechaRepeticion: string | null;
   reciboId: number | null;
+  reporte: ReporteTetrazolio | null;
 }

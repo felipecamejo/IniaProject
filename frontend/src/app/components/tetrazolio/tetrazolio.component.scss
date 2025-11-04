@@ -261,3 +261,53 @@
   display: flex;
   align-items: center;
 }
+
+/* Mensajes de error de validación */
+.error-container {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #fef2f2;
+  border: 1px solid var(--rojo, #DA696A);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(218, 105, 106, 0.1);
+}
+
+.error-message {
+  color: var(--rojo, #DA696A);
+  font-size: 0.95em;
+  margin: 0.25rem 0;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.error-message:first-child {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Estilos para inputs con error */
+.input-error {
+  border-color: var(--rojo, #DA696A) !important;
+  background-color: #fef2f2 !important;
+  box-shadow: 0 0 0 2px rgba(218, 105, 106, 0.1) !important;
+}
+
+/* Estilos para la tabla de reporte */
+.reporte-table {
+  .reporte-header {
+    background: #e0e7ef !important;
+    color: #1746a0 !important;
+    font-weight: 600;
+    font-size: 1.1em;
+    text-align: center;
+    border-bottom: 2px solid #cbd5e1;
+  }
+
+  .reporte-subheader {
+    background: #f3f6fb !important;
+    color: #1746a0 !important;
+    font-weight: 600;
+    text-align: center;
+    border-bottom: 2px solid #cbd5e1;
+  }
+}

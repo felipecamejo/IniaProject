@@ -43,7 +43,7 @@
             }
           </select> @if (selectedConcentracion === 'custom') {
                     <div class="custom-inline">
-                        <input type="number" step="0.1" min="0" [(ngModel)]="concentracionCustom" name="concentracionCustom" placeholder="Especifique (%)" />
+                        <input type="number" step="0.1" min="0" [(ngModel)]="concentracionCustom" name="concentracionCustom" placeholder="Especifique (%)" [ngClass]="{ 'input-error': concentracionCustom != null && concentracionCustom < 0 }" />
                     </div>
                     }
                 </div>
@@ -58,7 +58,7 @@
             }
           </select> @if (selectedTincionHs === 'custom') {
                     <div class="custom-inline">
-                        <input type="number" step="0.5" min="0" [(ngModel)]="tincionHsCustom" name="tincionHsCustom" placeholder="Especifique (hs)" />
+                        <input type="number" step="0.5" min="0" [(ngModel)]="tincionHsCustom" name="tincionHsCustom" placeholder="Especifique (hs)" [ngClass]="{ 'input-error': tincionHsCustom != null && tincionHsCustom < 0 }" />
                     </div>
                     }
                 </div>
@@ -66,7 +66,7 @@
                 <!-- Tinción (°C): ingreso manual -->
                 <div class="form-field">
                     <label for="tincionC">Tinción (°C)</label>
-                    <input id="tincionC" type="number" step="0.5" [(ngModel)]="tincionC" name="tincionC" placeholder="Ingrese °C" />
+                    <input id="tincionC" type="number" step="0.5" [(ngModel)]="tincionC" name="tincionC" placeholder="Ingrese °C" [ngClass]="{ 'input-error': tincionC != null && tincionC < 0 }" />
                 </div>
 
                 <!-- Fecha -->
@@ -93,9 +93,9 @@
                         @for (rep of repeticiones; track $index) {
                         <tr>
                             <td>{{ rep.numero }}</td>
-                            <td><input type="number" [ngModel]="rep.viables" (ngModelChange)="onRepeticionChange($index, 'viables', $event)" name="viables{{$index}}" /></td>
-                            <td><input type="number" [ngModel]="rep.noViables" (ngModelChange)="onRepeticionChange($index, 'noViables', $event)" name="noViables{{$index}}" /></td>
-                            <td><input type="number" [ngModel]="rep.duras" (ngModelChange)="onRepeticionChange($index, 'duras', $event)" name="duras{{$index}}" /></td>
+                            <td><input type="number" [ngModel]="rep.viables" (ngModelChange)="onRepeticionChange($index, 'viables', $event)" name="viables{{$index}}" [ngClass]="{ 'input-error': rep.viables != null && rep.viables < 0 }" /></td>
+                            <td><input type="number" [ngModel]="rep.noViables" (ngModelChange)="onRepeticionChange($index, 'noViables', $event)" name="noViables{{$index}}" [ngClass]="{ 'input-error': rep.noViables != null && rep.noViables < 0 }" /></td>
+                            <td><input type="number" [ngModel]="rep.duras" (ngModelChange)="onRepeticionChange($index, 'duras', $event)" name="duras{{$index}}" [ngClass]="{ 'input-error': rep.duras != null && rep.duras < 0 }" /></td>
                             <td>
                                 <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="eliminarRepeticion($index)" [disabled]="repeticiones.length === 1" title="Eliminar"></button>
                             </td>
@@ -162,53 +162,53 @@
                     <tbody>
                         <tr>
                             <td class="footer-label">Viables sin defectos</td>
-                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.total" name="vsd_total{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.mecanico" name="vsd_mecanico{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.ambiente" name="vsd_ambiente{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.chinches" name="vsd_chinches{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.fracturas" name="vsd_fracturas{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.otros" name="vsd_otros{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.duras" name="vsd_duras{{$index}}" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.total" name="vsd_total{{$index}}" [ngClass]="{ 'input-error': det.viablesSinDefectos.total != null && det.viablesSinDefectos.total < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.mecanico" name="vsd_mecanico{{$index}}" [ngClass]="{ 'input-error': det.viablesSinDefectos.mecanico != null && det.viablesSinDefectos.mecanico < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.ambiente" name="vsd_ambiente{{$index}}" [ngClass]="{ 'input-error': det.viablesSinDefectos.ambiente != null && det.viablesSinDefectos.ambiente < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.chinches" name="vsd_chinches{{$index}}" [ngClass]="{ 'input-error': det.viablesSinDefectos.chinches != null && det.viablesSinDefectos.chinches < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.fracturas" name="vsd_fracturas{{$index}}" [ngClass]="{ 'input-error': det.viablesSinDefectos.fracturas != null && det.viablesSinDefectos.fracturas < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.otros" name="vsd_otros{{$index}}" [ngClass]="{ 'input-error': det.viablesSinDefectos.otros != null && det.viablesSinDefectos.otros < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSinDefectos.duras" name="vsd_duras{{$index}}" [ngClass]="{ 'input-error': det.viablesSinDefectos.duras != null && det.viablesSinDefectos.duras < 0 }" /></td>
                         </tr>
                         <tr>
                             <td class="footer-label">Viables defectos leves</td>
-                            <td><input type="number" [(ngModel)]="det.viablesLeves.total" name="vl_total{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesLeves.mecanico" name="vl_mecanico{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesLeves.ambiente" name="vl_ambiente{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesLeves.chinches" name="vl_chinches{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesLeves.fracturas" name="vl_fracturas{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesLeves.otros" name="vl_otros{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesLeves.duras" name="vl_duras{{$index}}" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesLeves.total" name="vl_total{{$index}}" [ngClass]="{ 'input-error': det.viablesLeves.total != null && det.viablesLeves.total < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesLeves.mecanico" name="vl_mecanico{{$index}}" [ngClass]="{ 'input-error': det.viablesLeves.mecanico != null && det.viablesLeves.mecanico < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesLeves.ambiente" name="vl_ambiente{{$index}}" [ngClass]="{ 'input-error': det.viablesLeves.ambiente != null && det.viablesLeves.ambiente < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesLeves.chinches" name="vl_chinches{{$index}}" [ngClass]="{ 'input-error': det.viablesLeves.chinches != null && det.viablesLeves.chinches < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesLeves.fracturas" name="vl_fracturas{{$index}}" [ngClass]="{ 'input-error': det.viablesLeves.fracturas != null && det.viablesLeves.fracturas < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesLeves.otros" name="vl_otros{{$index}}" [ngClass]="{ 'input-error': det.viablesLeves.otros != null && det.viablesLeves.otros < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesLeves.duras" name="vl_duras{{$index}}" [ngClass]="{ 'input-error': det.viablesLeves.duras != null && det.viablesLeves.duras < 0 }" /></td>
                         </tr>
                         <tr>
                             <td class="footer-label">Viables defectos moderados</td>
-                            <td><input type="number" [(ngModel)]="det.viablesModerados.total" name="vm_total{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesModerados.mecanico" name="vm_mecanico{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesModerados.ambiente" name="vm_ambiente{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesModerados.chinches" name="vm_chinches{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesModerados.fracturas" name="vm_fracturas{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesModerados.otros" name="vm_otros{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesModerados.duras" name="vm_duras{{$index}}" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesModerados.total" name="vm_total{{$index}}" [ngClass]="{ 'input-error': det.viablesModerados.total != null && det.viablesModerados.total < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesModerados.mecanico" name="vm_mecanico{{$index}}" [ngClass]="{ 'input-error': det.viablesModerados.mecanico != null && det.viablesModerados.mecanico < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesModerados.ambiente" name="vm_ambiente{{$index}}" [ngClass]="{ 'input-error': det.viablesModerados.ambiente != null && det.viablesModerados.ambiente < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesModerados.chinches" name="vm_chinches{{$index}}" [ngClass]="{ 'input-error': det.viablesModerados.chinches != null && det.viablesModerados.chinches < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesModerados.fracturas" name="vm_fracturas{{$index}}" [ngClass]="{ 'input-error': det.viablesModerados.fracturas != null && det.viablesModerados.fracturas < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesModerados.otros" name="vm_otros{{$index}}" [ngClass]="{ 'input-error': det.viablesModerados.otros != null && det.viablesModerados.otros < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesModerados.duras" name="vm_duras{{$index}}" [ngClass]="{ 'input-error': det.viablesModerados.duras != null && det.viablesModerados.duras < 0 }" /></td>
                         </tr>
                         <tr>
                             <td class="footer-label">Viables defectos severos</td>
-                            <td><input type="number" [(ngModel)]="det.viablesSeveros.total" name="vs_total{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesSeveros.mecanico" name="vs_mecanico{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesSeveros.ambiente" name="vs_ambiente{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesSeveros.chinches" name="vs_chinches{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesSeveros.fracturas" name="vs_fracturas{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesSeveros.otros" name="vs_otros{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.viablesSeveros.duras" name="vs_duras{{$index}}" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSeveros.total" name="vs_total{{$index}}" [ngClass]="{ 'input-error': det.viablesSeveros.total != null && det.viablesSeveros.total < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSeveros.mecanico" name="vs_mecanico{{$index}}" [ngClass]="{ 'input-error': det.viablesSeveros.mecanico != null && det.viablesSeveros.mecanico < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSeveros.ambiente" name="vs_ambiente{{$index}}" [ngClass]="{ 'input-error': det.viablesSeveros.ambiente != null && det.viablesSeveros.ambiente < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSeveros.chinches" name="vs_chinches{{$index}}" [ngClass]="{ 'input-error': det.viablesSeveros.chinches != null && det.viablesSeveros.chinches < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSeveros.fracturas" name="vs_fracturas{{$index}}" [ngClass]="{ 'input-error': det.viablesSeveros.fracturas != null && det.viablesSeveros.fracturas < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSeveros.otros" name="vs_otros{{$index}}" [ngClass]="{ 'input-error': det.viablesSeveros.otros != null && det.viablesSeveros.otros < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.viablesSeveros.duras" name="vs_duras{{$index}}" [ngClass]="{ 'input-error': det.viablesSeveros.duras != null && det.viablesSeveros.duras < 0 }" /></td>
                         </tr>
                         <tr>
                             <td class="footer-label">No viables</td>
-                            <td><input type="number" [(ngModel)]="det.noViables.total" name="nv_total{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.noViables.mecanico" name="nv_mecanico{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.noViables.ambiente" name="nv_ambiente{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.noViables.chinches" name="nv_chinches{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.noViables.fracturas" name="nv_fracturas{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.noViables.otros" name="nv_otros{{$index}}" /></td>
-                            <td><input type="number" [(ngModel)]="det.noViables.duras" name="nv_duras{{$index}}" /></td>
+                            <td><input type="number" [(ngModel)]="det.noViables.total" name="nv_total{{$index}}" [ngClass]="{ 'input-error': det.noViables.total != null && det.noViables.total < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.noViables.mecanico" name="nv_mecanico{{$index}}" [ngClass]="{ 'input-error': det.noViables.mecanico != null && det.noViables.mecanico < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.noViables.ambiente" name="nv_ambiente{{$index}}" [ngClass]="{ 'input-error': det.noViables.ambiente != null && det.noViables.ambiente < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.noViables.chinches" name="nv_chinches{{$index}}" [ngClass]="{ 'input-error': det.noViables.chinches != null && det.noViables.chinches < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.noViables.fracturas" name="nv_fracturas{{$index}}" [ngClass]="{ 'input-error': det.noViables.fracturas != null && det.noViables.fracturas < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.noViables.otros" name="nv_otros{{$index}}" [ngClass]="{ 'input-error': det.noViables.otros != null && det.noViables.otros < 0 }" /></td>
+                            <td><input type="number" [(ngModel)]="det.noViables.duras" name="nv_duras{{$index}}" [ngClass]="{ 'input-error': det.noViables.duras != null && det.noViables.duras < 0 }" /></td>
                         </tr>
                         <tr>
                             <td class="footer-label">Semillas viables</td>
@@ -235,6 +235,117 @@
             </div>
             }
 
+            <!-- Separador discreto entre secciones -->
+            <hr class="section-divider" />
+
+            <!-- Tabla de Reporte -->
+            <h3 style="margin-top:2.5rem;">Reporte</h3>
+            <div class="table-wrapper">
+                <table class="p-table tetrazolio-table reporte-table">
+                    <thead>
+                        <tr>
+                            <th colspan="2" class="reporte-header">REPORTE</th>
+                            <th colspan="7" class="reporte-header">Deberia salir asi en %</th>
+                        </tr>
+                        <tr>
+                            <th class="reporte-subheader">Viabilidad y Vigor por tetrazolio</th>
+                            <th class="reporte-subheader">%</th>
+                            <th colspan="7" class="reporte-subheader">Daños %</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th>Mecánicos</th>
+                            <th>Ambiente</th>
+                            <th>Chinches</th>
+                            <th>Fracturas</th>
+                            <th>Otros</th>
+                            <th>Duras</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="footer-label">Vigor Alto</td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.porcentaje" name="reporte_vigorAlto_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.mecanicos" name="reporte_vigorAlto_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.ambiente" name="reporte_vigorAlto_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.chinches" name="reporte_vigorAlto_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.fracturas" name="reporte_vigorAlto_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.otros" name="reporte_vigorAlto_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.duras" name="reporte_vigorAlto_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">Vigor Medio</td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.porcentaje" name="reporte_vigorMedio_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.mecanicos" name="reporte_vigorMedio_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.ambiente" name="reporte_vigorMedio_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.chinches" name="reporte_vigorMedio_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.fracturas" name="reporte_vigorMedio_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.otros" name="reporte_vigorMedio_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.duras" name="reporte_vigorMedio_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">Vigor Bajo</td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.porcentaje" name="reporte_vigorBajo_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.mecanicos" name="reporte_vigorBajo_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.ambiente" name="reporte_vigorBajo_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.chinches" name="reporte_vigorBajo_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.fracturas" name="reporte_vigorBajo_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.otros" name="reporte_vigorBajo_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.duras" name="reporte_vigorBajo_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">Limite Crítico</td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.porcentaje" name="reporte_limiteCritico_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.mecanicos" name="reporte_limiteCritico_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.ambiente" name="reporte_limiteCritico_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.chinches" name="reporte_limiteCritico_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.fracturas" name="reporte_limiteCritico_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.otros" name="reporte_limiteCritico_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.duras" name="reporte_limiteCritico_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">No viables</td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.porcentaje" name="reporte_noViables_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.mecanicos" name="reporte_noViables_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.ambiente" name="reporte_noViables_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.chinches" name="reporte_noViables_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.fracturas" name="reporte_noViables_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.otros" name="reporte_noViables_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.duras" name="reporte_noViables_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">Viabilidad</td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.porcentaje" name="reporte_viabilidad_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.mecanicos" name="reporte_viabilidad_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.ambiente" name="reporte_viabilidad_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.chinches" name="reporte_viabilidad_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.fracturas" name="reporte_viabilidad_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.otros" name="reporte_viabilidad_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.duras" name="reporte_viabilidad_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">Vigor Acumulado</td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.porcentaje" name="reporte_vigorAcumulado_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.mecanicos" name="reporte_vigorAcumulado_mecanicos" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.ambiente" name="reporte_vigorAcumulado_ambiente" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.chinches" name="reporte_vigorAcumulado_chinches" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.fracturas" name="reporte_vigorAcumulado_fracturas" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.otros" name="reporte_vigorAcumulado_otros" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.duras" name="reporte_vigorAcumulado_duras" readonly /></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <!-- Checkbox Repetido - solo visible al editar -->
             @if (isEditing) {
             <div class="form-field">
@@ -256,6 +367,14 @@
                 </button>
 
                 <button pButton type="button" (click)="onCancel()" label="Cancelar" class="p-button-secondary" style="margin-left: 10px;" [disabled]="isSubmitting"></button>
+            </div>
+
+            <!-- Mensajes de error -->
+            <div *ngIf="erroresValidacion && erroresValidacion.length > 0" class="error-container">
+                <p class="error-message">
+                    {{ erroresValidacion.length === 1 ? '1 error encontrado' : erroresValidacion.length + ' errores encontrados' }}
+                </p>
+                <p *ngFor="let error of erroresValidacion" class="error-message">{{ error }}</p>
             </div>
 
         </form>

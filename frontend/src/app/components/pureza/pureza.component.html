@@ -44,7 +44,7 @@
                       (ngModelChange)="setGramosValue(rowIndex, $event)"
                       [name]="'gramos_' + rowIndex" 
                       pInputText 
-                      [readonly]="isReadonly"
+                      [readonly]="isReadonly || rowIndex === 7"
                       [ngClass]="{ 'input-error': getGramosValue(rowIndex) != null && getGramosValue(rowIndex) < 0 }"/>
                     <span>g</span>
                   </div>
@@ -90,6 +90,12 @@
       </div>
 
        <div class="form-grid">
+
+        <div class="form-field">
+          <label for="materiaInerteTipo">Tipo de Materia Inerte</label>
+          <input id="materiaInerteTipo" type="text" [(ngModel)]="materiaInerteTipo" name="materiaInerteTipo" pInputText [readonly]="isReadonly" />
+        </div>
+
         <!-- Fecha -->
         <div class="form-field">
           <label for="fecha">Fecha Inase</label>
@@ -126,7 +132,7 @@
                       (ngModelChange)="setGramosInaseValue(rowIndex, $event)"
                       [name]="'gramosInase_' + rowIndex" 
                       pInputText 
-                      [readonly]="isReadonly"
+                      [readonly]="isReadonly || rowIndex === 7"
                       [ngClass]="{ 'input-error': getGramosInaseValue(rowIndex) != null && getGramosInaseValue(rowIndex) < 0 }"/>
                     <span>g</span>
                   </div>
@@ -171,6 +177,11 @@
       </div>
 
       <div class="form-grid" style="margin-top: 3rem;">
+
+        <div class="form-field">
+          <label for="materiaInerteTipoInase">Tipo de Materia Inerte Inase</label>
+          <input id="materiaInerteTipoInase" type="text" [(ngModel)]="materiaInerteTipoInase" name="materiaInerteTipoInase" pInputText [readonly]="isReadonly" />
+        </div>
 
         <!-- Fecha estándar -->
         <div class="form-field">

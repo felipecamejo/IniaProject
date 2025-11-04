@@ -11,15 +11,9 @@ public class PMSDto {
 
     private List<Float> gramosPorRepeticiones;
 
-    private Float pesoPromedioCienSemillas;
-
     private Float pesoMilSemillas;
 
     private Float pesoPromedioMilSemillas;
-
-    private Float desvioEstandar;
-
-    private Float coeficienteVariacion;
 
     private String comentarios;
 
@@ -34,8 +28,6 @@ public class PMSDto {
     private Date fechaCreacion;
 
     private Date fechaRepeticion;
-
-    private Integer humedadPorcentual;
 
     private boolean estandar;
 

@@ -445,7 +445,6 @@ export class SanitarioComponent implements OnInit {
         console.error('Error al cargar sanitario:', error);
         this.isLoading = false;
         this.isCargandoDatosIniciales = false;
-        alert('Error al cargar los datos del sanitario');
       }
     });
   }
@@ -477,6 +476,13 @@ export class SanitarioComponent implements OnInit {
     
     this.isSaving = true;
 
+    // Ejecutar validaciones finales antes de armar el payload
+    if (this.manejarProblemas()) {
+      // Hay errores: cancelar envío y permitir correcciones
+      this.isSaving = false;
+      return;
+    }
+
     const sanitarioData: SanitarioDto = {
       id: this.isEditing ? this.editingId : null,
       fechaSiembra: DateService.ajustarFecha(this.fechaSiembra),
@@ -489,11 +495,11 @@ export class SanitarioComponent implements OnInit {
       estado: this.estado,
       observaciones: this.observaciones,
       nroSemillasRepeticion: this.nroSemillasRepeticion,
-      reciboId: parseInt(this.reciboId || '0'),
+      reciboId: this.reciboId ? parseInt(this.reciboId, 10) : null,
       activo: this.activo,
       estandar: this.estandar,
       repetido: this.repetido,
-      sanitarioHongoids: null,
+      sanitarioHongosId: null,
       fechaCreacion: DateService.ajustarFecha(this.fechaCreacion),
       fechaRepeticion: DateService.ajustarFecha(this.fechaRepeticion)
     };
@@ -514,12 +520,13 @@ export class SanitarioComponent implements OnInit {
   }
 
   private crearNuevoSanitario(sanitarioData: SanitarioDto) {
-    const fechaActual = DateService.ajustarFecha(new Date().toISOString());
-    
+    const hoyYmd = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const fechaActual = DateService.ajustarFecha(hoyYmd);
+
     const sanitarioPayload = {
       id: 0,
-      fechaSiembra: this.fechaSiembra ? DateService.ajustarFecha(new Date(this.fechaSiembra).toISOString()) : fechaActual,
-      fecha: DateService.ajustarFecha(this.fecha) ? DateService.ajustarFecha(new Date(this.fecha).toISOString()) : fechaActual,
+      fechaSiembra: this.fechaSiembra ? DateService.ajustarFecha(this.fechaSiembra) : fechaActual,
+      fecha: this.fecha ? DateService.ajustarFecha(this.fecha) : fechaActual,
       metodo: this.metodo || "METODO_A",
       temperatura: this.temperatura || 0,
       horasLuz: this.horasLuz || 0,
@@ -528,7 +535,7 @@ export class SanitarioComponent implements OnInit {
       estado: this.estado || "", 
       observaciones: this.observaciones || "",
       nroSemillasRepeticion: this.nroSemillasRepeticion || 0,
-      reciboId: parseInt(this.reciboId || '0'),
+      reciboId: this.reciboId ? parseInt(this.reciboId, 10) : null,
       activo: this.activo,
       estandar: this.estandar,
       repetido: false,
@@ -552,14 +559,15 @@ export class SanitarioComponent implements OnInit {
   }
 
   private actualizarSanitario(sanitarioData: SanitarioDto) {
-    const fechaRepeticionFinal = this.repetido && !sanitarioData.fechaRepeticion ? 
-      new Date().toISOString() : 
-      (sanitarioData.fechaRepeticion ? new Date(sanitarioData.fechaRepeticion).toISOString() : null);
+    const hoyYmd = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const fechaRepeticionFinal = this.repetido && !sanitarioData.fechaRepeticion
+      ? DateService.ajustarFecha(hoyYmd)
+      : (sanitarioData.fechaRepeticion || null);
 
     const sanitarioPayload = {
       id: this.editingId!,
-      fechaSiembra: this.fechaSiembra ? DateService.ajustarFecha(new Date(this.fechaSiembra).toISOString()) : new Date().toISOString(),
-      fecha: DateService.ajustarFecha(this.fecha) ? DateService.ajustarFecha(new Date(this.fecha).toISOString()) : new Date().toISOString(),
+      fechaSiembra: this.fechaSiembra ? DateService.ajustarFecha(this.fechaSiembra) : DateService.ajustarFecha(hoyYmd),
+      fecha: this.fecha ? DateService.ajustarFecha(this.fecha) : DateService.ajustarFecha(hoyYmd),
       metodo: this.metodo || "METODO_A",
       temperatura: this.temperatura || 0,
       horasLuz: this.horasLuz || 0,
@@ -568,12 +576,12 @@ export class SanitarioComponent implements OnInit {
       estado: this.estado || "",
       observaciones: this.observaciones || "",
       nroSemillasRepeticion: this.nroSemillasRepeticion || 0,
-      reciboId: parseInt(this.reciboId || '0'),
+      reciboId: this.reciboId ? parseInt(this.reciboId, 10) : null,
       activo: this.activo,
       estandar: this.estandar,
       repetido: this.repetido,
       sanitarioHongosId: [],
-      fechaCreacion: this.fechaCreacion ? DateService.ajustarFecha(new Date(this.fechaCreacion).toISOString()) : new Date().toISOString(),
+      fechaCreacion: this.fechaCreacion ? DateService.ajustarFecha(this.fechaCreacion.slice(0, 10)) : DateService.ajustarFecha(hoyYmd),
       fechaRepeticion: fechaRepeticionFinal
     };
     
@@ -605,13 +613,11 @@ export class SanitarioComponent implements OnInit {
       next: (response) => {
         console.log('✅ Hongos guardados exitosamente:', response);
         this.isSaving = false;
-        alert('Sanitario y hongos guardados exitosamente');
         this.volverAlListado();
       },
       error: (error) => {
         console.error('❌ Error al guardar hongos:', error);
         this.isSaving = false;
-        alert('Sanitario guardado, pero hubo errores al guardar algunos hongos');
       }
     });
   }
@@ -633,7 +639,6 @@ export class SanitarioComponent implements OnInit {
           hongoId: hongoInfo.id ?? null,
           repeticion: hongo.repeticion ?? 0,
           valor: hongo.valor ?? 0,
-          incidencia: hongo.incidencia ?? 0,
           tipo: TipoHongoSanitario.PATOGENO
         });
       }
@@ -653,7 +658,6 @@ export class SanitarioComponent implements OnInit {
           hongoId: hongoInfo.id ?? null,
           repeticion: hongo.repeticion ?? 0,
           valor: hongo.valor ?? 0,
-          incidencia: hongo.incidencia ?? 0,
           tipo: TipoHongoSanitario.CONTAMINANTE
         });
       }
@@ -673,7 +677,6 @@ export class SanitarioComponent implements OnInit {
           hongoId: hongoInfo.id ?? null,
           repeticion: hongo.repeticion ?? 0,
           valor: hongo.valor ?? 0,
-          incidencia: hongo.incidencia ?? 0,
           tipo: TipoHongoSanitario.ALMACENAJE
         });
       }
@@ -701,6 +704,81 @@ export class SanitarioComponent implements OnInit {
     });
   }
 
+  /**
+   * Calcula el porcentaje de incidencia para todas las tablas
+   * Fórmula: (Valor / Número de semillas por repetición) * 100
+   */
+  CalcularPorcentajeIncidencia(): void {
+    if (!this.nroSemillasRepeticion || this.nroSemillasRepeticion === 0) {
+      console.warn('No se puede calcular el porcentaje de incidencia: nroSemillasRepeticion no está definido o es 0');
+      return;
+    }
+
+    // Calcular porcentaje de incidencia para hongosTable (Patógenos)
+    this.hongosTable.forEach(item => {
+      if (item.valor !== undefined && item.valor !== null) {
+        item.incidencia = (item.valor / this.nroSemillasRepeticion!) * 100;
+      }
+    });
+
+    // Calcular porcentaje de incidencia para hongosCampoTable (Contaminantes)
+    this.hongosCampoTable.forEach(item => {
+      if (item.valor !== undefined && item.valor !== null) {
+        item.incidencia = (item.valor / this.nroSemillasRepeticion!) * 100;
+      }
+    });
+
+    // Calcular porcentaje de incidencia para hongosAlmacenajeTable
+    this.hongosAlmacenajeTable.forEach(item => {
+      if (item.valor !== undefined && item.valor !== null) {
+        item.incidencia = (item.valor / this.nroSemillasRepeticion!) * 100;
+      }
+    });
+  }
+
+  /**
+   * Actualiza el porcentaje de incidencia cuando cambia el valor en hongosTable (Patógenos)
+   */
+  onValorPatogenoChange(index: number): void {
+    if (!this.nroSemillasRepeticion || this.nroSemillasRepeticion === 0) {
+      this.hongosTable[index].incidencia = 0;
+      return;
+    }
+    const valor = this.hongosTable[index].valor ?? 0;
+    this.hongosTable[index].incidencia = (valor / this.nroSemillasRepeticion) * 100;
+  }
+
+  /**
+   * Actualiza el porcentaje de incidencia cuando cambia el valor en hongosCampoTable (Contaminantes)
+   */
+  onValorContaminanteChange(index: number): void {
+    if (!this.nroSemillasRepeticion || this.nroSemillasRepeticion === 0) {
+      this.hongosCampoTable[index].incidencia = 0;
+      return;
+    }
+    const valor = this.hongosCampoTable[index].valor ?? 0;
+    this.hongosCampoTable[index].incidencia = (valor / this.nroSemillasRepeticion) * 100;
+  }
+
+  /**
+   * Actualiza el porcentaje de incidencia cuando cambia el valor en hongosAlmacenajeTable
+   */
+  onValorAlmacenajeChange(index: number): void {
+    if (!this.nroSemillasRepeticion || this.nroSemillasRepeticion === 0) {
+      this.hongosAlmacenajeTable[index].incidencia = 0;
+      return;
+    }
+    const valor = this.hongosAlmacenajeTable[index].valor ?? 0;
+    this.hongosAlmacenajeTable[index].incidencia = (valor / this.nroSemillasRepeticion) * 100;
+  }
+
+  /**
+   * Cuando cambia el número de semillas por repetición, recalcula todas las incidencias
+   */
+  onNroSemillasRepeticionChange(): void {
+    this.CalcularPorcentajeIncidencia();
+  }
+
   private cargarHongosEnTablas(hongosAsociados: SanitarioHongoDTO[]): void {
     this.selectedHongosPatogenos = [];
     this.selectedHongosContaminantes = [];
@@ -713,11 +791,17 @@ export class SanitarioComponent implements OnInit {
       const hongo = this.hongos.find(h => h.id === sanitarioHongo.hongoId);
       if (!hongo) return;
 
+      // Calcular incidencia: (valor / nroSemillasRepeticion) * 100
+      const valor = sanitarioHongo.valor ?? 0;
+      const incidencia = this.nroSemillasRepeticion && this.nroSemillasRepeticion > 0
+        ? (valor / this.nroSemillasRepeticion) * 100
+        : 0;
+
       const tablaItem = {
         tipoHongo: hongo.nombre,
         repeticion: sanitarioHongo.repeticion ?? 0,
-        valor: sanitarioHongo.valor ?? 0,
-        incidencia: sanitarioHongo.incidencia ?? 0
+        valor: valor,
+        incidencia: incidencia
       };
 
       switch (sanitarioHongo.tipo) {
@@ -768,6 +852,11 @@ export class SanitarioComponent implements OnInit {
 
     const hoy = new Date();
     const fechaSiembra = this.fechaSiembra ? new Date(this.fechaSiembra) : null;
+
+    // Validación: fecha obligatoria
+    if (!this.fecha || this.fecha.trim() === '') {
+      this.errores.push('Debes ingresar una fecha.');
+    }
 
     if (this.temperatura != null && this.temperatura < 0) {
       this.errores.push('La temperatura no puede ser un número negativo.');

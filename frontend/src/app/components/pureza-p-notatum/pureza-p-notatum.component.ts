@@ -330,10 +330,6 @@ export class PurezaPNotatumComponent implements OnInit {
     this.router.navigate(segments);
   }
 
-  getControlPesos(rep: any): number {
-    return (rep.gramosSemillasSanas || 0) + (rep.gramosContaminadasYVanas || 0);
-  }
-
   manejarProblemas(): boolean {
     this.errores = []; // Reiniciar errores
 
@@ -394,10 +390,6 @@ export class PurezaPNotatumComponent implements OnInit {
 
     if (this.materiaInerteGr != null && this.materiaInerteGr < 0) {
       this.errores.push('Los gramos de materia inerte no pueden ser negativos.');
-    }
-
-    if (this.repeticiones.some(rep => this.getControlPesos(rep) < 0)) {
-      this.errores.push('Los gramos de semillas analizadas no pueden ser negativos.');
     }
 
     return this.errores.length > 0;

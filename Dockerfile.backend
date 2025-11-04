@@ -1,5 +1,5 @@
 # Dockerfile para el backend Spring Boot
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jdk-jammy
 
 # Instalar Maven
 RUN apt-get update && \

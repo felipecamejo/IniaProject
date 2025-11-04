@@ -43,8 +43,8 @@ export class PurezaComponent implements OnInit {
   // Variable para prevenir múltiples envíos
   isSubmitting: boolean = false;
 
-   loteId: string | null = '';
-    reciboId: string | null = '';
+  loteId: string | null = '';
+  reciboId: string | null = '';
     
   // Campo para mantener fechaCreacion original durante edición
   fechaCreacionOriginal: string | null = null;
@@ -264,6 +264,10 @@ export class PurezaComponent implements OnInit {
   malezasToleranciaCeroInasePctRedondeo: number = 0;
   pesoTotalInasePctRedondeo: number = 0;
   
+  // Variables para materia inerte tipo
+  materiaInerteTipo: string = '';
+  materiaInerteTipoInase: string = '';
+  
   fechaEstandar: string = '';
   estandar: boolean = false;
   activo: boolean = true;
@@ -303,27 +307,33 @@ export class PurezaComponent implements OnInit {
         break;
       case 1: 
         this.semillaPuraGr = value; 
-        this.recalcularPorcentajeIndividual(1); 
+        this.recalcularPorcentajeIndividual(1);
+        this.recalcularPesoTotal(); // Recalcular peso total
         break;
       case 2: 
         this.materiaInerteGr = value; 
-        this.recalcularPorcentajeIndividual(2); 
+        this.recalcularPorcentajeIndividual(2);
+        this.recalcularPesoTotal(); // Recalcular peso total
         break;
       case 3: 
         this.otrosCultivosGr = value; 
-        this.recalcularPorcentajeIndividual(3); 
+        this.recalcularPorcentajeIndividual(3);
+        this.recalcularPesoTotal(); // Recalcular peso total
         break;
       case 4: 
         this.malezasGr = value; 
-        this.recalcularPorcentajeIndividual(4); 
+        this.recalcularPorcentajeIndividual(4);
+        this.recalcularPesoTotal(); // Recalcular peso total
         break;
       case 5: 
         this.malezasToleradasGr = value; 
-        this.recalcularPorcentajeIndividual(5); 
+        this.recalcularPorcentajeIndividual(5);
+        this.recalcularPesoTotal(); // Recalcular peso total
         break;
       case 6: 
         this.malezasToleranciaCeroGr = value; 
-        this.recalcularPorcentajeIndividual(6); 
+        this.recalcularPorcentajeIndividual(6);
+        this.recalcularPesoTotal(); // Recalcular peso total
         break;
       case 7: 
         this.pesoTotalGr = value; 
@@ -422,27 +432,33 @@ export class PurezaComponent implements OnInit {
         break;
       case 1: 
         this.semillaPuraInaseGr = value; 
-        this.recalcularPorcentajeInaseIndividual(1); 
+        this.recalcularPorcentajeInaseIndividual(1);
+        this.recalcularPesoTotalInase(); // Recalcular peso total INASE
         break;
       case 2: 
         this.materiaInerteInaseGr = value; 
-        this.recalcularPorcentajeInaseIndividual(2); 
+        this.recalcularPorcentajeInaseIndividual(2);
+        this.recalcularPesoTotalInase(); // Recalcular peso total INASE
         break;
       case 3: 
         this.otrosCultivosInaseGr = value; 
-        this.recalcularPorcentajeInaseIndividual(3); 
+        this.recalcularPorcentajeInaseIndividual(3);
+        this.recalcularPesoTotalInase(); // Recalcular peso total INASE
         break;
       case 4: 
         this.malezasInaseGr = value; 
-        this.recalcularPorcentajeInaseIndividual(4); 
+        this.recalcularPorcentajeInaseIndividual(4);
+        this.recalcularPesoTotalInase(); // Recalcular peso total INASE
         break;
       case 5: 
         this.malezasToleradasInaseGr = value; 
-        this.recalcularPorcentajeInaseIndividual(5); 
+        this.recalcularPorcentajeInaseIndividual(5);
+        this.recalcularPesoTotalInase(); // Recalcular peso total INASE
         break;
       case 6: 
         this.malezasToleranciaCeroInaseGr = value; 
-        this.recalcularPorcentajeInaseIndividual(6); 
+        this.recalcularPorcentajeInaseIndividual(6);
+        this.recalcularPesoTotalInase(); // Recalcular peso total INASE
         break;
       case 7: 
         this.pesoTotalInaseGr = value; 
@@ -593,6 +609,28 @@ export class PurezaComponent implements OnInit {
     }
   }
 
+  // Recalcular peso total INIA (suma de todos los componentes)
+  recalcularPesoTotal(): void {
+    this.pesoTotalGr = 
+      this.semillaPuraGr + 
+      this.materiaInerteGr + 
+      this.otrosCultivosGr + 
+      this.malezasGr + 
+      this.malezasToleradasGr + 
+      this.malezasToleranciaCeroGr;
+  }
+
+  // Recalcular peso total INASE (suma de todos los componentes)
+  recalcularPesoTotalInase(): void {
+    this.pesoTotalInaseGr = 
+      this.semillaPuraInaseGr + 
+      this.materiaInerteInaseGr + 
+      this.otrosCultivosInaseGr + 
+      this.malezasInaseGr + 
+      this.malezasToleradasInaseGr + 
+      this.malezasToleranciaCeroInaseGr;
+  }
+
   // Método para verificar si un campo de porcentaje debe estar deshabilitado
   isPorcentajeReadonly(rowIndex: number): boolean {
     // Todos los porcentajes (no redondeo) son de solo lectura porque se calculan automáticamente
@@ -614,6 +652,8 @@ export class PurezaComponent implements OnInit {
     materialInerteInase: 0,
     materialInertePorcentajeRedondeo: 0,
     materialInertePorcentajeRedondeoInase: 0,
+    materiaInerteTipo: null,
+    materiaInerteTipoInase: null,
     otrosCultivos: 0,
     otrosCultivosInase: 0,
     otrosCultivosPorcentajeRedondeo: 0,
@@ -630,8 +670,6 @@ export class PurezaComponent implements OnInit {
     malezasToleranciaCeroInase: 0,
     malezasToleranciaCeroPorcentajeRedondeo: 0,
     malezasToleranciaCeroPorcentajeRedondeoInase: 0,
-    pesoTotal: 0,
-    pesoTotalInase: 0,
     otrosCultivo: 0,
     fechaEstandar: null,
     estandar: false,
@@ -809,7 +847,8 @@ export class PurezaComponent implements OnInit {
         this.malezasGr = item.malezas || 0;
         this.malezasToleradasGr = item.malezasToleradas || 0;
         this.malezasToleranciaCeroGr = item.malezasToleranciaCero || 0;
-        this.pesoTotalGr = item.pesoTotal || 0;
+        // Recalcular peso total después de cargar los componentes
+        this.recalcularPesoTotal();
         
         // Campos INIA - Porcentajes redondeo
         this.semillaPuraPctRedondeo = item.semillaPuraPorcentajeRedondeo || 0;
@@ -819,6 +858,9 @@ export class PurezaComponent implements OnInit {
         this.malezasToleradasPctRedondeo = item.malezasToleradasPorcentajeRedondeo || 0;
         this.malezasToleranciaCeroPctRedondeo = item.malezasToleranciaCeroPorcentajeRedondeo || 0;
         
+        // Cargar materia inerte tipo INIA
+        this.materiaInerteTipo = item.materiaInerteTipo || '';
+        
         // Campos INASE - Gramos
         this.pesoInicialInaseGr = item.pesoInicialInase || 0;
         this.semillaPuraInaseGr = item.semillaPuraInase || 0;
@@ -827,7 +869,8 @@ export class PurezaComponent implements OnInit {
         this.malezasInaseGr = item.malezasInase || 0;
         this.malezasToleradasInaseGr = item.malezasToleradasInase || 0;
         this.malezasToleranciaCeroInaseGr = item.malezasToleranciaCeroInase || 0;
-        this.pesoTotalInaseGr = item.pesoTotalInase || 0;
+        // Recalcular peso total INASE después de cargar los componentes
+        this.recalcularPesoTotalInase();
         
         // Campos INASE - Porcentajes redondeo
         this.semillaPuraInasePctRedondeo = item.semillaPuraPorcentajeRedondeoInase || 0;
@@ -836,6 +879,9 @@ export class PurezaComponent implements OnInit {
         this.malezasInasePctRedondeo = item.malezasPorcentajeRedondeoInase || 0;
         this.malezasToleradasInasePctRedondeo = item.malezasToleradasPorcentajeRedondeoInase || 0;
         this.malezasToleranciaCeroInasePctRedondeo = item.malezasToleranciaCeroPorcentajeRedondeoInase || 0;
+        
+        // Cargar materia inerte tipo INASE
+        this.materiaInerteTipoInase = item.materiaInerteTipoInase || '';
        
         // Campo adicional otrosCultivo
         this.otrosCultivoField = (item as any).otrosCultivo || 0;
@@ -939,6 +985,10 @@ export class PurezaComponent implements OnInit {
     this.repetido = false;
     this.fechaCreacionOriginal = null;
     
+    // Limpiar materia inerte tipo
+    this.materiaInerteTipo = '';
+    this.materiaInerteTipoInase = '';
+    
     // === LIMPIAR SELECCIONES DE MALEZAS Y CULTIVOS ===
     this.selectedMalezasComunes = [];
     this.selectedMalezasToleradas = [];
@@ -957,6 +1007,10 @@ export class PurezaComponent implements OnInit {
       console.log('Ya se está enviando el formulario, ignorando nueva llamada');
       return;
     }
+    
+    // Recalcular los pesos totales antes de enviar
+    this.recalcularPesoTotal();
+    this.recalcularPesoTotalInase();
     
     this.isSubmitting = true;
     let purezaData: PurezaDto = this.buildPurezaDto();
@@ -1029,6 +1083,8 @@ export class PurezaComponent implements OnInit {
       materialInerteInase: this.materiaInerteInaseGr || 0,
       materialInertePorcentajeRedondeo: this.materiaInertePctRedondeo || 0,
       materialInertePorcentajeRedondeoInase: this.materiaInerteInasePctRedondeo || 0,
+      materiaInerteTipo: this.materiaInerteTipo || null,
+      materiaInerteTipoInase: this.materiaInerteTipoInase || null,
 
       otrosCultivos: this.otrosCultivosGr || 0,
       otrosCultivosInase: this.otrosCultivosInaseGr || 0,
@@ -1050,8 +1106,6 @@ export class PurezaComponent implements OnInit {
       malezasToleranciaCeroPorcentajeRedondeo: this.malezasToleranciaCeroPctRedondeo || 0,
       malezasToleranciaCeroPorcentajeRedondeoInase: this.malezasToleranciaCeroInasePctRedondeo || 0,
 
-      pesoTotal: this.pesoTotalGr || 0,
-      pesoTotalInase: this.pesoTotalInaseGr || 0,
       
       // Campo adicional del DTO
       otrosCultivo: this.otrosCultivoField || 0,

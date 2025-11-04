@@ -14,7 +14,7 @@ export interface SanitarioDto {
   activo: boolean;
   estandar: boolean;
   repetido: boolean;
-  sanitarioHongoids: number[] | null;
+  sanitarioHongosId: number[] | null;
   fechaCreacion: string | null;
   fechaRepeticion: string | null;
 }

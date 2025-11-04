@@ -141,6 +141,17 @@ export class ListadoTetrazolioComponent implements OnInit {
     }
 
     goToHome() {
+      const loteId = this.route.snapshot.paramMap.get('loteId');
+      const reciboId = this.route.snapshot.paramMap.get('reciboId');
+
+      if (loteId && reciboId) {
+        this.router.navigate([`/${loteId}/${reciboId}/lote-analisis`]);
+        return;
+      }
+      if (loteId) {
+        this.router.navigate([`/${loteId}/lote-analisis`]);
+        return;
+      }
       this.router.navigate(['/home']);
     }
 

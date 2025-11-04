@@ -2,7 +2,7 @@
 # Este archivo se carga automáticamente en desarrollo
 # y permite configuraciones específicas para desarrollo
 
-version: '3.8'
+version: '3.9'
 
 services:
   # Backend con hot reload para desarrollo
