@@ -383,7 +383,7 @@ export class ReciboComponent implements OnInit {
       cultivar: this.selectedCultivar || base.cultivar || null,
       loteId: Number(this.lote2) || base.loteId || null,
       kgLimpios: Number(this.kilos) || base.kgLimpios || null,
-      analisisSolicitados: this.rec || base.analisisSolicitados || null,
+      analisisSolicitados: base.analisisSolicitados ?? null,
       articulo: this.articulo ?? base.articulo ?? null,
       activo: base.activo ?? true
     };
