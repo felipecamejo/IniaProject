@@ -475,18 +475,14 @@ public class MapsDtoEntityService {
         PMSDto pmsDto = new PMSDto();
 
         pmsDto.setId(pms.getId());
-        pmsDto.setPesoPromedioCienSemillas(pms.getPesoPromedioCienSemillas());
         pmsDto.setPesoMilSemillas(pms.getPesoMilSemillas());
         pmsDto.setPesoPromedioMilSemillas(pms.getPesoPromedioMilSemillas());
-        pmsDto.setDesvioEstandar(pms.getDesvioEstandar());
-        pmsDto.setCoeficienteVariacion(pms.getCoeficienteVariacion());
         pmsDto.setComentarios(pms.getComentarios());
         pmsDto.setActivo(pms.isActivo());
         pmsDto.setRepetido(pms.isRepetido());
         pmsDto.setFechaCreacion(pms.getFechaCreacion());
         pmsDto.setFechaRepeticion(pms.getFechaRepeticion());
         pmsDto.setFechaMedicion(pms.getFechaMedicion());
-        pmsDto.setHumedadPorcentual(pms.getHumedadPorcentual());
         pmsDto.setEstandar(pms.isEstandar());
 
         if (pms.getRecibo() != null) {
@@ -505,18 +501,15 @@ public class MapsDtoEntityService {
         PMS pms = new PMS();
 
         pms.setId(pmsDto.getId());
-        pms.setPesoPromedioCienSemillas(pmsDto.getPesoPromedioCienSemillas());
+
         pms.setPesoMilSemillas(pmsDto.getPesoMilSemillas());
         pms.setPesoPromedioMilSemillas(pmsDto.getPesoPromedioMilSemillas());
-        pms.setDesvioEstandar(pmsDto.getDesvioEstandar());
-        pms.setCoeficienteVariacion(pmsDto.getCoeficienteVariacion());
         pms.setComentarios(pmsDto.getComentarios());
         pms.setActivo(pmsDto.isActivo());
         pms.setRepetido(pmsDto.isRepetido());
         pms.setFechaCreacion(pmsDto.getFechaCreacion());
         pms.setFechaRepeticion(pmsDto.getFechaRepeticion());
         pms.setFechaMedicion(pmsDto.getFechaMedicion());
-        pms.setHumedadPorcentual(pmsDto.getHumedadPorcentual());
         pms.setEstandar(pmsDto.isEstandar());
 
         // Validar y obtener el recibo si existe

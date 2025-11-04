@@ -16,7 +16,7 @@ public class GramosPms {
     private Long pmsId;
 
     @Column(name = "GRAMOS")
-    private int gramos;
+    private Float gramos;
 
     @Column(name = "NUMERO_REPETICION")
     private int numeroRepeticion;

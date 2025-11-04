@@ -322,7 +322,8 @@ export class TetrazolioComponent implements OnInit {
       repetido: false,
       fechaCreacion: '2023-01-15',
       fechaRepeticion: null,
-      reciboId: null
+      reciboId: null,
+      reporte: null
     }
   ];
 

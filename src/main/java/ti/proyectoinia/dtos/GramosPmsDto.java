@@ -6,6 +6,6 @@ import lombok.Data;
 public class GramosPmsDto {
     private Long id;
     private Long pmsId;
-    private int gramos;
+    private Float gramos;
     private int numeroRepeticion;
 }
