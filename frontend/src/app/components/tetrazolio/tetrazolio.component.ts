@@ -98,11 +98,17 @@ export class TetrazolioComponent implements OnInit {
   
   // Variables para manejar navegación
   isEditing: boolean = false;
+  isViewing: boolean = false;
   editingId: number | null = null;
   repetido: boolean = false;
   
   // Prevención de doble envío
   isSubmitting: boolean = false;
+
+  // Getter para determinar si está en modo readonly
+  get isReadonly(): boolean {
+    return this.isViewing;
+  }
 
   // IDs de contexto
   loteId: string | null = null;
@@ -227,6 +233,28 @@ export class TetrazolioComponent implements OnInit {
   getNoViablesClasificado(): string {
     const pct = this.getPorcentajeNoViablesPonderado();
     return this.getClasificacionNoViables(pct);
+  }
+
+  // Cálculos automáticos para Viabilidad y Vigor Acumulado en el reporte
+  getViabilidadReportePct(): number {
+    const a = Number(this.reporte.vigorAlto.porcentaje) || 0;
+    const m = Number(this.reporte.vigorMedio.porcentaje) || 0;
+    const b = Number(this.reporte.vigorBajo.porcentaje) || 0;
+    return a + m + b;
+  }
+
+  getVigorAcumuladoReportePct(): number {
+    const a = Number(this.reporte.vigorAlto.porcentaje) || 0;
+    const m = Number(this.reporte.vigorMedio.porcentaje) || 0;
+    return a + m;
+  }
+
+  // Método para actualizar cálculos automáticos cuando cambian los valores
+  actualizarCalculosReporte() {
+    // Actualizar Viabilidad
+    this.reporte.viabilidad.porcentaje = this.getViabilidadReportePct();
+    // Actualizar Vigor Acumulado
+    this.reporte.vigorAcumulado.porcentaje = this.getVigorAcumuladoReportePct();
   }
 
   // Suma de N° de semillas (todas las filas)
@@ -414,7 +442,8 @@ export class TetrazolioComponent implements OnInit {
       repetido: false,
       fechaCreacion: '2023-01-15',
       fechaRepeticion: null,
-      reciboId: null
+      reciboId: null,
+      reporte: null
     }
   ];
 
@@ -538,6 +567,8 @@ export class TetrazolioComponent implements OnInit {
             vigorAcumulado: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } }
           };
         }
+        // Inicializar cálculos automáticos del reporte
+        this.actualizarCalculosReporte();
 
         // Cargar repeticiones y detalles desde el backend
         this.cargarRepeticiones(id);
@@ -644,6 +675,8 @@ export class TetrazolioComponent implements OnInit {
       viabilidad: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
       vigorAcumulado: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } }
     };
+    // Inicializar cálculos automáticos del reporte
+    this.actualizarCalculosReporte();
   }
 
   onSubmit() {
