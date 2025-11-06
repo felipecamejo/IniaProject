@@ -131,23 +131,8 @@
             <!-- Separador discreto entre secciones -->
             <hr class="section-divider" />
 
-            <!-- Resumen de Vigor -->
-            <div class="porcentajes-wrapper" style="margin-top: 1rem; display: flex; gap: 2rem; align-items: center; background: #f6f9ff; border-radius: 8px; padding: 0.8rem 1.2rem;">
-              <div style="display:flex; gap:0.4rem; align-items:center;">
-                <span style="font-weight:600; color:#1746a0;">Vigor ponderado:</span>
-                <span>{{ getVigorTetrazolioPonderado() | number:'1.2-2' }} %</span>
-                <span style="color:#667;">(red: {{ getVigorTetrazolioPonderadoRed() }}%)</span>
-              </div>
-              <div style="display:flex; gap:0.4rem; align-items:center;">
-                <span style="font-weight:600; color:#1746a0;">Clasificación:</span>
-                <span>{{ getVigorClasificado() }}</span>
-              </div>
-              <div style="display:flex; gap:0.4rem; align-items:center;">
-                <span style="font-weight:600; color:#1746a0;">No viables (%):</span>
-                <span>{{ getPorcentajeNoViablesPonderado() | number:'1.2-2' }} %</span>
-                <span style="color:#667;">{{ getNoViablesClasificado() }}</span>
-              </div>
-            </div>
+            <!-- Resumen por repetición (por tabla) -->
+            <!-- Eliminado el resumen global; se muestra por cada Rn -->
 
 
             <!-- Nueva tabla de detalles de semillas -->
@@ -161,6 +146,11 @@
             <div class="table-wrapper">
                 <div class="tabla-header-row">
                     <h4 class="tabla-titulo">R{{ $index + 1 }}</h4>
+                    <div style="display:flex; gap:1rem; align-items:center; font-size:0.95rem;">
+                      <span><strong>Vigor:</strong> {{ getVigorPorTabla($index) | number:'1.2-2' }} % (red: {{ getVigorPorTablaRed($index) }}%)</span>
+                      <span><strong>Clasificación:</strong> {{ getClasificacionVigorPorTabla($index) }}</span>
+                      <span><strong>No viables:</strong> {{ getNoViablesPorTabla($index) | number:'1.2-2' }} % {{ getNoViablesClasificadoPorTabla($index) }}</span>
+                    </div>
                     @if ($index > 0) {
                     <button pButton type="button" class="btn-eliminar-tabla" icon="pi pi-trash" (click)="eliminarTablaDetalle($index)" title="Eliminar esta tabla"></button> }
                 </div>

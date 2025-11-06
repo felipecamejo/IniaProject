@@ -153,45 +153,37 @@ export class TetrazolioComponent implements OnInit {
     return (favorables / total) * 100;
   }
 
-  // Promedio ponderado por cantidad de semillas
-  getVigorTetrazolioPonderado(): number {
-    if (!this.detalles || this.detalles.length === 0) return 0;
-    let sumaFavorables = 0;
-    let sumaTotales = 0;
-    for (const det of this.detalles) {
-      const total = this.getSumaTotal(det);
-      const favor = (det.viablesSinDefectos.total || 0)
-        + (det.viablesLeves.total || 0)
-        + (det.viablesModerados.total || 0);
-      sumaFavorables += favor;
-      sumaTotales += total;
-    }
-    if (!sumaTotales) return 0;
-    return (sumaFavorables / sumaTotales) * 100;
+  // --- Cálculos por repetición (por índice de tabla) ---
+  getVigorPorTabla(index: number): number {
+    const det = this.detalles[index];
+    if (!det) return 0;
+    return this.getVigorTabla(det);
   }
 
-  // Promedio simple de los porcentajes por tabla
-  getVigorTetrazolioPromedioSimple(): number {
-    if (!this.detalles || this.detalles.length === 0) return 0;
-    let acumulado = 0;
-    let n = 0;
-    for (const det of this.detalles) {
-      const total = this.getSumaTotal(det);
-      if (total > 0) {
-        acumulado += this.getVigorTabla(det);
-        n++;
-      }
-    }
-    return n ? (acumulado / n) : 0;
+  getVigorPorTablaRed(index: number): number {
+    return Math.round(this.getVigorPorTabla(index));
   }
 
-  getVigorTetrazolioPonderadoRed(): number {
-    return Math.round(this.getVigorTetrazolioPonderado());
+  getClasificacionVigorPorTabla(index: number): string {
+    const v = this.getVigorPorTabla(index);
+    return this.getClasificacionVigor(v);
   }
 
-  getVigorTetrazolioPromedioSimpleRed(): number {
-    return Math.round(this.getVigorTetrazolioPromedioSimple());
+  getNoViablesPorTabla(index: number): number {
+    const det = this.detalles[index];
+    if (!det) return 0;
+    const total = this.getSumaTotal(det);
+    const noV = det.noViables.total || 0;
+    if (!total) return 0;
+    return (noV / total) * 100;
   }
+
+  getNoViablesClasificadoPorTabla(index: number): string {
+    const pct = this.getNoViablesPorTabla(index);
+    return this.getClasificacionNoViables(pct);
+  }
+
+  // NOTA: Se descontinúan los cálculos GLOBALes (ponderado/promedio) a pedido: solo por repetición
 
   // Clasificación por vigor
   getClasificacionVigor(vigorPct: number): string {
@@ -203,10 +195,6 @@ export class TetrazolioComponent implements OnInit {
     return 'Lote de vigor muy bajo';
   }
 
-  getVigorClasificado(): string {
-    const v = this.getVigorTetrazolioPonderado();
-    return this.getClasificacionVigor(v);
-  }
 
   // --- Daños de semillas no viables (global, ponderado) ---
   getPorcentajeNoViablesPonderado(): number {
