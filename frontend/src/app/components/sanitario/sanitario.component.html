@@ -107,7 +107,7 @@
             name="nroSemillasRepeticion" 
             pInputText 
             [readonly]="isReadonly" 
-            
+            (ngModelChange)="onNroSemillasRepeticionChange()"
           />
         </div>
 
@@ -183,7 +183,7 @@
                       name="valor_{{i}}" 
                       placeholder="Valor" 
                       [readonly]="isReadonly" 
-                      
+                      (ngModelChange)="onValorPatogenoChange(i)"
                     />
                     
                   </td>
@@ -195,7 +195,7 @@
                       placeholder="% Incidencia" 
                       min="0" 
                       max="100" 
-                      [readonly]="isReadonly" 
+                      [readonly]="true" 
                       
                     />
                     
@@ -279,7 +279,7 @@
                       name="valorCampo_{{i}}" 
                       placeholder="Valor" 
                       [readonly]="isReadonly" 
-                      
+                      (ngModelChange)="onValorContaminanteChange(i)"
                     />
                     
                   </td>
@@ -291,7 +291,7 @@
                       placeholder="% Incidencia" 
                       min="0" 
                       max="100" 
-                      [readonly]="isReadonly" 
+                      [readonly]="true" 
                       
                     />
                     
@@ -375,7 +375,7 @@
                       name="valorAlmacenaje_{{i}}" 
                       placeholder="Valor" 
                       [readonly]="isReadonly" 
-                      
+                      (ngModelChange)="onValorAlmacenajeChange(i)"
                     />
                     
                   </td>
@@ -387,7 +387,7 @@
                       placeholder="% Incidencia" 
                       min="0" 
                       max="100"
-                      [readonly]="isReadonly"
+                      [readonly]="true"
                       
                     />
                     

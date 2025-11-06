@@ -9,7 +9,9 @@
       <h2 class="title">{{ isViewing ? 'Ver PMS' : (isEditing ? 'Editar PMS' : 'Crear PMS') }}</h2>
     </ng-template>
 
-    <form (ngSubmit)="onSubmit()" (input)="manejarProblemas()">
+    <form (ngSubmit)="onSubmit()" (input)="manejarProblemas();">
+      
+
       <div class="table-section">
         <h3 class="table-title">Tabla de repeticiones - PMS</h3>
         <div class="table-wrapper">
@@ -18,7 +20,6 @@
               <tr>
                 <th>Repetición</th>
                 <th>Gramos</th>
-                <th *ngIf="!isViewing">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -43,28 +44,29 @@
                     <span *ngIf="repeticiones[i].gramos != null && repeticiones[i].gramos < 0" class="error-message">La incidencia debe ser mayor a 0.</span>
                   </div>
                 </td>
-                <td *ngIf="!isViewing">
-                  <button pButton type="button"
-                          icon="pi pi-trash"
-                          class="p-button-danger p-button-sm"
-                          (click)="eliminarRepeticion(i)"
-                          title="Eliminar">
-                  </button>
-                </td>
               </tr>
             </tbody>
           </table>
-
-          <button *ngIf="!isViewing" pButton type="button"
-                  label="Agregar repetición"
-                  class="btn-agregar-rep"
-                  (click)="agregarRepeticion()">
-          </button>
         </div>
+      </div>
+
+       <!-- Alerta de Coeficiente de Variación -->
+      <div *ngIf="debeAlertarCV" class="alert-cv">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>El coeficiente de variación supera el umbral de {{ CV_UMBRAL }}%. Se han expandido automáticamente a 16 repeticiones.</span>
       </div>
 
       <div class="form-grid">
         <!-- Campos de texto -->
+
+        <div class="form-field">
+          <label for="pesoPromedioCienSemillas">Peso Promedio Cien Semillas</label>
+          <input id="pesoPromedioCienSemillas" type="number" [value]="promedioCienSemillas()" name="pesoPromedioCienSemillas" pInputText step="0.0001" [readonly]="true" 
+                 [ngClass]="{ 'input-error': (promedioCienSemillas() ?? 0) < 0 }"/>
+          <span *ngIf="(promedioCienSemillas() ?? 0) < 0" class="error-message">El valor no puede ser negativo.</span>
+        </div>
+
+
         <div class="form-field">
           <label for="pesoMilSemillas">Peso Mil Semillas</label>
           <input id="pesoMilSemillas" type="number" [(ngModel)]="pesoMilSemillas" name="pesoMilSemillas" pInputText step="0.0001" [readonly]="isReadonly" 
@@ -72,13 +74,7 @@
           <span *ngIf="pesoMilSemillas != null && pesoMilSemillas < 0" class="error-message">El valor no puede ser negativo.</span>
         </div>
 
-        <div class="form-field">
-          <label for="pesoPromedioCienSemillas">Peso Promedio Cien Semillas</label>
-          <input id="pesoPromedioCienSemillas" type="number" [(ngModel)]="pesoPromedioCienSemillas" name="pesoPromedioCienSemillas" pInputText step="0.0001" [readonly]="isReadonly" 
-                 [ngClass]="{ 'input-error': pesoPromedioCienSemillas != null && pesoPromedioCienSemillas < 0 }"/>
-          <span *ngIf="pesoPromedioCienSemillas != null && pesoPromedioCienSemillas < 0" class="error-message">El valor no puede ser negativo.</span>
-        </div>
-
+        
         <div class="form-field">
           <label for="pesoPromedioMilSemillas">Peso Promedio Mil Semillas</label>
           <input id="pesoPromedioMilSemillas" type="number" [(ngModel)]="pesoPromedioMilSemillas" name="pesoPromedioMilSemillas" pInputText step="0.0001" [readonly]="isReadonly" 
@@ -87,24 +83,17 @@
         </div>
 
         <div class="form-field">
-          <label for="desvioEstandar">Desvío Estándar</label>
-          <input id="desvioEstandar" type="number" [(ngModel)]="desvioEstandar" name="desvioEstandar" pInputText step="0.0001" [readonly]="isReadonly" 
-                 [ngClass]="{ 'input-error': desvioEstandar != null && desvioEstandar < 0 }"/>
-          <span *ngIf="desvioEstandar != null && desvioEstandar < 0" class="error-message">El valor no puede ser negativo.</span>
+          <label ñfor="desvioEstandar">Desvío Estándar</label>
+          <input id="desvioEstandar" type="number" [value]="calcularDesvioEstandar()" name="desvioEstandar" pInputText step="0.0001" [readonly]="true" 
+                 [ngClass]="{ 'input-error': (calcularDesvioEstandar() ?? 0) < 0 }"/>
+          <span *ngIf="(calcularDesvioEstandar() ?? 0) < 0" class="error-message">El valor no puede ser negativo.</span>
         </div>
 
         <div class="form-field">
-          <label for="coeficienteVariacion">Coeficiente de Variación</label>
-          <input id="coeficienteVariacion" type="number" [(ngModel)]="coeficienteVariacion" name="coeficienteVariacion" pInputText step="0.0001" [readonly]="isReadonly" 
-                 [ngClass]="{ 'input-error': coeficienteVariacion != null && coeficienteVariacion < 0 }"/>
-          <span *ngIf="coeficienteVariacion != null && coeficienteVariacion < 0" class="error-message">El valor no puede ser negativo.</span>
-        </div>
-
-        <div class="form-field">
-          <label for="humedadPorcentual">% Humedad</label>
-          <input id="humedadPorcentual" type="number" [(ngModel)]="humedadPorcentual" name="humedadPorcentual" pInputText [readonly]="isReadonly" 
-                 [ngClass]="{ 'input-error': humedadPorcentual != null && humedadPorcentual < 0 }"/>
-          <span *ngIf="humedadPorcentual != null && humedadPorcentual < 0" class="error-message">El valor no puede ser negativo.</span>
+          <label for="coeficienteVariacion">Coeficiente de Variación (%)</label>
+          <input id="coeficienteVariacion" type="number" [value]="calcularCoeficienteVariacion()" name="coeficienteVariacion" pInputText step="0.0001" [readonly]="true" 
+                 [ngClass]="{ 'input-error': (calcularCoeficienteVariacion() ?? 0) < 0 }"/>
+          <span *ngIf="(calcularCoeficienteVariacion() ?? 0) < 0" class="error-message">El valor no puede ser negativo.</span>
         </div>
 
         <div class="form-field">
@@ -112,16 +101,15 @@
           <input id="fechaMedicion" type="date" [(ngModel)]="fechaMedicion" name="fechaMedicion" pInputText [readonly]="isReadonly" 
                  [ngClass]="{ 'input-error': validarFecha(fechaMedicion) }"/>
           <span *ngIf="validarFecha(fechaMedicion)" class="error-message">La fecha no puede ser futura.</span>
-        </div> 
+        </div>
 
-         <div class="form-field">
+        <div class="form-field">
           <label for="comentarios">Comentarios</label>
           <textarea
             id="comentarios"
             rows="3"
             [(ngModel)]="comentarios"
             name="comentarios"
-            pInputText
             [readonly]="isReadonly"
           ></textarea>
         </div>

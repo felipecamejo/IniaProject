@@ -59,10 +59,10 @@
                 <td>
                   <input
                     type="number"
-                    [value]="getControlPesos(rep)"
+                    [value]="rep.peso"
                     name="controlPesos{{i}}"
                     [readonly]="true"
-                    [ngClass]="{ 'input-error': getControlPesos(rep) != null && getControlPesos(rep) < 0 }"
+                    [ngClass]="{ 'input-error': rep.peso != null && rep.peso < 0 }"
                     pInputText
                   />
                 </td>

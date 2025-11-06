@@ -43,6 +43,10 @@ public class Pureza {
     private Float materialInertePorcentajeRedondeo;
     @Column(name = "MATERIAL_INERTE_PORCENTAJE_REDONDEO_INASE")
     private Float materialInertePorcentajeRedondeoInase;
+    @Column(name = "MATERIA_INERTE_TIPO")
+    private String materiaInerteTipo;
+    @Column(name = "MATERIA_INERTE_TIPO_INASE")
+    private String materiaInerteTipoInase;
 
     @Column(name = "OTROS_CULTIVOS")
     private Float otrosCultivos;
@@ -80,11 +84,6 @@ public class Pureza {
     @Column(name = "MALEZAS_TOLERANCIA_CERO_PORCENTAJE_REDONDEO_INASE")
     private Float malezasToleranciaCeroPorcentajeRedondeoInase;
 
-    @Column(name = "PESO_TOTAL")
-    private Float pesoTotal;
-    @Column(name = "PESO_TOTAL_INASE")
-    private Float pesoTotalInase;
-
     @Column(name = "OTROS_CULTIVO")
     private Float otrosCultivo;
 
@@ -109,6 +108,7 @@ public class Pureza {
 
     @Column(name = "PUREZA_FECHA_REPETICION")
     private Date fechaRepeticion;
+
 
     @OneToMany
     @JoinColumn(name = "PUREZA_ID")

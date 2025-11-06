@@ -475,18 +475,14 @@ public class MapsDtoEntityService {
         PMSDto pmsDto = new PMSDto();
 
         pmsDto.setId(pms.getId());
-        pmsDto.setPesoPromedioCienSemillas(pms.getPesoPromedioCienSemillas());
         pmsDto.setPesoMilSemillas(pms.getPesoMilSemillas());
         pmsDto.setPesoPromedioMilSemillas(pms.getPesoPromedioMilSemillas());
-        pmsDto.setDesvioEstandar(pms.getDesvioEstandar());
-        pmsDto.setCoeficienteVariacion(pms.getCoeficienteVariacion());
         pmsDto.setComentarios(pms.getComentarios());
         pmsDto.setActivo(pms.isActivo());
         pmsDto.setRepetido(pms.isRepetido());
         pmsDto.setFechaCreacion(pms.getFechaCreacion());
         pmsDto.setFechaRepeticion(pms.getFechaRepeticion());
         pmsDto.setFechaMedicion(pms.getFechaMedicion());
-        pmsDto.setHumedadPorcentual(pms.getHumedadPorcentual());
         pmsDto.setEstandar(pms.isEstandar());
 
         if (pms.getRecibo() != null) {
@@ -505,18 +501,15 @@ public class MapsDtoEntityService {
         PMS pms = new PMS();
 
         pms.setId(pmsDto.getId());
-        pms.setPesoPromedioCienSemillas(pmsDto.getPesoPromedioCienSemillas());
+
         pms.setPesoMilSemillas(pmsDto.getPesoMilSemillas());
         pms.setPesoPromedioMilSemillas(pmsDto.getPesoPromedioMilSemillas());
-        pms.setDesvioEstandar(pmsDto.getDesvioEstandar());
-        pms.setCoeficienteVariacion(pmsDto.getCoeficienteVariacion());
         pms.setComentarios(pmsDto.getComentarios());
         pms.setActivo(pmsDto.isActivo());
         pms.setRepetido(pmsDto.isRepetido());
         pms.setFechaCreacion(pmsDto.getFechaCreacion());
         pms.setFechaRepeticion(pmsDto.getFechaRepeticion());
         pms.setFechaMedicion(pmsDto.getFechaMedicion());
-        pms.setHumedadPorcentual(pmsDto.getHumedadPorcentual());
         pms.setEstandar(pmsDto.isEstandar());
 
         // Validar y obtener el recibo si existe
@@ -560,8 +553,6 @@ public class MapsDtoEntityService {
         dto.setMalezasToleranciaCeroInase(pureza.getMalezasToleranciaCeroInase());
         dto.setMalezasToleranciaCeroPorcentajeRedondeo(pureza.getMalezasToleranciaCeroPorcentajeRedondeo());
         dto.setMalezasToleranciaCeroPorcentajeRedondeoInase(pureza.getMalezasToleranciaCeroPorcentajeRedondeoInase());
-        dto.setPesoTotal(pureza.getPesoTotal());
-        dto.setPesoTotalInase(pureza.getPesoTotalInase());
         dto.setOtrosCultivo(pureza.getOtrosCultivo());
         dto.setFechaEstandar(pureza.getFechaEstandar());
         dto.setEstandar(pureza.getEstandar());
@@ -569,6 +560,8 @@ public class MapsDtoEntityService {
         dto.setRepetido(pureza.isRepetido());
         dto.setFechaCreacion(pureza.getFechaCreacion());
         dto.setFechaRepeticion(pureza.getFechaRepeticion());
+        dto.setMateriaInerteTipo(pureza.getMateriaInerteTipo());
+        dto.setMateriaInerteTipoInase(pureza.getMateriaInerteTipoInase());
 
         // Mapeo de cultivos
         if (pureza.getCultivos() != null) {
@@ -641,8 +634,6 @@ public class MapsDtoEntityService {
         pureza.setMalezasToleranciaCeroInase(dto.getMalezasToleranciaCeroInase());
         pureza.setMalezasToleranciaCeroPorcentajeRedondeo(dto.getMalezasToleranciaCeroPorcentajeRedondeo());
         pureza.setMalezasToleranciaCeroPorcentajeRedondeoInase(dto.getMalezasToleranciaCeroPorcentajeRedondeoInase());
-        pureza.setPesoTotal(dto.getPesoTotal());
-        pureza.setPesoTotalInase(dto.getPesoTotalInase());
         pureza.setOtrosCultivo(dto.getOtrosCultivo());
         pureza.setFechaEstandar(dto.getFechaEstandar());
         pureza.setEstandar(dto.isEstandar());
@@ -650,6 +641,8 @@ public class MapsDtoEntityService {
         pureza.setRepetido(dto.isRepetido());
         pureza.setFechaCreacion(dto.getFechaCreacion());
         pureza.setFechaRepeticion(dto.getFechaRepeticion());
+        pureza.setMateriaInerteTipo(dto.getMateriaInerteTipo());
+        pureza.setMateriaInerteTipoInase(dto.getMateriaInerteTipoInase());
 
         // Mapeo de cultivos
         if (dto.getCultivosId() != null) {
@@ -1315,7 +1308,7 @@ public class MapsDtoEntityService {
         dto.setHongoId(entity.getHongo() != null ? entity.getHongo().getId() : null);
         dto.setRepeticion(entity.getRepeticion());
         dto.setValor(entity.getValor());
-        dto.setIncidencia(entity.getIncidencia());
+
         // Mapeo del tipo
         dto.setTipo(entity.getTipo());
         return dto;
@@ -1345,7 +1338,6 @@ public class MapsDtoEntityService {
         }
         entity.setRepeticion(dto.getRepeticion());
         entity.setValor(dto.getValor());
-        entity.setIncidencia(dto.getIncidencia());
 
         entity.setTipo(dto.getTipo());
         return entity;
