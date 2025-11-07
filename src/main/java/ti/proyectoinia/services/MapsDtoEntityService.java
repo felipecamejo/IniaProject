@@ -918,6 +918,58 @@ public class MapsDtoEntityService {
                 dosn.getCultivosINIA().stream().map(Cultivo::getId).collect(Collectors.toList()) : null);
         dto.setCultivosINASEId(dosn.getCultivosINASE() != null ?
                 dosn.getCultivosINASE().stream().map(Cultivo::getId).collect(Collectors.toList()) : null);
+
+        // Mapear detalles con cantidades (si existen) a las nuevas colecciones del DTO
+        if (dosn.getMalezasDetalle() != null && !dosn.getMalezasDetalle().isEmpty()) {
+            List<CantidadItemDto> mnInia = new java.util.ArrayList<>();
+            List<CantidadItemDto> mtInia = new java.util.ArrayList<>();
+            List<CantidadItemDto> mcInia = new java.util.ArrayList<>();
+            List<CantidadItemDto> mnInase = new java.util.ArrayList<>();
+            List<CantidadItemDto> mtInase = new java.util.ArrayList<>();
+            List<CantidadItemDto> mcInase = new java.util.ArrayList<>();
+
+            for (DOSNMaleza dm : dosn.getMalezasDetalle()) {
+                if (dm == null || dm.getMaleza() == null) continue;
+                CantidadItemDto item = new CantidadItemDto();
+                item.setId(dm.getMaleza().getId());
+                item.setCantidad(dm.getCantidad());
+                if (dm.getOrganismo() == Organismo.INIA) {
+                    switch (dm.getCategoria()) {
+                        case NORMAL -> mnInia.add(item);
+                        case TOLERADA -> mtInia.add(item);
+                        case CERO -> mcInia.add(item);
+                    }
+                } else if (dm.getOrganismo() == Organismo.INASE) {
+                    switch (dm.getCategoria()) {
+                        case NORMAL -> mnInase.add(item);
+                        case TOLERADA -> mtInase.add(item);
+                        case CERO -> mcInase.add(item);
+                    }
+                }
+            }
+            if (!mnInia.isEmpty()) dto.setMalezasNormalesINIA(mnInia);
+            if (!mtInia.isEmpty()) dto.setMalezasToleradasINIA(mtInia);
+            if (!mcInia.isEmpty()) dto.setMalezasToleranciaCeroINIA(mcInia);
+            if (!mnInase.isEmpty()) dto.setMalezasNormalesINASE(mnInase);
+            if (!mtInase.isEmpty()) dto.setMalezasToleradasINASE(mtInase);
+            if (!mcInase.isEmpty()) dto.setMalezasToleranciaCeroINASE(mcInase);
+        }
+
+        if (dosn.getCultivosDetalle() != null && !dosn.getCultivosDetalle().isEmpty()) {
+            List<CantidadItemDto> cInia = new java.util.ArrayList<>();
+            List<CantidadItemDto> cInase = new java.util.ArrayList<>();
+            for (DOSNCultivo dc : dosn.getCultivosDetalle()) {
+                if (dc == null || dc.getCultivo() == null) continue;
+                CantidadItemDto item = new CantidadItemDto();
+                item.setId(dc.getCultivo().getId());
+                item.setCantidad(dc.getCantidad());
+                if (dc.getOrganismo() == Organismo.INIA) cInia.add(item);
+                else if (dc.getOrganismo() == Organismo.INASE) cInase.add(item);
+            }
+            if (!cInia.isEmpty()) dto.setCultivosINIA(cInia);
+            if (!cInase.isEmpty()) dto.setCultivosINASE(cInase);
+        }
+
         return dto;
     }
 
@@ -1022,6 +1074,129 @@ public class MapsDtoEntityService {
         } else {
             dosn.setCultivosINASE(null);
         }
+
+        // Mapear nuevas colecciones con cantidades a entidades detalle
+        java.util.List<DOSNMaleza> malezasDetalle = new java.util.ArrayList<>();
+        java.util.List<DOSNCultivo> cultivosDetalle = new java.util.ArrayList<>();
+
+        // Helper lambda para cantidad no negativa
+        java.util.function.Function<Integer, Integer> nn = (val) -> {
+            if (val == null) return 0;
+            return Math.max(0, val);
+        };
+
+        // Malezas INIA
+        if (dto.getMalezasNormalesINIA() != null) {
+            for (CantidadItemDto it : dto.getMalezasNormalesINIA()) {
+                Maleza m = getValidMaleza(it.getId());
+                if (m == null) continue;
+                DOSNMaleza dm = new DOSNMaleza();
+                dm.setDosn(dosn);
+                dm.setMaleza(m);
+                dm.setOrganismo(Organismo.INIA);
+                dm.setCategoria(CategoriaMaleza.NORMAL);
+                dm.setCantidad(nn.apply(it.getCantidad()));
+                malezasDetalle.add(dm);
+            }
+        }
+        if (dto.getMalezasToleradasINIA() != null) {
+            for (CantidadItemDto it : dto.getMalezasToleradasINIA()) {
+                Maleza m = getValidMaleza(it.getId());
+                if (m == null) continue;
+                DOSNMaleza dm = new DOSNMaleza();
+                dm.setDosn(dosn);
+                dm.setMaleza(m);
+                dm.setOrganismo(Organismo.INIA);
+                dm.setCategoria(CategoriaMaleza.TOLERADA);
+                dm.setCantidad(nn.apply(it.getCantidad()));
+                malezasDetalle.add(dm);
+            }
+        }
+        if (dto.getMalezasToleranciaCeroINIA() != null) {
+            for (CantidadItemDto it : dto.getMalezasToleranciaCeroINIA()) {
+                Maleza m = getValidMaleza(it.getId());
+                if (m == null) continue;
+                DOSNMaleza dm = new DOSNMaleza();
+                dm.setDosn(dosn);
+                dm.setMaleza(m);
+                dm.setOrganismo(Organismo.INIA);
+                dm.setCategoria(CategoriaMaleza.CERO);
+                dm.setCantidad(nn.apply(it.getCantidad()));
+                malezasDetalle.add(dm);
+            }
+        }
+
+        // Malezas INASE
+        if (dto.getMalezasNormalesINASE() != null) {
+            for (CantidadItemDto it : dto.getMalezasNormalesINASE()) {
+                Maleza m = getValidMaleza(it.getId());
+                if (m == null) continue;
+                DOSNMaleza dm = new DOSNMaleza();
+                dm.setDosn(dosn);
+                dm.setMaleza(m);
+                dm.setOrganismo(Organismo.INASE);
+                dm.setCategoria(CategoriaMaleza.NORMAL);
+                dm.setCantidad(nn.apply(it.getCantidad()));
+                malezasDetalle.add(dm);
+            }
+        }
+        if (dto.getMalezasToleradasINASE() != null) {
+            for (CantidadItemDto it : dto.getMalezasToleradasINASE()) {
+                Maleza m = getValidMaleza(it.getId());
+                if (m == null) continue;
+                DOSNMaleza dm = new DOSNMaleza();
+                dm.setDosn(dosn);
+                dm.setMaleza(m);
+                dm.setOrganismo(Organismo.INASE);
+                dm.setCategoria(CategoriaMaleza.TOLERADA);
+                dm.setCantidad(nn.apply(it.getCantidad()));
+                malezasDetalle.add(dm);
+            }
+        }
+        if (dto.getMalezasToleranciaCeroINASE() != null) {
+            for (CantidadItemDto it : dto.getMalezasToleranciaCeroINASE()) {
+                Maleza m = getValidMaleza(it.getId());
+                if (m == null) continue;
+                DOSNMaleza dm = new DOSNMaleza();
+                dm.setDosn(dosn);
+                dm.setMaleza(m);
+                dm.setOrganismo(Organismo.INASE);
+                dm.setCategoria(CategoriaMaleza.CERO);
+                dm.setCantidad(nn.apply(it.getCantidad()));
+                malezasDetalle.add(dm);
+            }
+        }
+
+        // Cultivos INIA
+        if (dto.getCultivosINIA() != null) {
+            for (CantidadItemDto it : dto.getCultivosINIA()) {
+                Cultivo c = getValidCultivo(it.getId());
+                if (c == null) continue;
+                DOSNCultivo dc = new DOSNCultivo();
+                dc.setDosn(dosn);
+                dc.setCultivo(c);
+                dc.setOrganismo(Organismo.INIA);
+                dc.setCantidad(nn.apply(it.getCantidad()));
+                cultivosDetalle.add(dc);
+            }
+        }
+        // Cultivos INASE
+        if (dto.getCultivosINASE() != null) {
+            for (CantidadItemDto it : dto.getCultivosINASE()) {
+                Cultivo c = getValidCultivo(it.getId());
+                if (c == null) continue;
+                DOSNCultivo dc = new DOSNCultivo();
+                dc.setDosn(dosn);
+                dc.setCultivo(c);
+                dc.setOrganismo(Organismo.INASE);
+                dc.setCantidad(nn.apply(it.getCantidad()));
+                cultivosDetalle.add(dc);
+            }
+        }
+
+        // Asignar colecciones detalle (reemplazo total)
+        dosn.setMalezasDetalle(malezasDetalle.isEmpty() ? null : malezasDetalle);
+        dosn.setCultivosDetalle(cultivosDetalle.isEmpty() ? null : cultivosDetalle);
         return dosn;
     }
 

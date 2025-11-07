@@ -137,4 +137,13 @@ public class DOSN {
         inverseJoinColumns = @JoinColumn(name = "CULTIVO_ID")
     )
     private List<Cultivo> cultivosINASE;
+
+    // Nuevas relaciones con detalle (organismo, categoría y cantidad)
+    // Mantienen compatibilidad con las listas ManyToMany anteriores.
+
+    @OneToMany(mappedBy = "dosn", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DOSNMaleza> malezasDetalle;
+
+    @OneToMany(mappedBy = "dosn", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DOSNCultivo> cultivosDetalle;
 }

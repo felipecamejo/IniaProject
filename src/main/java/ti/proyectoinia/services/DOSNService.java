@@ -12,6 +12,10 @@ import ti.proyectoinia.business.entities.Cultivo;
 import ti.proyectoinia.business.entities.DOSN;
 import ti.proyectoinia.business.repositories.CultivoRepository;
 import ti.proyectoinia.business.repositories.DOSNRepository;
+import ti.proyectoinia.business.repositories.MalezaRepository;
+import ti.proyectoinia.dtos.CantidadItemDto;
+import java.util.HashSet;
+import java.util.Set;
 import ti.proyectoinia.dtos.DOSNDto;
 
 
@@ -24,12 +28,16 @@ public class DOSNService {
     @Autowired
     private CultivoRepository cultivoRepository;
 
+    @Autowired
+    private MalezaRepository malezaRepository;
+
     public DOSNService(DOSNRepository dosnRepository, MapsDtoEntityService mapsDtoEntityService) {
         this.mapsDtoEntityService = mapsDtoEntityService;
         this.dosnRepository = dosnRepository;
     }
 
     public String crearDOSN(DOSNDto dosnDto) {
+        // Validaciones para arrays de IDs actuales (compatibilidad)
         if (dosnDto.getCultivosINIAId() != null) {
             for (Long cultivoId : dosnDto.getCultivosINIAId()) {
                 if (cultivoId == null || !cultivoRepository.existsById(cultivoId)) {
@@ -44,6 +52,18 @@ public class DOSNService {
                 }
             }
         }
+
+        // Validaciones para las nuevas colecciones con cantidades
+        validateCultivosCantidad(dosnDto.getCultivosINIA(), "INIA");
+        validateCultivosCantidad(dosnDto.getCultivosINASE(), "INASE");
+
+        validateMalezasCantidad(dosnDto.getMalezasNormalesINIA(), "INIA", "NORMAL");
+        validateMalezasCantidad(dosnDto.getMalezasToleradasINIA(), "INIA", "TOLERADA");
+        validateMalezasCantidad(dosnDto.getMalezasToleranciaCeroINIA(), "INIA", "CERO");
+
+        validateMalezasCantidad(dosnDto.getMalezasNormalesINASE(), "INASE", "NORMAL");
+        validateMalezasCantidad(dosnDto.getMalezasToleradasINASE(), "INASE", "TOLERADA");
+        validateMalezasCantidad(dosnDto.getMalezasToleranciaCeroINASE(), "INASE", "CERO");
         return "DOSN creada correctamente ID:" + this.dosnRepository.save(mapsDtoEntityService.mapToEntityDOSN(dosnDto)).getId();
     }
 
@@ -66,7 +86,7 @@ public class DOSNService {
     }
 
     public String editarDOSN(DOSNDto dosnDto) {
-        DOSN dosn = mapsDtoEntityService.mapToEntityDOSN(dosnDto);
+        // Validaciones para arrays de IDs actuales (compatibilidad)
         if (dosnDto.getCultivosINIAId() != null) {
             for (Long cultivoId : dosnDto.getCultivosINIAId()) {
                 if (cultivoId == null || cultivoId == 0 || !cultivoRepository.existsById(cultivoId)) {
@@ -81,6 +101,19 @@ public class DOSNService {
                 }
             }
         }
+        // Validaciones para las nuevas colecciones con cantidades
+        validateCultivosCantidad(dosnDto.getCultivosINIA(), "INIA");
+        validateCultivosCantidad(dosnDto.getCultivosINASE(), "INASE");
+
+        validateMalezasCantidad(dosnDto.getMalezasNormalesINIA(), "INIA", "NORMAL");
+        validateMalezasCantidad(dosnDto.getMalezasToleradasINIA(), "INIA", "TOLERADA");
+        validateMalezasCantidad(dosnDto.getMalezasToleranciaCeroINIA(), "INIA", "CERO");
+
+        validateMalezasCantidad(dosnDto.getMalezasNormalesINASE(), "INASE", "NORMAL");
+        validateMalezasCantidad(dosnDto.getMalezasToleradasINASE(), "INASE", "TOLERADA");
+        validateMalezasCantidad(dosnDto.getMalezasToleranciaCeroINASE(), "INASE", "CERO");
+
+        DOSN dosn = mapsDtoEntityService.mapToEntityDOSN(dosnDto);
         this.dosnRepository.save(dosn);
         return "DOSN actualizada correctamente ID:" + dosn.getId();
     }
@@ -93,4 +126,49 @@ public class DOSNService {
         ResponseListadoDOSN responseListadoDOSN = new ResponseListadoDOSN(dtos);
         return ResponseEntity.ok(responseListadoDOSN);
     }
+    // --- Métodos privados de validación ---
+    private void validateCultivosCantidad(java.util.List<CantidadItemDto> items, String organismo) {
+        if (items == null || items.isEmpty()) return;
+        Set<Long> vistos = new HashSet<>();
+        for (CantidadItemDto it : items) {
+            if (it == null) continue;
+            Long id = it.getId();
+            if (id == null || id == 0 || !cultivoRepository.existsById(id)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "El cultivo con id " + id + " no existe (" + organismo + ").");
+            }
+            Integer cantidad = it.getCantidad();
+            if (cantidad != null && cantidad < 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "La cantidad para cultivo id " + id + " no puede ser negativa (" + organismo + ").");
+            }
+            if (!vistos.add(id)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Cultivo id " + id + " repetido dentro de la misma lista (" + organismo + ").");
+            }
+        }
+    }
+
+    private void validateMalezasCantidad(java.util.List<CantidadItemDto> items, String organismo, String categoria) {
+        if (items == null || items.isEmpty()) return;
+        Set<Long> vistos = new HashSet<>();
+        for (CantidadItemDto it : items) {
+            if (it == null) continue;
+            Long id = it.getId();
+            if (id == null || id == 0 || !malezaRepository.existsById(id)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "La maleza con id " + id + " no existe (" + organismo + ", " + categoria + ").");
+            }
+            Integer cantidad = it.getCantidad();
+            if (cantidad != null && cantidad < 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "La cantidad para maleza id " + id + " no puede ser negativa (" + organismo + ", " + categoria + ").");
+            }
+            if (!vistos.add(id)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Maleza id " + id + " repetida en la misma lista (" + organismo + ", " + categoria + ").");
+            }
+        }
+    }
 }
+

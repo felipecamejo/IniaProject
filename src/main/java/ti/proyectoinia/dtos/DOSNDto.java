@@ -46,6 +46,16 @@ public class DOSNDto {
     private List<Long> cultivosINIAId;
     private List<Long> cultivosINASEId;
 
+    // Nuevas colecciones opcionales con cantidades por item (compatibles con front nuevo)
+    private List<CantidadItemDto> malezasNormalesINIA;
+    private List<CantidadItemDto> malezasNormalesINASE;
+    private List<CantidadItemDto> malezasToleradasINIA;
+    private List<CantidadItemDto> malezasToleradasINASE;
+    private List<CantidadItemDto> malezasToleranciaCeroINIA;
+    private List<CantidadItemDto> malezasToleranciaCeroINASE;
+    private List<CantidadItemDto> cultivosINIA;
+    private List<CantidadItemDto> cultivosINASE;
+
     private boolean activo;
     private boolean repetido;
     private Date fechaCreacion;

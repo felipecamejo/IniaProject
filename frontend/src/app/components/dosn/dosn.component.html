@@ -51,6 +51,12 @@
               </div>
             </div>
           </div>
+          <div class="selected-counts" *ngIf="selectedMalezasInase.length">
+            <div class="count-row" *ngFor="let id of selectedMalezasInase">
+              <span class="count-label">{{ getLabelById(malezasOptions, id) }}</span>
+              <input type="number" [(ngModel)]="malezasInaseCounts[id]" [name]="'malezaInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(malezasInaseCounts[id]) }" />
+            </div>
+          </div>
         </div>
         <div class="form-field">
           <label>Otros cultivos</label>
@@ -73,6 +79,12 @@
                 </div>
                 <div class="no-results" *ngIf="getFilteredCultivosInase().length === 0">No se encontraron opciones</div>
               </div>
+            </div>
+          </div>
+          <div class="selected-counts" *ngIf="selectedCultivosInase.length">
+            <div class="count-row" *ngFor="let id of selectedCultivosInase">
+              <span class="count-label">{{ getLabelById(cultivosOptions, id) }}</span>
+              <input type="number" [(ngModel)]="cultivosInaseCounts[id]" [name]="'cultivoInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(cultivosInaseCounts[id]) }" />
             </div>
           </div>
         </div>
@@ -99,6 +111,12 @@
               </div>
             </div>
           </div>
+          <div class="selected-counts" *ngIf="selectedMalezasToleradasInase.length">
+            <div class="count-row" *ngFor="let id of selectedMalezasToleradasInase">
+              <span class="count-label">{{ getLabelById(malezasToleradasOptions, id) }}</span>
+              <input type="number" [(ngModel)]="malezasToleradasInaseCounts[id]" [name]="'malezaTolInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(malezasToleradasInaseCounts[id]) }" />
+            </div>
+          </div>
         </div>
         <div class="form-field">
           <label>Malezas tolerancia cero</label>
@@ -121,6 +139,12 @@
                 </div>
                 <div class="no-results" *ngIf="getFilteredMalezasCeroInase().length === 0">No se encontraron opciones</div>
               </div>
+            </div>
+          </div>
+          <div class="selected-counts" *ngIf="selectedMalezasCeroInase.length">
+            <div class="count-row" *ngFor="let id of selectedMalezasCeroInase">
+              <span class="count-label">{{ getLabelById(malezasCeroOptions, id) }}</span>
+              <input type="number" [(ngModel)]="malezasCeroInaseCounts[id]" [name]="'malezaCeroInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(malezasCeroInaseCounts[id]) }" />
             </div>
           </div>
         </div>
@@ -170,6 +194,12 @@
               </div>
             </div>
           </div>
+          <div class="selected-counts" *ngIf="selectedMalezasInia.length">
+            <div class="count-row" *ngFor="let id of selectedMalezasInia">
+              <span class="count-label">{{ getLabelById(malezasOptions, id) }}</span>
+              <input type="number" [(ngModel)]="malezasIniaCounts[id]" [name]="'malezaIniaCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(malezasIniaCounts[id]) }" />
+            </div>
+          </div>
         </div>
         <div class="form-field">
           <label>Otros cultivos</label>
@@ -192,6 +222,12 @@
                 </div>
                 <div class="no-results" *ngIf="getFilteredCultivosInia().length === 0">No se encontraron opciones</div>
               </div>
+            </div>
+          </div>
+          <div class="selected-counts" *ngIf="selectedCultivosInia.length">
+            <div class="count-row" *ngFor="let id of selectedCultivosInia">
+              <span class="count-label">{{ getLabelById(cultivosOptions, id) }}</span>
+              <input type="number" [(ngModel)]="cultivosIniaCounts[id]" [name]="'cultivoIniaCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(cultivosIniaCounts[id]) }" />
             </div>
           </div>
         </div>
@@ -218,6 +254,12 @@
               </div>
             </div>
           </div>
+          <div class="selected-counts" *ngIf="selectedMalezasToleradasInia.length">
+            <div class="count-row" *ngFor="let id of selectedMalezasToleradasInia">
+              <span class="count-label">{{ getLabelById(malezasToleradasOptions, id) }}</span>
+              <input type="number" [(ngModel)]="malezasToleradasIniaCounts[id]" [name]="'malezaTolIniaCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(malezasToleradasIniaCounts[id]) }" />
+            </div>
+          </div>
         </div>
         <div class="form-field">
           <label>Malezas tolerancia cero</label>
@@ -242,6 +284,12 @@
               </div>
             </div>
           </div>
+          <div class="selected-counts" *ngIf="selectedMalezasCeroInia.length">
+            <div class="count-row" *ngFor="let id of selectedMalezasCeroInia">
+              <span class="count-label">{{ getLabelById(malezasCeroOptions, id) }}</span>
+              <input type="number" [(ngModel)]="malezasCeroIniaCounts[id]" [name]="'malezaCeroIniaCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(malezasCeroIniaCounts[id]) }" />
+            </div>
+          </div>
         </div>
   </div>
 
@@ -253,7 +301,7 @@
             <tr>
               <th>Especie</th>
               <th>¿Contiene?</th>
-              <th *ngIf="brassicaCuscuta[0].contiene || brassicaCuscuta[1].contiene">Gramos</th>
+              <th *ngIf="brassicaCuscuta[0].contiene || brassicaCuscuta[1].contiene">Cantidad</th>
             </tr>
           </thead>
           <tbody>
