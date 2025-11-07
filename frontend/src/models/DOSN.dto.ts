@@ -35,6 +35,16 @@ export interface DOSNDto {
   cultivosINIAId: number[] | null;
   cultivosINASEId: number[] | null;
 
+  // Opcional: estructura con cantidades por item seleccionado (preparado para backend futuro)
+  malezasNormalesINIA?: Array<{ id: number; cantidad: number }> | null;
+  malezasNormalesINASE?: Array<{ id: number; cantidad: number }> | null;
+  malezasToleradasINIA?: Array<{ id: number; cantidad: number }> | null;
+  malezasToleradasINASE?: Array<{ id: number; cantidad: number }> | null;
+  malezasToleranciaCeroINIA?: Array<{ id: number; cantidad: number }> | null;
+  malezasToleranciaCeroINASE?: Array<{ id: number; cantidad: number }> | null;
+  cultivosINIA?: Array<{ id: number; cantidad: number }> | null;
+  cultivosINASE?: Array<{ id: number; cantidad: number }> | null;
+
   activo: boolean;
   repetido: boolean;
   fechaCreacion: string | null;

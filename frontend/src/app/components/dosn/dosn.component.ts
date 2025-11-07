@@ -53,7 +53,16 @@ import { MalezaService } from '../../../services/MalezaService';
       toggleMalezasDropdownInase() { this.isMalezasDropdownOpenInase = !this.isMalezasDropdownOpenInase; }
       getFilteredMalezasInase() { const search = this.malezasSearchTextInase.toLowerCase(); return this.malezasOptions.filter(m => m.label.toLowerCase().includes(search)); }
       isMalezaSelectedInase(id: number) { return this.selectedMalezasInase.includes(id); }
-      toggleMalezaSelectionInase(maleza: {id: number, label: string}) { if (this.isMalezaSelectedInase(maleza.id)) { this.selectedMalezasInase = this.selectedMalezasInase.filter(id => id !== maleza.id); } else { this.selectedMalezasInase = [...this.selectedMalezasInase, maleza.id]; } }
+      toggleMalezaSelectionInase(maleza: {id: number, label: string}) {
+        if (this.isMalezaSelectedInase(maleza.id)) {
+          this.selectedMalezasInase = this.selectedMalezasInase.filter(id => id !== maleza.id);
+          if (this.malezasInaseCounts) { delete this.malezasInaseCounts[maleza.id]; }
+        } else {
+          this.selectedMalezasInase = [...this.selectedMalezasInase, maleza.id];
+          if (!this.malezasInaseCounts) this.malezasInaseCounts = {} as Record<number, number>;
+          if (this.malezasInaseCounts[maleza.id] == null) this.malezasInaseCounts[maleza.id] = 0;
+        }
+      }
       getSelectedMalezasTextInase() { if (this.selectedMalezasInase.length === 0) return 'Seleccionar malezas...'; return this.selectedMalezasInase.map(id => { const item = this.malezasOptions.find(m => m.id === id); return item ? item.label : ''; }).join(', '); }
       selectedMalezasToleradasInase: number[] = [];
       isMalezasToleradasDropdownOpenInase: boolean = false;
@@ -61,7 +70,16 @@ import { MalezaService } from '../../../services/MalezaService';
       toggleMalezasToleradasDropdownInase() { this.isMalezasToleradasDropdownOpenInase = !this.isMalezasToleradasDropdownOpenInase; }
       getFilteredMalezasToleradasInase() { const search = this.malezasToleradasSearchTextInase.toLowerCase(); return this.malezasToleradasOptions.filter(mt => mt.label.toLowerCase().includes(search)); }
       isMalezaToleradaSelectedInase(id: number) { return this.selectedMalezasToleradasInase.includes(id); }
-      toggleMalezaToleradaSelectionInase(maleza: {id: number, label: string}) { if (this.isMalezaToleradaSelectedInase(maleza.id)) { this.selectedMalezasToleradasInase = this.selectedMalezasToleradasInase.filter(id => id !== maleza.id); } else { this.selectedMalezasToleradasInase = [...this.selectedMalezasToleradasInase, maleza.id]; } }
+      toggleMalezaToleradaSelectionInase(maleza: {id: number, label: string}) {
+        if (this.isMalezaToleradaSelectedInase(maleza.id)) {
+          this.selectedMalezasToleradasInase = this.selectedMalezasToleradasInase.filter(id => id !== maleza.id);
+          if (this.malezasToleradasInaseCounts) { delete this.malezasToleradasInaseCounts[maleza.id]; }
+        } else {
+          this.selectedMalezasToleradasInase = [...this.selectedMalezasToleradasInase, maleza.id];
+          if (!this.malezasToleradasInaseCounts) this.malezasToleradasInaseCounts = {} as Record<number, number>;
+          if (this.malezasToleradasInaseCounts[maleza.id] == null) this.malezasToleradasInaseCounts[maleza.id] = 0;
+        }
+      }
       getSelectedMalezasToleradasTextInase() { if (this.selectedMalezasToleradasInase.length === 0) return 'Seleccionar malezas toleradas...'; return this.selectedMalezasToleradasInase.map(id => { const item = this.malezasToleradasOptions.find(mt => mt.id === id); return item ? item.label : ''; }).join(', '); }
       selectedMalezasCeroInase: number[] = [];
       isMalezasCeroDropdownOpenInase: boolean = false;
@@ -69,8 +87,23 @@ import { MalezaService } from '../../../services/MalezaService';
       toggleMalezasCeroDropdownInase() { this.isMalezasCeroDropdownOpenInase = !this.isMalezasCeroDropdownOpenInase; }
       getFilteredMalezasCeroInase() { const search = this.malezasCeroSearchTextInase.toLowerCase(); return this.malezasCeroOptions.filter(mc => mc.label.toLowerCase().includes(search)); }
       isMalezaCeroSelectedInase(id: number) { return this.selectedMalezasCeroInase.includes(id); }
-      toggleMalezaCeroSelectionInase(maleza: {id: number, label: string}) { if (this.isMalezaCeroSelectedInase(maleza.id)) { this.selectedMalezasCeroInase = this.selectedMalezasCeroInase.filter(id => id !== maleza.id); } else { this.selectedMalezasCeroInase = [...this.selectedMalezasCeroInase, maleza.id]; } }
-      getSelectedMalezasCeroTextInase() { if (this.selectedMalezasCeroInase.length === 0) return 'Seleccionar malezas tolerancia cero...'; return this.selectedMalezasCeroInase.map(id => { const item = this.malezasCeroOptions.find(mc => mc.id === id); return item ? item.label : ''; }).join(', '); }
+      toggleMalezaCeroSelectionInase(maleza: {id: number, label: string}) {
+        if (this.isMalezaCeroSelectedInase(maleza.id)) {
+          this.selectedMalezasCeroInase = this.selectedMalezasCeroInase.filter(id => id !== maleza.id);
+          if (this.malezasCeroInaseCounts) { delete this.malezasCeroInaseCounts[maleza.id]; }
+        } else {
+          this.selectedMalezasCeroInase = [...this.selectedMalezasCeroInase, maleza.id];
+          if (!this.malezasCeroInaseCounts) this.malezasCeroInaseCounts = {} as Record<number, number>;
+          if (this.malezasCeroInaseCounts[maleza.id] == null) this.malezasCeroInaseCounts[maleza.id] = 0;
+        }
+      }
+  getSelectedMalezasCeroTextInase() { if (this.selectedMalezasCeroInase.length === 0) return 'Seleccionar malezas tolerancia cero...'; return this.selectedMalezasCeroInase.map(id => { const item = this.malezasCeroOptions.find(mc => mc.id === id); return item ? item.label : ''; }).join(', '); }
+
+  // Cantidades por selección (INASE)
+  malezasInaseCounts: Record<number, number> = {};
+  malezasToleradasInaseCounts: Record<number, number> = {};
+  malezasCeroInaseCounts: Record<number, number> = {};
+  cultivosInaseCounts: Record<number, number> = {};
 
       // INIA
       fechaInia: string = '';
@@ -82,7 +115,16 @@ import { MalezaService } from '../../../services/MalezaService';
       toggleMalezasDropdownInia() { this.isMalezasDropdownOpenInia = !this.isMalezasDropdownOpenInia; }
       getFilteredMalezasInia() { const search = this.malezasSearchTextInia.toLowerCase(); return this.malezasOptions.filter(m => m.label.toLowerCase().includes(search)); }
       isMalezaSelectedInia(id: number) { return this.selectedMalezasInia.includes(id); }
-      toggleMalezaSelectionInia(maleza: {id: number, label: string}) { if (this.isMalezaSelectedInia(maleza.id)) { this.selectedMalezasInia = this.selectedMalezasInia.filter(id => id !== maleza.id); } else { this.selectedMalezasInia = [...this.selectedMalezasInia, maleza.id]; } }
+      toggleMalezaSelectionInia(maleza: {id: number, label: string}) {
+        if (this.isMalezaSelectedInia(maleza.id)) {
+          this.selectedMalezasInia = this.selectedMalezasInia.filter(id => id !== maleza.id);
+          if (this.malezasIniaCounts) { delete this.malezasIniaCounts[maleza.id]; }
+        } else {
+          this.selectedMalezasInia = [...this.selectedMalezasInia, maleza.id];
+          if (!this.malezasIniaCounts) this.malezasIniaCounts = {} as Record<number, number>;
+          if (this.malezasIniaCounts[maleza.id] == null) this.malezasIniaCounts[maleza.id] = 0;
+        }
+      }
       getSelectedMalezasTextInia() { if (this.selectedMalezasInia.length === 0) return 'Seleccionar malezas...'; return this.selectedMalezasInia.map(id => { const item = this.malezasOptions.find(m => m.id === id); return item ? item.label : ''; }).join(', '); }
       selectedMalezasToleradasInia: number[] = [];
       isMalezasToleradasDropdownOpenInia: boolean = false;
@@ -90,7 +132,16 @@ import { MalezaService } from '../../../services/MalezaService';
       toggleMalezasToleradasDropdownInia() { this.isMalezasToleradasDropdownOpenInia = !this.isMalezasToleradasDropdownOpenInia; }
       getFilteredMalezasToleradasInia() { const search = this.malezasToleradasSearchTextInia.toLowerCase(); return this.malezasToleradasOptions.filter(mt => mt.label.toLowerCase().includes(search)); }
       isMalezaToleradaSelectedInia(id: number) { return this.selectedMalezasToleradasInia.includes(id); }
-      toggleMalezaToleradaSelectionInia(maleza: {id: number, label: string}) { if (this.isMalezaToleradaSelectedInia(maleza.id)) { this.selectedMalezasToleradasInia = this.selectedMalezasToleradasInia.filter(id => id !== maleza.id); } else { this.selectedMalezasToleradasInia = [...this.selectedMalezasToleradasInia, maleza.id]; } }
+      toggleMalezaToleradaSelectionInia(maleza: {id: number, label: string}) {
+        if (this.isMalezaToleradaSelectedInia(maleza.id)) {
+          this.selectedMalezasToleradasInia = this.selectedMalezasToleradasInia.filter(id => id !== maleza.id);
+          if (this.malezasToleradasIniaCounts) { delete this.malezasToleradasIniaCounts[maleza.id]; }
+        } else {
+          this.selectedMalezasToleradasInia = [...this.selectedMalezasToleradasInia, maleza.id];
+          if (!this.malezasToleradasIniaCounts) this.malezasToleradasIniaCounts = {} as Record<number, number>;
+          if (this.malezasToleradasIniaCounts[maleza.id] == null) this.malezasToleradasIniaCounts[maleza.id] = 0;
+        }
+      }
       getSelectedMalezasToleradasTextInia() { if (this.selectedMalezasToleradasInia.length === 0) return 'Seleccionar malezas toleradas...'; return this.selectedMalezasToleradasInia.map(id => { const item = this.malezasToleradasOptions.find(mt => mt.id === id); return item ? item.label : ''; }).join(', '); }
       selectedMalezasCeroInia: number[] = [];
       isMalezasCeroDropdownOpenInia: boolean = false;
@@ -98,8 +149,23 @@ import { MalezaService } from '../../../services/MalezaService';
       toggleMalezasCeroDropdownInia() { this.isMalezasCeroDropdownOpenInia = !this.isMalezasCeroDropdownOpenInia; }
       getFilteredMalezasCeroInia() { const search = this.malezasCeroSearchTextInia.toLowerCase(); return this.malezasCeroOptions.filter(mc => mc.label.toLowerCase().includes(search)); }
       isMalezaCeroSelectedInia(id: number) { return this.selectedMalezasCeroInia.includes(id); }
-      toggleMalezaCeroSelectionInia(maleza: {id: number, label: string}) { if (this.isMalezaCeroSelectedInia(maleza.id)) { this.selectedMalezasCeroInia = this.selectedMalezasCeroInia.filter(id => id !== maleza.id); } else { this.selectedMalezasCeroInia = [...this.selectedMalezasCeroInia, maleza.id]; } }
-      getSelectedMalezasCeroTextInia() { if (this.selectedMalezasCeroInia.length === 0) return 'Seleccionar malezas tolerancia cero...'; return this.selectedMalezasCeroInia.map(id => { const item = this.malezasCeroOptions.find(mc => mc.id === id); return item ? item.label : ''; }).join(', '); }
+      toggleMalezaCeroSelectionInia(maleza: {id: number, label: string}) {
+        if (this.isMalezaCeroSelectedInia(maleza.id)) {
+          this.selectedMalezasCeroInia = this.selectedMalezasCeroInia.filter(id => id !== maleza.id);
+          if (this.malezasCeroIniaCounts) { delete this.malezasCeroIniaCounts[maleza.id]; }
+        } else {
+          this.selectedMalezasCeroInia = [...this.selectedMalezasCeroInia, maleza.id];
+          if (!this.malezasCeroIniaCounts) this.malezasCeroIniaCounts = {} as Record<number, number>;
+          if (this.malezasCeroIniaCounts[maleza.id] == null) this.malezasCeroIniaCounts[maleza.id] = 0;
+        }
+      }
+  getSelectedMalezasCeroTextInia() { if (this.selectedMalezasCeroInia.length === 0) return 'Seleccionar malezas tolerancia cero...'; return this.selectedMalezasCeroInia.map(id => { const item = this.malezasCeroOptions.find(mc => mc.id === id); return item ? item.label : ''; }).join(', '); }
+
+  // Cantidades por selección (INIA)
+  malezasIniaCounts: Record<number, number> = {};
+  malezasToleradasIniaCounts: Record<number, number> = {};
+  malezasCeroIniaCounts: Record<number, number> = {};
+  cultivosIniaCounts: Record<number, number> = {};
 
       // Opciones globales para los listados
       cultivosOptions: { id: number, label: string }[] = [];
@@ -271,7 +337,16 @@ import { MalezaService } from '../../../services/MalezaService';
   toggleCultivosDropdownInase() { this.isCultivosDropdownOpenInase = !this.isCultivosDropdownOpenInase; }
   getFilteredCultivosInase() { const search = this.cultivosSearchTextInase.toLowerCase(); return this.cultivosOptions.filter(c => c.label.toLowerCase().includes(search)); }
   isCultivoSelectedInase(id: number) { return this.selectedCultivosInase.includes(id); }
-  toggleCultivoSelectionInase(cultivo: {id: number, label: string}) { if (this.isCultivoSelectedInase(cultivo.id)) { this.selectedCultivosInase = this.selectedCultivosInase.filter(id => id !== cultivo.id); } else { this.selectedCultivosInase = [...this.selectedCultivosInase, cultivo.id]; } }
+  toggleCultivoSelectionInase(cultivo: {id: number, label: string}) {
+    if (this.isCultivoSelectedInase(cultivo.id)) {
+      this.selectedCultivosInase = this.selectedCultivosInase.filter(id => id !== cultivo.id);
+      if (this.cultivosInaseCounts) { delete this.cultivosInaseCounts[cultivo.id]; }
+    } else {
+      this.selectedCultivosInase = [...this.selectedCultivosInase, cultivo.id];
+      if (!this.cultivosInaseCounts) this.cultivosInaseCounts = {} as Record<number, number>;
+      if (this.cultivosInaseCounts[cultivo.id] == null) this.cultivosInaseCounts[cultivo.id] = 0;
+    }
+  }
   getSelectedCultivosTextInase() { if (this.selectedCultivosInase.length === 0) return 'Seleccionar cultivos...'; return this.selectedCultivosInase.map(id => { const item = this.cultivosOptions.find(c => c.id === id); return item ? item.label : ''; }).join(', '); }
   // INIA
   selectedCultivosInia: number[] = [];
@@ -281,7 +356,16 @@ import { MalezaService } from '../../../services/MalezaService';
   toggleCultivosDropdownInia() { this.isCultivosDropdownOpenInia = !this.isCultivosDropdownOpenInia; }
   getFilteredCultivosInia() { const search = this.cultivosSearchTextInia.toLowerCase(); return this.cultivosOptions.filter(c => c.label.toLowerCase().includes(search)); }
   isCultivoSelectedInia(id: number) { return this.selectedCultivosInia.includes(id); }
-  toggleCultivoSelectionInia(cultivo: {id: number, label: string}) { if (this.isCultivoSelectedInia(cultivo.id)) { this.selectedCultivosInia = this.selectedCultivosInia.filter(id => id !== cultivo.id); } else { this.selectedCultivosInia = [...this.selectedCultivosInia, cultivo.id]; } }
+  toggleCultivoSelectionInia(cultivo: {id: number, label: string}) {
+    if (this.isCultivoSelectedInia(cultivo.id)) {
+      this.selectedCultivosInia = this.selectedCultivosInia.filter(id => id !== cultivo.id);
+      if (this.cultivosIniaCounts) { delete this.cultivosIniaCounts[cultivo.id]; }
+    } else {
+      this.selectedCultivosInia = [...this.selectedCultivosInia, cultivo.id];
+      if (!this.cultivosIniaCounts) this.cultivosIniaCounts = {} as Record<number, number>;
+      if (this.cultivosIniaCounts[cultivo.id] == null) this.cultivosIniaCounts[cultivo.id] = 0;
+    }
+  }
   getSelectedCultivosTextInia() { if (this.selectedCultivosInia.length === 0) return 'Seleccionar cultivos...'; return this.selectedCultivosInia.map(id => { const item = this.cultivosOptions.find(c => c.id === id); return item ? item.label : ''; }).join(', '); }
 
   // Malezas toleradas multiselect
@@ -355,6 +439,16 @@ import { MalezaService } from '../../../services/MalezaService';
     return item ? item.label : '';
   }
 
+  // Helpers UI generales
+  getLabelById(options: {id:number,label:string}[], id: number): string {
+    const item = options.find(o => o.id === id);
+    return item ? item.label : '';
+  }
+
+  validarNumeroNegativo(n: any): boolean {
+    return n != null && Number(n) < 0;
+  }
+
   // Helpers de mapeo
   private mapDtoToView(d: DOSNDto): void {
     // INASE
@@ -365,6 +459,31 @@ import { MalezaService } from '../../../services/MalezaService';
     this.selectedMalezasToleradasInase = d.malezasToleradasINASEId ?? [];
     this.selectedMalezasCeroInase = d.malezasToleranciaCeroINASEId ?? [];
     this.selectedCultivosInase = d.cultivosINASEId ?? [];
+    // Si vienen cantidades (nuevo backend opcional), mapeamos a los count maps y aseguramos selección
+    if (d.malezasNormalesINASE?.length) {
+      d.malezasNormalesINASE.forEach(({ id, cantidad }) => {
+        this.malezasInaseCounts[id] = cantidad ?? 0;
+        if (!this.selectedMalezasInase.includes(id)) this.selectedMalezasInase.push(id);
+      });
+    }
+    if (d.malezasToleradasINASE?.length) {
+      d.malezasToleradasINASE.forEach(({ id, cantidad }) => {
+        this.malezasToleradasInaseCounts[id] = cantidad ?? 0;
+        if (!this.selectedMalezasToleradasInase.includes(id)) this.selectedMalezasToleradasInase.push(id);
+      });
+    }
+    if (d.malezasToleranciaCeroINASE?.length) {
+      d.malezasToleranciaCeroINASE.forEach(({ id, cantidad }) => {
+        this.malezasCeroInaseCounts[id] = cantidad ?? 0;
+        if (!this.selectedMalezasCeroInase.includes(id)) this.selectedMalezasCeroInase.push(id);
+      });
+    }
+    if (d.cultivosINASE?.length) {
+      d.cultivosINASE.forEach(({ id, cantidad }) => {
+        this.cultivosInaseCounts[id] = cantidad ?? 0;
+        if (!this.selectedCultivosInase.includes(id)) this.selectedCultivosInase.push(id);
+      });
+    }
 
     // INIA
     this.fechaInia = this.toDateInput(d.fechaINIA);
@@ -374,6 +493,31 @@ import { MalezaService } from '../../../services/MalezaService';
     this.selectedMalezasToleradasInia = d.malezasToleradasINIAId ?? [];
     this.selectedMalezasCeroInia = d.malezasToleranciaCeroINIAId ?? [];
     this.selectedCultivosInia = d.cultivosINIAId ?? [];
+    // Cantidades INIA si están presentes
+    if (d.malezasNormalesINIA?.length) {
+      d.malezasNormalesINIA.forEach(({ id, cantidad }) => {
+        this.malezasIniaCounts[id] = cantidad ?? 0;
+        if (!this.selectedMalezasInia.includes(id)) this.selectedMalezasInia.push(id);
+      });
+    }
+    if (d.malezasToleradasINIA?.length) {
+      d.malezasToleradasINIA.forEach(({ id, cantidad }) => {
+        this.malezasToleradasIniaCounts[id] = cantidad ?? 0;
+        if (!this.selectedMalezasToleradasInia.includes(id)) this.selectedMalezasToleradasInia.push(id);
+      });
+    }
+    if (d.malezasToleranciaCeroINIA?.length) {
+      d.malezasToleranciaCeroINIA.forEach(({ id, cantidad }) => {
+        this.malezasCeroIniaCounts[id] = cantidad ?? 0;
+        if (!this.selectedMalezasCeroInia.includes(id)) this.selectedMalezasCeroInia.push(id);
+      });
+    }
+    if (d.cultivosINIA?.length) {
+      d.cultivosINIA.forEach(({ id, cantidad }) => {
+        this.cultivosIniaCounts[id] = cantidad ?? 0;
+        if (!this.selectedCultivosInia.includes(id)) this.selectedCultivosInia.push(id);
+      });
+    }
 
     // Determinaciones brassica/cuscuta
     const brassica = this.brassicaCuscuta.find(b => b.label === 'Brassica spp.');
@@ -430,6 +574,16 @@ import { MalezaService } from '../../../services/MalezaService';
     const brassica = this.brassicaCuscuta.find(b => b.label === 'Brassica spp.');
     const cuscuta = this.brassicaCuscuta.find(b => b.label === 'Cuscuta spp.');
 
+    const toCantidadList = (ids: number[] | null | undefined, counts: Record<number, number> | null | undefined) => {
+      const list: Array<{ id: number; cantidad: number }> = [];
+      (ids ?? []).forEach((id) => {
+        const raw = counts ? counts[id] : undefined;
+        const cantidad = raw != null && !isNaN(Number(raw)) ? Math.max(0, Number(raw)) : 0;
+        list.push({ id, cantidad });
+      });
+      return list;
+    };
+
     return {
       id: this.isEditing ? this.editingId! : null,
       reciboId: this.reciboId ?? null,
@@ -459,6 +613,15 @@ import { MalezaService } from '../../../services/MalezaService';
       malezasToleranciaCeroINASEId: this.selectedMalezasCeroInase ?? [],
       cultivosINIAId: this.selectedCultivosInia ?? [],
       cultivosINASEId: this.selectedCultivosInase ?? [],
+      // Nuevas colecciones con cantidades
+      malezasNormalesINIA: toCantidadList(this.selectedMalezasInia, this.malezasIniaCounts),
+      malezasNormalesINASE: toCantidadList(this.selectedMalezasInase, this.malezasInaseCounts),
+      malezasToleradasINIA: toCantidadList(this.selectedMalezasToleradasInia, this.malezasToleradasIniaCounts),
+      malezasToleradasINASE: toCantidadList(this.selectedMalezasToleradasInase, this.malezasToleradasInaseCounts),
+      malezasToleranciaCeroINIA: toCantidadList(this.selectedMalezasCeroInia, this.malezasCeroIniaCounts),
+      malezasToleranciaCeroINASE: toCantidadList(this.selectedMalezasCeroInase, this.malezasCeroInaseCounts),
+      cultivosINIA: toCantidadList(this.selectedCultivosInia, this.cultivosIniaCounts),
+      cultivosINASE: toCantidadList(this.selectedCultivosInase, this.cultivosInaseCounts),
       // Preservar flags y metadatos
       activo: this.dosn?.activo ?? true,
       repetido: this.dosn?.repetido ?? false,
