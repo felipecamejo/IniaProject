@@ -2,8 +2,6 @@
 # Este archivo se carga automáticamente en desarrollo
 # y permite configuraciones específicas para desarrollo
 
-version: '3.9'
-
 services:
   # Backend con hot reload para desarrollo
   backend:
@@ -14,7 +12,7 @@ services:
     volumes:
       # Montar código fuente para hot reload (opcional)
       - ./src:/app/src:ro
-    command: ["java", "-jar", "target/proyectoInia-0.0.1-SNAPSHOT.jar", "--spring.profiles.active=development"]
+    command: ["java", "-jar", "app.jar", "--spring.profiles.active=development"]
 
   # Middleware con hot reload para desarrollo
   middleware:
