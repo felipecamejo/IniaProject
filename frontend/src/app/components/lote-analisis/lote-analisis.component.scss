@@ -98,6 +98,17 @@
   &.color-marino {
     background: linear-gradient(135deg, var(--color-marino), #17938c);
   }
+
+  &.verde {
+    background: linear-gradient(135deg, var(--verde), #2d8f3f);
+  }
+
+  .button-icon-text {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+    text-align: center;
+  }
 }
 
 .button-text {
@@ -274,4 +285,92 @@
   color: #333333;
   text-align: center;
   border-top: 1px solid #ccc;
+}
+
+// Estilos para el botón de certificado
+.certificado-button-container {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.certificado-main-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.certificado-button {
+  width: auto;
+  min-width: 150px;
+}
+
+.certificado-view-button,
+.certificado-delete-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  font-size: 18px;
+  padding: 0;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  // Estilos para el emoji o icono
+  font-size: 20px;
+  line-height: 1;
+}
+
+.certificado-view-button {
+  background: linear-gradient(135deg, var(--azul), #4fa8c2);
+
+  &:hover {
+    background: linear-gradient(135deg, var(--azul-menu), #4fa8c2);
+  }
+}
+
+.certificado-delete-button {
+  background: linear-gradient(135deg, var(--rojo), #c55859);
+
+  &:hover {
+    background: linear-gradient(135deg, #c55859, #b04849);
+  }
+}
+
+@media (min-width: 768px) {
+  .certificado-button-container {
+    margin-top: 30px;
+  }
+  
+  .certificado-button {
+    min-width: 180px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .certificado-button-container {
+    margin-top: 40px;
+  }
+  
+  .certificado-button {
+    min-width: 200px;
+  }
 }

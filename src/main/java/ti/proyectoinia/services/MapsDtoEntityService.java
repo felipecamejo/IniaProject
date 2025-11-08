@@ -1832,4 +1832,133 @@ public class MapsDtoEntityService {
 
         return dto;
     }
+
+    public CertificadoDto mapToDtoCertificado(Certificado certificado) {
+        if (certificado == null) {
+            return null;
+        }
+
+        CertificadoDto dto = new CertificadoDto();
+        dto.setId(certificado.getId());
+        dto.setNombreSolicitante(certificado.getNombreSolicitante());
+        dto.setEspecie(certificado.getEspecie());
+        dto.setCultivar(certificado.getCultivar());
+        dto.setCategoria(certificado.getCategoria());
+        dto.setResponsableMuestreo(certificado.getResponsableMuestreo());
+        dto.setFechaMuestreo(certificado.getFechaMuestreo());
+        dto.setNumeroLote(certificado.getNumeroLote());
+        dto.setPesoKg(certificado.getPesoKg());
+        dto.setNumeroEnvases(certificado.getNumeroEnvases());
+        dto.setFechaIngresoLaboratorio(certificado.getFechaIngresoLaboratorio());
+        dto.setFechaFinalizacionAnalisis(certificado.getFechaFinalizacionAnalisis());
+        dto.setNumeroMuestra(certificado.getNumeroMuestra());
+        dto.setNumeroCertificado(certificado.getNumeroCertificado());
+        dto.setTipoCertificado(certificado.getTipoCertificado());
+        dto.setFechaEmision(certificado.getFechaEmision());
+        dto.setFirmante(certificado.getFirmante());
+        dto.setFechaFirma(certificado.getFechaFirma());
+        dto.setActivo(certificado.isActivo());
+        
+        // Mapear relación con Recibo
+        if (certificado.getRecibo() != null) {
+            dto.setReciboId(certificado.getRecibo().getId());
+        } else {
+            dto.setReciboId(null);
+        }
+
+        // Mapear resultados de análisis - Pureza
+        dto.setPurezaSemillaPura(certificado.getPurezaSemillaPura());
+        dto.setPurezaMateriaInerte(certificado.getPurezaMateriaInerte());
+        dto.setPurezaOtrasSemillas(certificado.getPurezaOtrasSemillas());
+        dto.setPurezaOtrosCultivos(certificado.getPurezaOtrosCultivos());
+        dto.setPurezaMalezas(certificado.getPurezaMalezas());
+        dto.setPurezaMalezasToleradas(certificado.getPurezaMalezasToleradas());
+        dto.setPurezaPeso1000Semillas(certificado.getPurezaPeso1000Semillas());
+        dto.setPurezaHumedad(certificado.getPurezaHumedad());
+        dto.setPurezaClaseMateriaInerte(certificado.getPurezaClaseMateriaInerte());
+        dto.setPurezaOtrasSemillasDescripcion(certificado.getPurezaOtrasSemillasDescripcion());
+
+        // Mapear resultados de análisis - DOSN
+        dto.setDosnGramosAnalizados(certificado.getDosnGramosAnalizados());
+        dto.setDosnMalezasToleranciaCero(certificado.getDosnMalezasToleranciaCero());
+        dto.setDosnMalezasTolerancia(certificado.getDosnMalezasTolerancia());
+        dto.setDosnOtrosCultivos(certificado.getDosnOtrosCultivos());
+        dto.setDosnBrassicaSpp(certificado.getDosnBrassicaSpp());
+
+        // Mapear resultados de análisis - Germinación
+        dto.setGerminacionNumeroDias(certificado.getGerminacionNumeroDias());
+        dto.setGerminacionPlantulasNormales(certificado.getGerminacionPlantulasNormales());
+        dto.setGerminacionPlantulasAnormales(certificado.getGerminacionPlantulasAnormales());
+        dto.setGerminacionSemillasDuras(certificado.getGerminacionSemillasDuras());
+        dto.setGerminacionSemillasFrescas(certificado.getGerminacionSemillasFrescas());
+        dto.setGerminacionSemillasMuertas(certificado.getGerminacionSemillasMuertas());
+        dto.setGerminacionSustrato(certificado.getGerminacionSustrato());
+        dto.setGerminacionTemperatura(certificado.getGerminacionTemperatura());
+        dto.setGerminacionPreTratamiento(certificado.getGerminacionPreTratamiento());
+
+        return dto;
+    }
+
+    public Certificado mapToEntityCertificado(CertificadoDto dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        Certificado certificado = new Certificado();
+        certificado.setId(dto.getId());
+        certificado.setNombreSolicitante(dto.getNombreSolicitante());
+        certificado.setEspecie(dto.getEspecie());
+        certificado.setCultivar(dto.getCultivar());
+        certificado.setCategoria(dto.getCategoria());
+        certificado.setResponsableMuestreo(dto.getResponsableMuestreo());
+        certificado.setFechaMuestreo(dto.getFechaMuestreo());
+        certificado.setNumeroLote(dto.getNumeroLote());
+        certificado.setPesoKg(dto.getPesoKg());
+        certificado.setNumeroEnvases(dto.getNumeroEnvases());
+        certificado.setFechaIngresoLaboratorio(dto.getFechaIngresoLaboratorio());
+        certificado.setFechaFinalizacionAnalisis(dto.getFechaFinalizacionAnalisis());
+        certificado.setNumeroMuestra(dto.getNumeroMuestra());
+        certificado.setNumeroCertificado(dto.getNumeroCertificado());
+        certificado.setTipoCertificado(dto.getTipoCertificado());
+        certificado.setFechaEmision(dto.getFechaEmision());
+        certificado.setFirmante(dto.getFirmante());
+        certificado.setFechaFirma(dto.getFechaFirma());
+        certificado.setActivo(dto.isActivo());
+        
+        // Vincular recibo si viene en el DTO
+        Recibo recibo = getValidRecibo(dto.getReciboId());
+        certificado.setRecibo(recibo);
+
+        // Mapear resultados de análisis - Pureza
+        certificado.setPurezaSemillaPura(dto.getPurezaSemillaPura());
+        certificado.setPurezaMateriaInerte(dto.getPurezaMateriaInerte());
+        certificado.setPurezaOtrasSemillas(dto.getPurezaOtrasSemillas());
+        certificado.setPurezaOtrosCultivos(dto.getPurezaOtrosCultivos());
+        certificado.setPurezaMalezas(dto.getPurezaMalezas());
+        certificado.setPurezaMalezasToleradas(dto.getPurezaMalezasToleradas());
+        certificado.setPurezaPeso1000Semillas(dto.getPurezaPeso1000Semillas());
+        certificado.setPurezaHumedad(dto.getPurezaHumedad());
+        certificado.setPurezaClaseMateriaInerte(dto.getPurezaClaseMateriaInerte());
+        certificado.setPurezaOtrasSemillasDescripcion(dto.getPurezaOtrasSemillasDescripcion());
+
+        // Mapear resultados de análisis - DOSN
+        certificado.setDosnGramosAnalizados(dto.getDosnGramosAnalizados());
+        certificado.setDosnMalezasToleranciaCero(dto.getDosnMalezasToleranciaCero());
+        certificado.setDosnMalezasTolerancia(dto.getDosnMalezasTolerancia());
+        certificado.setDosnOtrosCultivos(dto.getDosnOtrosCultivos());
+        certificado.setDosnBrassicaSpp(dto.getDosnBrassicaSpp());
+
+        // Mapear resultados de análisis - Germinación
+        certificado.setGerminacionNumeroDias(dto.getGerminacionNumeroDias());
+        certificado.setGerminacionPlantulasNormales(dto.getGerminacionPlantulasNormales());
+        certificado.setGerminacionPlantulasAnormales(dto.getGerminacionPlantulasAnormales());
+        certificado.setGerminacionSemillasDuras(dto.getGerminacionSemillasDuras());
+        certificado.setGerminacionSemillasFrescas(dto.getGerminacionSemillasFrescas());
+        certificado.setGerminacionSemillasMuertas(dto.getGerminacionSemillasMuertas());
+        certificado.setGerminacionSustrato(dto.getGerminacionSustrato());
+        certificado.setGerminacionTemperatura(dto.getGerminacionTemperatura());
+        certificado.setGerminacionPreTratamiento(dto.getGerminacionPreTratamiento());
+
+        return certificado;
+    }
 }

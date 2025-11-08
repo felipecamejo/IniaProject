@@ -1,0 +1,278 @@
+// Los estilos de .form-grid y .submit-btn se importan desde styles.scss
+
+.container {
+  max-width: 1200px !important;
+  width: 95% !important;
+  margin: 0 auto !important;
+  padding: 1rem;
+}
+
+.certificado-container {
+  background: white;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+// Header del Certificado
+.certificado-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--azul);
+}
+
+.header-left,
+.header-right {
+  flex: 0 0 150px;
+}
+
+.header-center {
+  flex: 1;
+  text-align: center;
+}
+
+.logo-placeholder {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #d4a574, #b8860b);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.logo-placeholder-small {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #d4a574, #b8860b);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-align: center;
+  padding: 0.2rem;
+}
+
+.instituto-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--azul);
+  margin: 0 0 0.5rem 0;
+}
+
+.certificado-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--azul);
+  margin: 0 0 0.5rem 0;
+}
+
+.contact-info {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0;
+}
+
+// Secciones del certificado
+.section-certificado {
+  margin-bottom: 2rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.section-title-certificado {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--azul);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+// Tablas del certificado
+.table-section {
+  margin: 1.5rem 0;
+}
+
+.table-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.certificado-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+
+  thead {
+    background: linear-gradient(135deg, var(--azul) 0%, color-mix(in srgb, var(--azul) 85%, var(--celeste) 15%) 100%);
+    color: white;
+
+    th {
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 0.85rem;
+    }
+  }
+
+  tbody {
+    td {
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+      border: 1px solid #ddd;
+      background: white;
+    }
+
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+  }
+}
+
+// Footer del certificado
+.certificado-footer {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--azul);
+  text-align: center;
+}
+
+.footer-date {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0.5rem 0;
+}
+
+.footer-text {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0.25rem 0;
+}
+
+.footer-notice {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--azul);
+  margin: 1rem 0;
+  text-transform: uppercase;
+}
+
+.footer-note {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0.5rem 0;
+  font-style: italic;
+}
+
+::ng-deep .card {
+  width: 100% !important;
+  max-width: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.submit-btn {
+  ::ng-deep .p-button {
+    background: var(--verde) !important;
+    background-color: var(--verde) !important;
+    border: 1px solid var(--verde) !important;
+    border-radius: 25px !important;
+    font-weight: 600 !important;
+    width: 100% !important;
+    padding: 0.75rem 1.5rem !important;
+    color: white !important;
+    font-family: var(--font-main) !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      filter: brightness(0.85) !important;
+    }
+
+    &:focus {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--verde) 25%, transparent) !important;
+    }
+
+    &:active {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      filter: brightness(0.8) !important;
+    }
+  }
+
+  ::ng-deep .p-button-primary {
+    background: var(--verde) !important;
+    background-color: var(--verde) !important;
+    border-color: var(--verde) !important;
+
+    &:hover {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      filter: brightness(0.85) !important;
+    }
+  }
+}
+
+.back-button {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--azul);
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  transition: color 0.2s;
+
+  &:hover {
+    color: var(--celeste);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .certificado-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .header-left,
+  .header-right {
+    flex: 0 0 auto;
+    margin: 0.5rem 0;
+  }
+
+  .certificado-table {
+    font-size: 0.75rem;
+
+    thead th {
+      padding: 0.5rem 0.25rem;
+      font-size: 0.7rem;
+    }
+
+    tbody td {
+      padding: 0.5rem 0.25rem;
+    }
+  }
+}
