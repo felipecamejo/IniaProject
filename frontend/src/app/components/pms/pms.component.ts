@@ -5,9 +5,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PMSService } from '../../../services/PMSService';
 import { GramosPmsService } from '../../../services/GramosPmsService';
 import { GramosPmsDto } from '../../../models/GramosPms.dto';
-import { UrlService } from '../../../services/url.service';
 import { PMSDto } from '../../../models/PMS.dto';
 import { DateService } from '../../../services/DateService';
+import { LogService } from '../../../services/LogService';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -88,7 +88,8 @@ export class PmsComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private pmsService: PMSService,
-    private gramosPmsService: GramosPmsService
+    private gramosPmsService: GramosPmsService,
+    private logService: LogService
   ) {}
 
     ngOnInit() {
@@ -408,6 +409,16 @@ export class PmsComponent implements OnInit {
           console.log('PMS creado correctamente:', res);
           // Guardar gramos asociados al PMS
           this.guardarGramos(res);
+
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          const username = user?.nombre || 'Desconocido';
+          const rol = this.obtenerRolMasAlto(user?.roles);
+
+          if (res != null) {
+            const mensaje = `PMS con ID #${res} fue creado por ${username} con rol ${rol}`;
+            this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
+          }
+
           this.onCancel();
         },
         error: (err) => {
@@ -419,6 +430,7 @@ export class PmsComponent implements OnInit {
       });
     }
 
+
     private actualizarPms(pmsData: PMSDto) {
 
       console.log('Actualizando PMS ID:', this.editingId, 'con datos:', pmsData);
@@ -427,6 +439,16 @@ export class PmsComponent implements OnInit {
           console.log('PMS actualizado correctamente:', res);
           // Guardar gramos asociados al PMS
           this.guardarGramos(this.editingId!);
+
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          const username = user?.nombre || 'Desconocido';
+          const rol = this.obtenerRolMasAlto(user?.roles);
+
+          if (this.editingId != null) {
+            const mensaje = `PMS con ID #${this.editingId} fue editado por ${username} con rol ${rol}`;
+            this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
+          }
+
           this.onCancel();
         },
         error: (err) => {
@@ -436,6 +458,21 @@ export class PmsComponent implements OnInit {
           this.isSaving = false;
         }
       });
+    }
+
+    obtenerRolMasAlto(roles: string[] | string | undefined): string {
+      // Si no hay roles, retornar 'Desconocido'
+      if (!roles) return 'Desconocido';
+        
+      // Si es un string, convertir a array
+      const rolesArray = Array.isArray(roles) ? roles : [roles];
+        
+      // Definir jerarquía de roles (de mayor a menor)
+      if (rolesArray.includes('ADMIN')) return 'Administrador';
+      if (rolesArray.includes('ANALISTA')) return 'Analista';
+      if (rolesArray.includes('OBSERVADOR')) return 'Observador';
+        
+      return 'Desconocido';
     }
 
     private guardarGramos(pmsId: number) {

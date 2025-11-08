@@ -12,6 +12,8 @@ import { MultiSelectModule } from 'primeng/multiselect';
 // import { TabsModule } from 'primeng/tabs';
 import { CultivoService } from '../../../services/CultivoService';
 import { MalezaService } from '../../../services/MalezaService';
+import { LogService } from '../../../services/LogService';
+
 
 @Component({
   selector: 'app-dosn.component',
@@ -36,7 +38,7 @@ import { MalezaService } from '../../../services/MalezaService';
       reciboId: number | null = null;
 
       // Todas las propiedades y métodos deben estar dentro de la clase
-  constructor(private dosnService: DOSNService, private cultivoService: CultivoService, private malezaService: MalezaService, private route: ActivatedRoute, private router: Router) {}
+      constructor(private dosnService: DOSNService, private cultivoService: CultivoService, private malezaService: MalezaService, private route: ActivatedRoute, private router: Router, private logService: LogService) {}
 
       brassicaCuscuta = [
         { label: 'Brassica spp.', contiene: false, gramos: 0 },
@@ -266,36 +268,63 @@ import { MalezaService } from '../../../services/MalezaService';
 
             const payload = this.buildPayloadFromView();
             this.loading = true;
-            const obs = this.isEditing
-              ? this.dosnService.editar(payload)
-              : this.dosnService.crear(payload);
 
-            obs.subscribe({
-              next: (resp) => {
-                this.loading = false;
-                try {
-                  const texto = typeof resp === 'string' ? resp : '';
-                  const idMatch = texto.match(/ID\s*:?\s*(\d+)/i);
-                  const id = idMatch ? Number(idMatch[1]) : this.editingId ?? null;
-                  const accion = this.isEditing ? 'actualizada' : 'creada';
+            if (this.isEditing) {
+              // Modo edición: editar devuelve Observable<string>
+              this.dosnService.editar(payload).subscribe({
+                next: (resp: string) => {
+                  this.loading = false;
+                  const id = this.editingId ?? null;
+                  
+                  const user = JSON.parse(localStorage.getItem('user') || '{}');
+                  const username = user?.nombre || 'Desconocido';
+                  const rol = this.obtenerRolMasAlto(user?.roles);
+
                   if (id != null) {
-                    console.log(`DOSN ${accion} correctamente. ID: ${id}`);
-                  } else {
-                    console.log(`DOSN ${accion} correctamente.`);
+                    const mensaje = `DOSN con ID #${id} fue editado por ${username} con rol ${rol}`;
+                    this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
                   }
-                } catch (e) {
-                  console.log(`DOSN ${this.isEditing ? 'actualizada' : 'creada'} correctamente.`);
+
+                  console.log(`DOSN actualizada correctamente con ID: ${id}`);
+                  
+                  if (this.loteId != null && this.reciboId != null) {
+                    this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
+                  }
+                },
+                error: (e: any) => {
+                  const detalle = e?.error || e?.message || e;
+                  console.error('Error al editar DOSN:', detalle);
+                  this.loading = false;
                 }
-                if (this.loteId != null && this.reciboId != null) {
-                  this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
+              });
+            } else {
+              // Modo creación: crear devuelve Observable<number>
+              this.dosnService.crear(payload).subscribe({
+                next: (id: number) => {
+                  this.loading = false;
+                  
+                  const user = JSON.parse(localStorage.getItem('user') || '{}');
+                  const username = user?.nombre || 'Desconocido';
+                  const rol = this.obtenerRolMasAlto(user?.roles);
+
+                  if (id != null) {
+                    const mensaje = `DOSN con ID #${id} fue creado por ${username} con rol ${rol}`;
+                    this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
+                  }
+
+                  console.log(`DOSN creada correctamente con ID: ${id}`);
+                  
+                  if (this.loteId != null && this.reciboId != null) {
+                    this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
+                  }
+                },
+                error: (e: any) => {
+                  const detalle = e?.error || e?.message || e;
+                  console.error('Error al crear DOSN:', detalle);
+                  this.loading = false;
                 }
-              },
-              error: (e) => {
-                const detalle = e?.error || e?.message || e;
-                console.error(`Error al ${this.isEditing ? 'editar' : 'crear'} DOSN:`, detalle);
-                this.loading = false;
-              }
-            });
+              });
+            }
       }
 
       onCancel() {
@@ -305,6 +334,20 @@ import { MalezaService } from '../../../services/MalezaService';
         }
       }
 
+      obtenerRolMasAlto(roles: string[] | string | undefined): string {
+        // Si no hay roles, retornar 'Desconocido'
+        if (!roles) return 'Desconocido';
+        
+        // Si es un string, convertir a array
+        const rolesArray = Array.isArray(roles) ? roles : [roles];
+        
+        // Definir jerarquía de roles (de mayor a menor)
+        if (rolesArray.includes('ADMIN')) return 'Administrador';
+        if (rolesArray.includes('ANALISTA')) return 'Analista';
+        if (rolesArray.includes('OBSERVADOR')) return 'Observador';
+        
+        return 'Desconocido';
+      }
 
   selectedMalezasToleradas: number[] = [];
   isMalezasToleradasDropdownOpen: boolean = false;

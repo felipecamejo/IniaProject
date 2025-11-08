@@ -9,6 +9,7 @@ import ti.proyectoinia.business.repositories.ReciboRepository;
 import ti.proyectoinia.business.repositories.CultivoRepository;
 import ti.proyectoinia.business.repositories.MalezaRepository;
 import ti.proyectoinia.business.repositories.PurezaPNotatumRepository;
+import ti.proyectoinia.business.repositories.UsuarioRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Date;
@@ -28,6 +29,8 @@ public class MapsDtoEntityService {
     private MalezaRepository malezaRepository;
     @Autowired
     private PurezaPNotatumRepository purezaPNotatumRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     // Formato ISO simple para fechas tipo "2024-01-15T10:30:00"
     private static final DateTimeFormatter ISO_LOCAL_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -1804,6 +1807,29 @@ public class MapsDtoEntityService {
         // Mapear el ID de la relación
         dto.setTetrazolioId(entity.getTetrazolio() != null ? entity.getTetrazolio().getId() : null);
         
+        return dto;
+    }
+
+    public Log mapToEntityLog(LogDto dto) {
+        if (dto == null) return null;
+
+        Log log = new Log();
+        log.setId(dto.getId());
+        log.setTexto(dto.getTexto());
+        log.setFechaCreacion(dto.getFechaCreacion());
+
+
+        return log;
+    }
+
+    public LogDto mapToDtoLog(Log log) {
+        if (log == null) return null;
+
+        LogDto dto = new LogDto();
+        dto.setId(log.getId());
+        dto.setTexto(log.getTexto());
+        dto.setFechaCreacion(log.getFechaCreacion());
+
         return dto;
     }
 }

@@ -36,7 +36,7 @@ public class DOSNService {
         this.dosnRepository = dosnRepository;
     }
 
-    public String crearDOSN(DOSNDto dosnDto) {
+    public Long crearDOSN(DOSNDto dosnDto) {
         // Validaciones para arrays de IDs actuales (compatibilidad)
         if (dosnDto.getCultivosINIAId() != null) {
             for (Long cultivoId : dosnDto.getCultivosINIAId()) {
@@ -64,7 +64,7 @@ public class DOSNService {
         validateMalezasCantidad(dosnDto.getMalezasNormalesINASE(), "INASE", "NORMAL");
         validateMalezasCantidad(dosnDto.getMalezasToleradasINASE(), "INASE", "TOLERADA");
         validateMalezasCantidad(dosnDto.getMalezasToleranciaCeroINASE(), "INASE", "CERO");
-        return "DOSN creada correctamente ID:" + this.dosnRepository.save(mapsDtoEntityService.mapToEntityDOSN(dosnDto)).getId();
+        return this.dosnRepository.save(mapsDtoEntityService.mapToEntityDOSN(dosnDto)).getId();
     }
 
     public DOSNDto obtenerDOSNPorId(Long id) {
