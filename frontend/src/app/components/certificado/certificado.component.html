@@ -27,22 +27,22 @@
         <div class="form-grid">
           <div class="form-field">
             <label for="nombreSolicitante">Nombre</label>
-            <input id="nombreSolicitante" type="text" [(ngModel)]="nombreSolicitante" name="nombreSolicitante" pInputText [readonly]="isViewing" />
+            <input id="nombreSolicitante" type="text" [(ngModel)]="nombreSolicitante" name="nombreSolicitante" pInputText [readonly]="true" />
           </div>
 
           <div class="form-field">
             <label for="especie">Especie</label>
-            <input id="especie" type="text" [(ngModel)]="especie" name="especie" pInputText [readonly]="isViewing" />
+            <input id="especie" type="text" [(ngModel)]="especie" name="especie" pInputText [readonly]="true" />
           </div>
 
           <div class="form-field">
             <label for="cultivar">Cultivar</label>
-            <input id="cultivar" type="text" [(ngModel)]="cultivar" name="cultivar" pInputText [readonly]="isViewing" />
+            <input id="cultivar" type="text" [(ngModel)]="cultivar" name="cultivar" pInputText [readonly]="true" />
           </div>
 
           <div class="form-field">
             <label for="categoria">Categoría</label>
-            <input id="categoria" type="text" [(ngModel)]="categoria" name="categoria" pInputText [readonly]="isViewing" />
+            <input id="categoria" type="text" [(ngModel)]="categoria" name="categoria" pInputText [readonly]="true" />
           </div>
         </div>
       </div>
@@ -114,6 +114,17 @@
       <div class="section-certificado">
         <h3 class="section-title-certificado">RESULTADOS DE ANÁLISIS</h3>
         
+        <!-- Leyenda de análisis solicitados -->
+        <div class="analisis-solicitados-leyenda" *ngIf="analisisSolicitados">
+          <h4 class="leyenda-title">Análisis solicitados:</h4>
+          <p class="leyenda-text">{{ analisisSolicitados }}</p>
+          <div class="leyenda-detalle">
+            <span *ngIf="debeRealizarPureza" class="analisis-item">✓ Pureza</span>
+            <span *ngIf="debeRealizarDOSN" class="analisis-item">✓ DOSN (Determinación de otras semillas)</span>
+            <span *ngIf="debeRealizarGerminacion" class="analisis-item">✓ Germinación</span>
+          </div>
+        </div>
+        
         <div class="form-field">
           <label for="especieCientifica">Especie (nombre científico)</label>
           <input id="especieCientifica" type="text" [(ngModel)]="especie" name="especieCientifica" pInputText [readonly]="isViewing" />
@@ -137,14 +148,14 @@
             </thead>
             <tbody>
               <tr>
-                <td>{{ purezaSemillaPura ?? 'N' }}</td>
-                <td>{{ purezaMateriaInerte ?? 'N' }}</td>
-                <td>{{ purezaOtrasSemillas ?? 'N' }}</td>
-                <td>{{ purezaOtrosCultivos ?? 'N' }}</td>
-                <td>{{ purezaMalezas ?? 'N' }}</td>
-                <td>{{ purezaMalezasToleradas }}</td>
-                <td>{{ purezaPeso1000Semillas }}</td>
-                <td>{{ purezaHumedad }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaSemillaPura ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaMateriaInerte ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaOtrasSemillas ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaOtrosCultivos ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaMalezas ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaMalezasToleradas || 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaPeso1000Semillas || 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaHumedad || 'N' }}</td>
               </tr>
             </tbody>
           </table>
@@ -152,12 +163,12 @@
 
         <div class="form-field">
           <label for="purezaClaseMateriaInerte">Clase de materia inerte</label>
-          <input id="purezaClaseMateriaInerte" type="text" [(ngModel)]="purezaClaseMateriaInerte" name="purezaClaseMateriaInerte" pInputText [readonly]="true" />
+          <input id="purezaClaseMateriaInerte" type="text" [(ngModel)]="purezaClaseMateriaInerte" name="purezaClaseMateriaInerte" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tienePureza }" [value]="purezaClaseMateriaInerte || ''" />
         </div>
 
         <div class="form-field">
           <label for="purezaOtrasSemillasDescripcion">Otras semillas</label>
-          <input id="purezaOtrasSemillasDescripcion" type="text" [(ngModel)]="purezaOtrasSemillasDescripcion" name="purezaOtrasSemillasDescripcion" pInputText [readonly]="true" />
+          <input id="purezaOtrasSemillasDescripcion" type="text" [(ngModel)]="purezaOtrasSemillasDescripcion" name="purezaOtrasSemillasDescripcion" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tienePureza }" [value]="purezaOtrasSemillasDescripcion || ''" />
         </div>
 
         <!-- Determinación de otras semillas por número -->
@@ -166,22 +177,22 @@
           <div class="form-grid">
             <div class="form-field">
               <label>Nº de semillas de malezas con tolerancia cero</label>
-              <input type="number" [(ngModel)]="dosnMalezasToleranciaCero" name="dosnMalezasToleranciaCero" pInputText [readonly]="true" />
+              <input type="number" [(ngModel)]="dosnMalezasToleranciaCero" name="dosnMalezasToleranciaCero" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnMalezasToleranciaCero ?? ''" />
             </div>
             <div class="form-field">
               <label>Nº de semillas de malezas con tolerancia</label>
-              <input type="number" [(ngModel)]="dosnMalezasTolerancia" name="dosnMalezasTolerancia" pInputText [readonly]="true" />
+              <input type="number" [(ngModel)]="dosnMalezasTolerancia" name="dosnMalezasTolerancia" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnMalezasTolerancia ?? ''" />
             </div>
             <div class="form-field">
               <label>Nº de semillas de otros cultivos</label>
-              <input type="number" [(ngModel)]="dosnOtrosCultivos" name="dosnOtrosCultivos" pInputText [readonly]="true" />
+              <input type="number" [(ngModel)]="dosnOtrosCultivos" name="dosnOtrosCultivos" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnOtrosCultivos ?? ''" />
             </div>
           </div>
         </div>
 
         <div class="form-field">
           <label for="dosnBrassicaSpp">Determinación de Brassica spp. en {{ dosnGramosAnalizados ?? 'N' }} g</label>
-          <input id="dosnBrassicaSpp" type="text" [(ngModel)]="dosnBrassicaSpp" name="dosnBrassicaSpp" pInputText [readonly]="true" />
+          <input id="dosnBrassicaSpp" type="text" [(ngModel)]="dosnBrassicaSpp" name="dosnBrassicaSpp" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnBrassicaSpp || ''" />
         </div>
 
         <!-- Tabla de Germinación -->
@@ -203,15 +214,15 @@
             </thead>
             <tbody>
               <tr>
-                <td>{{ germinacionNumeroDias ?? 'N' }}</td>
-                <td>{{ germinacionPlantulasNormales ?? 'N' }}</td>
-                <td>{{ germinacionPlantulasAnormales ?? 'N' }}</td>
-                <td>{{ germinacionSemillasDuras }}</td>
-                <td>{{ germinacionSemillasFrescas }}</td>
-                <td>{{ germinacionSemillasMuertas ?? 'N' }}</td>
-                <td>{{ germinacionSustrato }}</td>
-                <td>{{ germinacionTemperatura ?? 'N' }}</td>
-                <td>{{ germinacionPreTratamiento }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionNumeroDias ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionPlantulasNormales ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionPlantulasAnormales ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionSemillasDuras ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionSemillasFrescas ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionSemillasMuertas ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionSustrato || 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionTemperatura ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionPreTratamiento || 'N' }}</td>
               </tr>
             </tbody>
           </table>

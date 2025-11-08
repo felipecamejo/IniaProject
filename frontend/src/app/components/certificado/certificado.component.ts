@@ -65,6 +65,17 @@ export class CertificadoComponent implements OnInit {
 
   // Datos del recibo
   recibo: ReciboDto | null = null;
+  analisisSolicitados: string | null = null;
+
+  // Indicadores de existencia de análisis
+  tienePureza: boolean = false;
+  tieneDOSN: boolean = false;
+  tieneGerminacion: boolean = false;
+
+  // Indicadores de qué análisis deben realizarse
+  debeRealizarPureza: boolean = false;
+  debeRealizarDOSN: boolean = false;
+  debeRealizarGerminacion: boolean = false;
 
   // Resultados de análisis (por defecto, luego se extraerán de los análisis)
   // Pureza
@@ -81,17 +92,17 @@ export class CertificadoComponent implements OnInit {
 
   // DOSN (Determinación de otras semillas por número)
   dosnGramosAnalizados: number | null = null;
-  dosnMalezasToleranciaCero: number = 0;
-  dosnMalezasTolerancia: number = 0;
-  dosnOtrosCultivos: number = 0;
+  dosnMalezasToleranciaCero: number | null = null;
+  dosnMalezasTolerancia: number | null = null;
+  dosnOtrosCultivos: number | null = null;
   dosnBrassicaSpp: string = '';
 
   // Germinación
   germinacionNumeroDias: number | null = null;
   germinacionPlantulasNormales: number | null = null;
   germinacionPlantulasAnormales: number | null = null;
-  germinacionSemillasDuras: number = 0;
-  germinacionSemillasFrescas: number = 0;
+  germinacionSemillasDuras: number | null = null;
+  germinacionSemillasFrescas: number | null = null;
   germinacionSemillasMuertas: number | null = null;
   germinacionSustrato: string = '';
   germinacionTemperatura: number | null = null;
@@ -187,7 +198,9 @@ export class CertificadoComponent implements OnInit {
     this.reciboService.obtenerRecibo(this.reciboId).subscribe({
       next: (recibo: ReciboDto) => {
         this.recibo = recibo;
+        this.analisisSolicitados = recibo.analisisSolicitados;
         // Pre-llenar campos del certificado con datos del recibo
+        if (recibo.remitente) this.nombreSolicitante = recibo.remitente;
         if (recibo.especie) this.especie = recibo.especie;
         if (recibo.cultivar) this.cultivar = recibo.cultivar;
         if (recibo.kgLimpios) this.pesoKg = recibo.kgLimpios;
@@ -197,13 +210,16 @@ export class CertificadoComponent implements OnInit {
           this.loteId = recibo.loteId;
         }
         
-        // Cargar datos del lote para asignar automáticamente el número de lote
+        // Cargar datos del lote para asignar automáticamente el número de lote y la categoría
         if (this.loteId) {
           this.cargarDatosLote(this.loteId);
         }
         
-        // Por ahora NO extraer análisis automáticamente
-        // this.cargarAnalisisDisponibles();
+        // Determinar qué análisis deben realizarse
+        this.determinarAnalisisSolicitados();
+        
+        // Extraer análisis estándar y el último creado
+        this.cargarAnalisisDisponibles();
       },
       error: (err) => {
         console.error('Error cargando recibo:', err);
@@ -218,6 +234,10 @@ export class CertificadoComponent implements OnInit {
         if (lote.nombre) {
           this.numeroLote = lote.nombre;
         }
+        // Asignar automáticamente la categoría del lote al campo categoria
+        if (lote.categoria) {
+          this.categoria = lote.categoria;
+        }
         console.log('Lote cargado y asignado automáticamente:', lote.nombre);
       },
       error: (err) => {
@@ -226,17 +246,43 @@ export class CertificadoComponent implements OnInit {
     });
   }
 
-  // Método comentado por ahora - no extraer análisis automáticamente
-  /*
+  determinarAnalisisSolicitados() {
+    // Determinar qué análisis deben realizarse basado en analisisSolicitados del recibo
+    if (!this.analisisSolicitados) {
+      this.debeRealizarPureza = false;
+      this.debeRealizarDOSN = false;
+      this.debeRealizarGerminacion = false;
+      return;
+    }
+
+    const analisis = this.analisisSolicitados.toLowerCase();
+    this.debeRealizarPureza = analisis.includes('pureza');
+    this.debeRealizarDOSN = analisis.includes('dosn') || analisis.includes('otras semillas');
+    this.debeRealizarGerminacion = analisis.includes('germinacion') || analisis.includes('germinación');
+  }
+
   cargarAnalisisDisponibles() {
     if (!this.reciboId) return;
 
-    // Cargar análisis de pureza
-    this.purezaService.listarPorRecibo(this.reciboId).subscribe({
+    // Cargar análisis de pureza - solo si está solicitado y solo estándar y el último creado
+    if (this.debeRealizarPureza) {
+      this.purezaService.listarPorRecibo(this.reciboId).subscribe({
       next: (response) => {
         if (response.purezas && response.purezas.length > 0) {
-          const pureza = response.purezas[0]; // Tomar el primer análisis de pureza
-          this.extraerDatosPureza(pureza);
+          // Filtrar solo análisis estándar
+          const purezasEstandar = response.purezas.filter(p => p.estandar === true);
+          if (purezasEstandar.length > 0) {
+            // Ordenar por fechaCreacion descendente y tomar el último creado
+            const purezasOrdenadas = purezasEstandar.sort((a, b) => {
+              const fechaA = a.fechaCreacion ? new Date(a.fechaCreacion).getTime() : 0;
+              const fechaB = b.fechaCreacion ? new Date(b.fechaCreacion).getTime() : 0;
+              return fechaB - fechaA; // Orden descendente
+            });
+            const pureza = purezasOrdenadas[0];
+            this.extraerDatosPureza(pureza);
+          } else {
+            this.inicializarValoresPorDefectoPureza();
+          }
         } else {
           this.inicializarValoresPorDefectoPureza();
         }
@@ -246,42 +292,79 @@ export class CertificadoComponent implements OnInit {
         this.inicializarValoresPorDefectoPureza();
       }
     });
+    } else {
+      // Si no está solicitado, no cargar datos pero marcar como no realizado
+      this.inicializarValoresPorDefectoPureza();
+    }
 
-    // Cargar análisis de DOSN
-    this.dosnService.listarPorRecibo(this.reciboId).subscribe({
-      next: (response) => {
-        if (response.DOSN && response.DOSN.length > 0) {
-          const dosn = response.DOSN[0]; // Tomar el primer análisis DOSN
-          this.extraerDatosDOSN(dosn);
-        } else {
+    // Cargar análisis de DOSN - solo si está solicitado y solo estándar y el último creado
+    if (this.debeRealizarDOSN) {
+      this.dosnService.listarPorRecibo(this.reciboId).subscribe({
+        next: (response) => {
+          if (response.DOSN && response.DOSN.length > 0) {
+            // Filtrar solo análisis estándar
+            const dosnEstandar = response.DOSN.filter(d => d.estandar === true);
+            if (dosnEstandar.length > 0) {
+              // Ordenar por fechaCreacion descendente y tomar el último creado
+              const dosnOrdenados = dosnEstandar.sort((a, b) => {
+                const fechaA = a.fechaCreacion ? new Date(a.fechaCreacion).getTime() : 0;
+                const fechaB = b.fechaCreacion ? new Date(b.fechaCreacion).getTime() : 0;
+                return fechaB - fechaA; // Orden descendente
+              });
+              const dosn = dosnOrdenados[0];
+              this.extraerDatosDOSN(dosn);
+            } else {
+              this.inicializarValoresPorDefectoDOSN();
+            }
+          } else {
+            this.inicializarValoresPorDefectoDOSN();
+          }
+        },
+        error: (err) => {
+          console.error('Error cargando DOSN:', err);
           this.inicializarValoresPorDefectoDOSN();
         }
-      },
-      error: (err) => {
-        console.error('Error cargando DOSN:', err);
-        this.inicializarValoresPorDefectoDOSN();
-      }
-    });
+      });
+    } else {
+      // Si no está solicitado, no cargar datos pero marcar como no realizado
+      this.inicializarValoresPorDefectoDOSN();
+    }
 
-    // Cargar análisis de germinación
-    this.germinacionService.listarPorRecibo(this.reciboId).subscribe({
-      next: (response) => {
-        if (response.germinacion && response.germinacion.length > 0) {
-          const germinacion = response.germinacion[0]; // Tomar el primer análisis de germinación
-          this.extraerDatosGerminacion(germinacion);
-        } else {
+    // Cargar análisis de germinación - solo si está solicitado y el último creado (verificar si tiene campo estandar)
+    if (this.debeRealizarGerminacion) {
+      this.germinacionService.listarPorRecibo(this.reciboId).subscribe({
+        next: (response) => {
+          if (response.germinacion && response.germinacion.length > 0) {
+            // Filtrar solo análisis estándar si existe el campo
+            const germinacionesEstandar = response.germinacion.filter(g => g.estandar === true);
+            const germinacionesParaUsar = germinacionesEstandar.length > 0 ? germinacionesEstandar : response.germinacion;
+            
+            // Ordenar por fechaCreacion descendente y tomar el último creado
+            const germinacionOrdenadas = germinacionesParaUsar.sort((a, b) => {
+              const fechaA = a.fechaCreacion ? new Date(a.fechaCreacion).getTime() : 0;
+              const fechaB = b.fechaCreacion ? new Date(b.fechaCreacion).getTime() : 0;
+              return fechaB - fechaA; // Orden descendente
+            });
+            const germinacion = germinacionOrdenadas[0];
+            this.extraerDatosGerminacion(germinacion);
+          } else {
+            this.inicializarValoresPorDefectoGerminacion();
+          }
+        },
+        error: (err) => {
+          console.error('Error cargando germinación:', err);
           this.inicializarValoresPorDefectoGerminacion();
         }
-      },
-      error: (err) => {
-        console.error('Error cargando germinación:', err);
-        this.inicializarValoresPorDefectoGerminacion();
-      }
-    });
+      });
+    } else {
+      // Si no está solicitado, no cargar datos pero marcar como no realizado
+      this.inicializarValoresPorDefectoGerminacion();
+    }
   }
-  */
 
   extraerDatosPureza(pureza: PurezaDto) {
+    // Marcar que existe análisis de pureza
+    this.tienePureza = true;
     // Extraer datos de pureza (usar valores INASE si están disponibles, sino INIA)
     this.purezaSemillaPura = pureza.semillaPuraPorcentajeRedondeoInase ?? pureza.semillaPuraPorcentajeRedondeo ?? null;
     this.purezaMateriaInerte = pureza.materialInertePorcentajeRedondeoInase ?? pureza.materialInertePorcentajeRedondeo ?? null;
@@ -295,22 +378,26 @@ export class CertificadoComponent implements OnInit {
   }
 
   extraerDatosDOSN(dosn: DOSNDto) {
+    // Marcar que existe análisis de DOSN
+    this.tieneDOSN = true;
     // Extraer datos de DOSN
     this.dosnGramosAnalizados = dosn.gramosAnalizadosINASE ?? dosn.gramosAnalizadosINIA ?? null;
-    // Por ahora usar valores por defecto, luego se calcularán de las listas de malezas
-    this.dosnMalezasToleranciaCero = 0;
-    this.dosnMalezasTolerancia = 0;
-    this.dosnOtrosCultivos = 0;
+    // Calcular valores desde las colecciones (por ahora usar null, se calcularán desde las listas)
+    this.dosnMalezasToleranciaCero = null;
+    this.dosnMalezasTolerancia = null;
+    this.dosnOtrosCultivos = null;
     this.dosnBrassicaSpp = dosn.determinacionBrassica ? 'Contiene.' : 'No contiene.';
   }
 
   extraerDatosGerminacion(germinacion: GerminacionDto) {
+    // Marcar que existe análisis de germinación
+    this.tieneGerminacion = true;
     // Extraer datos de germinación
     this.germinacionNumeroDias = germinacion.nroDias ?? null;
     this.germinacionPlantulasNormales = germinacion.pNormal ?? null;
     this.germinacionPlantulasAnormales = germinacion.pAnormal ?? null;
-    this.germinacionSemillasDuras = germinacion.semillasDuras ?? 0;
-    this.germinacionSemillasFrescas = 0; // No está en el DTO actual
+    this.germinacionSemillasDuras = germinacion.semillasDuras ?? null;
+    this.germinacionSemillasFrescas = null; // No está en el DTO actual
     this.germinacionSemillasMuertas = germinacion.pMuertas ?? null;
     this.germinacionSustrato = 'RP'; // Papel de filtro
     this.germinacionTemperatura = germinacion.temperatura ?? null;
@@ -328,36 +415,42 @@ export class CertificadoComponent implements OnInit {
   }
 
   inicializarValoresPorDefectoPureza() {
-    this.purezaSemillaPura = 99.9;
-    this.purezaMateriaInerte = 0.1;
-    this.purezaOtrasSemillas = 0.0;
-    this.purezaOtrosCultivos = 0.0;
-    this.purezaMalezas = 0.0;
+    // Marcar que no existe análisis de pureza
+    this.tienePureza = false;
+    this.purezaSemillaPura = null;
+    this.purezaMateriaInerte = null;
+    this.purezaOtrasSemillas = null;
+    this.purezaOtrosCultivos = null;
+    this.purezaMalezas = null;
     this.purezaMalezasToleradas = 'N';
     this.purezaPeso1000Semillas = 'N';
     this.purezaHumedad = 'N';
-    this.purezaClaseMateriaInerte = 'Restos vegetales, trozos de semillas.';
-    this.purezaOtrasSemillasDescripcion = 'No contiene.';
+    this.purezaClaseMateriaInerte = '';
+    this.purezaOtrasSemillasDescripcion = '';
   }
 
   inicializarValoresPorDefectoDOSN() {
-    this.dosnGramosAnalizados = 1006;
-    this.dosnMalezasToleranciaCero = 0;
-    this.dosnMalezasTolerancia = 0;
-    this.dosnOtrosCultivos = 0;
-    this.dosnBrassicaSpp = 'No contiene.';
+    // Marcar que no existe análisis de DOSN
+    this.tieneDOSN = false;
+    this.dosnGramosAnalizados = null;
+    this.dosnMalezasToleranciaCero = null;
+    this.dosnMalezasTolerancia = null;
+    this.dosnOtrosCultivos = null;
+    this.dosnBrassicaSpp = '';
   }
 
   inicializarValoresPorDefectoGerminacion() {
-    this.germinacionNumeroDias = 9;
-    this.germinacionPlantulasNormales = 90;
-    this.germinacionPlantulasAnormales = 2;
-    this.germinacionSemillasDuras = 0;
-    this.germinacionSemillasFrescas = 0;
-    this.germinacionSemillasMuertas = 8;
-    this.germinacionSustrato = 'RP';
-    this.germinacionTemperatura = 20;
-    this.germinacionPreTratamiento = 'Pre-frío 5 días';
+    // Marcar que no existe análisis de germinación
+    this.tieneGerminacion = false;
+    this.germinacionNumeroDias = null;
+    this.germinacionPlantulasNormales = null;
+    this.germinacionPlantulasAnormales = null;
+    this.germinacionSemillasDuras = null;
+    this.germinacionSemillasFrescas = null;
+    this.germinacionSemillasMuertas = null;
+    this.germinacionSustrato = '';
+    this.germinacionTemperatura = null;
+    this.germinacionPreTratamiento = '';
   }
 
   inicializarCampos() {
@@ -410,7 +503,7 @@ export class CertificadoComponent implements OnInit {
             next: (recibo: ReciboDto) => {
               if (recibo.loteId) {
                 this.loteId = recibo.loteId;
-                // Cargar datos del lote para asignar automáticamente el número de lote
+                // Cargar datos del lote para asignar automáticamente el número de lote y la categoría
                 this.cargarDatosLote(recibo.loteId);
               }
             }
@@ -424,11 +517,12 @@ export class CertificadoComponent implements OnInit {
         this.nombreSolicitante = certificado.nombreSolicitante || '';
         this.especie = certificado.especie || '';
         this.cultivar = certificado.cultivar || '';
+        // Si no hay categoría en el certificado, se cargará desde el lote en cargarDatosLote
         this.categoria = certificado.categoria || '';
         this.responsableMuestreo = certificado.responsableMuestreo || '';
         this.fechaMuestreo = this.formatearFechaParaInput(certificado.fechaMuestreo);
         // El numeroLote se asignará automáticamente desde el lote (se sobrescribirá con el nombre actual del lote)
-        this.pesoKg = certificado.pesoKg ?? null;
+        // El peso se extrae del recibo, no del certificado
         this.numeroEnvases = certificado.numeroEnvases ?? null;
         this.fechaIngresoLaboratorio = this.formatearFechaParaInput(certificado.fechaIngresoLaboratorio);
         this.fechaFinalizacionAnalisis = this.formatearFechaParaInput(certificado.fechaFinalizacionAnalisis);
@@ -443,6 +537,32 @@ export class CertificadoComponent implements OnInit {
           this.reciboId = certificado.reciboId;
         }
         
+        // Cargar datos del recibo para extraer el peso y determinar análisis solicitados
+        if (this.reciboId) {
+          this.reciboService.obtenerRecibo(this.reciboId).subscribe({
+            next: (recibo: ReciboDto) => {
+              this.recibo = recibo;
+              this.analisisSolicitados = recibo.analisisSolicitados;
+              // Extraer el peso del recibo
+              if (recibo.kgLimpios) {
+                this.pesoKg = recibo.kgLimpios;
+              }
+              // Determinar qué análisis deben realizarse
+              this.determinarAnalisisSolicitados();
+              // Cargar análisis disponibles para verificar si existen análisis estándar
+              this.cargarAnalisisDisponibles();
+            },
+            error: (err) => {
+              console.error('Error cargando recibo para extraer peso:', err);
+              // Cargar análisis disponibles de todas formas
+              this.cargarAnalisisDisponibles();
+            }
+          });
+        } else {
+          // Si no hay reciboId, cargar análisis disponibles de todas formas
+          this.cargarAnalisisDisponibles();
+        }
+        
         // Cargar resultados de análisis - Pureza
         this.purezaSemillaPura = certificado.purezaSemillaPura ?? null;
         this.purezaMateriaInerte = certificado.purezaMateriaInerte ?? null;
@@ -454,24 +574,30 @@ export class CertificadoComponent implements OnInit {
         this.purezaHumedad = certificado.purezaHumedad || 'N';
         this.purezaClaseMateriaInerte = certificado.purezaClaseMateriaInerte || '';
         this.purezaOtrasSemillasDescripcion = certificado.purezaOtrasSemillasDescripcion || '';
+        // Determinar si existe análisis de pureza
+        this.tienePureza = this.purezaSemillaPura != null || this.purezaMateriaInerte != null || this.purezaOtrasSemillas != null || this.purezaOtrosCultivos != null || this.purezaMalezas != null;
         
         // Cargar resultados de análisis - DOSN
         this.dosnGramosAnalizados = certificado.dosnGramosAnalizados ?? null;
-        this.dosnMalezasToleranciaCero = certificado.dosnMalezasToleranciaCero ?? 0;
-        this.dosnMalezasTolerancia = certificado.dosnMalezasTolerancia ?? 0;
-        this.dosnOtrosCultivos = certificado.dosnOtrosCultivos ?? 0;
+        this.dosnMalezasToleranciaCero = certificado.dosnMalezasToleranciaCero ?? null;
+        this.dosnMalezasTolerancia = certificado.dosnMalezasTolerancia ?? null;
+        this.dosnOtrosCultivos = certificado.dosnOtrosCultivos ?? null;
         this.dosnBrassicaSpp = certificado.dosnBrassicaSpp || '';
+        // Determinar si existe análisis de DOSN
+        this.tieneDOSN = this.dosnGramosAnalizados != null;
         
         // Cargar resultados de análisis - Germinación
         this.germinacionNumeroDias = certificado.germinacionNumeroDias ?? null;
         this.germinacionPlantulasNormales = certificado.germinacionPlantulasNormales ?? null;
         this.germinacionPlantulasAnormales = certificado.germinacionPlantulasAnormales ?? null;
-        this.germinacionSemillasDuras = certificado.germinacionSemillasDuras ?? 0;
-        this.germinacionSemillasFrescas = certificado.germinacionSemillasFrescas ?? 0;
+        this.germinacionSemillasDuras = certificado.germinacionSemillasDuras ?? null;
+        this.germinacionSemillasFrescas = certificado.germinacionSemillasFrescas ?? null;
         this.germinacionSemillasMuertas = certificado.germinacionSemillasMuertas ?? null;
         this.germinacionSustrato = certificado.germinacionSustrato || '';
         this.germinacionTemperatura = certificado.germinacionTemperatura ?? null;
         this.germinacionPreTratamiento = certificado.germinacionPreTratamiento || '';
+        // Determinar si existe análisis de germinación
+        this.tieneGerminacion = this.germinacionNumeroDias != null || this.germinacionPlantulasNormales != null || this.germinacionPlantulasAnormales != null;
         
         console.log('Datos del certificado asignados al formulario');
       },

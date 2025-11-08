@@ -29,7 +29,8 @@ import { ListadoUsuariosComponent } from './components/listado-usuarios/listado-
 import { UsuarioComponent } from './components/usuario/usuario.component';
 import { ListadoMetodosComponent } from './components/listado-metodos/listado-metodos.component';
 // import { ListadoLogsComponent } from './components/listado-logs/listado-logs.components';
-import { CertificadoComponent } from './components/certificado/certificado.component'; 
+import { CertificadoComponent } from './components/certificado/certificado.component';
+import { ListadoCertificadosComponent } from './components/listado-certificados/listado-certificados.component'; 
 
 export const routes: Routes = [
     //rutas generales
@@ -46,6 +47,7 @@ export const routes: Routes = [
     { path : 'listado-malezas', component: ListadoMalezasComponent },
     { path : 'listado-hongos', component: ListadoHongosComponent },
     { path : 'listado-cultivos', component: ListadoCultivosComponent },
+    { path : 'listado-certificados', component: ListadoCertificadosComponent },
     // { path : 'listado-logs', component: ListadoLogsComponent }, // Componente no existe aún
 
     //listados asociados a un recibo

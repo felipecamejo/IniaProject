@@ -134,10 +134,21 @@
       text-align: center;
       border: 1px solid #ddd;
       background: white;
+
+      &.empty-value {
+        color: #ff0000;
+        background-color: #ffe6e6;
+        border: 2px solid #ff0000;
+        font-weight: 600;
+      }
     }
 
     tr:nth-child(even) {
       background: #f9f9f9;
+
+      td.empty-value {
+        background-color: #ffe6e6;
+      }
     }
   }
 }
@@ -246,6 +257,45 @@
 
   &:hover {
     color: var(--celeste);
+  }
+}
+
+// Leyenda de análisis solicitados
+.analisis-solicitados-leyenda {
+  background: #f0f8ff;
+  border: 2px solid var(--azul);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+
+  .leyenda-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--azul);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .leyenda-text {
+    font-size: 0.9rem;
+    color: #333;
+    margin: 0 0 0.75rem 0;
+    font-style: italic;
+  }
+
+  .leyenda-detalle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+
+    .analisis-item {
+      background: var(--verde);
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
   }
 }
 

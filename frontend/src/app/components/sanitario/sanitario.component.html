@@ -411,18 +411,19 @@
           </div>
         </div>
 
-        <!-- Checkboxes - visible al editar y ver -->
-        <div class="checkbox-container" *ngIf="isEditing || isViewing">
-          <h4 class="checkbox-title">{{ isViewing ? 'Opciones' : 'Opciones De Edición' }}</h4>
+        <!-- Checkboxes - visible solo para admin al editar -->
+        <div class="checkbox-container" *ngIf="isEditing && isAdmin">
+          <h4 class="checkbox-title">Opciones De Edición</h4>
           <div class="checkbox-grid">
             <div class="checkbox-item">
               <input 
                 type="checkbox" 
                 id="repetido-checkbox"
                 [(ngModel)]="repetido" 
+                (change)="onRepetidoChange()"
                 name="repetido"
                 class="custom-checkbox"
-                [disabled]="isReadonly"
+                [disabled]="isReadonly || repetidoDeshabilitado"
               />
               <label for="repetido-checkbox" class="checkbox-label">
                 <span class="checkmark"></span>
@@ -435,9 +436,10 @@
                 type="checkbox" 
                 id="estandar-checkbox"
                 [(ngModel)]="estandar" 
+                (change)="onEstandarChange()"
                 name="estandar"
                 class="custom-checkbox"
-                [disabled]="isReadonly"
+                [disabled]="isReadonly || estandarDeshabilitado"
               />
               <label for="estandar-checkbox" class="checkbox-label">
                 <span class="checkmark"></span>
@@ -453,6 +455,28 @@
           </p>
           <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
         </div>
+
+        <!-- Diálogo de confirmación para Estándar -->
+        <app-confirm-dialog
+          [visible]="mostrarConfirmEstandar"
+          title="Confirmar análisis estándar"
+          message="¿Estás seguro de que deseas marcar este análisis como estándar? Una vez marcado, no podrás cambiarlo."
+          confirmText="Confirmar"
+          cancelText="Cancelar"
+          (confirm)="confirmarEstandar()"
+          (cancel)="cancelarEstandar()">
+        </app-confirm-dialog>
+
+        <!-- Diálogo de confirmación para Repetido -->
+        <app-confirm-dialog
+          [visible]="mostrarConfirmRepetido"
+          title="Confirmar análisis repetido"
+          message="¿Estás seguro de que deseas marcar este análisis como repetido? Una vez marcado, no podrás cambiarlo."
+          confirmText="Confirmar"
+          cancelText="Cancelar"
+          (confirm)="confirmarRepetido()"
+          (cancel)="cancelarRepetido()">
+        </app-confirm-dialog>
 
         <div class="submit-btn">
             <button

@@ -28,6 +28,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { AuthService } from '../../../services/AuthService';
 
 export interface RepeticionTetrazolio {
   numero: number;
@@ -45,7 +47,8 @@ export interface RepeticionTetrazolio {
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-    MultiSelectModule
+    MultiSelectModule,
+    ConfirmDialogComponent
   ],
   templateUrl: './tetrazolio.component.html',
   styleUrl: './tetrazolio.component.scss'
@@ -100,10 +103,110 @@ export class TetrazolioComponent implements OnInit {
   isEditing: boolean = false;
   isViewing: boolean = false;
   editingId: number | null = null;
+  estandar: boolean = false;
   repetido: boolean = false;
   
   // Prevención de doble envío
   isSubmitting: boolean = false;
+
+  // Variables para el diálogo de confirmación
+  mostrarConfirmEstandar: boolean = false;
+  mostrarConfirmRepetido: boolean = false;
+  estandarPendiente: boolean = false;
+  repetidoPendiente: boolean = false;
+
+  // Variables para controlar si ya está marcado (no se puede cambiar)
+  estandarOriginal: boolean = false;
+  repetidoOriginal: boolean = false;
+
+  // Getters para deshabilitar checkboxes si ya están marcados
+  get estandarDeshabilitado(): boolean {
+    return this.estandarOriginal;
+  }
+
+  get repetidoDeshabilitado(): boolean {
+    return this.repetidoOriginal;
+  }
+
+  // Getter para verificar si el usuario es admin
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  // Métodos para hacer checkboxes mutuamente excluyentes con confirmación
+  onEstandarChange() {
+    // Si ya estaba marcado como estándar, no permitir cambiar
+    if (this.estandarOriginal) {
+      this.estandar = true; // Revertir
+      return;
+    }
+
+    // Si está intentando marcar como estándar y ya está marcado como repetido
+    if (this.estandar && this.repetido) {
+      this.repetido = false;
+      this.repetidoOriginal = false;
+    }
+
+    // Si está intentando marcar como estándar, mostrar confirmación
+    if (this.estandar && !this.mostrarConfirmEstandar) {
+      this.estandarPendiente = true;
+      this.mostrarConfirmEstandar = true;
+      // Revertir el cambio hasta que se confirme
+      this.estandar = false;
+    }
+  }
+
+  onRepetidoChange() {
+    // Si ya estaba marcado como repetido, no permitir cambiar
+    if (this.repetidoOriginal) {
+      this.repetido = true; // Revertir
+      return;
+    }
+
+    // Si está intentando marcar como repetido y ya está marcado como estándar
+    if (this.repetido && this.estandar) {
+      this.estandar = false;
+      this.estandarOriginal = false;
+    }
+
+    // Si está intentando marcar como repetido, mostrar confirmación
+    if (this.repetido && !this.mostrarConfirmRepetido) {
+      this.repetidoPendiente = true;
+      this.mostrarConfirmRepetido = true;
+      // Revertir el cambio hasta que se confirme
+      this.repetido = false;
+    }
+  }
+
+  confirmarEstandar() {
+    this.estandar = true;
+    this.repetido = false;
+    this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
+    this.repetidoOriginal = false;
+    this.mostrarConfirmEstandar = false;
+    this.estandarPendiente = false;
+  }
+
+  cancelarEstandar() {
+    this.estandar = false;
+    this.mostrarConfirmEstandar = false;
+    this.estandarPendiente = false;
+  }
+
+  confirmarRepetido() {
+    this.repetido = true;
+    this.estandar = false;
+    this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
+    this.estandarOriginal = false;
+    this.mostrarConfirmRepetido = false;
+    this.repetidoPendiente = false;
+  }
+
+  cancelarRepetido() {
+    this.repetido = false;
+    this.mostrarConfirmRepetido = false;
+    this.repetidoPendiente = false;
+  }
 
   // Getter para determinar si está en modo readonly
   get isReadonly(): boolean {
@@ -372,7 +475,8 @@ export class TetrazolioComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private tetrazolioService: TetrazolioService
+    private tetrazolioService: TetrazolioService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -427,6 +531,7 @@ export class TetrazolioComponent implements OnInit {
       porcentajeFinal: 85,
       daniosPorPorcentajes: 15,
       activo: true,
+      estandar: false,
       repetido: false,
       fechaCreacion: '2023-01-15',
       fechaRepeticion: null,
@@ -524,7 +629,11 @@ export class TetrazolioComponent implements OnInit {
           this.fecha = null;
         }
 
+        this.estandar = item.estandar || false;
         this.repetido = item.repetido || false;
+        // Guardar valores originales para deshabilitar checkboxes si ya están marcados
+        this.estandarOriginal = item.estandar || false;
+        this.repetidoOriginal = item.repetido || false;
 
         // Si hay datos de daños en el DTO, los cargamos en la primera tabla R1
         const d = this.detalles[0];
@@ -639,7 +748,10 @@ export class TetrazolioComponent implements OnInit {
   private cargarDatos() {
     console.log('Modo creación - limpiando campos');
     // Limpiar campos para creación
+    this.estandar = false;
     this.repetido = false;
+    this.estandarOriginal = false;
+    this.repetidoOriginal = false;
     this.cantidadSemillas = null;
     this.selectedPretratamiento = null;
     this.pretratamientoCustom = '';
@@ -695,7 +807,8 @@ export class TetrazolioComponent implements OnInit {
       duras: this.getTotalDuras(),
       total: (parseFloat(this.getTotalViables()) + parseFloat(this.getTotalNoViables()) + parseFloat(this.getTotalDuras())).toString(),
       promedio: this.getPromedioViables(false),
-      repetido: this.repetido,
+      estandar: this.estandar || false,
+      repetido: this.repetido || false,
       activo: true,
       reciboId: this.reciboId ? parseInt(this.reciboId) : null
     };
@@ -853,6 +966,7 @@ export class TetrazolioComponent implements OnInit {
       console.log('Validaciones pasadas correctamente');
       
       (tetrazolioData as any).fechaCreacion = new Date();
+      tetrazolioData.estandar = false;
       tetrazolioData.repetido = false;
       tetrazolioData.reciboId = this.reciboId ? parseInt(this.reciboId) : null;
       

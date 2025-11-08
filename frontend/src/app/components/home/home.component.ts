@@ -62,6 +62,10 @@ export class HomeComponent {
     this.router.navigate(['/listado-metodos']);
   }
 
+  goToListadoCertificados() {
+    this.router.navigate(['/listado-certificados']);
+  }
+
   goToCreateGraficaAnalisis() {
     this.router.navigate(['/grafica-analisis/crear']);
   }

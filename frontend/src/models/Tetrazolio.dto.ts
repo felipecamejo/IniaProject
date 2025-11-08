@@ -58,6 +58,7 @@ export interface TetrazolioDto {
   porcentajeFinal: number | null;
   daniosPorPorcentajes: number | null;
   activo: boolean;
+  estandar: boolean;
   repetido: boolean;
   fechaCreacion: string | null;
   fechaRepeticion: string | null;
