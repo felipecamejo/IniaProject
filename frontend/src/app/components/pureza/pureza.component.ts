@@ -1203,10 +1203,10 @@ export class PurezaComponent implements OnInit {
     }
 
     validarFecha(fecha: string | null): boolean {
-        if (!fecha) return false;
-        const selectedDate = new Date(fecha);
-        const today = new Date();
-        return selectedDate >= today;
+      if (!fecha) return false;
+      const selectedDate = new Date(fecha);
+      const today = new Date();
+      return selectedDate >= today;
     }
 
 }

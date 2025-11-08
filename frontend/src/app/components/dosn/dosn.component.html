@@ -6,17 +6,21 @@
 
     <!-- Se eliminó la sección de listado de DOSN, este componente solo carga y muestra un DOSN específico -->
 
-    <form>
+    <form (ngSubmit)="onSubmit()" (input)="manejarProblemas();" >
   <!-- INASE Section -->
   <div class="section-title inase-title">INASE</div>
   <div class="form-grid inase-section">
         <div class="form-field">
           <label for="fechaInase">Fecha</label>
-          <input id="fechaInase" type="date" [(ngModel)]="fechaInase" name="fechaInase" pInputText [readonly]="isReadonly" />
+          <input id="fechaInase" type="date" [(ngModel)]="fechaInase" name="fechaInase" pInputText [readonly]="isReadonly" 
+          [ngClass]="{ 'input-error': validarFecha(fechaInase) }"
+          />
         </div>
         <div class="form-field">
           <label for="gramosInase">Gramos analizados</label>
-          <input id="gramosInase" type="number" [(ngModel)]="gramosInase" name="gramosInase" pInputText [readonly]="isReadonly" />
+          <input id="gramosInase" type="number" [(ngModel)]="gramosInase" name="gramosInase" pInputText [readonly]="isReadonly" 
+          [ngClass]="{ 'input-error': !validarNumero(gramosInase) }"
+          />
         </div>
         <div class="form-field">
           <label for="tipoAnalisisInase">Tipo de análisis</label>
@@ -54,7 +58,8 @@
           <div class="selected-counts" *ngIf="selectedMalezasInase.length">
             <div class="count-row" *ngFor="let id of selectedMalezasInase">
               <span class="count-label">{{ getLabelById(malezasOptions, id) }}</span>
-              <input type="number" [(ngModel)]="malezasInaseCounts[id]" [name]="'malezaInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(malezasInaseCounts[id]) }" />
+              <input type="number" [(ngModel)]="malezasInaseCounts[id]" [name]="'malezaInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" 
+              [ngClass]="{ 'input-error': !validarNumero(malezasInaseCounts[id]) }" />
             </div>
           </div>
         </div>
@@ -84,7 +89,8 @@
           <div class="selected-counts" *ngIf="selectedCultivosInase.length">
             <div class="count-row" *ngFor="let id of selectedCultivosInase">
               <span class="count-label">{{ getLabelById(cultivosOptions, id) }}</span>
-              <input type="number" [(ngModel)]="cultivosInaseCounts[id]" [name]="'cultivoInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(cultivosInaseCounts[id]) }" />
+              <input type="number" [(ngModel)]="cultivosInaseCounts[id]" [name]="'cultivoInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" 
+              [ngClass]="{ 'input-error': !validarNumero(cultivosInaseCounts[id]) }" />
             </div>
           </div>
         </div>
@@ -114,7 +120,8 @@
           <div class="selected-counts" *ngIf="selectedMalezasToleradasInase.length">
             <div class="count-row" *ngFor="let id of selectedMalezasToleradasInase">
               <span class="count-label">{{ getLabelById(malezasToleradasOptions, id) }}</span>
-              <input type="number" [(ngModel)]="malezasToleradasInaseCounts[id]" [name]="'malezaTolInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(malezasToleradasInaseCounts[id]) }" />
+              <input type="number" [(ngModel)]="malezasToleradasInaseCounts[id]" [name]="'malezaTolInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" 
+              [ngClass]="{ 'input-error': !validarNumero(malezasToleradasInaseCounts[id]) }" />
             </div>
           </div>
         </div>
@@ -144,7 +151,8 @@
           <div class="selected-counts" *ngIf="selectedMalezasCeroInase.length">
             <div class="count-row" *ngFor="let id of selectedMalezasCeroInase">
               <span class="count-label">{{ getLabelById(malezasCeroOptions, id) }}</span>
-              <input type="number" [(ngModel)]="malezasCeroInaseCounts[id]" [name]="'malezaCeroInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(malezasCeroInaseCounts[id]) }" />
+              <input type="number" [(ngModel)]="malezasCeroInaseCounts[id]" [name]="'malezaCeroInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" 
+              [ngClass]="{ 'input-error': !validarNumero(malezasCeroInaseCounts[id]) }" />
             </div>
           </div>
         </div>
@@ -155,11 +163,15 @@
   <div class="form-grid inia-section">
         <div class="form-field">
           <label for="fechaInia">Fecha</label>
-          <input id="fechaInia" type="date" [(ngModel)]="fechaInia" name="fechaInia" pInputText [readonly]="isReadonly" />
+          <input id="fechaInia" type="date" [(ngModel)]="fechaInia" name="fechaInia" pInputText [readonly]="isReadonly" 
+          [ngClass]="{ 'input-error': validarFecha(fechaInia) }"
+          />
         </div>
         <div class="form-field">
           <label for="gramosInia">Gramos analizados</label>
-          <input id="gramosInia" type="number" [(ngModel)]="gramosInia" name="gramosInia" pInputText [readonly]="isReadonly" />
+          <input id="gramosInia" type="number" [(ngModel)]="gramosInia" name="gramosInia" pInputText [readonly]="isReadonly" 
+          [ngClass]="{ 'input-error': !validarNumero(gramosInia) }"
+          />
         </div>
         <div class="form-field">
           <label for="tipoAnalisisInia">Tipo de análisis</label>
@@ -197,7 +209,7 @@
           <div class="selected-counts" *ngIf="selectedMalezasInia.length">
             <div class="count-row" *ngFor="let id of selectedMalezasInia">
               <span class="count-label">{{ getLabelById(malezasOptions, id) }}</span>
-              <input type="number" [(ngModel)]="malezasIniaCounts[id]" [name]="'malezaIniaCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(malezasIniaCounts[id]) }" />
+              <input type="number" [(ngModel)]="malezasIniaCounts[id]" [name]="'malezaIniaCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error':!validarNumero(malezasIniaCounts[id]) }" />
             </div>
           </div>
         </div>
@@ -227,7 +239,7 @@
           <div class="selected-counts" *ngIf="selectedCultivosInia.length">
             <div class="count-row" *ngFor="let id of selectedCultivosInia">
               <span class="count-label">{{ getLabelById(cultivosOptions, id) }}</span>
-              <input type="number" [(ngModel)]="cultivosIniaCounts[id]" [name]="'cultivoIniaCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(cultivosIniaCounts[id]) }" />
+              <input type="number" [(ngModel)]="cultivosIniaCounts[id]" [name]="'cultivoIniaCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error':!validarNumero(cultivosIniaCounts[id]) }" />
             </div>
           </div>
         </div>
@@ -257,7 +269,7 @@
           <div class="selected-counts" *ngIf="selectedMalezasToleradasInia.length">
             <div class="count-row" *ngFor="let id of selectedMalezasToleradasInia">
               <span class="count-label">{{ getLabelById(malezasToleradasOptions, id) }}</span>
-              <input type="number" [(ngModel)]="malezasToleradasIniaCounts[id]" [name]="'malezaTolIniaCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(malezasToleradasIniaCounts[id]) }" />
+              <input type="number" [(ngModel)]="malezasToleradasIniaCounts[id]" [name]="'malezaTolIniaCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error':!validarNumero(malezasToleradasIniaCounts[id]) }" />
             </div>
           </div>
         </div>
@@ -287,7 +299,7 @@
           <div class="selected-counts" *ngIf="selectedMalezasCeroInia.length">
             <div class="count-row" *ngFor="let id of selectedMalezasCeroInia">
               <span class="count-label">{{ getLabelById(malezasCeroOptions, id) }}</span>
-              <input type="number" [(ngModel)]="malezasCeroIniaCounts[id]" [name]="'malezaCeroIniaCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarNumeroNegativo(malezasCeroIniaCounts[id]) }" />
+              <input type="number" [(ngModel)]="malezasCeroIniaCounts[id]" [name]="'malezaCeroIniaCount_'+id" min="0" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error':!validarNumero(malezasCeroIniaCounts[id]) }" />
             </div>
           </div>
         </div>
@@ -320,14 +332,23 @@
           </tbody>
         </table>
       </div>
+
+      <div *ngIf="errores.length > 0" class="error-container">
+        <p class="error-message">
+          {{ errores.length === 1 ? '1 error encontrado' : errores.length + ' errores encontrados' }}
+        </p>
+        <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
+      </div>
+
+
       <div class="submit-btn" style="display: flex; gap: 1rem;">
         <button
           *ngIf="!isViewing"
           pButton
-          type="button"
+          type="submit"
           [label]="isEditing ? 'Editar DOSN' : 'Crear DOSN'"
           class="p-button-success"
-          (click)="onSubmit()"
+          [disabled]="errores.length > 0"
         ></button>
         <button
           pButton

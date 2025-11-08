@@ -105,6 +105,9 @@ import { MalezaService } from '../../../services/MalezaService';
   malezasCeroInaseCounts: Record<number, number> = {};
   cultivosInaseCounts: Record<number, number> = {};
 
+  // Agregar propiedades para manejar errores
+  errores: string[] = [];
+
       // INIA
       fechaInia: string = '';
       gramosInia: number = 0;
@@ -255,6 +258,12 @@ import { MalezaService } from '../../../services/MalezaService';
       }
 
       onSubmit() {
+        // Verificar si hay errores antes de continuar
+        if (this.manejarProblemas()) {
+          console.error('Errores detectados:', this.errores);
+          return;
+        }
+
             const payload = this.buildPayloadFromView();
             this.loading = true;
             const obs = this.isEditing
@@ -445,10 +454,6 @@ import { MalezaService } from '../../../services/MalezaService';
     return item ? item.label : '';
   }
 
-  validarNumeroNegativo(n: any): boolean {
-    return n != null && Number(n) < 0;
-  }
-
   // Helpers de mapeo
   private mapDtoToView(d: DOSNDto): void {
     // INASE
@@ -628,5 +633,126 @@ import { MalezaService } from '../../../services/MalezaService';
       fechaCreacion: this.dosn?.fechaCreacion ?? null,
       fechaRepeticion: this.dosn?.fechaRepeticion ?? null
     };
+  }
+
+  manejarProblemas(): boolean {
+      this.errores = []; // Reiniciar errores
+
+      if (this.validarFecha(this.fechaInase)) {
+        this.errores.push('La fecha de análisis INASE no puede ser futura.');
+      }
+    
+      if (this.validarFecha(this.fechaInia)) {
+        this.errores.push('La fecha de análisis INIA no puede ser futura.');
+      }
+
+      if (!this.validarNumero(this.gramosInase)) {
+        this.errores.push('Los gramos analizados INASE no pueden ser negativos.');
+      }
+
+      if (!this.validarNumero(this.gramosInia)) {
+        this.errores.push('Los gramos analizados INIA no pueden ser negativos.');
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INASE
+      if (this.selectedMalezasInase && this.selectedMalezasInase.length > 0) {
+        this.selectedMalezasInase.forEach(id => {
+          const cantidad = this.malezasInaseCounts ? this.malezasInaseCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza "${label || id}" seleccionada en INASE no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INASE
+      if (this.selectedCultivosInase && this.selectedCultivosInase.length > 0) {
+        this.selectedCultivosInase.forEach(id => {
+          const cantidad = this.cultivosInaseCounts ? this.cultivosInaseCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.cultivosOptions, id);
+            this.errores.push(`La cantidad para el cultivo "${label || id}" seleccionado en INASE no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INASE
+      if (this.selectedMalezasToleradasInase && this.selectedMalezasToleradasInase.length > 0) {
+        this.selectedMalezasToleradasInase.forEach(id => {
+          const cantidad = this.malezasToleradasInaseCounts ? this.malezasToleradasInaseCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza "${label || id}" seleccionada en INASE no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INASE
+      if (this.selectedMalezasCeroInase && this.selectedMalezasCeroInase.length > 0) {
+        this.selectedMalezasCeroInase.forEach(id => {
+          const cantidad = this.malezasCeroInaseCounts ? this.malezasCeroInaseCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza cero "${label || id}" seleccionada en INASE no puede ser negativa.`);
+          }
+        });
+      }
+
+       // Validar cantidades por cada maleza seleccionada en INIA
+      if (this.selectedMalezasInia && this.selectedMalezasInia.length > 0) {
+        this.selectedMalezasInia.forEach(id => {
+          const cantidad = this.malezasIniaCounts ? this.malezasIniaCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza "${label || id}" seleccionada en INIA no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INIA
+      if (this.selectedCultivosInia && this.selectedCultivosInia.length > 0) {
+        this.selectedCultivosInia.forEach(id => {
+          const cantidad = this.cultivosIniaCounts ? this.cultivosIniaCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.cultivosOptions, id);
+            this.errores.push(`La cantidad para el cultivo "${label || id}" seleccionado en INIA no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INIA
+      if (this.selectedMalezasToleradasInia && this.selectedMalezasToleradasInia.length > 0) {
+        this.selectedMalezasToleradasInia.forEach(id => {
+          const cantidad = this.malezasToleradasIniaCounts ? this.malezasToleradasIniaCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza "${label || id}" seleccionada en INIA no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INIA
+      if (this.selectedMalezasCeroInia && this.selectedMalezasCeroInia.length > 0) {
+        this.selectedMalezasCeroInia.forEach(id => {
+          const cantidad = this.malezasCeroIniaCounts ? this.malezasCeroIniaCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza cero "${label || id}" seleccionada en INIA no puede ser negativa.`);
+          }
+        });
+      }
+
+      return this.errores.length > 0;
+  }
+
+  validarNumero(numero: number): boolean {
+    return numero != null && Number(numero) >= 0;
+  }
+
+  validarFecha(fecha: string): boolean {
+    if (!fecha) return false;
+    const selectedDate = new Date(fecha);
+    const today = new Date();
+    return selectedDate >= today;
   }
 }

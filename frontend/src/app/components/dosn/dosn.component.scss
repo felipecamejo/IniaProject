@@ -36,7 +36,7 @@
 }
 // Diferenciación visual para INIA e INASE
 .inia-section {
-  background: #e6f0ff;
+  background: #f0f7fa;
   border: 2px solid var(--azul, #2563eb);
   border-radius: 12px;
   padding: 1.5rem 1rem;
@@ -44,7 +44,7 @@
 }
 .inase-section {
   background: #f0f7fa;
-  border: 2px solid var(--celeste, #00bcd4);
+  border: 2px solid var(--azul, #00bcd4);
   border-radius: 12px;
   padding: 1.5rem 1rem;
   margin-bottom: 2rem;
@@ -56,7 +56,7 @@
   margin-bottom: 0.5rem;
 }
 .inase-title {
-  color: var(--celeste, #00bcd4);
+  color: var(--azul, #2563eb);
   font-weight: 700;
   font-size: 1.3rem;
   margin-bottom: 0.5rem;

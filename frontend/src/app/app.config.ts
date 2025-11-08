@@ -13,10 +13,11 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideAnimationsAsync(),     provideServiceWorker('ngsw-worker.js', {
-            enabled: true, // Habilitado para desarrollo y producción
-            registrationStrategy: 'registerWhenStable:30000'
-          })
+    provideAnimationsAsync(),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(), // Solo habilitado en producción
+      registrationStrategy: 'registerWhenStable:30000'
+    })
   ]
 };
 
