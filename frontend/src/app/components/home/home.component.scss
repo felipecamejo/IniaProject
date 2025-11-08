@@ -17,6 +17,8 @@
 .section {
   margin: 2rem 0;
   text-align: center;
+  width: 100%;
+  padding: 0 1rem;
 
   .section-title {
     font-size: 1.5rem;
@@ -104,6 +106,10 @@
   flex-wrap: wrap;
   gap: 1rem;
   justify-content: center;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-bottom: 2rem;
+  
   .btn-secondary {
     background: #ffffff;
     color: #222222;

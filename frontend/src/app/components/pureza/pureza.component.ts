@@ -14,6 +14,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
+import { LogService } from '../../../services/LogService';
+
 
 @Component({
   selector: 'app-pureza.component',
@@ -689,7 +691,8 @@ export class PurezaComponent implements OnInit {
     private router: Router,
     private purezaService: PurezaService,
     private malezaService: MalezaService,
-    private cultivoService: CultivoService
+    private cultivoService: CultivoService,
+    private logService: LogService
   ) {}
 
   // Getter para determinar si está en modo readonly
@@ -1033,6 +1036,16 @@ export class PurezaComponent implements OnInit {
         next: (response: any) => {
           console.log('Pureza actualizada exitosamente:', response);
           this.isSubmitting = false;
+
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          const username = user?.nombre || 'Desconocido';
+          const rol = this.obtenerRolMasAlto(user?.roles);
+
+          if (response != null) {
+            const mensaje = `Pureza con ID #${response} fue editada por ${username} con rol ${rol}`;
+            this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
+          }
+
           this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);
         },
         error: (error: any) => {
@@ -1053,8 +1066,17 @@ export class PurezaComponent implements OnInit {
       
       this.purezaService.crear(purezaData).subscribe({
         next: (response: any) => {
-          console.log('Pureza creada exitosamente:', response);
           this.isSubmitting = false;
+
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          const username = user?.nombre || 'Desconocido';
+          const rol = this.obtenerRolMasAlto(user?.roles);
+
+          if (response != null) {
+            const mensaje = `Pureza con ID #${response} fue creada por ${username} con rol ${rol}`;
+            this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
+          }
+
           this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);
         },
         error: (error: any) => {
@@ -1064,6 +1086,22 @@ export class PurezaComponent implements OnInit {
       });
     }
   }
+
+  obtenerRolMasAlto(roles: string[] | string | undefined): string {
+    // Si no hay roles, retornar 'Desconocido'
+    if (!roles) return 'Desconocido';
+          
+    // Si es un string, convertir a array
+    const rolesArray = Array.isArray(roles) ? roles : [roles];
+          
+    // Definir jerarquía de roles (de mayor a menor)
+    if (rolesArray.includes('ADMIN')) return 'Administrador';
+    if (rolesArray.includes('ANALISTA')) return 'Analista';
+    if (rolesArray.includes('OBSERVADOR')) return 'Observador';
+          
+    return 'Desconocido';
+  }
+
 
   private buildPurezaDto(): PurezaDto {
     return {
@@ -1203,10 +1241,10 @@ export class PurezaComponent implements OnInit {
     }
 
     validarFecha(fecha: string | null): boolean {
-        if (!fecha) return false;
-        const selectedDate = new Date(fecha);
-        const today = new Date();
-        return selectedDate >= today;
+      if (!fecha) return false;
+      const selectedDate = new Date(fecha);
+      const today = new Date();
+      return selectedDate >= today;
     }
 
 }

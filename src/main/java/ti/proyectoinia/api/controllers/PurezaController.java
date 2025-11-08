@@ -27,9 +27,9 @@ public class PurezaController {
     @Operation(
             description = "Esta Funcion crea un nuevo registro de Pureza"
     )
-    public ResponseEntity<String> crearPureza(@RequestBody PurezaDto dto) {
+    public ResponseEntity<Long> crearPureza(@RequestBody PurezaDto dto) {
         dto.setId((Long) null);
-        String response = this.purezaService.crearPureza(dto);
+        Long response = this.purezaService.crearPureza(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -46,8 +46,8 @@ public class PurezaController {
 
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
-    public ResponseEntity<String> editarPureza(@RequestBody PurezaDto dto) {
-        String result = this.purezaService.editarPureza(dto);
+    public ResponseEntity<Long> editarPureza(@RequestBody PurezaDto dto) {
+        Long result = this.purezaService.editarPureza(dto);
         return ResponseEntity.ok(result);
     }
 

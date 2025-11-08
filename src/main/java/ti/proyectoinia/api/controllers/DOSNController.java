@@ -28,9 +28,9 @@ public class DOSNController {
     @Operation(
             description = "Esta Funcion crea una nueva DOSN"
     )
-    public ResponseEntity<String> crearDOSN(@RequestBody DOSNDto dosnDto) {
+    public ResponseEntity<Long> crearDOSN(@RequestBody DOSNDto dosnDto) {
         dosnDto.setId((Long)null);
-        String response = this.DOSNService.crearDOSN(dosnDto);
+        Long response = this.DOSNService.crearDOSN(dosnDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

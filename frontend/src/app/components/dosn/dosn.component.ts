@@ -12,6 +12,8 @@ import { MultiSelectModule } from 'primeng/multiselect';
 // import { TabsModule } from 'primeng/tabs';
 import { CultivoService } from '../../../services/CultivoService';
 import { MalezaService } from '../../../services/MalezaService';
+import { LogService } from '../../../services/LogService';
+
 
 @Component({
   selector: 'app-dosn.component',
@@ -36,7 +38,7 @@ import { MalezaService } from '../../../services/MalezaService';
       reciboId: number | null = null;
 
       // Todas las propiedades y métodos deben estar dentro de la clase
-  constructor(private dosnService: DOSNService, private cultivoService: CultivoService, private malezaService: MalezaService, private route: ActivatedRoute, private router: Router) {}
+      constructor(private dosnService: DOSNService, private cultivoService: CultivoService, private malezaService: MalezaService, private route: ActivatedRoute, private router: Router, private logService: LogService) {}
 
       brassicaCuscuta = [
         { label: 'Brassica spp.', contiene: false, gramos: 0 },
@@ -104,6 +106,9 @@ import { MalezaService } from '../../../services/MalezaService';
   malezasToleradasInaseCounts: Record<number, number> = {};
   malezasCeroInaseCounts: Record<number, number> = {};
   cultivosInaseCounts: Record<number, number> = {};
+
+  // Agregar propiedades para manejar errores
+  errores: string[] = [];
 
       // INIA
       fechaInia: string = '';
@@ -255,38 +260,71 @@ import { MalezaService } from '../../../services/MalezaService';
       }
 
       onSubmit() {
+        // Verificar si hay errores antes de continuar
+        if (this.manejarProblemas()) {
+          console.error('Errores detectados:', this.errores);
+          return;
+        }
+
             const payload = this.buildPayloadFromView();
             this.loading = true;
-            const obs = this.isEditing
-              ? this.dosnService.editar(payload)
-              : this.dosnService.crear(payload);
 
-            obs.subscribe({
-              next: (resp) => {
-                this.loading = false;
-                try {
-                  const texto = typeof resp === 'string' ? resp : '';
-                  const idMatch = texto.match(/ID\s*:?\s*(\d+)/i);
-                  const id = idMatch ? Number(idMatch[1]) : this.editingId ?? null;
-                  const accion = this.isEditing ? 'actualizada' : 'creada';
+            if (this.isEditing) {
+              // Modo edición: editar devuelve Observable<string>
+              this.dosnService.editar(payload).subscribe({
+                next: (resp: string) => {
+                  this.loading = false;
+                  const id = this.editingId ?? null;
+                  
+                  const user = JSON.parse(localStorage.getItem('user') || '{}');
+                  const username = user?.nombre || 'Desconocido';
+                  const rol = this.obtenerRolMasAlto(user?.roles);
+
                   if (id != null) {
-                    console.log(`DOSN ${accion} correctamente. ID: ${id}`);
-                  } else {
-                    console.log(`DOSN ${accion} correctamente.`);
+                    const mensaje = `DOSN con ID #${id} fue editado por ${username} con rol ${rol}`;
+                    this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
                   }
-                } catch (e) {
-                  console.log(`DOSN ${this.isEditing ? 'actualizada' : 'creada'} correctamente.`);
+
+                  console.log(`DOSN actualizada correctamente con ID: ${id}`);
+                  
+                  if (this.loteId != null && this.reciboId != null) {
+                    this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
+                  }
+                },
+                error: (e: any) => {
+                  const detalle = e?.error || e?.message || e;
+                  console.error('Error al editar DOSN:', detalle);
+                  this.loading = false;
                 }
-                if (this.loteId != null && this.reciboId != null) {
-                  this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
+              });
+            } else {
+              // Modo creación: crear devuelve Observable<number>
+              this.dosnService.crear(payload).subscribe({
+                next: (id: number) => {
+                  this.loading = false;
+                  
+                  const user = JSON.parse(localStorage.getItem('user') || '{}');
+                  const username = user?.nombre || 'Desconocido';
+                  const rol = this.obtenerRolMasAlto(user?.roles);
+
+                  if (id != null) {
+                    const mensaje = `DOSN con ID #${id} fue creado por ${username} con rol ${rol}`;
+                    this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
+                  }
+
+                  console.log(`DOSN creada correctamente con ID: ${id}`);
+                  
+                  if (this.loteId != null && this.reciboId != null) {
+                    this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
+                  }
+                },
+                error: (e: any) => {
+                  const detalle = e?.error || e?.message || e;
+                  console.error('Error al crear DOSN:', detalle);
+                  this.loading = false;
                 }
-              },
-              error: (e) => {
-                const detalle = e?.error || e?.message || e;
-                console.error(`Error al ${this.isEditing ? 'editar' : 'crear'} DOSN:`, detalle);
-                this.loading = false;
-              }
-            });
+              });
+            }
       }
 
       onCancel() {
@@ -296,6 +334,20 @@ import { MalezaService } from '../../../services/MalezaService';
         }
       }
 
+      obtenerRolMasAlto(roles: string[] | string | undefined): string {
+        // Si no hay roles, retornar 'Desconocido'
+        if (!roles) return 'Desconocido';
+        
+        // Si es un string, convertir a array
+        const rolesArray = Array.isArray(roles) ? roles : [roles];
+        
+        // Definir jerarquía de roles (de mayor a menor)
+        if (rolesArray.includes('ADMIN')) return 'Administrador';
+        if (rolesArray.includes('ANALISTA')) return 'Analista';
+        if (rolesArray.includes('OBSERVADOR')) return 'Observador';
+        
+        return 'Desconocido';
+      }
 
   selectedMalezasToleradas: number[] = [];
   isMalezasToleradasDropdownOpen: boolean = false;
@@ -443,10 +495,6 @@ import { MalezaService } from '../../../services/MalezaService';
   getLabelById(options: {id:number,label:string}[], id: number): string {
     const item = options.find(o => o.id === id);
     return item ? item.label : '';
-  }
-
-  validarNumeroNegativo(n: any): boolean {
-    return n != null && Number(n) < 0;
   }
 
   // Helpers de mapeo
@@ -628,5 +676,126 @@ import { MalezaService } from '../../../services/MalezaService';
       fechaCreacion: this.dosn?.fechaCreacion ?? null,
       fechaRepeticion: this.dosn?.fechaRepeticion ?? null
     };
+  }
+
+  manejarProblemas(): boolean {
+      this.errores = []; // Reiniciar errores
+
+      if (this.validarFecha(this.fechaInase)) {
+        this.errores.push('La fecha de análisis INASE no puede ser futura.');
+      }
+    
+      if (this.validarFecha(this.fechaInia)) {
+        this.errores.push('La fecha de análisis INIA no puede ser futura.');
+      }
+
+      if (!this.validarNumero(this.gramosInase)) {
+        this.errores.push('Los gramos analizados INASE no pueden ser negativos.');
+      }
+
+      if (!this.validarNumero(this.gramosInia)) {
+        this.errores.push('Los gramos analizados INIA no pueden ser negativos.');
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INASE
+      if (this.selectedMalezasInase && this.selectedMalezasInase.length > 0) {
+        this.selectedMalezasInase.forEach(id => {
+          const cantidad = this.malezasInaseCounts ? this.malezasInaseCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza "${label || id}" seleccionada en INASE no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INASE
+      if (this.selectedCultivosInase && this.selectedCultivosInase.length > 0) {
+        this.selectedCultivosInase.forEach(id => {
+          const cantidad = this.cultivosInaseCounts ? this.cultivosInaseCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.cultivosOptions, id);
+            this.errores.push(`La cantidad para el cultivo "${label || id}" seleccionado en INASE no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INASE
+      if (this.selectedMalezasToleradasInase && this.selectedMalezasToleradasInase.length > 0) {
+        this.selectedMalezasToleradasInase.forEach(id => {
+          const cantidad = this.malezasToleradasInaseCounts ? this.malezasToleradasInaseCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza "${label || id}" seleccionada en INASE no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INASE
+      if (this.selectedMalezasCeroInase && this.selectedMalezasCeroInase.length > 0) {
+        this.selectedMalezasCeroInase.forEach(id => {
+          const cantidad = this.malezasCeroInaseCounts ? this.malezasCeroInaseCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza cero "${label || id}" seleccionada en INASE no puede ser negativa.`);
+          }
+        });
+      }
+
+       // Validar cantidades por cada maleza seleccionada en INIA
+      if (this.selectedMalezasInia && this.selectedMalezasInia.length > 0) {
+        this.selectedMalezasInia.forEach(id => {
+          const cantidad = this.malezasIniaCounts ? this.malezasIniaCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza "${label || id}" seleccionada en INIA no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INIA
+      if (this.selectedCultivosInia && this.selectedCultivosInia.length > 0) {
+        this.selectedCultivosInia.forEach(id => {
+          const cantidad = this.cultivosIniaCounts ? this.cultivosIniaCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.cultivosOptions, id);
+            this.errores.push(`La cantidad para el cultivo "${label || id}" seleccionado en INIA no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INIA
+      if (this.selectedMalezasToleradasInia && this.selectedMalezasToleradasInia.length > 0) {
+        this.selectedMalezasToleradasInia.forEach(id => {
+          const cantidad = this.malezasToleradasIniaCounts ? this.malezasToleradasIniaCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza "${label || id}" seleccionada en INIA no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INIA
+      if (this.selectedMalezasCeroInia && this.selectedMalezasCeroInia.length > 0) {
+        this.selectedMalezasCeroInia.forEach(id => {
+          const cantidad = this.malezasCeroIniaCounts ? this.malezasCeroIniaCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza cero "${label || id}" seleccionada en INIA no puede ser negativa.`);
+          }
+        });
+      }
+
+      return this.errores.length > 0;
+  }
+
+  validarNumero(numero: number): boolean {
+    return numero != null && Number(numero) >= 0;
+  }
+
+  validarFecha(fecha: string): boolean {
+    if (!fecha) return false;
+    const selectedDate = new Date(fecha);
+    const today = new Date();
+    return selectedDate >= today;
   }
 }
