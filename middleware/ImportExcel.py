@@ -136,6 +136,8 @@ Base = None
 _engine = None
 _models_initialized = False
 MODELS = {}
+# Caché de tablas para evitar acceder al mapper repetidamente
+_TABLES_CACHE = {}
 
 def inicializar_automap(engine=None):
     """Inicializa automap_base y genera modelos automáticamente desde la BD."""
@@ -153,11 +155,25 @@ def inicializar_automap(engine=None):
     Base = automap_base()
     
     try:
-        Base.prepare(autoload_with=_engine)
+        # Deshabilitar generación automática de relaciones para evitar conflictos de backref
+        # Solo necesitamos las columnas para la importación, no las relaciones
+        Base.prepare(
+            autoload_with=_engine,
+            reflect=True,
+            generate_relationship=None  # No generar relaciones automáticamente
+        )
         logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
     except Exception as e:
         logger.error(f"Error inicializando automap: {e}")
-        raise
+        # Si falla, intentar sin reflect=True como fallback
+        try:
+            logger.warning("Intentando inicializar automap sin reflect=True...")
+            Base = automap_base()
+            Base.prepare(autoload_with=_engine, generate_relationship=None)
+            logger.info(f"Modelos generados automáticamente (fallback): {len(Base.classes)} tablas")
+        except Exception as e2:
+            logger.error(f"Error en fallback de automap: {e2}")
+            raise
     
     MODELS.clear()
     for class_name in dir(Base.classes):
@@ -478,6 +494,127 @@ def asegurar_autoincrementos(engine):
 # ================================
 # MÓDULO: IMPORTACIÓN DE ARCHIVOS
 # ================================
+def convertir_valor_segun_tipo(valor: Any, tipo_columna) -> Any:
+    """
+    Convierte un valor según el tipo de columna de la base de datos.
+    
+    Args:
+        valor: Valor a convertir
+        tipo_columna: Tipo de columna de SQLAlchemy
+    
+    Returns:
+        Valor convertido al tipo correcto
+    """
+    if valor is None:
+        return None
+    
+    # Obtener el tipo Python del tipo SQLAlchemy
+    tipo_python = tipo_columna.python_type if hasattr(tipo_columna, 'python_type') else type(valor)
+    
+    # Verificar también el nombre del tipo SQLAlchemy para detectar booleanos
+    tipo_nombre = None
+    if hasattr(tipo_columna, '__class__'):
+        tipo_nombre = tipo_columna.__class__.__name__.lower()
+    elif hasattr(tipo_columna, 'name'):
+        tipo_nombre = str(tipo_columna.name).lower()
+    
+    # Verificar si es un tipo Boolean de SQLAlchemy
+    es_booleano_sqlalchemy = False
+    try:
+        from sqlalchemy import Boolean
+        if isinstance(tipo_columna, Boolean):
+            es_booleano_sqlalchemy = True
+    except:
+        pass
+    
+    # Si ya es del tipo correcto, retornarlo
+    if isinstance(valor, tipo_python):
+        return valor
+    
+    # Convertir según el tipo
+    try:
+        # Booleanos: convertir strings 'true', 'false', '1', '0', etc.
+        # Verificar tanto el tipo Python como el nombre del tipo SQLAlchemy
+        es_booleano = (tipo_python == bool or 
+                      es_booleano_sqlalchemy or
+                      (tipo_nombre and 'bool' in tipo_nombre) or
+                      (hasattr(tipo_columna, 'python_type') and tipo_columna.python_type == bool))
+        
+        if es_booleano:
+            if isinstance(valor, bool):
+                return valor
+            if isinstance(valor, str):
+                valor_str = valor.lower().strip()
+                if valor_str in ('true', '1', 'yes', 'si', 'sí', 't', 'y', 'verdadero', 'v'):
+                    return True
+                elif valor_str in ('false', '0', 'no', 'n', 'f', 'falso'):
+                    return False
+                else:
+                    # Si no se puede convertir, retornar False por defecto
+                    logger.warning(f"No se pudo convertir '{valor}' a booleano, usando False")
+                    return False
+            if isinstance(valor, (int, float)):
+                return bool(valor)
+            # Si es None o vacío, retornar False por defecto para booleanos
+            return False
+        
+        # Enteros
+        elif tipo_python == int:
+            if isinstance(valor, str):
+                # Intentar convertir string a int
+                try:
+                    # Remover espacios y caracteres no numéricos
+                    valor_limpio = valor.strip()
+                    if valor_limpio:
+                        return int(float(valor_limpio))  # Usar float primero para manejar "1.0"
+                except (ValueError, TypeError):
+                    logger.warning(f"No se pudo convertir '{valor}' a entero")
+                    return None
+            return int(valor)
+        
+        # Flotantes
+        elif tipo_python == float:
+            if isinstance(valor, str):
+                try:
+                    valor_limpio = valor.strip()
+                    if valor_limpio:
+                        return float(valor_limpio)
+                except (ValueError, TypeError):
+                    logger.warning(f"No se pudo convertir '{valor}' a flotante")
+                    return None
+            return float(valor)
+        
+        # Strings: asegurar que sea string
+        elif tipo_python == str:
+            return str(valor)
+        
+        # Fechas y timestamps
+        elif hasattr(tipo_python, '__name__') and 'date' in tipo_python.__name__.lower():
+            if isinstance(valor, str):
+                # Intentar parsear fecha
+                try:
+                    from datetime import datetime
+                    # Intentar varios formatos comunes
+                    formatos = ['%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y', '%Y-%m-%d %H:%M:%S']
+                    for fmt in formatos:
+                        try:
+                            return datetime.strptime(valor.strip(), fmt)
+                        except ValueError:
+                            continue
+                    logger.warning(f"No se pudo parsear fecha '{valor}'")
+                    return None
+                except Exception as e:
+                    logger.warning(f"Error parseando fecha '{valor}': {e}")
+                    return None
+            return valor
+        
+        # Por defecto, retornar el valor tal cual
+        return valor
+        
+    except Exception as e:
+        logger.warning(f"Error convirtiendo valor '{valor}' a tipo {tipo_python}: {e}")
+        return valor
+
 def import_one_file(session, model, ruta_archivo: str, formato: str, upsert: bool = False, keep_ids: bool = False) -> Tuple[int, int]:
     """
     Importa un archivo Excel/CSV a una tabla.
@@ -510,45 +647,147 @@ def import_one_file(session, model, ruta_archivo: str, formato: str, upsert: boo
         # Normalizar headers
         headers = normalize_header_names(headers)
         
-        # Obtener columnas del modelo
+        # Obtener columnas del modelo con sus tipos
         columnas_modelo = {c.name.lower(): c for c in model.__table__.columns}
         
-        # Mapear headers a columnas del modelo
+        # Mapear headers a columnas del modelo (incluyendo el tipo)
         mapeo_columnas = {}
+        tipos_columnas = {}  # Almacenar tipos de columnas
         for header in headers:
             if header.lower() in columnas_modelo:
-                mapeo_columnas[header] = columnas_modelo[header.lower()].name
+                columna_modelo = columnas_modelo[header.lower()]
+                nombre_columna = columna_modelo.name
+                mapeo_columnas[header] = nombre_columna
+                tipos_columnas[nombre_columna] = columna_modelo.type  # Guardar el tipo
+                # Log de depuración para columnas booleanas
+                tipo_col = columna_modelo.type
+                es_booleano = False
+                if hasattr(tipo_col, 'python_type') and tipo_col.python_type == bool:
+                    es_booleano = True
+                    logger.debug(f"Columna booleana detectada: '{nombre_columna}' (tipo: {tipo_col})")
+                elif hasattr(tipo_col, '__class__'):
+                    tipo_nombre = tipo_col.__class__.__name__.lower()
+                    if 'bool' in tipo_nombre:
+                        es_booleano = True
+                        logger.debug(f"Columna booleana detectada por nombre: '{nombre_columna}' (tipo: {tipo_nombre})")
+                # Verificar también el tipo de datos de PostgreSQL
+                if hasattr(tipo_col, 'type_affinity'):
+                    try:
+                        from sqlalchemy import Boolean
+                        if isinstance(tipo_col, Boolean):
+                            es_booleano = True
+                            logger.debug(f"Columna booleana detectada por tipo SQLAlchemy: '{nombre_columna}'")
+                    except:
+                        pass
         
         if not mapeo_columnas:
             logger.error("No se encontraron columnas coincidentes")
             return 0, 0
         
-        # Procesar filas
+        # Procesar filas y preparar datos para bulk insert
+        filas_datos = []
         for fila in rows:
             try:
                 datos = {}
                 for i, valor in enumerate(fila):
                     if i < len(headers) and headers[i] in mapeo_columnas:
                         columna = mapeo_columnas[headers[i]]
-                        datos[columna] = valor
+                        # Convertir valor según el tipo de columna
+                        tipo_columna = tipos_columnas.get(columna)
+                        if tipo_columna:
+                            try:
+                                valor_convertido = convertir_valor_segun_tipo(valor, tipo_columna)
+                                # Log de depuración para booleanos
+                                if hasattr(tipo_columna, 'python_type') and tipo_columna.python_type == bool:
+                                    logger.debug(f"Columna '{columna}': '{valor}' ({type(valor).__name__}) -> {valor_convertido} ({type(valor_convertido).__name__})")
+                            except Exception as e:
+                                logger.warning(f"Error convirtiendo valor '{valor}' para columna '{columna}': {e}")
+                                valor_convertido = valor
+                        else:
+                            valor_convertido = valor
+                        datos[columna] = valor_convertido
                 
                 if datos:
-                    # Crear instancia del modelo
-                    instancia = model(**datos)
-                    
-                    if upsert:
-                        # Implementar upsert si es necesario
-                        session.merge(instancia)
-                        updated += 1
-                    else:
-                        session.add(instancia)
-                        inserted += 1
+                    filas_datos.append(datos)
             except Exception as e:
                 logger.warning(f"Error procesando fila: {e}")
                 continue
         
-        session.commit()
-        logger.info(f"Importación completada: {inserted} insertados, {updated} actualizados")
+        # Usar SQLAlchemy Core directamente pero con el mapper
+        # Obtener la tabla de forma segura usando caché para evitar configurar relaciones
+        from sqlalchemy import insert, select, update, MetaData
+        
+        if filas_datos:
+            try:
+                # Obtener nombre de tabla sin acceder al mapper
+                tabla_nombre = obtener_nombre_tabla_seguro(model)
+                
+                # Usar caché para obtener la tabla sin disparar configuración del mapper
+                if tabla_nombre not in _TABLES_CACHE:
+                    # Obtener tabla directamente desde la metadata reflejada
+                    # Esto evita acceder al mapper que puede disparar configuración de relaciones
+                    metadata = MetaData()
+                    metadata.reflect(bind=session.bind, only=[tabla_nombre])
+                    _TABLES_CACHE[tabla_nombre] = metadata.tables[tabla_nombre]
+                
+                table = _TABLES_CACHE[tabla_nombre]
+                
+                if upsert:
+                    # Para upsert, necesitamos procesar individualmente
+                    for datos in filas_datos:
+                        try:
+                            # Buscar clave primaria
+                            pk_column = None
+                            for col in table.primary_key.columns:
+                                if col.name in datos:
+                                    pk_column = col.name
+                                    break
+                            
+                            if pk_column and datos.get(pk_column):
+                                # Verificar si existe usando select directo (Core, no ORM)
+                                stmt_select = select(table).where(
+                                    table.columns[pk_column] == datos[pk_column]
+                                )
+                                result = session.execute(stmt_select).first()
+                                
+                                if result:
+                                    # Actualizar usando update directo (Core, no ORM)
+                                    stmt_update = update(table).where(
+                                        table.columns[pk_column] == datos[pk_column]
+                                    ).values(**datos)
+                                    session.execute(stmt_update)
+                                    updated += 1
+                                else:
+                                    # Insertar usando insert directo (Core, no ORM)
+                                    stmt_insert = insert(table).values(**datos)
+                                    session.execute(stmt_insert)
+                                    inserted += 1
+                            else:
+                                # No hay PK, insertar directamente
+                                stmt_insert = insert(table).values(**datos)
+                                session.execute(stmt_insert)
+                                inserted += 1
+                        except Exception as e:
+                            logger.warning(f"Error procesando fila (upsert): {e}")
+                            continue
+                else:
+                    # Usar insert() statements directamente (Core, no ORM)
+                    # Insertar en lotes para mejor rendimiento
+                    batch_size = 1000
+                    for i in range(0, len(filas_datos), batch_size):
+                        batch = filas_datos[i:i + batch_size]
+                        stmt = insert(table).values(batch)
+                        result = session.execute(stmt)
+                        inserted += len(batch)
+                
+                session.commit()
+                logger.info(f"Importación completada: {inserted} insertados, {updated} actualizados")
+            except Exception as e:
+                logger.error(f"Error en insert: {e}")
+                session.rollback()
+                raise
+        else:
+            logger.warning("No hay datos para importar")
         
     except Exception as e:
         logger.error(f"Error importando archivo: {e}")

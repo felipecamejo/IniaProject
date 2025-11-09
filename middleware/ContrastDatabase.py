@@ -105,11 +105,25 @@ def inicializar_automap(engine=None):
     Base = automap_base()
     
     try:
-        Base.prepare(autoload_with=_engine)
+        # Deshabilitar generación automática de relaciones para evitar conflictos de backref
+        # Solo necesitamos las columnas para el contraste, no las relaciones
+        Base.prepare(
+            autoload_with=_engine,
+            reflect=True,
+            generate_relationship=None  # No generar relaciones automáticamente
+        )
         logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
     except Exception as e:
         logger.error(f"Error inicializando automap: {e}")
-        raise
+        # Si falla, intentar sin reflect=True como fallback
+        try:
+            logger.warning("Intentando inicializar automap sin reflect=True...")
+            Base = automap_base()
+            Base.prepare(autoload_with=_engine, generate_relationship=None)
+            logger.info(f"Modelos generados automáticamente (fallback): {len(Base.classes)} tablas")
+        except Exception as e2:
+            logger.error(f"Error en fallback de automap: {e2}")
+            raise
     
     MODELS.clear()
     for class_name in dir(Base.classes):
@@ -207,12 +221,43 @@ def obtener_nombre_tabla_seguro(model) -> str:
 # ================================
 # MÓDULO: CONTRASTE CON BASE DE DATOS
 # ================================
+def normalize_header_names(headers: List[str]) -> List[str]:
+    """
+    Normaliza los nombres de los encabezados (reutilizado de ImportExcel.py).
+    Convierte a minúsculas, reemplaza espacios/guiones con guiones bajos,
+    y remueve caracteres especiales.
+    """
+    import re
+    import unicodedata
+    
+    normalized = []
+    for header in headers:
+        if header:
+            # Normalizar unicode
+            header = unicodedata.normalize('NFKD', str(header))
+            # Convertir a minúsculas y reemplazar espacios/guiones con guiones bajos
+            header = header.lower().strip()
+            header = re.sub(r'[\s\-]+', '_', header)
+            # Remover caracteres especiales
+            header = re.sub(r'[^a-z0-9_]', '', header)
+            # Remover guiones bajos múltiples
+            header = re.sub(r'_+', '_', header)
+            # Remover guiones bajos al inicio y final
+            header = header.strip('_')
+            if not header:
+                header = f"columna_{len(normalized)+1}"
+        else:
+            header = f"columna_{len(normalized)+1}"
+        normalized.append(header)
+    return normalized
+
 def contrastar_columnas_con_tabla(columnas_excel: List[str], columnas_tabla: List[str]) -> Tuple[float, List[str], List[str]]:
     """
     Contrasta las columnas del Excel con las columnas de una tabla.
+    Usa la misma lógica de normalización que ImportExcel.py.
     
     Args:
-        columnas_excel: Lista de nombres de columnas del Excel (en minúsculas)
+        columnas_excel: Lista de nombres de columnas del Excel
         columnas_tabla: Lista de nombres de columnas de la tabla (en minúsculas)
     
     Returns:
@@ -221,22 +266,38 @@ def contrastar_columnas_con_tabla(columnas_excel: List[str], columnas_tabla: Lis
     if not columnas_excel or not columnas_tabla:
         return 0.0, [], columnas_excel
     
-    # Normalizar a minúsculas
-    columnas_excel_lower = [col.lower().strip() for col in columnas_excel]
+    # Normalizar columnas del Excel usando la misma lógica que ImportExcel.py
+    columnas_excel_normalizadas = normalize_header_names(columnas_excel)
     columnas_tabla_lower = [col.lower().strip() for col in columnas_tabla]
     
     # Encontrar coincidencias exactas
     coincidencias = []
     no_coincidencias = []
+    mapeo_coincidencias = {}  # Mapeo de columna Excel original -> columna BD
     
-    for col_excel in columnas_excel_lower:
-        if col_excel in columnas_tabla_lower:
-            coincidencias.append(col_excel)
+    for i, col_excel_norm in enumerate(columnas_excel_normalizadas):
+        col_excel_original = columnas_excel[i]
+        encontrada = False
+        
+        # Buscar coincidencia exacta
+        if col_excel_norm in columnas_tabla_lower:
+            coincidencias.append(col_excel_norm)
+            mapeo_coincidencias[col_excel_original] = col_excel_norm
+            encontrada = True
         else:
-            no_coincidencias.append(col_excel)
+            # Buscar coincidencia parcial (substring)
+            for col_tabla in columnas_tabla_lower:
+                if col_excel_norm in col_tabla or col_tabla in col_excel_norm:
+                    coincidencias.append(col_excel_norm)
+                    mapeo_coincidencias[col_excel_original] = col_tabla
+                    encontrada = True
+                    break
+        
+        if not encontrada:
+            no_coincidencias.append(col_excel_original)
     
     # Calcular porcentaje de coincidencia
-    porcentaje = (len(coincidencias) / len(columnas_excel_lower)) * 100 if columnas_excel_lower else 0.0
+    porcentaje = (len(coincidencias) / len(columnas_excel_normalizadas)) * 100 if columnas_excel_normalizadas else 0.0
     
     return porcentaje, coincidencias, no_coincidencias
 
@@ -295,9 +356,59 @@ def encontrar_tabla_mejor_coincidencia(columnas_excel: List[str], umbral_minimo:
     
     return None
 
+def obtener_tabla_sugerida_por_entidad(entidad_nombre: str) -> Optional[str]:
+    """
+    Obtiene el nombre de tabla sugerido basado en el nombre de la entidad.
+    
+    Args:
+        entidad_nombre: Nombre de la entidad identificada
+    
+    Returns:
+        Nombre de tabla sugerido, o None si no se puede sugerir
+    """
+    # Mapeo de entidades a nombres de tabla sugeridos
+    mapeo_entidades_tablas = {
+        'pureza': 'pureza',
+        'pureza_pnotatum': 'pureza_pnotatum',
+        'dosn': 'dosn',
+        'germinacion': 'germinacion',
+        'tetrazolio': 'tetrazolio',
+        'sanitario': 'sanitario',
+        'pms': 'pms',
+        'recibo': 'recibo',
+        'lote': 'lote',
+        'usuario': 'usuario',
+        'deposito': 'deposito',
+        'certificado': 'certificado',
+        'maleza': 'maleza',
+        'cultivo': 'cultivo',
+        'metodo': 'metodo',
+        'general': None  # No sugerir tabla para entidades generales
+    }
+    
+    entidad_lower = entidad_nombre.lower()
+    return mapeo_entidades_tablas.get(entidad_lower)
+
+def verificar_tabla_existe(nombre_tabla: str) -> bool:
+    """
+    Verifica si una tabla existe en la base de datos.
+    
+    Args:
+        nombre_tabla: Nombre de la tabla a verificar
+    
+    Returns:
+        True si la tabla existe, False en caso contrario
+    """
+    if not nombre_tabla:
+        return False
+    
+    nombre_tabla_lower = nombre_tabla.lower()
+    return nombre_tabla_lower in MODELS
+
 def contrastar_entidad_con_bd(entidad_info: Dict[str, Any], umbral_minimo: float = 30.0) -> Dict[str, Any]:
     """
     Contrasta una entidad del mapeo con la base de datos.
+    Usa la misma lógica de normalización que ImportExcel.py para mapear columnas.
     
     Args:
         entidad_info: Información de la entidad del mapeo JSON
@@ -306,24 +417,47 @@ def contrastar_entidad_con_bd(entidad_info: Dict[str, Any], umbral_minimo: float
     Returns:
         Diccionario con la información de la entidad enriquecida con datos de la BD
     """
-    # Obtener columnas de la entidad
-    columnas_entidad = [col['nombre'].lower() for col in entidad_info.get('columnas', [])]
+    # Obtener nombre de la entidad
+    entidad_nombre = entidad_info.get('nombre', 'general')
+    
+    # Obtener columnas de la entidad (usar nombres originales, se normalizarán después)
+    columnas_entidad = [col['nombre'] for col in entidad_info.get('columnas', [])]
     
     if not columnas_entidad:
+        # Obtener tabla sugerida basada en la entidad
+        tabla_sugerida = obtener_tabla_sugerida_por_entidad(entidad_nombre)
+        tabla_existe = verificar_tabla_existe(tabla_sugerida) if tabla_sugerida else False
+        
         return {
             **entidad_info,
             'tabla_bd': None,
+            'tabla_sugerida': tabla_sugerida,
+            'tabla_existe': tabla_existe,
+            'estado': 'OK' if tabla_existe else 'TABLA_NO_ENCONTRADA',
             'porcentaje_coincidencia': 0.0,
-            'coincidencia_encontrada': False
+            'coincidencia_encontrada': False,
+            'detalles_coincidencia': {
+                'mensaje': 'No hay columnas para contrastar',
+                'tabla_sugerida': tabla_sugerida,
+                'tabla_existe': tabla_existe,
+                'accion_recomendada': f"Crear tabla '{tabla_sugerida}' en la base de datos" if tabla_sugerida and not tabla_existe else None
+            }
         }
     
     # Buscar tabla con mejor coincidencia
     tabla_coincidencia = encontrar_tabla_mejor_coincidencia(columnas_entidad, umbral_minimo)
     
     if tabla_coincidencia:
+        # Tabla encontrada con coincidencia suficiente
+        tabla_encontrada = tabla_coincidencia['tabla']
+        tabla_existe = verificar_tabla_existe(tabla_encontrada)
+        
         return {
             **entidad_info,
-            'tabla_bd': tabla_coincidencia['tabla'],
+            'tabla_bd': tabla_encontrada,
+            'tabla_sugerida': tabla_encontrada,
+            'tabla_existe': tabla_existe,
+            'estado': 'OK',
             'porcentaje_coincidencia': tabla_coincidencia['porcentaje_coincidencia'],
             'coincidencia_encontrada': True,
             'detalles_coincidencia': {
@@ -331,19 +465,52 @@ def contrastar_entidad_con_bd(entidad_info: Dict[str, Any], umbral_minimo: float
                 'columnas_no_coincidentes': tabla_coincidencia['columnas_no_coincidentes'],
                 'total_columnas_tabla': tabla_coincidencia['total_columnas_tabla'],
                 'total_columnas_excel': tabla_coincidencia['total_columnas_excel'],
-                'total_coincidencias': tabla_coincidencia['total_coincidencias']
+                'total_coincidencias': tabla_coincidencia['total_coincidencias'],
+                'mensaje': f"Tabla '{tabla_encontrada}' encontrada con {tabla_coincidencia['porcentaje_coincidencia']}% de coincidencia",
+                'accion_recomendada': f"Usar tabla existente '{tabla_encontrada}'"
             }
         }
     else:
-        return {
+        # No se encontró tabla con coincidencia suficiente
+        # Obtener tabla sugerida basada en la entidad
+        tabla_sugerida = obtener_tabla_sugerida_por_entidad(entidad_nombre)
+        tabla_existe = verificar_tabla_existe(tabla_sugerida) if tabla_sugerida else False
+        
+        # Buscar la mejor coincidencia aunque no supere el umbral
+        mejor_coincidencia_sin_umbral = encontrar_tabla_mejor_coincidencia(columnas_entidad, umbral_minimo=0.0)
+        
+        resultado = {
             **entidad_info,
             'tabla_bd': None,
+            'tabla_sugerida': tabla_sugerida,
+            'tabla_existe': tabla_existe,
+            'estado': 'OK' if tabla_existe else 'TABLA_NO_ENCONTRADA',
             'porcentaje_coincidencia': 0.0,
             'coincidencia_encontrada': False,
             'detalles_coincidencia': {
-                'mensaje': 'No se encontró tabla con coincidencia suficiente (umbral mínimo: {}%)'.format(umbral_minimo)
+                'mensaje': f"No se encontró tabla con coincidencia suficiente (umbral mínimo: {umbral_minimo}%)",
+                'tabla_sugerida': tabla_sugerida,
+                'tabla_existe': tabla_existe
             }
         }
+        
+        # Si hay una mejor coincidencia aunque no supere el umbral, incluirla
+        if mejor_coincidencia_sin_umbral:
+            resultado['detalles_coincidencia']['mejor_coincidencia_sin_umbral'] = {
+                'tabla': mejor_coincidencia_sin_umbral['tabla'],
+                'porcentaje': mejor_coincidencia_sin_umbral['porcentaje_coincidencia']
+            }
+        
+        # Agregar acción recomendada
+        if tabla_sugerida:
+            if tabla_existe:
+                resultado['detalles_coincidencia']['accion_recomendada'] = f"Verificar si la tabla '{tabla_sugerida}' es la correcta. Coincidencia insuficiente con las columnas del Excel."
+            else:
+                resultado['detalles_coincidencia']['accion_recomendada'] = f"Crear tabla '{tabla_sugerida}' en la base de datos con las columnas identificadas del Excel."
+        else:
+            resultado['detalles_coincidencia']['accion_recomendada'] = "Revisar manualmente las columnas del Excel para determinar la tabla correcta."
+        
+        return resultado
 
 def contrastar_mapeo_con_bd(mapeo_json: Dict[str, Any], umbral_minimo: float = 30.0) -> Dict[str, Any]:
     """
@@ -415,6 +582,21 @@ def contrastar_mapeo_con_bd(mapeo_json: Dict[str, Any], umbral_minimo: float = 3
         if entidad.get('coincidencia_encontrada', False)
     )
     
+    # Calcular estadísticas de tablas sugeridas
+    tablas_sugeridas = []
+    tablas_sugeridas_existentes = []
+    tablas_sugeridas_no_existentes = []
+    
+    for hoja in mapeo_contrastado['hojas']:
+        for entidad in hoja.get('entidades', {}).values():
+            tabla_sugerida = entidad.get('tabla_sugerida')
+            if tabla_sugerida and tabla_sugerida not in tablas_sugeridas:
+                tablas_sugeridas.append(tabla_sugerida)
+                if entidad.get('tabla_existe', False):
+                    tablas_sugeridas_existentes.append(tabla_sugerida)
+                else:
+                    tablas_sugeridas_no_existentes.append(tabla_sugerida)
+    
     mapeo_contrastado['resumen']['total_entidades'] = total_entidades
     mapeo_contrastado['resumen']['entidades_con_tabla_bd'] = entidades_con_tabla
     mapeo_contrastado['resumen']['entidades_sin_tabla_bd'] = total_entidades - entidades_con_tabla
@@ -422,7 +604,16 @@ def contrastar_mapeo_con_bd(mapeo_json: Dict[str, Any], umbral_minimo: float = 3
         (entidades_con_tabla / total_entidades * 100) if total_entidades > 0 else 0, 2
     )
     
+    # Agregar información de tablas sugeridas
+    mapeo_contrastado['resumen']['tablas_sugeridas'] = sorted(tablas_sugeridas)
+    mapeo_contrastado['resumen']['tablas_sugeridas_existentes'] = sorted(tablas_sugeridas_existentes)
+    mapeo_contrastado['resumen']['tablas_sugeridas_no_existentes'] = sorted(tablas_sugeridas_no_existentes)
+    mapeo_contrastado['resumen']['total_tablas_sugeridas'] = len(tablas_sugeridas)
+    mapeo_contrastado['resumen']['total_tablas_sugeridas_existentes'] = len(tablas_sugeridas_existentes)
+    mapeo_contrastado['resumen']['total_tablas_sugeridas_no_existentes'] = len(tablas_sugeridas_no_existentes)
+    
     logger.info(f"Contraste completado: {entidades_con_tabla}/{total_entidades} entidades mapeadas a tablas BD")
+    logger.info(f"Tablas sugeridas: {len(tablas_sugeridas)} total, {len(tablas_sugeridas_existentes)} existentes, {len(tablas_sugeridas_no_existentes)} no existentes")
     
     return mapeo_contrastado
 
@@ -548,4 +739,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

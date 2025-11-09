@@ -133,11 +133,25 @@ def inicializar_automap(engine=None):
     Base = automap_base()
     
     try:
-        Base.prepare(autoload_with=_engine)
+        # Deshabilitar generación automática de relaciones para evitar conflictos de backref
+        # Solo necesitamos las columnas para la inserción masiva, no las relaciones
+        Base.prepare(
+            autoload_with=_engine,
+            reflect=True,
+            generate_relationship=None  # No generar relaciones automáticamente
+        )
         logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
     except Exception as e:
         logger.error(f"Error inicializando automap: {e}")
-        raise
+        # Si falla, intentar sin reflect=True como fallback
+        try:
+            logger.warning("Intentando inicializar automap sin reflect=True...")
+            Base = automap_base()
+            Base.prepare(autoload_with=_engine, generate_relationship=None)
+            logger.info(f"Modelos generados automáticamente (fallback): {len(Base.classes)} tablas")
+        except Exception as e2:
+            logger.error(f"Error en fallback de automap: {e2}")
+            raise
     
     MODELS.clear()
     for class_name in dir(Base.classes):

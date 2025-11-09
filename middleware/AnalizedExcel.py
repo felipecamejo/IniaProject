@@ -1,7 +1,7 @@
 import os
 import argparse
 import logging
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 from collections import defaultdict
 
 # Intentar importar módulo de instalación de dependencias
@@ -60,6 +60,179 @@ logger = logging.getLogger(__name__)
 # ================================
 # MÓDULO: ANÁLISIS DE EXCEL
 # ================================
+def es_encabezado_generico(encabezado: str) -> bool:
+    """
+    Detecta si un encabezado es genérico (Columna_1, Columna_2, etc.).
+    
+    Args:
+        encabezado: Nombre del encabezado a evaluar
+        
+    Returns:
+        True si el encabezado es genérico, False en caso contrario
+    """
+    if not encabezado:
+        return True
+    
+    encabezado_lower = encabezado.lower().strip()
+    
+    # Patrones de encabezados genéricos
+    patrones_genericos = [
+        r'^columna[_\s]?\d+$',
+        r'^column[_\s]?\d+$',
+        r'^col[_\s]?\d+$',
+        r'^campo[_\s]?\d+$',
+        r'^field[_\s]?\d+$',
+        r'^f\d+$',
+        r'^c\d+$'
+    ]
+    
+    import re
+    for patron in patrones_genericos:
+        if re.match(patron, encabezado_lower):
+            return True
+    
+    return False
+
+def parece_encabezado_descriptivo(valor: Any) -> bool:
+    """
+    Evalúa si un valor parece ser un encabezado descriptivo.
+    
+    Args:
+        valor: Valor a evaluar
+        
+    Returns:
+        True si el valor parece ser un encabezado descriptivo
+    """
+    if valor is None:
+        return False
+    
+    valor_str = str(valor).strip()
+    
+    # Si está vacío, no es descriptivo
+    if not valor_str:
+        return False
+    
+    # Si es solo un número, probablemente no es un encabezado
+    try:
+        float(valor_str)
+        # Si es un número muy grande o muy pequeño, probablemente no es encabezado
+        if abs(float(valor_str)) > 1000 or abs(float(valor_str)) < 0.0001:
+            return False
+    except (ValueError, TypeError):
+        pass
+    
+    # Si tiene más de 2 palabras o contiene caracteres alfabéticos, probablemente es descriptivo
+    palabras = valor_str.split()
+    if len(palabras) >= 1 and any(c.isalpha() for c in valor_str):
+        # Si tiene al menos 3 caracteres y no es solo un número
+        if len(valor_str) >= 3:
+            return True
+    
+    return False
+
+def buscar_encabezados_alternativos(ws, max_filas_buscar: int = 5) -> Tuple[List[str], int]:
+    """
+    Busca encabezados descriptivos en las primeras filas del Excel.
+    
+    Args:
+        ws: Worksheet de openpyxl
+        max_filas_buscar: Número máximo de filas a buscar (por defecto 5)
+        
+    Returns:
+        Tuple con (lista de encabezados encontrados, número de fila donde se encontraron)
+        Si no se encuentran, retorna ([], 0)
+    """
+    encabezados_alternativos = []
+    num_columnas = ws.max_column
+    
+    if num_columnas == 0:
+        return encabezados_alternativos, 0
+    
+    # Buscar en las primeras filas (2-6, ya que la fila 1 ya se revisó)
+    for fila in range(2, min(max_filas_buscar + 2, ws.max_row + 1)):
+        fila_encabezados = []
+        todos_descriptivos = True
+        
+        for col in range(1, num_columnas + 1):
+            celda = ws.cell(row=fila, column=col)
+            valor = celda.value
+            
+            if parece_encabezado_descriptivo(valor):
+                fila_encabezados.append(str(valor).strip())
+            else:
+                todos_descriptivos = False
+                break
+        
+        # Si encontramos una fila completa con encabezados descriptivos, usarla
+        if todos_descriptivos and len(fila_encabezados) == num_columnas:
+            logger.info(f"Encabezados descriptivos encontrados en la fila {fila}")
+            return fila_encabezados, fila
+    
+    return encabezados_alternativos, 0
+
+def obtener_encabezados_mejorados(ws) -> Tuple[List[str], int]:
+    """
+    Obtiene los encabezados del Excel, buscando en filas alternativas si la primera fila
+    tiene encabezados genéricos.
+    
+    Args:
+        ws: Worksheet de openpyxl
+        
+    Returns:
+        Tuple con (lista de encabezados mejorados, número de fila donde están los encabezados)
+        La fila será 1 si se usan los encabezados de la primera fila
+    """
+    encabezados = []
+    num_columnas = ws.max_column
+    
+    if num_columnas == 0:
+        return encabezados, 1
+    
+    # Obtener encabezados de la primera fila
+    encabezados_fila1 = []
+    for col in range(1, num_columnas + 1):
+        celda = ws.cell(row=1, column=col)
+        valor = celda.value
+        if valor is not None:
+            encabezados_fila1.append(str(valor).strip())
+        else:
+            encabezados_fila1.append(f"Columna_{col}")
+    
+    # Verificar si todos los encabezados son genéricos
+    todos_genericos = all(es_encabezado_generico(enc) for enc in encabezados_fila1)
+    
+    if todos_genericos:
+        logger.info("Encabezados genéricos detectados, buscando encabezados alternativos...")
+        # Buscar encabezados alternativos en filas siguientes
+        encabezados_alternativos, fila_encabezados = buscar_encabezados_alternativos(ws, max_filas_buscar=5)
+        
+        if encabezados_alternativos and len(encabezados_alternativos) == num_columnas:
+            logger.info(f"Usando encabezados alternativos encontrados en la fila {fila_encabezados}")
+            return encabezados_alternativos, fila_encabezados
+        else:
+            logger.info("No se encontraron encabezados alternativos descriptivos, usando encabezados genéricos")
+            return encabezados_fila1, 1
+    else:
+        # Algunos encabezados son descriptivos, usar los de la primera fila
+        # Pero reemplazar los genéricos con alternativas si es posible
+        encabezados_mejorados = []
+        encabezados_alternativos, fila_alternativos = buscar_encabezados_alternativos(ws, max_filas_buscar=5)
+        
+        for idx, enc in enumerate(encabezados_fila1):
+            if es_encabezado_generico(enc) and encabezados_alternativos and idx < len(encabezados_alternativos):
+                # Usar el encabezado alternativo si está disponible
+                enc_alt = encabezados_alternativos[idx]
+                if parece_encabezado_descriptivo(enc_alt):
+                    encabezados_mejorados.append(enc_alt)
+                else:
+                    encabezados_mejorados.append(enc)
+            else:
+                encabezados_mejorados.append(enc)
+        
+        # Si se usaron alternativos, usar esa fila, sino usar fila 1
+        fila_encabezados = fila_alternativos if fila_alternativos > 0 else 1
+        return encabezados_mejorados, fila_encabezados
+
 def analizar_estructura_excel(ruta_archivo: str) -> Dict[str, Any]:
     """
     Analiza la estructura de un archivo Excel y retorna información sobre sus hojas y columnas.
@@ -92,19 +265,24 @@ def analizar_estructura_excel(ruta_archivo: str) -> Dict[str, Any]:
                 'nombre': nombre_hoja,
                 'columnas': [],
                 'total_filas': ws.max_row,
-                'total_columnas': ws.max_column
+                'total_columnas': ws.max_column,
+                'contexto': None
             }
             
-            # Obtener encabezados (primera fila)
+            # Buscar títulos de sección para identificar el contexto (incluyendo nombre de hoja)
+            contexto_seccion = buscar_titulos_seccion(ws, nombre_hoja=nombre_hoja, max_filas_buscar=10)
+            if contexto_seccion:
+                info_hoja['contexto'] = contexto_seccion
+                logger.info(f"Contexto identificado para hoja '{nombre_hoja}': {contexto_seccion}")
+            
+            # Obtener encabezados mejorados (busca en filas alternativas si la primera fila tiene encabezados genéricos)
             encabezados = []
-            if ws.max_row > 0:
-                for col in range(1, ws.max_column + 1):
-                    celda = ws.cell(row=1, column=col)
-                    valor = celda.value
-                    if valor is not None:
-                        encabezados.append(str(valor).strip())
-                    else:
-                        encabezados.append(f"Columna_{col}")
+            fila_encabezados = 1
+            if ws.max_row > 0 and ws.max_column > 0:
+                encabezados, fila_encabezados = obtener_encabezados_mejorados(ws)
+            
+            # Calcular la fila de inicio de datos (después de los encabezados)
+            fila_inicio_datos = fila_encabezados + 1
             
             # Analizar cada columna
             for idx, encabezado in enumerate(encabezados, start=1):
@@ -117,11 +295,27 @@ def analizar_estructura_excel(ruta_archivo: str) -> Dict[str, Any]:
                     'total_valores': 0
                 }
                 
-                # Analizar valores de la columna (desde la fila 2 en adelante)
-                for row in range(2, ws.max_row + 1):
+                # Analizar valores de la columna (desde la fila después de los encabezados)
+                for row in range(fila_inicio_datos, ws.max_row + 1):
                     celda = ws.cell(row=row, column=idx)
                     valor = celda.value
                     columna_info['total_valores'] += 1
+                    
+                    # Ignorar errores de fórmula (como #DIV/0!, #VALUE!, etc.)
+                    if isinstance(valor, str) and valor.startswith('#'):
+                        # Es un error de fórmula, ignorarlo (contarlo como nulo)
+                        columna_info['valores_nulos'] += 1
+                        continue
+                    
+                    # Verificar si es un objeto de error de openpyxl
+                    try:
+                        from openpyxl.cell.cell import TYPE_ERROR
+                        if celda.data_type == TYPE_ERROR:
+                            # Es un error de fórmula, ignorarlo
+                            columna_info['valores_nulos'] += 1
+                            continue
+                    except (ImportError, AttributeError):
+                        pass
                     
                     if valor is None:
                         columna_info['valores_nulos'] += 1
@@ -150,7 +344,234 @@ def analizar_estructura_excel(ruta_archivo: str) -> Dict[str, Any]:
     
     return estructura
 
-def identificar_entidades_columnas(columnas: List[Dict[str, Any]]) -> Dict[str, List[str]]:
+def buscar_titulos_seccion(ws, nombre_hoja: str = None, max_filas_buscar: int = 10) -> Optional[str]:
+    """
+    Busca títulos de sección en las primeras filas del Excel y en el nombre de la hoja
+    para identificar el contexto de la entidad.
+    
+    Args:
+        ws: Worksheet de openpyxl
+        nombre_hoja: Nombre de la hoja del Excel
+        max_filas_buscar: Número máximo de filas a buscar (por defecto 10)
+        
+    Returns:
+        Nombre de la entidad identificada por el contexto, o None si no se encuentra
+    """
+    import re
+    
+    # Patrones de títulos de sección
+    patrones_titulos = {
+        'pureza': [
+            r'pureza\s+ista',
+            r'pureza\s+inase',
+            r'cálculo\s+de\s+pureza',
+            r'pureza\s+para',
+            r'análisis\s+de\s+pureza',
+            r'pureza\s+común',
+            r'analisis\s+sp',  # "Analisis SP" (como en tu Excel)
+            r'analisis\s+pureza'
+        ],
+        'pureza_pnotatum': [
+            r'pureza\s+pnotatum',
+            r'pureza\s+p\.?\s*notatum',
+            r'pnotatum',
+            r'p\.?\s*notatum',
+            r'repeticiones\s+ppn'
+        ],
+        'dosn': [
+            r'dosn',
+            r'determinación\s+de\s+otras\s+semillas',
+            r'análisis\s+dosn',
+            r'determinacion\s+otras\s+semillas'
+        ],
+        'germinacion': [
+            r'germinación',
+            r'germinacion',
+            r'análisis\s+de\s+germinación',
+            r'prueba\s+de\s+germinación',
+            r'analisis\s+germinacion'
+        ],
+        'tetrazolio': [
+            r'tetrazolio',
+            r'prueba\s+de\s+tetrazolio',
+            r'análisis\s+de\s+viabilidad',
+            r'viabilidad'
+        ],
+        'sanitario': [
+            r'sanitario',
+            r'análisis\s+sanitario',
+            r'patógenos',
+            r'hongos',
+            r'analisis\s+sanitario'
+        ],
+        'pms': [
+            r'pms',
+            r'peso\s+de\s+mil\s+semillas',
+            r'peso\s+1000\s+semillas',
+            r'peso\s+mil\s+semillas'
+        ]
+    }
+    
+    # Buscar primero en el nombre de la hoja
+    if nombre_hoja:
+        nombre_hoja_lower = nombre_hoja.lower()
+        for entidad, patrones in patrones_titulos.items():
+            for patron in patrones:
+                if re.search(patron, nombre_hoja_lower, re.IGNORECASE):
+                    logger.info(f"Título de sección encontrado en nombre de hoja '{nombre_hoja}' -> Entidad: {entidad}")
+                    return entidad
+    
+    # Buscar en las primeras filas
+    for fila in range(1, min(max_filas_buscar + 1, ws.max_row + 1)):
+        # Buscar en todas las columnas de la fila
+        texto_fila = ""
+        for col in range(1, min(ws.max_column + 1, 10)):  # Buscar en las primeras 10 columnas
+            celda = ws.cell(row=fila, column=col)
+            valor = celda.value
+            if valor is not None:
+                texto_fila += " " + str(valor).strip()
+        
+        texto_fila_lower = texto_fila.lower()
+        
+        # Verificar cada patrón
+        for entidad, patrones in patrones_titulos.items():
+            for patron in patrones:
+                if re.search(patron, texto_fila_lower, re.IGNORECASE):
+                    logger.info(f"Título de sección encontrado en fila {fila}: '{texto_fila.strip()}' -> Entidad: {entidad}")
+                    return entidad
+    
+    return None
+
+def mapear_columna_con_contexto(nombre_col: str, contexto: Optional[str]) -> Optional[str]:
+    """
+    Mapea el nombre de una columna a un nombre de columna de BD usando el contexto identificado.
+    
+    Args:
+        nombre_col: Nombre de la columna del Excel
+        contexto: Contexto identificado (pureza, pureza_pnotatum, dosn, etc.)
+        
+    Returns:
+        Nombre de columna de BD sugerido, o None si no se puede mapear
+    """
+    nombre_col_lower = nombre_col.lower().strip()
+    
+    # Mapeos específicos por contexto
+    mapeos_contexto = {
+        'pureza': {
+            # Mapeos de peso (peso de semilla usado en pureza)
+            'peso': 'peso_inicial',
+            'peso (g)': 'peso_inicial',
+            'peso inicial': 'peso_inicial',
+            'peso_inicial': 'peso_inicial',
+            'peso inicial de la muestra': 'peso_inicial',
+            'peso final': 'peso_inicial',  # Peso final de la muestra
+            'peso final de la muestra': 'peso_inicial',
+            'dif de peso': 'peso_inicial',  # Diferencia de peso
+            'peso estimado': 'peso_inicial',  # Peso estimado de semillas
+            'peso estimado (g)': 'peso_inicial',
+            'peso del total de semillas analizadas': 'peso_inicial',
+            'peso total de semillas contaminadas': 'peso_inicial',
+            'control de pesos': 'peso_inicial',  # Control de pesos
+            # Mapeos de semilla pura
+            'semilla pura': 'semilla_pura',
+            'semilla_pura': 'semilla_pura',
+            'semillas puras': 'semilla_pura',
+            'nº semillas puras': 'semilla_pura',
+            'numero semillas puras': 'semilla_pura',
+            'pu': 'semilla_pura',
+            # Mapeos de materia inerte
+            'materia inerte': 'material_inerte',
+            'material inerte': 'material_inerte',
+            'material_inerte': 'material_inerte',
+            'materia_inerte': 'material_inerte',
+            # Mapeos de otros cultivos
+            'otros cultivos': 'otros_cultivos',
+            'semilla cultivos': 'otros_cultivos',
+            'semillas cultivos': 'otros_cultivos',
+            'semilla cultivos': 'otros_cultivos',
+            'otros_cultivos': 'otros_cultivos',
+            # Mapeos de malezas
+            'malezas': 'malezas',
+            'semillas malezas': 'malezas',
+            'semilla malezas': 'malezas',
+            'semillas contaminadas': 'malezas',
+            'semillas vanas': 'malezas',
+            'hillas contaminadas y vanas': 'malezas',  # Nota: "hillas" parece ser "semillas"
+            # Mapeos de semillas sanas (para pureza INASE)
+            'semillas sanas': 'semilla_pura',  # Semillas sanas se mapean a semilla_pura
+            'nº': 'semilla_pura',  # Número de semillas (contexto dependiente)
+            # Mapeos de fechas
+            'fecha inase': 'fecha_inase',
+            'fecha_inase': 'fecha_inase',
+            'fecha inia': 'fecha_inia',
+            'fecha_inia': 'fecha_inia'
+        },
+        'pureza_pnotatum': {
+            'repeticion': 'repeticion',
+            'repeticiones': 'repeticion',
+            'semillas puras': 'semillas_puras',
+            'peso (g)': 'peso',
+            'peso': 'peso',
+            'semillas sanas': 'semillas_sanas',
+            'contaminadas': 'semillas_contaminadas',
+            'vanas': 'semillas_vanas'
+        },
+        'dosn': {
+            'gramos analizados': 'gramos_analizados',
+            'gramos_analizados': 'gramos_analizados',
+            'tipos analisis': 'tipos_analisis',
+            'determinacion': 'determinacion',
+            'fecha inase': 'fecha_inase',
+            'fecha inia': 'fecha_inia'
+        },
+        'germinacion': {
+            'semillas germinadas': 'semillas_germinadas',
+            'semillas no germinadas': 'semillas_no_germinadas',
+            'porcentaje germinacion': 'porcentaje_germinacion',
+            'fecha germinacion': 'fecha_germinacion'
+        }
+    }
+    
+    if contexto and contexto in mapeos_contexto:
+        mapeos = mapeos_contexto[contexto]
+        
+        # Limpiar nombre de columna (remover caracteres especiales, espacios extra)
+        import re
+        nombre_col_limpio = re.sub(r'[^\w\s]', ' ', nombre_col_lower)
+        nombre_col_limpio = re.sub(r'\s+', ' ', nombre_col_limpio).strip()
+        
+        # Buscar coincidencia exacta primero
+        if nombre_col_lower in mapeos:
+            return mapeos[nombre_col_lower]
+        if nombre_col_limpio in mapeos:
+            return mapeos[nombre_col_limpio]
+        
+        # Buscar coincidencia parcial (palabras clave)
+        palabras_col = set(nombre_col_limpio.split())
+        mejor_coincidencia = None
+        mejor_puntuacion = 0
+        
+        for clave, valor in mapeos.items():
+            palabras_clave = set(clave.split())
+            # Calcular puntuación basada en palabras comunes
+            palabras_comunes = palabras_col.intersection(palabras_clave)
+            if palabras_comunes:
+                puntuacion = len(palabras_comunes) / max(len(palabras_col), len(palabras_clave))
+                if puntuacion > mejor_puntuacion and puntuacion >= 0.5:  # Al menos 50% de coincidencia
+                    mejor_puntuacion = puntuacion
+                    mejor_coincidencia = valor
+        
+        if mejor_coincidencia:
+            return mejor_coincidencia
+        
+        # Buscar coincidencia parcial simple (substring)
+        for clave, valor in mapeos.items():
+            if clave in nombre_col_lower or nombre_col_lower in clave:
+                return valor
+    
+    return None
+
+def identificar_entidades_columnas(columnas: List[Dict[str, Any]], contexto: Optional[str] = None) -> Dict[str, List[str]]:
     """
     Identifica a qué entidades pertenecen las columnas basándose en patrones de nombres.
     
@@ -181,17 +602,29 @@ def identificar_entidades_columnas(columnas: List[Dict[str, Any]]) -> Dict[str, 
     
     mapeo_entidades = defaultdict(list)
     
+    # Si hay contexto, usarlo como entidad principal
+    entidad_contexto = contexto
+    
     for columna in columnas:
         nombre_col = columna['nombre'].lower()
         entidad_asignada = None
         mejor_coincidencia = 0
         
-        # Buscar la mejor coincidencia
-        for entidad, patrones in patrones_entidades.items():
-            coincidencias = sum(1 for patron in patrones if patron in nombre_col)
-            if coincidencias > mejor_coincidencia:
-                mejor_coincidencia = coincidencias
-                entidad_asignada = entidad
+        # Si hay contexto, intentar mapear la columna usando el contexto
+        if contexto:
+            columna_mapeada = mapear_columna_con_contexto(nombre_col, contexto)
+            if columna_mapeada:
+                # Si se pudo mapear con el contexto, usar la entidad del contexto
+                entidad_asignada = contexto
+                logger.debug(f"Columna '{nombre_col}' mapeada a '{columna_mapeada}' usando contexto '{contexto}'")
+        
+        # Si no se asignó por contexto, buscar la mejor coincidencia con patrones
+        if entidad_asignada is None:
+            for entidad, patrones in patrones_entidades.items():
+                coincidencias = sum(1 for patron in patrones if patron in nombre_col)
+                if coincidencias > mejor_coincidencia:
+                    mejor_coincidencia = coincidencias
+                    entidad_asignada = entidad
         
         # Si no hay coincidencia clara, intentar identificar por prefijos comunes
         if entidad_asignada is None:
@@ -224,9 +657,19 @@ def identificar_entidades_columnas(columnas: List[Dict[str, Any]]) -> Dict[str, 
             elif 'deposito' in nombre_col:
                 entidad_asignada = 'deposito'
             else:
-                entidad_asignada = 'general'
+                # Si hay contexto pero no se pudo mapear, usar el contexto como fallback
+                if contexto:
+                    entidad_asignada = contexto
+                    logger.debug(f"Usando contexto '{contexto}' como fallback para columna '{nombre_col}'")
+                else:
+                    entidad_asignada = 'general'
         
         mapeo_entidades[entidad_asignada].append(columna['nombre'])
+    
+    # Si hay contexto y no se asignaron columnas, crear una entidad con el contexto
+    if contexto and not mapeo_entidades:
+        logger.info(f"Contexto identificado '{contexto}' pero no se asignaron columnas, creando entidad vacía")
+        mapeo_entidades[contexto] = []
     
     return dict(mapeo_entidades)
 
@@ -261,8 +704,9 @@ def generar_mapeo_datos(estructura: Dict[str, Any]) -> Dict[str, Any]:
             'entidades': {}
         }
         
-        # Identificar entidades de las columnas
-        entidades_columnas = identificar_entidades_columnas(hoja_info['columnas'])
+        # Identificar entidades de las columnas usando el contexto si está disponible
+        contexto = hoja_info.get('contexto')
+        entidades_columnas = identificar_entidades_columnas(hoja_info['columnas'], contexto=contexto)
         
         # Organizar datos por entidad
         for entidad, columnas_nombres in entidades_columnas.items():
