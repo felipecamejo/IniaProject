@@ -188,7 +188,9 @@ export class ListadoTetrazolioComponent implements OnInit {
             next: (response) => {
               console.log('Tetrazolio eliminado correctamente:', response);
               // Recargar los datos para reflejar los cambios
-              this.logService.crearLog(item.id!, 'Tetrazolio', 'eliminado').subscribe();
+
+              const loteId = this.route.snapshot.paramMap.get('loteId');
+              this.logService.crearLog(loteId ? parseInt(loteId) : 0, item.id!, 'Tetrazolio', 'eliminado').subscribe();
               this.cargarDatos();
             },
             error: (err) => {

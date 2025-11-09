@@ -1147,7 +1147,7 @@ export class PurezaComponent implements OnInit {
 
 
           if (response != null) {
-            this.logService.crearLog(Number(response), 'Pureza', 'actualizada').subscribe();
+            this.logService.crearLog(Number(this.loteId), Number(response), 'Pureza', 'actualizada').subscribe();
           }
 
           this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);
@@ -1173,7 +1173,7 @@ export class PurezaComponent implements OnInit {
           this.isSubmitting = false;
 
           if (response != null) {
-            this.logService.crearLog(Number(response), 'Pureza', 'creada').subscribe();
+            this.logService.crearLog(Number(this.loteId), Number(response), 'Pureza', 'creada').subscribe();
           }
 
           this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);

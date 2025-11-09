@@ -229,7 +229,9 @@ export class ListadoDosnComponent implements OnInit {
               const idMatch = texto.match(/ID\s*:?\s*(\d+)/i);
               const id = idMatch ? Number(idMatch[1]) : dosn.id;
               console.log(`DOSN eliminado correctamente. ID: ${id}`);
-              this.logService.crearLog(Number(id), 'DOSN', 'eliminado').subscribe();
+
+              const loteId = this.route.snapshot.paramMap.get('loteId');
+              this.logService.crearLog(loteId ? parseInt(loteId) : 0, Number(id), 'DOSN', 'eliminado').subscribe();
             } catch (_) {
               console.log('DOSN eliminado correctamente.');
             }

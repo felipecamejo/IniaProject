@@ -103,11 +103,22 @@
         <button *ngIf="tieneCertificado && certificadoId" 
                 class="certificado-view-button"
                 (click)="verCertificado()"
-                title="Ver certificado">
-          👁️
+                title="Ver certificado">  
         </button>
       </div>
+
+      <div class="certificado-main-button">
+        <div class="analisis-button certificado-button" 
+             (click)="goToListadoLogs()">
+          <div class="button-circle morado">
+            <span class="button-icon-text">Logs</span>
+          </div>
+          <span class="button-text">Registro</span>
+        </div>
+      </div>
+      
     </div>
+
   </div>
 
   <!-- Footer -->

@@ -17,8 +17,8 @@ public class LogService {
         this.mapsDtoEntityService = mapsDtoEntityService;
     }
 
-    public ResponseEntity<ResponseListadoLogs> listado() {
-        var dtos = logRepository.findAll().stream()
+    public ResponseEntity<ResponseListadoLogs> listado(Long loteId) {
+        var dtos = logRepository.findByLoteId(loteId).stream()
                 .map(mapsDtoEntityService::mapToDtoLog)
                 .toList();
         return ResponseEntity.ok(new ResponseListadoLogs(dtos));
@@ -29,3 +29,4 @@ public class LogService {
         return this.logRepository.save(mapsDtoEntityService.mapToEntityLog(dtos)).getId();
     }
 }
+

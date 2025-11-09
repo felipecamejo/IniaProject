@@ -31,6 +31,7 @@ import { ListadoMetodosComponent } from './components/listado-metodos/listado-me
 // import { ListadoLogsComponent } from './components/listado-logs/listado-logs.components';
 import { CertificadoComponent } from './components/certificado/certificado.component';
 import { ListadoCertificadosComponent } from './components/listado-certificados/listado-certificados.component'; 
+import { ListadoLogsComponent } from './components/listado-logs/listado-logs.components';
 
 export const routes: Routes = [
     //rutas generales
@@ -48,7 +49,8 @@ export const routes: Routes = [
     { path : 'listado-hongos', component: ListadoHongosComponent },
     { path : 'listado-cultivos', component: ListadoCultivosComponent },
     { path : 'listado-certificados', component: ListadoCertificadosComponent },
-    // { path : 'listado-logs', component: ListadoLogsComponent }, // Componente no existe aún
+    
+    { path : ':loteId/:reciboId/listado-logs', component: ListadoLogsComponent },
 
     //listados asociados a un recibo
     { path : ':loteId/:reciboId/listado-dosn', component: ListadoDosnComponent },

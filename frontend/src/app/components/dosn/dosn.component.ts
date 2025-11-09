@@ -389,7 +389,7 @@ import { AuthService } from '../../../services/AuthService';
 
                   if (id != null) {
                     
-                    this.logService.crearLog(Number(id), 'DOSN', 'actualizada').subscribe();
+                    this.logService.crearLog(this.loteId ?? 0, Number(id), 'DOSN', 'actualizada').subscribe();
                   }
 
                   console.log(`DOSN actualizada correctamente con ID: ${id}`);
@@ -411,7 +411,7 @@ import { AuthService } from '../../../services/AuthService';
                   this.loading = false;
  
                   if (id != null) {
-                    this.logService.crearLog(Number(id), 'DOSN', 'creada').subscribe();
+                    this.logService.crearLog(this.loteId ?? 0, Number(id), 'DOSN', 'creada').subscribe();
                   }
 
                   console.log(`DOSN creada correctamente con ID: ${id}`);

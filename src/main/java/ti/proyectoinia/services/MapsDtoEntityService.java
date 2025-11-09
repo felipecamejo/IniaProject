@@ -4,12 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ti.proyectoinia.business.entities.*;
+import ti.proyectoinia.business.repositories.*;
 import ti.proyectoinia.dtos.*;
-import ti.proyectoinia.business.repositories.ReciboRepository;
-import ti.proyectoinia.business.repositories.CultivoRepository;
-import ti.proyectoinia.business.repositories.MalezaRepository;
-import ti.proyectoinia.business.repositories.PurezaPNotatumRepository;
-import ti.proyectoinia.business.repositories.UsuarioRepository;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Date;
@@ -31,6 +28,8 @@ public class MapsDtoEntityService {
     private PurezaPNotatumRepository purezaPNotatumRepository;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private LoteRepository loteRepository;
 
     // Formato ISO simple para fechas tipo "2024-01-15T10:30:00"
     private static final DateTimeFormatter ISO_LOCAL_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -1002,9 +1001,7 @@ public class MapsDtoEntityService {
         dosn.setDeterminacionCuscuta(dto.getDeterminacionCuscuta());
         dosn.setDeterminacionCuscutaGramos(dto.getDeterminacionCuscutaGramos());
         // Otros
-        dosn.setEstandar(dto.getEstandar());
         dosn.setActivo(dto.isActivo());
-        dosn.setFechaAnalisis(dto.getFechaAnalisis());
         dosn.setRepetido(dto.isRepetido());
         dosn.setFechaCreacion(dto.getFechaCreacion());
         dosn.setFechaRepeticion(dto.getFechaRepeticion());
@@ -1077,7 +1074,6 @@ public class MapsDtoEntityService {
         } else {
             dosn.setCultivosINASE(null);
         }
-
         // Mapear nuevas colecciones con cantidades a entidades detalle
         java.util.List<DOSNMaleza> malezasDetalle = new java.util.ArrayList<>();
         java.util.List<DOSNCultivo> cultivosDetalle = new java.util.ArrayList<>();
@@ -1200,6 +1196,7 @@ public class MapsDtoEntityService {
         // Asignar colecciones detalle (reemplazo total)
         dosn.setMalezasDetalle(malezasDetalle.isEmpty() ? null : malezasDetalle);
         dosn.setCultivosDetalle(cultivosDetalle.isEmpty() ? null : cultivosDetalle);
+
         return dosn;
     }
 
@@ -1817,7 +1814,7 @@ public class MapsDtoEntityService {
         log.setId(dto.getId());
         log.setTexto(dto.getTexto());
         log.setFechaCreacion(dto.getFechaCreacion());
-
+        log.setLote(loteRepository.findById(dto.getLoteId()).orElse(null));
 
         return log;
     }
@@ -1829,6 +1826,13 @@ public class MapsDtoEntityService {
         dto.setId(log.getId());
         dto.setTexto(log.getTexto());
         dto.setFechaCreacion(log.getFechaCreacion());
+
+        // Extraer el ID del lote desde la relación
+        if (log.getLote() != null) {
+            dto.setLoteId(log.getLote().getId());
+        } else {
+            dto.setLoteId(null);
+        }
 
         return dto;
     }

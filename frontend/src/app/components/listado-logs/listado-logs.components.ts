@@ -5,7 +5,7 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { LogDto } from '../../../models/Log.dto';
@@ -27,7 +27,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
   styleUrls: ['./listado-logs.components.scss']
 })
 export class ListadoLogsComponent {
-  constructor(private router: Router, private authService: AuthService, private logService: LogService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private authService: AuthService, private logService: LogService) {}
   
   selectedMes: string = '';
       selectedAnio: string = '';
@@ -78,7 +78,9 @@ export class ListadoLogsComponent {
       }
 
       cargarLogs() {
-          this.logService.listarLogs().subscribe({
+        const loteId = this.route.snapshot.params['loteId'];
+
+          this.logService.listarLogs(loteId).subscribe({
               next: (response) => {
                   this.items = response.logs;
                   console.log('Logs cargados:', this.items);
@@ -189,7 +191,9 @@ export class ListadoLogsComponent {
       }
   
       goToHome() {
-        this.router.navigate(['home']);
+        const loteId = this.route.snapshot.params['loteId'];
+        const reciboId = this.route.snapshot.params['reciboId'];
+        this.router.navigate([loteId, reciboId, 'lote-analisis']);
       }
   
 }

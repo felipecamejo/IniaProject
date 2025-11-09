@@ -197,7 +197,7 @@ export class ListadoSanitarioComponent implements OnInit {
             console.log('Sanitario eliminado:', response);
             // Recargar la lista después de eliminar
             this.cargarSanitarios();
-            this.logService.crearLog(Number(item.id), 'Sanitario', 'eliminado').subscribe();
+            this.logService.crearLog(Number(this.loteId), Number(item.id), 'Sanitario', 'eliminado').subscribe();
           },
           error: (error) => {
             console.error('Error al eliminar sanitario:', error);

@@ -520,7 +520,8 @@ export class PmsComponent implements OnInit {
           this.guardarGramos(res);
 
           if (res != null) {
-            this.logService.crearLog(Number(res), 'PMS', 'creado').subscribe();
+            const loteId = this.route.snapshot.paramMap.get('loteId');
+            this.logService.crearLog(loteId ? parseInt(loteId) : 0, Number(res), 'PMS', 'creado').subscribe();
           }
 
           this.onCancel();
@@ -544,7 +545,8 @@ export class PmsComponent implements OnInit {
           // Guardar gramos asociados al PMS
           this.guardarGramos(this.editingId!);
           
-          this.logService.crearLog(this.editingId!, 'PMS', 'actualizado').subscribe();
+          const loteId = this.route.snapshot.paramMap.get('loteId');
+          this.logService.crearLog(loteId ? parseInt(loteId) : 0, this.editingId!, 'PMS', 'actualizado').subscribe();
           
           this.onCancel();
         },

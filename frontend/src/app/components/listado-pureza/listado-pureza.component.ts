@@ -226,7 +226,7 @@ export class ListadoPurezaComponent implements OnInit {
                     this.confirmLoading = false;
                     this.mostrarConfirmEliminar = false;
                     this.purezaAEliminar = null;
-                    this.logService.crearLog(Number(pureza.id), 'Pureza', 'eliminada').subscribe();
+                    this.logService.crearLog(Number(this.loteId), Number(pureza.id), 'Pureza', 'eliminada').subscribe();
 
                     // Recargar la lista después de eliminar
                     this.cargarPurezas();

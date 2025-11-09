@@ -234,7 +234,7 @@ export class ListadoPmsComponent implements OnInit {
           this.mostrarConfirmEliminar = false;
           this.pmsAEliminar = null;
 
-          this.logService.crearLog(Number(pms.id), 'PMS', 'eliminado').subscribe();
+          this.logService.crearLog(Number(this.loteId), Number(pms.id), 'PMS', 'eliminado').subscribe();
           // Actualizar lista localmente
           this.items = this.items.filter(pmsItem => pmsItem.id !== pms.id);
         },

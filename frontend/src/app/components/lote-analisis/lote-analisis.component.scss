@@ -100,8 +100,15 @@
   }
 
   &.verde {
-    background: linear-gradient(135deg, var(--verde), #2d8f3f);
+    background: linear-gradient(135deg, var(--verde), #15B16D);
   }
+
+  &.morado {
+    background: linear-gradient(135deg, var(--morado), #b474e2);
+  }
+
+
+
 
   .button-icon-text {
     font-size: 24px;

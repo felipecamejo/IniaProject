@@ -15,7 +15,7 @@ export class LogService {
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
-  crearLog(id: number, analisisNombre: string, accion: string, ): Observable<string> {
+  crearLog(loteId: number, id: number, analisisNombre: string, accion: string, ): Observable<string> {
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const username = user?.nombre || 'Desconocido';
@@ -26,7 +26,8 @@ export class LogService {
     const log : LogDto = {
       id: id,
       texto: mensaje,
-      fechaCreacion: new Date().toISOString()
+      fechaCreacion: new Date().toISOString(),
+      loteId: loteId
     };
 
     return this.http.post(
@@ -51,9 +52,9 @@ export class LogService {
     return 'Desconocido';
   }
 
-  listarLogs(): Observable<ResponseListadoLogs> {
+  listarLogs(loteId: number): Observable<ResponseListadoLogs> {
     return this.http.get<ResponseListadoLogs>(
-      `${this.urlService.baseUrl}${this.endpoint}/listar`
+      `${this.urlService.baseUrl}${this.endpoint}/listar/${loteId}`
     );
   }
  

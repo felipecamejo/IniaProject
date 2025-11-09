@@ -224,7 +224,7 @@ export class ListadoPurezaPNotatumComponent implements OnInit {
           // Actualizar lista localmente
           this.items = this.items.filter(pn => pn.id !== purezaPNotatum.id);
           
-          this.logService.crearLog(Number(purezaPNotatum.id), 'Pureza P. notatum', 'eliminada').subscribe();
+          this.logService.crearLog(Number(this.loteId), Number(purezaPNotatum.id), 'Pureza P. notatum', 'eliminada').subscribe();
         },
         error: (err) => {
           console.error('Error eliminando Pureza P. notatum:', err);

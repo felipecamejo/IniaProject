@@ -32,11 +32,11 @@ public class LogController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @GetMapping({"/listar"})
+    @GetMapping({"/listar/{loteId}"})
     @Secured({"ADMIN"})
     @Operation(description = "Lista Logs")
-    public ResponseEntity<ResponseListadoLogs> listarLog() {
-        ResponseListadoLogs response = this.logService.listado().getBody();
+    public ResponseEntity<ResponseListadoLogs> listarLog(@PathVariable Long loteId) {
+        ResponseListadoLogs response = this.logService.listado(loteId).getBody();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

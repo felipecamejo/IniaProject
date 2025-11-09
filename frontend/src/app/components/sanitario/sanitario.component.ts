@@ -10,6 +10,7 @@ import { HongoService } from '../../../services/HongoService';
 import { HongoDto } from '../../../models/Hongo.dto';
 import { DateService } from '../../../services/DateService';
 import { LogService } from '../../../services/LogService';
+import { AuthService } from '../../../services/AuthService';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -72,6 +73,8 @@ export class SanitarioComponent implements OnInit {
   selectedMetodo: string = '';
   selectedEstado: string = '';
 
+  isAdmin: boolean = false;
+
   // Tabla de hongos seleccionados
   hongosTable: Array<{tipoHongo: string, repeticion: number , valor: number , incidencia: number}> = [];
   hongosCampoTable: Array<{tipoHongo: string, repeticion: number, valor: number , incidencia: number}> = [];
@@ -128,7 +131,8 @@ export class SanitarioComponent implements OnInit {
     private router: Router,
     private sanitarioService: SanitarioService,
     private hongoService: HongoService,
-    private logService: LogService
+    private logService: LogService,
+    private authService: AuthService
   ) {}
 
   // Getter para determinar si está en modo readonly
@@ -551,7 +555,9 @@ export class SanitarioComponent implements OnInit {
         console.log('Sanitario creado con ID:', sanitarioId);
         // Guardar hongos después de crear el sanitario
         this.guardarHongos(sanitarioId);
-        this.logService.crearLog(sanitarioId, 'Sanitario', 'creado').subscribe();
+        
+        const loteId = this.route.snapshot.paramMap.get('loteId');
+        this.logService.crearLog(loteId ? parseInt(loteId) : 0, sanitarioId, 'Sanitario', 'creado').subscribe();
       },
       error: (error) => {
         console.error('Error al crear sanitario:', error);
@@ -594,7 +600,8 @@ export class SanitarioComponent implements OnInit {
         // Guardar hongos después de editar el sanitario
         this.guardarHongos(this.editingId!);
         
-        this.logService.crearLog(this.editingId!, 'Sanitario', 'editado').subscribe();
+        const loteId = this.route.snapshot.paramMap.get('loteId');
+        this.logService.crearLog(loteId ? parseInt(loteId) : 0, this.editingId!, 'Sanitario', 'editado').subscribe();
       },
       error: (error) => {
         console.error('Error al actualizar sanitario:', error);

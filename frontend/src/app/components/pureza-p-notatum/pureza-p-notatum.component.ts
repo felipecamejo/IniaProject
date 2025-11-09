@@ -415,7 +415,7 @@ export class PurezaPNotatumComponent implements OnInit {
 
 
             if (res != null) {
-              this.logService.crearLog(Number(res), 'Pureza P. notatum', 'actualizada').subscribe();
+              this.logService.crearLog(Number(this.loteId), Number(res), 'Pureza P. notatum', 'actualizada').subscribe();
             }
 
             this.safeNavigateToListado();
@@ -443,7 +443,7 @@ export class PurezaPNotatumComponent implements OnInit {
             
 
             if (res != null) { 
-              this.logService.crearLog(Number(res), 'Pureza P. notatum', 'creada').subscribe();
+              this.logService.crearLog(Number(this.loteId), Number(res), 'Pureza P. notatum', 'creada').subscribe();
             }
 
             this.safeNavigateToListado();

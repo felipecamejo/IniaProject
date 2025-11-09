@@ -338,7 +338,8 @@ export class ReciboComponent implements OnInit {
             this.reciboId = reciboId;
             this.isEditing = true;
 
-            this.logService.crearLog(reciboId, 'Recibo', 'creado').subscribe();
+
+            this.logService.crearLog(Number(reciboCreado.loteId) ,reciboId, 'Recibo', 'creado').subscribe();
             console.log('Navegando a lote-analisis con loteId:', this.lote2, 'reciboId:', reciboId);
             this.router.navigate([`/${this.lote2}/${reciboId}/lote-analisis`]);
         },
@@ -414,7 +415,7 @@ export class ReciboComponent implements OnInit {
         // Guardar las humedades actualizadas
         this.guardarHumedades(this.reciboId);
 
-        this.logService.crearLog(this.reciboId, 'Recibo', 'editado').subscribe();
+        this.logService.crearLog(Number(finalPayload.loteId), this.reciboId, 'Recibo', 'editado').subscribe();
 
         // Navegar de vuelta a lote-analisis
         console.log('Navegando a lote-analisis con loteId:', this.lote2, 'reciboId:', this.reciboId);

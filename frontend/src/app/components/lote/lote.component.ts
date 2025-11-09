@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 import { LoteDto } from '../../../models/Lote.dto';
 import { LoteService } from '../../../services/LoteService';
 import { loteCategoria } from '../../../models/Lote.dto';
-import { LogService } from '../../../services/LogService';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -48,7 +47,6 @@ export class LoteComponent {
     constructor(
       private loteService: LoteService,
       private router: Router,
-      private logService: LogService
     ) {}
 
     createLote() {
@@ -70,8 +68,6 @@ export class LoteComponent {
 
           // Navegar a lote-analisis sin reciboId (se creará uno nuevo)
           this.router.navigate([`/${loteId}/lote-analisis`]);
-
-          this.logService.crearLog(Number(loteId), 'Lote', 'creado').subscribe();
         },
         error: (err) => console.error('Error creando lote', err)
       });
