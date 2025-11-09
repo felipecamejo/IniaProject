@@ -207,6 +207,79 @@ public class PythonMiddlewareHttpService {
     }
     
     /**
+     * Analiza un archivo Excel y genera un mapeo de datos.
+     * 
+     * @param filename Nombre del archivo Excel
+     * @param fileBytes Contenido del archivo Excel
+     * @param formato Formato de salida ("json" o "texto")
+     * @return MiddlewareResponse con el resultado del análisis
+     */
+    public MiddlewareResponse analizarExcel(String filename, byte[] fileBytes, String formato) {
+        String url = baseUrl + "/analizar?formato=" + (formato == null ? "json" : formato);
+        try {
+            logger.info("Analizando archivo Excel {} en servidor Python", filename);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            ByteArrayResource fileResource = new ByteArrayResource(fileBytes) {
+                @Override
+                public String getFilename() {
+                    if (filename != null && !filename.isBlank()) {
+                        return filename;
+                    }
+                    return "archivo.xlsx";
+                }
+            };
+            body.add("file", fileResource);
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
+            
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                try {
+                    MiddlewareResponse middlewareResponse = objectMapper.readValue(
+                        response.getBody(), 
+                        MiddlewareResponse.class
+                    );
+                    logger.info("Análisis completado. Exitoso: {}", middlewareResponse.esExitoso());
+                    return middlewareResponse;
+                } catch (Exception jsonError) {
+                    logger.error("Error parseando respuesta JSON del servidor Python: {}", jsonError.getMessage());
+                    return crearRespuestaError(
+                        "Error parseando respuesta del servidor Python",
+                        jsonError.getMessage()
+                    );
+                }
+            }
+            
+            return crearRespuestaError(
+                "El servidor Python no respondió correctamente",
+                "Status: " + response.getStatusCode()
+            );
+        } catch (HttpClientErrorException ex) {
+            logger.error("Error HTTP llamando a Python /analizar: {} - {}", ex.getStatusCode(), ex.getMessage());
+            logger.error("Respuesta del servidor: {}", ex.getResponseBodyAsString());
+            return parsearErrorHttp(ex);
+        } catch (HttpServerErrorException ex) {
+            logger.error("Error HTTP llamando a Python /analizar: {} - {}", ex.getStatusCode(), ex.getMessage());
+            logger.error("Respuesta del servidor: {}", ex.getResponseBodyAsString());
+            return parsearErrorHttp(ex);
+        } catch (RestClientException ex) {
+            logger.error("Error de conexión llamando a Python /analizar: {}", ex.getMessage());
+            String mensajeDetalle = ex.getMessage();
+            if (mensajeDetalle != null && mensajeDetalle.contains("Connection refused")) {
+                mensajeDetalle = "El servidor Python no está ejecutándose. " +
+                               "Inicia el servidor con: python middleware/http_server.py o ejecuta: .\\run_middleware.ps1 server";
+            }
+            return crearRespuestaError(
+                "No se pudo conectar al servidor Python",
+                mensajeDetalle
+            );
+        }
+    }
+    
+    /**
      * Crea una respuesta de error estándar.
      */
     private MiddlewareResponse crearRespuestaError(String mensaje, String detalles) {

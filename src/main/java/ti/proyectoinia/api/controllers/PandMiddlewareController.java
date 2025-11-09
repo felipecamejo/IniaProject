@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
  * Este controlador proporciona endpoints para:
  * - Exportar tablas a Excel usando el servidor HTTP Python
  * - Importar datos desde archivos Excel automáticamente
+ * - Analizar archivos Excel y generar mapeo de datos
  * - Insertar datos masivos de prueba usando MassiveInsertFiles.py
  * 
  * Todos los endpoints requieren permisos de ADMIN para su ejecución.
@@ -197,6 +198,104 @@ public class PandMiddlewareController {
         }
     }
     
+    /**
+     * Endpoint para analizar un archivo Excel y generar un mapeo de datos.
+     * 
+     * Este endpoint analiza un archivo Excel y genera un mapeo que muestra
+     * qué datos contiene y a qué entidades pertenecen.
+     * 
+     * @param file Archivo Excel (.xlsx o .xls) a analizar
+     * @param formato Formato de salida ("json" o "texto")
+     * @return ResponseEntity<MiddlewareResponse> Respuesta con el mapeo de datos
+     */
+    @PostMapping(value = "/http/analizar", consumes = {"multipart/form-data"})
+    @Secured({"ADMIN"})
+    @Operation(summary = "Analizar archivo Excel", description = "Analiza un archivo Excel y genera un mapeo de datos que muestra qué datos contiene y a qué entidades pertenecen - Solo ADMIN")
+    public ResponseEntity<MiddlewareResponse> httpAnalizar(
+            @RequestPart("file") MultipartFile file,
+            @org.springframework.web.bind.annotation.RequestParam(value = "formato", required = false, defaultValue = "json") String formato) {
+        try {
+            logger.info("Iniciando análisis de archivo Excel desde el backend");
+            
+            // Validar archivo
+            if (file == null || file.isEmpty()) {
+                logger.warn("Intento de analizar archivo vacío");
+                MiddlewareResponse errorResponse = new MiddlewareResponse();
+                errorResponse.setExitoso(false);
+                errorResponse.setMensaje("Archivo vacío");
+                errorResponse.setCodigo(400);
+                errorResponse.setDetalles("Debe proporcionar un archivo Excel para analizar");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            
+            // Verificar que sea un archivo Excel
+            String nombreArchivo = file.getOriginalFilename();
+            if (nombreArchivo == null || (!nombreArchivo.toLowerCase().endsWith(".xlsx") && 
+                    !nombreArchivo.toLowerCase().endsWith(".xls"))) {
+                logger.warn("Intento de analizar archivo con formato no válido: {}", nombreArchivo);
+                MiddlewareResponse errorResponse = new MiddlewareResponse();
+                errorResponse.setExitoso(false);
+                errorResponse.setMensaje("Formato de archivo no válido");
+                errorResponse.setCodigo(400);
+                errorResponse.setDetalles("Solo se permiten archivos Excel (.xlsx o .xls)");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            
+            // Validar formato de salida
+            if (formato != null && !formato.equals("json") && !formato.equals("texto")) {
+                logger.warn("Formato de salida no válido: {}", formato);
+                MiddlewareResponse errorResponse = new MiddlewareResponse();
+                errorResponse.setExitoso(false);
+                errorResponse.setMensaje("Formato de salida no válido");
+                errorResponse.setCodigo(400);
+                errorResponse.setDetalles("El formato debe ser 'json' o 'texto'");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            
+            logger.info("Archivo recibido: {}, Tamaño: {} bytes, Formato salida: {}", nombreArchivo, file.getSize(), formato);
+            
+            byte[] bytes = file.getBytes();
+            
+            // Analizar el archivo Excel
+            MiddlewareResponse respuesta = pythonHttpService.analizarExcel(nombreArchivo, bytes, formato);
+            
+            if (respuesta == null) {
+                logger.error("Sin respuesta del middleware Python");
+                MiddlewareResponse errorResponse = new MiddlewareResponse();
+                errorResponse.setExitoso(false);
+                errorResponse.setMensaje("Sin respuesta del middleware Python");
+                errorResponse.setCodigo(500);
+                errorResponse.setDetalles("El servidor Python no respondió. " +
+                                         "Verifica que el servidor esté ejecutándose en http://localhost:9099. " +
+                                         "Inicia el servidor con: python middleware/http_server.py o ejecuta: .\\run_middleware.ps1 server");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            }
+            
+            // Retornar respuesta estructurada
+            HttpStatus status = respuesta.esExitoso() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR;
+            if (respuesta.getCodigo() != null) {
+                if (respuesta.getCodigo() >= 400 && respuesta.getCodigo() < 500) {
+                    status = HttpStatus.BAD_REQUEST;
+                } else if (respuesta.getCodigo() >= 500) {
+                    status = HttpStatus.INTERNAL_SERVER_ERROR;
+                }
+            }
+            
+            logger.info("Análisis completado. Exitoso: {}, Mensaje: {}", 
+                       respuesta.esExitoso(), respuesta.getMensaje());
+            
+            return ResponseEntity.status(status).body(respuesta);
+        } catch (Exception e) {
+            logger.error("Error inesperado durante el análisis: {}", e.getMessage(), e);
+            MiddlewareResponse errorResponse = new MiddlewareResponse();
+            errorResponse.setExitoso(false);
+            errorResponse.setMensaje("Error enviando análisis");
+            errorResponse.setCodigo(500);
+            errorResponse.setDetalles(String.format("Error: %s (Tipo: %s)", e.getMessage(), e.getClass().getSimpleName()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
     /**
      * Determina automáticamente el nombre de la tabla basándose en el nombre del archivo.
      * Remueve la extensión y convierte a minúsculas.
