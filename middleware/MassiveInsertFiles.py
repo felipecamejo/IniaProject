@@ -423,15 +423,25 @@ def generar_datos_tabla(engine, tabla_nombre: str, cantidad: int, ids_referencia
     
     # Obtener CHECK constraints para esta tabla
     check_map = {}
+    unique_constraints = []
     if mapeo_completo and tabla_nombre in mapeo_completo:
         check_map = mapeo_completo[tabla_nombre].get('check_map', {})
+        unique_constraints = mapeo_completo[tabla_nombre].get('constraints', {}).get('unique', [])
     else:
-        # Si no se proporciona el mapeo completo, obtener CHECK constraints directamente
+        # Si no se proporciona el mapeo completo, obtener constraints directamente
         check_map = mapear_check_constraints_por_columna(engine, tabla_nombre)
+        constraints = obtener_constraints_tabla(engine, tabla_nombre)
+        unique_constraints = constraints.get('unique', [])
+    
+    # Identificar columnas que forman parte de restricciones UNIQUE
+    columnas_unique = set()
+    for uc in unique_constraints:
+        columnas_unique.update(uc.get('columns', []))
     
     datos = {}
     columnas_procesadas = set()
     
+    # Primera pasada: generar valores para todas las columnas
     for col_info in columnas_info:
         col_name = col_info['name']
         
@@ -446,8 +456,69 @@ def generar_datos_tabla(engine, tabla_nombre: str, cantidad: int, ids_referencia
         if valores is not None:
             datos[col_name] = valores
     
-    # Crear DataFrame y validar
+    # Crear DataFrame inicial
     df = pd.DataFrame(datos)
+    
+    # Si hay restricciones UNIQUE, asegurar que no haya duplicados
+    if unique_constraints and len(df) > 0:
+        for uc in unique_constraints:
+            uc_columns = uc.get('columns', [])
+            if not uc_columns:
+                continue
+            
+            # Verificar que todas las columnas del UNIQUE constraint existan en el DataFrame
+            columnas_existentes = [col for col in uc_columns if col in df.columns]
+            if len(columnas_existentes) != len(uc_columns):
+                logger.warning(f"Algunas columnas del UNIQUE constraint '{uc.get('name', '')}' no existen en el DataFrame: {uc_columns}")
+                continue
+            
+            # Eliminar filas duplicadas basadas en las columnas del UNIQUE constraint
+            filas_antes = len(df)
+            df = df.drop_duplicates(subset=columnas_existentes, keep='first')
+            filas_eliminadas = filas_antes - len(df)
+            
+            if filas_eliminadas > 0:
+                logger.warning(f"Eliminadas {filas_eliminadas} filas duplicadas por restricción UNIQUE '{uc.get('name', '')}' en tabla '{tabla_nombre}'")
+            
+            # Si se eliminaron filas, regenerar valores para las columnas afectadas hasta alcanzar la cantidad deseada
+            if len(df) < cantidad:
+                faltantes = cantidad - len(df)
+                logger.info(f"Regenerando {faltantes} filas adicionales para respetar restricción UNIQUE en '{tabla_nombre}'")
+                
+                # Generar nuevas combinaciones únicas
+                combinaciones_existentes = set()
+                for _, row in df.iterrows():
+                    combinacion = tuple(row[col] for col in columnas_existentes)
+                    combinaciones_existentes.add(combinacion)
+                
+                nuevas_filas = []
+                intentos = 0
+                max_intentos = faltantes * 100  # Límite de intentos para evitar loops infinitos
+                
+                while len(nuevas_filas) < faltantes and intentos < max_intentos:
+                    intentos += 1
+                    nueva_fila = {}
+                    
+                    # Generar valores para todas las columnas
+                    for col_info in columnas_info:
+                        col_name = col_info['name']
+                        if col_name in columnas_procesadas:
+                            valores = generar_valores_columna(col_info, 1, fk_map, ids_referencias, check_map)
+                            if valores is not None and len(valores) > 0:
+                                nueva_fila[col_name] = valores[0]
+                    
+                    # Verificar que la combinación sea única
+                    combinacion = tuple(nueva_fila.get(col, None) for col in columnas_existentes)
+                    if combinacion not in combinaciones_existentes:
+                        combinaciones_existentes.add(combinacion)
+                        nuevas_filas.append(nueva_fila)
+                
+                if nuevas_filas:
+                    df_nuevas = pd.DataFrame(nuevas_filas)
+                    df = pd.concat([df, df_nuevas], ignore_index=True)
+                    logger.info(f"Agregadas {len(nuevas_filas)} nuevas filas únicas a '{tabla_nombre}'")
+                else:
+                    logger.warning(f"No se pudieron generar suficientes filas únicas para '{tabla_nombre}'. Generadas: {len(df)} de {cantidad}")
     
     # Verificar columnas duplicadas
     if len(df.columns) != len(set(df.columns)):
