@@ -5,14 +5,19 @@ import logging
 from datetime import date, datetime
 from urllib.parse import quote_plus
 
-# Dependencia opcional para Excel
+# Intentar importar módulo de instalación de dependencias
 try:
-    from openpyxl import Workbook
-    from openpyxl.utils import get_column_letter
-    import openpyxl.styles
-    OPENPYXL_AVAILABLE = True
-except Exception:
-    OPENPYXL_AVAILABLE = False
+    from InstallDependencies import verificar_e_instalar, instalar_dependencias_faltantes
+    INSTALL_DEPS_AVAILABLE = True
+except ImportError:
+    INSTALL_DEPS_AVAILABLE = False
+
+# Verificar e instalar dependencias SQLAlchemy
+if INSTALL_DEPS_AVAILABLE:
+    if not verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=True):
+        # Si falla la instalación silenciosa, intentar con salida
+        print("Intentando instalar SQLAlchemy...")
+        verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=False)
 
 # Importaciones SQLAlchemy
 try:
@@ -20,8 +25,40 @@ try:
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy.ext.automap import automap_base
 except ModuleNotFoundError:
-    print("Falta el paquete 'sqlalchemy'. Instálalo con: pip install SQLAlchemy")
-    raise
+    if INSTALL_DEPS_AVAILABLE:
+        print("Instalando dependencias faltantes...")
+        if instalar_dependencias_faltantes('ExportExcel', silent=False):
+            # Reintentar importación después de instalar
+            from sqlalchemy import create_engine, text, inspect
+            from sqlalchemy.orm import sessionmaker
+            from sqlalchemy.ext.automap import automap_base
+        else:
+            print("No se pudieron instalar las dependencias. Instálalas manualmente con: pip install -r requirements.txt")
+            raise
+    else:
+        print("Falta el paquete 'sqlalchemy'. Instálalo con: pip install SQLAlchemy")
+        raise
+
+# Dependencia opcional para Excel
+try:
+    from openpyxl import Workbook
+    from openpyxl.utils import get_column_letter
+    from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
+    import openpyxl.styles
+    OPENPYXL_AVAILABLE = True
+except Exception:
+    OPENPYXL_AVAILABLE = False
+    # Intentar instalar openpyxl si el módulo de instalación está disponible
+    if INSTALL_DEPS_AVAILABLE:
+        if verificar_e_instalar('openpyxl', 'openpyxl', silent=False):
+            try:
+                from openpyxl import Workbook
+                from openpyxl.utils import get_column_letter
+                from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
+                import openpyxl.styles
+                OPENPYXL_AVAILABLE = True
+            except Exception:
+                OPENPYXL_AVAILABLE = False
 
 # Configuración de logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -207,6 +244,93 @@ def verificar_estructura_tabla(session, tabla_nombre: str) -> list:
         log_fail(f"Error verificando estructura de {tabla_nombre}: {e}")
         return []
 
+def tiene_primary_key(session, tabla_nombre: str) -> bool:
+    """Verifica si una tabla tiene Primary Key."""
+    try:
+        query = text("""
+            SELECT COUNT(*)
+            FROM information_schema.table_constraints tc
+            JOIN information_schema.constraint_column_usage ccu
+                ON tc.constraint_name = ccu.constraint_name
+                AND tc.table_schema = ccu.table_schema
+            WHERE tc.constraint_type = 'PRIMARY KEY'
+                AND tc.table_schema = 'public'
+                AND tc.table_name = :tabla
+        """)
+        result = session.execute(query, {"tabla": tabla_nombre}).fetchone()
+        return result[0] > 0 if result else False
+    except Exception as e:
+        log_fail(f"Error verificando PK de {tabla_nombre}: {e}")
+        return False
+
+def obtener_tablas_sin_pk(session) -> list:
+    """Obtiene todas las tablas que no tienen Primary Key."""
+    try:
+        query = text("""
+            SELECT t.table_name
+            FROM information_schema.tables t
+            WHERE t.table_schema = 'public'
+                AND t.table_type = 'BASE TABLE'
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM information_schema.table_constraints tc
+                    WHERE tc.table_schema = 'public'
+                        AND tc.table_name = t.table_name
+                        AND tc.constraint_type = 'PRIMARY KEY'
+                )
+            ORDER BY t.table_name
+        """)
+        result = session.execute(query).fetchall()
+        tablas_sin_pk = [row[0] for row in result]
+        if tablas_sin_pk:
+            log_step(f"Tablas sin PK encontradas: {len(tablas_sin_pk)} - {', '.join(tablas_sin_pk)}")
+        return tablas_sin_pk
+    except Exception as e:
+        log_fail(f"Error obteniendo tablas sin PK: {e}")
+        return []
+
+def obtener_tablas_relacionadas(session, tabla_principal: str) -> list:
+    """Obtiene tablas relacionadas (sin PK) que están vinculadas a una tabla principal mediante Foreign Keys."""
+    try:
+        # Usar referential_constraints para obtener las tablas referenciadas correctamente
+        # En PostgreSQL, usamos constraint_column_usage para obtener la tabla referenciada
+        query = text("""
+            SELECT DISTINCT tc.table_name
+            FROM information_schema.table_constraints tc
+            JOIN information_schema.referential_constraints rc
+                ON tc.constraint_name = rc.constraint_name
+                AND tc.table_schema = rc.constraint_schema
+            JOIN information_schema.constraint_column_usage ccu
+                ON rc.unique_constraint_name = ccu.constraint_name
+                AND rc.unique_constraint_schema = ccu.constraint_schema
+            WHERE tc.table_schema = 'public'
+                AND tc.constraint_type = 'FOREIGN KEY'
+                AND rc.unique_constraint_schema = 'public'
+                AND ccu.table_name = :tabla_principal
+                AND tc.table_name != :tabla_principal
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM information_schema.table_constraints pk_tc
+                    WHERE pk_tc.table_schema = 'public'
+                        AND pk_tc.table_name = tc.table_name
+                        AND pk_tc.constraint_type = 'PRIMARY KEY'
+                )
+            ORDER BY tc.table_name
+        """)
+        result = session.execute(query, {"tabla_principal": tabla_principal}).fetchall()
+        tablas_relacionadas = [row[0] for row in result]
+        if tablas_relacionadas:
+            log_step(f"Tablas relacionadas con {tabla_principal} (sin PK): {len(tablas_relacionadas)} - {', '.join(tablas_relacionadas)}")
+        return tablas_relacionadas
+    except Exception as e:
+        log_fail(f"Error obteniendo tablas relacionadas con {tabla_principal}: {e}")
+        # Hacer rollback para que la sesión pueda continuar
+        try:
+            session.rollback()
+        except:
+            pass
+        return []
+
 def filtrar_columnas_analisis(columnas: list, tabla: str) -> list:
     """Filtra columnas para exportar solo datos de análisis, excluyendo campos administrativos."""
     campos_excluir = {
@@ -288,24 +412,159 @@ def crear_workbook_excel(titulo: str) -> tuple:
     ws.title = titulo[:31]  # límite de Excel
     return wb, ws
 
+def obtener_estilo_encabezado():
+    """Retorna el estilo para los encabezados."""
+    if not OPENPYXL_AVAILABLE:
+        return None
+    
+    # Color de fondo azul claro profesional
+    fill = PatternFill(
+        start_color="4472C4",  # Azul corporativo
+        end_color="4472C4",
+        fill_type="solid"
+    )
+    
+    # Fuente en negrita, blanca, tamaño 11
+    font = Font(
+        bold=True,
+        size=11,
+        color="FFFFFF"  # Blanco
+    )
+    
+    # Bordes medianos negros
+    border = Border(
+        left=Side(style='medium', color='000000'),
+        right=Side(style='medium', color='000000'),
+        top=Side(style='medium', color='000000'),
+        bottom=Side(style='medium', color='000000')
+    )
+    
+    # Alineación centrada
+    alignment = Alignment(
+        horizontal='center',
+        vertical='center',
+        wrap_text=True
+    )
+    
+    return {
+        'fill': fill,
+        'font': font,
+        'border': border,
+        'alignment': alignment
+    }
+
+def obtener_estilo_datos():
+    """Retorna el estilo para las celdas de datos."""
+    if not OPENPYXL_AVAILABLE:
+        return None
+    
+    # Bordes delgados negros
+    border = Border(
+        left=Side(style='thin', color='000000'),
+        right=Side(style='thin', color='000000'),
+        top=Side(style='thin', color='000000'),
+        bottom=Side(style='thin', color='000000')
+    )
+    
+    # Alineación vertical centrada
+    alignment = Alignment(
+        vertical='center',
+        wrap_text=True
+    )
+    
+    # Fuente normal
+    font = Font(size=11)
+    
+    return {
+        'border': border,
+        'alignment': alignment,
+        'font': font
+    }
+
 def escribir_encabezados_excel(ws, encabezados: list):
-    """Escribe los encabezados en una hoja de Excel."""
+    """Escribe los encabezados en una hoja de Excel con formato profesional."""
     ws.append(encabezados)
+    
+    if not OPENPYXL_AVAILABLE:
+        return
+    
+    estilo = obtener_estilo_encabezado()
+    if estilo:
+        # Aplicar estilo a cada celda del encabezado
+        for col_idx, header in enumerate(encabezados, start=1):
+            cell = ws.cell(row=1, column=col_idx)
+            cell.fill = estilo['fill']
+            cell.font = estilo['font']
+            cell.border = estilo['border']
+            cell.alignment = estilo['alignment']
+        
+        # Ajustar altura de la fila de encabezado
+        ws.row_dimensions[1].height = 25
 
 def escribir_filas_excel(ws, rows: list):
-    """Escribe las filas de datos en una hoja de Excel."""
-    for row in rows:
+    """Escribe las filas de datos en una hoja de Excel con formato profesional."""
+    if not OPENPYXL_AVAILABLE:
+        for row in rows:
+            values = [serialize_value(value) for value in row]
+            ws.append(values)
+        return
+    
+    estilo = obtener_estilo_datos()
+    start_row = ws.max_row + 1
+    
+    for row_num, row in enumerate(rows, start=0):
+        # Guardar valores originales para determinar tipo
+        original_values = list(row)
         values = [serialize_value(value) for value in row]
         ws.append(values)
+        row_idx = start_row + row_num
+        
+        if estilo:
+            # Aplicar estilo a cada celda de la fila
+            for col_idx, (original_value, serialized_value) in enumerate(zip(original_values, values), start=1):
+                cell = ws.cell(row=row_idx, column=col_idx)
+                cell.border = estilo['border']
+                cell.font = estilo['font']
+                
+                # Alineación horizontal según el tipo de dato original
+                if isinstance(original_value, (int, float)):
+                    cell.alignment = Alignment(
+                        horizontal='right',
+                        vertical='center',
+                        wrap_text=True
+                    )
+                elif isinstance(original_value, (datetime, date)):
+                    cell.alignment = Alignment(
+                        horizontal='center',
+                        vertical='center',
+                        wrap_text=True
+                    )
+                else:
+                    cell.alignment = Alignment(
+                        horizontal='left',
+                        vertical='center',
+                        wrap_text=True
+                    )
+        
+        # Altura de fila estándar
+        ws.row_dimensions[row_idx].height = 18
 
-def ajustar_ancho_columnas_excel(ws, columnas: list, min_width: int = 10, max_width: int = 60):
+def ajustar_ancho_columnas_excel(ws, columnas: list, min_width: int = 12, max_width: int = 50):
     """Ajusta el ancho de las columnas en una hoja de Excel."""
     for idx, col_name in enumerate(columnas, start=1):
-        max_len = max(
-            (len(str(ws.cell(row=r, column=idx).value)) if ws.cell(row=r, column=idx).value is not None else 0)
-            for r in range(1, ws.max_row + 1)
-        )
-        ws.column_dimensions[get_column_letter(idx)].width = min(max(min_width, max_len + 2), max_width)
+        # Calcular el ancho basado en el contenido
+        max_len = len(str(col_name))  # Empezar con el ancho del encabezado
+        
+        # Revisar todas las filas de datos
+        for r in range(1, ws.max_row + 1):
+            cell_value = ws.cell(row=r, column=idx).value
+            if cell_value is not None:
+                cell_len = len(str(cell_value))
+                max_len = max(max_len, cell_len)
+        
+        # Ajustar ancho con un poco de padding
+        calculated_width = min(max(min_width, max_len + 3), max_width)
+        ws.column_dimensions[get_column_letter(idx)].width = calculated_width
 
 def guardar_workbook_excel(wb, xlsx_path: str) -> bool:
     """Guarda un Workbook de Excel en un archivo."""
@@ -360,7 +619,9 @@ def export_analisis_generico(session, model, xlsx_path: str) -> str:
 def export_table_xlsx(session, model, output_dir: str) -> str:
     """Exporta una tabla a formato Excel."""
     table = obtener_nombre_tabla(model)
-    xlsx_path = os.path.join(output_dir, f"{table}.xlsx")
+    # Normalizar nombre de archivo: siempre lowercase para evitar problemas con alias
+    table_normalized = table.lower()
+    xlsx_path = os.path.join(output_dir, f"{table_normalized}.xlsx")
     log_step(f"➡️ Exportando {table} a Excel...")
     
     try:
@@ -377,8 +638,15 @@ def export_table_xlsx(session, model, output_dir: str) -> str:
 # ================================
 # MÓDULO: EXPORTACIÓN PRINCIPAL
 # ================================
-def export_selected_tables(tables: list, output_dir: str, fmt: str) -> None:
-    """Exporta las tablas seleccionadas a Excel."""
+def export_selected_tables(tables: list, output_dir: str, fmt: str, incluir_sin_pk: bool = True) -> None:
+    """Exporta las tablas seleccionadas a Excel.
+    
+    Args:
+        tables: Lista de nombres de tablas a exportar. Si está vacía, exporta todas.
+        output_dir: Directorio de salida para los archivos
+        fmt: Formato de exportación ('xlsx' o 'csv')
+        incluir_sin_pk: Si es True, incluye también tablas sin Primary Key
+    """
     try:
         engine = obtener_engine()
         
@@ -396,16 +664,131 @@ def export_selected_tables(tables: list, output_dir: str, fmt: str) -> None:
         try:
             out_dir = ensure_output_dir(output_dir)
             exported = 0
+            tablas_a_exportar = set()
             
             # Si no se especifican tablas, usar todas las disponibles
             if not tables:
-                tables = list(MODELS.keys())
+                tablas_a_exportar = set(MODELS.keys())
+            else:
+                tablas_a_exportar = set(t.lower() for t in tables)
             
-            for name in tables:
+            # Si se debe incluir tablas sin PK, agregarlas a la lista
+            if incluir_sin_pk:
+                # Primero, agregar tablas relacionadas de las tablas principales que se están exportando
+                tablas_principales = list(tablas_a_exportar.copy())
+                for tabla_principal in tablas_principales:
+                    try:
+                        tablas_relacionadas = obtener_tablas_relacionadas(session, tabla_principal)
+                        for tabla_rel in tablas_relacionadas:
+                            tabla_rel_lower = tabla_rel.lower()
+                            if tabla_rel_lower not in tablas_a_exportar:
+                                log_step(f"Incluyendo tabla relacionada con {tabla_principal}: {tabla_rel}")
+                                tablas_a_exportar.add(tabla_rel_lower)
+                    except Exception as e:
+                        log_fail(f"Error obteniendo tablas relacionadas con {tabla_principal}: {e}")
+                        # Hacer rollback para continuar
+                        try:
+                            session.rollback()
+                        except:
+                            pass
+                        continue
+                
+                # Luego, agregar todas las demás tablas sin PK
                 try:
-                    model = obtener_modelo(name)
+                    tablas_sin_pk = obtener_tablas_sin_pk(session)
+                    for tabla_sin_pk in tablas_sin_pk:
+                        tabla_lower = tabla_sin_pk.lower()
+                        if tabla_lower not in tablas_a_exportar:
+                            # Intentar obtener el modelo o crear uno dinámico
+                            if tabla_lower in MODELS:
+                                tablas_a_exportar.add(tabla_lower)
+                            else:
+                                # Si no está en MODELS, intentar agregarla directamente
+                                log_step(f"Incluyendo tabla sin PK: {tabla_sin_pk}")
+                                tablas_a_exportar.add(tabla_lower)
+                except Exception as e:
+                    log_fail(f"Error obteniendo tablas sin PK: {e}")
+                    # Hacer rollback para continuar
+                    try:
+                        session.rollback()
+                    except:
+                        pass
+            
+            log_step(f"Total de tablas a exportar: {len(tablas_a_exportar)}")
+            
+            for name in tablas_a_exportar:
+                try:
+                    # Intentar obtener el modelo
+                    model = None
+                    try:
+                        model = obtener_modelo(name)
+                    except (AttributeError, KeyError):
+                        # Si no se encuentra el modelo, intentar exportar directamente
+                        log_step(f"Tabla {name} no encontrada en modelos, intentando exportación directa...")
+                        # Verificar que la tabla existe en la BD
+                        query_check = text("""
+                            SELECT EXISTS (
+                                SELECT 1
+                                FROM information_schema.tables
+                                WHERE table_schema = 'public'
+                                    AND table_name = :tabla
+                            )
+                        """)
+                        exists = session.execute(query_check, {"tabla": name}).fetchone()[0]
+                        if not exists:
+                            log_fail(f"Tabla {name} no existe en la base de datos")
+                            continue
+                        
+                        # Crear un modelo temporal para la exportación
+                        # Usar el modelo genérico si es posible
+                        if name in MODELS:
+                            model = MODELS[name]
+                        else:
+                            # Exportar directamente sin modelo
+                            log_step(f"Exportando tabla {name} directamente (sin modelo)...")
+                            try:
+                                # Obtener columnas de la tabla
+                                columnas = verificar_estructura_tabla(session, name)
+                                if not columnas:
+                                    log_fail(f"No se pudieron obtener columnas de {name}")
+                                    continue
+                                
+                                # Filtrar columnas de análisis
+                                columnas_analisis = filtrar_columnas_analisis(columnas, name)
+                                if not columnas_analisis:
+                                    log_step(f"Tabla {name} no tiene columnas de análisis después del filtrado")
+                                    continue
+                                
+                                # Obtener datos
+                                rows = obtener_datos_tabla(session, name, columnas_analisis)
+                                
+                                # Crear workbook
+                                if not OPENPYXL_AVAILABLE:
+                                    log_fail("openpyxl no está instalado")
+                                    continue
+                                
+                                wb, ws = crear_workbook_excel(name)
+                                
+                                # Escribir datos
+                                escribir_encabezados_excel(ws, columnas_analisis)
+                                escribir_filas_excel(ws, rows)
+                                
+                                # Ajustar columnas
+                                ajustar_ancho_columnas_excel(ws, columnas_analisis)
+                                
+                                # Guardar (normalizar nombre a lowercase)
+                                name_normalized = name.lower()
+                                xlsx_path = os.path.join(out_dir, f"{name_normalized}.xlsx")
+                                if guardar_workbook_excel(wb, xlsx_path):
+                                    log_ok(f"Archivo generado: {xlsx_path} ({len(rows)} filas)")
+                                    exported += 1
+                                continue
+                            except Exception as e:
+                                log_fail(f"Error exportando tabla {name} directamente: {e}")
+                                continue
+                    
                     if not model:
-                        log_fail(f"Tabla desconocida: {name}")
+                        log_fail(f"No se pudo obtener modelo para tabla: {name}")
                         continue
                     
                     if fmt == "xlsx":
@@ -420,7 +803,7 @@ def export_selected_tables(tables: list, output_dir: str, fmt: str) -> None:
                     log_fail(f"Error exportando tabla {name}: {e}")
                     continue
             
-            log_ok(f"Tablas exportadas correctamente: {exported}/{len(tables)}")
+            log_ok(f"Tablas exportadas correctamente: {exported}/{len(tablas_a_exportar)}")
             
             if exported == 0:
                 raise Exception("No se pudo exportar ninguna tabla")
@@ -456,9 +839,20 @@ def main():
     )
     args = parser.parse_args()
 
+    # Determinar si incluir tablas sin PK
+    incluir_sin_pk = True  # Por defecto incluir tablas sin PK
+    
+    # Verificar si hay argumentos para excluir
+    if hasattr(args, 'excluir_sin_pk') and args.excluir_sin_pk:
+        incluir_sin_pk = False
+    elif hasattr(args, 'incluir_sin_pk') and not args.incluir_sin_pk:
+        incluir_sin_pk = False
+
     log_step(f"Iniciando exportación de análisis en formato {args.format}…")
     log_step("Se exportarán datos de análisis (excluyendo IDs, estados activos, fechas de control)")
-    export_selected_tables(args.tables, args.out, args.format)
+    if incluir_sin_pk:
+        log_step("Incluyendo tablas sin Primary Key (tablas vinculadas)")
+    export_selected_tables(args.tables, args.out, args.format, incluir_sin_pk=incluir_sin_pk)
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.INFO)

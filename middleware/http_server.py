@@ -55,6 +55,30 @@ app = FastAPI(title="INIA Python Middleware", version="1.0.0")
 
 
 # ================================
+# MANEJADOR DE EXCEPCIONES PERSONALIZADO
+# ================================
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc: HTTPException):
+    """Maneja las excepciones HTTP y devuelve respuestas estructuradas."""
+    # Si el detail es un diccionario (nuestra respuesta estructurada), devolverlo directamente
+    if isinstance(exc.detail, dict):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content=exc.detail
+        )
+    # Si el detail es un string, crear una respuesta estructurada
+    respuesta_error = crear_respuesta_error(
+        mensaje=str(exc.detail) if exc.detail else "Error HTTP",
+        codigo=exc.status_code,
+        detalles=str(exc.detail) if exc.detail else None
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=respuesta_error
+    )
+
+
+# ================================
 # ESTRUCTURA DE RESPUESTAS ESTÁNDAR
 # ================================
 def crear_respuesta_exito(mensaje: str, datos: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -108,7 +132,7 @@ def insertar():
                 codigo=500,
                 detalles=str(db_error)
             )
-            return JSONResponse(content=respuesta_error, status_code=500)
+            raise HTTPException(status_code=500, detail=respuesta_error)
         
         # Ejecutar inserción masiva
         try:
@@ -125,7 +149,7 @@ def insertar():
                 codigo=500,
                 detalles="El proceso de inserción retornó False. Revisa los logs para más detalles."
             )
-            return JSONResponse(content=respuesta_error, status_code=500)
+            raise HTTPException(status_code=500, detail=respuesta_error)
         
         logger.info("Inserción masiva completada exitosamente")
         respuesta_exito = crear_respuesta_exito(
@@ -143,7 +167,7 @@ def insertar():
             codigo=500,
             detalles=str(e)
         )
-        return JSONResponse(content=respuesta_error, status_code=500)
+        raise HTTPException(status_code=500, detail=respuesta_error)
 
 
 @app.post("/exportar")
@@ -164,7 +188,7 @@ def exportar(
                 codigo=400,
                 detalles=f"El formato '{formato}' no es válido. Solo se acepta 'xlsx' o 'csv'"
             )
-            return JSONResponse(content=respuesta_error, status_code=400)
+            raise HTTPException(status_code=400, detail=respuesta_error)
         
         # Validar conexión a base de datos
         try:
@@ -180,7 +204,7 @@ def exportar(
                 codigo=500,
                 detalles=str(db_error)
             )
-            return JSONResponse(content=respuesta_error, status_code=500)
+            raise HTTPException(status_code=500, detail=respuesta_error)
         
         # Procesar lista de tablas
         tablas_list = [t.strip() for t in tablas.split(",") if t.strip()] if tablas else []
@@ -200,7 +224,7 @@ def exportar(
                 codigo=500,
                 detalles="El sistema no pudo crear un directorio temporal para la exportación"
             )
-            return JSONResponse(content=respuesta_error, status_code=500)
+            raise HTTPException(status_code=500, detail=respuesta_error)
         
         logger.info(f"Directorio temporal creado: {tmp_dir}")
         
@@ -215,7 +239,7 @@ def exportar(
                 detalles=str(export_error)
             )
             shutil.rmtree(tmp_dir, ignore_errors=True)
-            return JSONResponse(content=respuesta_error, status_code=500)
+            raise HTTPException(status_code=500, detail=respuesta_error)
 
         # Verificar que se generaron archivos
         files_generated = [f for f in os.listdir(tmp_dir) if f.endswith(('.xlsx', '.csv'))]
@@ -226,7 +250,7 @@ def exportar(
                 detalles=f"No se generaron archivos en el directorio temporal. Tablas solicitadas: {', '.join(tablas_list)}"
             )
             shutil.rmtree(tmp_dir, ignore_errors=True)
-            return JSONResponse(content=respuesta_error, status_code=500)
+            raise HTTPException(status_code=500, detail=respuesta_error)
         
         logger.info(f"Se generaron {len(files_generated)} archivo(s) de exportación")
 
@@ -249,7 +273,7 @@ def exportar(
                 detalles=str(zip_error)
             )
             shutil.rmtree(tmp_dir, ignore_errors=True)
-            return JSONResponse(content=respuesta_error, status_code=500)
+            raise HTTPException(status_code=500, detail=respuesta_error)
 
         # Verificar que el zip se creó
         if not os.path.exists(zip_path):
@@ -259,7 +283,7 @@ def exportar(
                 detalles="El archivo ZIP no se generó correctamente"
             )
             shutil.rmtree(tmp_dir, ignore_errors=True)
-            return JSONResponse(content=respuesta_error, status_code=500)
+            raise HTTPException(status_code=500, detail=respuesta_error)
 
         # Leer el archivo zip como bytes
         try:
@@ -273,7 +297,7 @@ def exportar(
                 detalles=str(read_error)
             )
             shutil.rmtree(tmp_dir, ignore_errors=True)
-            return JSONResponse(content=respuesta_error, status_code=500)
+            raise HTTPException(status_code=500, detail=respuesta_error)
         
         if len(zip_bytes) == 0:
             respuesta_error = crear_respuesta_error(
@@ -282,7 +306,7 @@ def exportar(
                 detalles="El archivo ZIP se creó pero no contiene datos"
             )
             shutil.rmtree(tmp_dir, ignore_errors=True)
-            return JSONResponse(content=respuesta_error, status_code=500)
+            raise HTTPException(status_code=500, detail=respuesta_error)
         
         logger.info(f"Exportación completada exitosamente. Tamaño del ZIP: {len(zip_bytes)} bytes, {len(files_generated)} archivo(s)")
         
@@ -309,7 +333,7 @@ def exportar(
             codigo=500,
             detalles=str(e)
         )
-        return JSONResponse(content=respuesta_error, status_code=500)
+        raise HTTPException(status_code=500, detail=respuesta_error)
 
 
 @app.post("/importar")
@@ -331,7 +355,7 @@ async def importar(
                 codigo=400,
                 detalles="Debe proporcionar un archivo para importar"
             )
-            return JSONResponse(content=respuesta_error, status_code=400)
+            raise HTTPException(status_code=400, detail=respuesta_error)
         
         # Validar nombre de archivo
         if not file.filename:
@@ -340,7 +364,7 @@ async def importar(
                 codigo=400,
                 detalles="El archivo proporcionado no tiene un nombre válido"
             )
-            return JSONResponse(content=respuesta_error, status_code=400)
+            raise HTTPException(status_code=400, detail=respuesta_error)
         
         logger.info(f"Archivo recibido: {file.filename}, Tamaño: {file.size if hasattr(file, 'size') else 'desconocido'}")
         
@@ -352,7 +376,7 @@ async def importar(
                 codigo=400,
                 detalles="Debe especificar el nombre de la tabla destino"
             )
-            return JSONResponse(content=respuesta_error, status_code=400)
+            raise HTTPException(status_code=400, detail=respuesta_error)
         
         model = IMPORT_MODELS.get(table_key)
         if not model:
@@ -362,7 +386,7 @@ async def importar(
                 codigo=400,
                 detalles=f"La tabla '{table}' no existe. Tablas disponibles: {', '.join(tablas_disponibles[:10])}{'...' if len(tablas_disponibles) > 10 else ''}"
             )
-            return JSONResponse(content=respuesta_error, status_code=400)
+            raise HTTPException(status_code=400, detail=respuesta_error)
         
         logger.info(f"Tabla validada: {model.__tablename__}")
         
@@ -385,7 +409,7 @@ async def importar(
                         codigo=400,
                         detalles="El archivo proporcionado está vacío"
                     )
-                    return JSONResponse(content=respuesta_error, status_code=400)
+                    raise HTTPException(status_code=400, detail=respuesta_error)
                 
                 with open(tmp_path, "wb") as out:
                     out.write(content)
@@ -397,7 +421,7 @@ async def importar(
                     codigo=500,
                     detalles=str(file_error)
                 )
-                return JSONResponse(content=respuesta_error, status_code=500)
+                raise HTTPException(status_code=500, detail=respuesta_error)
 
             # Validar formato del archivo
             fmt = detect_format_from_path(tmp_path)
@@ -407,7 +431,7 @@ async def importar(
                     codigo=400,
                     detalles=f"El formato del archivo no es válido. Solo se aceptan archivos CSV o XLSX. Formato detectado: {fmt or 'desconocido'}"
                 )
-                return JSONResponse(content=respuesta_error, status_code=400)
+                raise HTTPException(status_code=400, detail=respuesta_error)
             
             logger.info(f"Formato de archivo validado: {fmt}")
 
@@ -425,7 +449,7 @@ async def importar(
                     codigo=500,
                     detalles=str(db_error)
                 )
-                return JSONResponse(content=respuesta_error, status_code=500)
+                raise HTTPException(status_code=500, detail=respuesta_error)
 
             # Preparar conexión SQLAlchemy
             Session = sessionmaker(bind=engine)
@@ -475,7 +499,7 @@ async def importar(
                     codigo=500,
                     detalles=str(import_error)
                 )
-                return JSONResponse(content=respuesta_error, status_code=500)
+                raise HTTPException(status_code=500, detail=respuesta_error)
             finally:
                 session.close()
                 
@@ -507,7 +531,7 @@ async def importar(
             codigo=500,
             detalles=str(e)
         )
-        return JSONResponse(content=respuesta_error, status_code=500)
+        raise HTTPException(status_code=500, detail=respuesta_error)
 
 
 if __name__ == "__main__":
