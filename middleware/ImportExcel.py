@@ -21,14 +21,14 @@ if INSTALL_DEPS_AVAILABLE:
 
 # Importaciones SQLAlchemy
 try:
-    from sqlalchemy import create_engine, text, Table
+    from sqlalchemy import create_engine, text, Table, inspect
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy.ext.automap import automap_base
 except ModuleNotFoundError:
     if INSTALL_DEPS_AVAILABLE:
         print("Instalando dependencias faltantes...")
         if instalar_dependencias_faltantes('ImportExcel', silent=False):
-            from sqlalchemy import create_engine, text, Table
+            from sqlalchemy import create_engine, text, Table, inspect
             from sqlalchemy.orm import sessionmaker
             from sqlalchemy.ext.automap import automap_base
         else:
@@ -120,14 +120,33 @@ def inicializar_automap(engine=None):
     logger.info("Creando automap_base...")
     Base = automap_base()
     
+    # Verificar que hay tablas en la base de datos ANTES de preparar
+    tablas_en_bd = []
+    try:
+        inspector = inspect(_engine)
+        tablas_en_bd = inspector.get_table_names(schema='public')
+        logger.info(f"Tablas encontradas en esquema 'public': {len(tablas_en_bd)} - {tablas_en_bd[:10]}{'...' if len(tablas_en_bd) > 10 else ''}")
+        
+        if not tablas_en_bd:
+            logger.error("No se encontraron tablas en el esquema 'public' de la base de datos")
+            raise RuntimeError("No hay tablas en el esquema 'public' de la base de datos. Verifica que la base de datos tenga tablas creadas.")
+    except RuntimeError:
+        raise
+    except Exception as inspect_error:
+        logger.error(f"Error verificando tablas en la base de datos: {inspect_error}", exc_info=True)
+        raise RuntimeError(f"No se pudo verificar las tablas en la base de datos: {str(inspect_error)}")
+    
     try:
         logger.info("Ejecutando Base.prepare(autoload_with=_engine)...")
+        # Base.prepare() por defecto busca en el esquema 'public' si no se especifica otro
         Base.prepare(autoload_with=_engine)
         num_tables = len(Base.classes)
         logger.info(f"Modelos generados automáticamente: {num_tables} tablas")
         
         if num_tables == 0:
-            logger.warning("Base.prepare() no encontró ninguna tabla en la base de datos")
+            logger.error("Base.prepare() no encontró ninguna tabla aunque hay tablas en la BD")
+            raise RuntimeError(f"Base.prepare() no encontró tablas aunque hay {len(tablas_en_bd)} tablas en la base de datos. "
+                             f"Tablas en BD: {', '.join(tablas_en_bd[:10])}{'...' if len(tablas_en_bd) > 10 else ''}")
     except Exception as e:
         logger.error(f"Error inicializando automap: {e}", exc_info=True)
         logger.error(f"Tipo de error: {type(e).__name__}")
@@ -142,11 +161,34 @@ def inicializar_automap(engine=None):
         if not class_name.startswith('_'):
             try:
                 cls = getattr(Base.classes, class_name)
-                if hasattr(cls, '__tablename__'):
-                    tabla_nombre = cls.__tablename__.lower()
+                # Intentar obtener el nombre de la tabla de diferentes formas (como en ExportExcel.py)
+                tabla_nombre = None
+                
+                # Método 1: Intentar __tablename__
+                try:
+                    if hasattr(cls, '__tablename__'):
+                        tabla_nombre = cls.__tablename__.lower()
+                except:
+                    pass
+                
+                # Método 2: Intentar __table__.name
+                if tabla_nombre is None:
+                    try:
+                        if hasattr(cls, '__table__') and hasattr(cls.__table__, 'name'):
+                            tabla_nombre = cls.__table__.name.lower()
+                    except:
+                        pass
+                
+                # Método 3: Usar el nombre de la clase directamente
+                if tabla_nombre is None:
+                    tabla_nombre = class_name.lower()
+                
+                # Mapear la clase
+                if tabla_nombre:
                     MODELS[tabla_nombre] = cls
                     MODELS[class_name.lower()] = cls
                     modelos_agregados += 1
+                    logger.debug(f"Modelo mapeado: {tabla_nombre} -> {class_name}")
             except Exception as e:
                 logger.warning(f"Error procesando clase '{class_name}': {e}")
                 continue
@@ -155,7 +197,11 @@ def inicializar_automap(engine=None):
     
     if len(MODELS) == 0:
         logger.error("MODELS está vacío después de procesar todas las clases")
-        raise RuntimeError("No se pudieron cargar modelos desde la base de datos. MODELS está vacío.")
+        logger.error(f"Base.classes tiene {len(Base.classes)} clases pero no se pudieron mapear")
+        logger.error(f"Tablas en BD: {', '.join(tablas_en_bd[:20])}{'...' if len(tablas_en_bd) > 20 else ''}")
+        raise RuntimeError(f"No se pudieron cargar modelos desde la base de datos. MODELS está vacío. "
+                         f"Hay {len(tablas_en_bd)} tablas en la BD pero Base.classes tiene {len(Base.classes)} clases. "
+                         f"Verifica que las tablas tengan estructura válida.")
     
     _models_initialized = True
     logger.info(f"Automap inicializado exitosamente. MODELS tiene {len(MODELS)} entradas")

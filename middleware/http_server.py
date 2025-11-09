@@ -228,7 +228,7 @@ def exportar(
 
         # Crear directorio temporal
         try:
-            tmp_dir = tempfile.mkdtemp(prefix="inia_export_")
+        tmp_dir = tempfile.mkdtemp(prefix="inia_export_")
             logger.info(f"Directorio temporal creado: {tmp_dir}")
         except Exception as dir_error:
             respuesta_error = crear_respuesta_error(
@@ -237,8 +237,8 @@ def exportar(
                 detalles=f"Error al crear directorio temporal: {str(dir_error)}"
             )
             raise HTTPException(status_code=500, detail=respuesta_error)
-        
-        # Ejecutar exportación (incluyendo tablas sin PK por defecto)
+            
+            # Ejecutar exportación (incluyendo tablas sin PK por defecto)
         try:
             export_selected_tables(tablas_list, tmp_dir, formato, incluir_sin_pk=incluir_sin_pk)
         except Exception as export_error:
@@ -251,9 +251,9 @@ def exportar(
             shutil.rmtree(tmp_dir, ignore_errors=True)
             raise HTTPException(status_code=500, detail=respuesta_error)
 
-        # Verificar que se generaron archivos
-        files_generated = [f for f in os.listdir(tmp_dir) if f.endswith(('.xlsx', '.csv'))]
-        if not files_generated:
+            # Verificar que se generaron archivos
+            files_generated = [f for f in os.listdir(tmp_dir) if f.endswith(('.xlsx', '.csv'))]
+            if not files_generated:
             respuesta_error = crear_respuesta_error(
                 mensaje="No se generaron archivos de exportación",
                 codigo=500,
@@ -264,8 +264,8 @@ def exportar(
         
         logger.info(f"Se generaron {len(files_generated)} archivo(s) de exportación")
 
-        # Empaquetar en zip
-        zip_path = os.path.join(tmp_dir, "export.zip")
+            # Empaquetar en zip
+            zip_path = os.path.join(tmp_dir, "export.zip")
         try:
             with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
                 for root, _, files in os.walk(tmp_dir):
@@ -285,8 +285,8 @@ def exportar(
             shutil.rmtree(tmp_dir, ignore_errors=True)
             raise HTTPException(status_code=500, detail=respuesta_error)
 
-        # Verificar que el zip se creó
-        if not os.path.exists(zip_path):
+            # Verificar que el zip se creó
+            if not os.path.exists(zip_path):
             respuesta_error = crear_respuesta_error(
                 mensaje="No se pudo crear archivo ZIP",
                 codigo=500,
@@ -310,7 +310,7 @@ def exportar(
             raise HTTPException(status_code=500, detail=respuesta_error)
         
         # Verificar que el ZIP no esté vacío
-        if len(zip_bytes) == 0:
+            if len(zip_bytes) == 0:
             respuesta_error = crear_respuesta_error(
                 mensaje="Archivo ZIP generado está vacío",
                 codigo=500,
@@ -320,22 +320,22 @@ def exportar(
             raise HTTPException(status_code=500, detail=respuesta_error)
         
         logger.info(f"Exportación completada exitosamente. Tamaño del ZIP: {len(zip_bytes)} bytes, {len(files_generated)} archivo(s)")
+            
+            # Limpiar archivos temporales
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+            
+            # Devolver el archivo ZIP como respuesta binaria
+            return Response(
+                content=zip_bytes,
+                media_type="application/zip",
+                headers={"Content-Disposition": "attachment; filename=export.zip"}
+            )
         
-        # Limpiar archivos temporales
-        shutil.rmtree(tmp_dir, ignore_errors=True)
-        
-        # Devolver el archivo ZIP como respuesta binaria
-        return Response(
-            content=zip_bytes,
-            media_type="application/zip",
-            headers={"Content-Disposition": "attachment; filename=export.zip"}
-        )
-        
-    except HTTPException:
+        except HTTPException:
         if tmp_dir:
             shutil.rmtree(tmp_dir, ignore_errors=True)
-        raise
-    except Exception as e:
+            raise
+        except Exception as e:
         logger.error(f"Error inesperado durante exportación: {e}", exc_info=True)
         if tmp_dir:
             shutil.rmtree(tmp_dir, ignore_errors=True)
