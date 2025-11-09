@@ -105,33 +105,60 @@ def inicializar_automap(engine=None):
     global Base, _engine, _models_initialized, MODELS
     
     if _models_initialized and Base is not None:
+        logger.info(f"Automap ya inicializado. MODELS tiene {len(MODELS)} tablas")
         return Base
     
     if engine is None:
+        logger.info("Engine no proporcionado, construyendo conexión...")
         connection_string = build_connection_string()
         _engine = create_engine(connection_string)
+        logger.info("Engine creado desde connection_string")
     else:
         _engine = engine
+        logger.info("Usando engine proporcionado")
     
+    logger.info("Creando automap_base...")
     Base = automap_base()
     
     try:
+        logger.info("Ejecutando Base.prepare(autoload_with=_engine)...")
         Base.prepare(autoload_with=_engine)
-        logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
+        num_tables = len(Base.classes)
+        logger.info(f"Modelos generados automáticamente: {num_tables} tablas")
+        
+        if num_tables == 0:
+            logger.warning("Base.prepare() no encontró ninguna tabla en la base de datos")
     except Exception as e:
-        logger.error(f"Error inicializando automap: {e}")
+        logger.error(f"Error inicializando automap: {e}", exc_info=True)
+        logger.error(f"Tipo de error: {type(e).__name__}")
         raise
     
+    logger.info("Limpiando MODELS...")
     MODELS.clear()
+    logger.info(f"MODELS limpiado. Iterando sobre {len(Base.classes)} clases...")
+    
+    modelos_agregados = 0
     for class_name in dir(Base.classes):
         if not class_name.startswith('_'):
-            cls = getattr(Base.classes, class_name)
-            if hasattr(cls, '__tablename__'):
-                tabla_nombre = cls.__tablename__.lower()
-                MODELS[tabla_nombre] = cls
-                MODELS[class_name.lower()] = cls
+            try:
+                cls = getattr(Base.classes, class_name)
+                if hasattr(cls, '__tablename__'):
+                    tabla_nombre = cls.__tablename__.lower()
+                    MODELS[tabla_nombre] = cls
+                    MODELS[class_name.lower()] = cls
+                    modelos_agregados += 1
+            except Exception as e:
+                logger.warning(f"Error procesando clase '{class_name}': {e}")
+                continue
+    
+    logger.info(f"MODELS actualizado: {modelos_agregados} modelos agregados, total: {len(MODELS)} entradas")
+    
+    if len(MODELS) == 0:
+        logger.error("MODELS está vacío después de procesar todas las clases")
+        raise RuntimeError("No se pudieron cargar modelos desde la base de datos. MODELS está vacío.")
     
     _models_initialized = True
+    logger.info(f"Automap inicializado exitosamente. MODELS tiene {len(MODELS)} entradas")
     return Base
 
 def obtener_modelo(nombre_tabla):

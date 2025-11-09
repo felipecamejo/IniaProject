@@ -68,12 +68,35 @@ python MassiveInsertFiles.py
 
 #### 4. Servidor API
 ```powershell
+# Desde la raíz del proyecto:
+.\PowerShell\run_middleware.ps1 server
+
+# O desde el directorio PowerShell:
+cd PowerShell
 .\run_middleware.ps1 server
-# o directamente:
+
+# O directamente:
+cd middleware
 python http_server.py
 ```
 
+**Características del comando `server`:**
+- ✅ Detecta automáticamente si el puerto 9099 está en uso
+- ✅ Detiene el servidor anterior si existe
+- ✅ Reinicia automáticamente con los cambios más recientes
+- ✅ No necesitas detener el servidor manualmente antes de reiniciarlo
+
+**Detener el servidor:**
+```powershell
+# Opción 1: Usar el comando stop
+.\PowerShell\run_middleware.ps1 stop
+
+# Opción 2: Presionar Ctrl+C en la terminal donde está corriendo
+```
+
 El servidor se ejecutará en `http://localhost:9099`
+
+**Ver documentación completa:** `PowerShell/README_run_middleware.md`
 
 #### 5. Pruebas de rendimiento
 ```powershell
@@ -162,6 +185,38 @@ El sistema incluye un **modo laboratorio** optimizado para pruebas de rendimient
 # - Rendimiento: 1000-2000 registros/segundo
 ```
 
+## Instalación automática de dependencias
+
+Todos los scripts del middleware instalan dependencias automáticamente si faltan. Esto significa que puedes ejecutar cualquier script sin preocuparte por instalar dependencias manualmente.
+
+### Para scripts nuevos
+
+Si estás creando un nuevo script y quieres que instale dependencias automáticamente, usa el módulo `InstallDependencies`:
+
+```python
+# Al inicio de tu script
+try:
+    from InstallDependencies import ensure_dependencies
+    # Asegurar que los módulos necesarios estén instalados
+    ensure_dependencies('sqlalchemy', 'openpyxl', 'pandas', silent=False)
+except ImportError:
+    pass  # Si InstallDependencies no está disponible, continuar sin instalación
+
+# Ahora puedes importar con seguridad
+from sqlalchemy import create_engine
+from openpyxl import Workbook
+import pandas as pd
+```
+
+### Funciones disponibles
+
+- `ensure_dependencies(*modules)`: Verifica e instala múltiples módulos
+- `ensure_dependencies_from_list(modules)`: Versión que acepta una lista
+- `instalar_dependencias_faltantes(module_name)`: Instala dependencias para un módulo específico
+- `verificar_e_instalar(modulo, package_name)`: Verifica e instala un módulo individual
+
+Ver `ejemplo_uso_dependencias.py` para más ejemplos.
+
 ## Solución de problemas
 
 ### Error de conexión a base de datos
@@ -170,8 +225,15 @@ El sistema incluye un **modo laboratorio** optimizado para pruebas de rendimient
 - Revisa las credenciales en la configuración
 
 ### Error de dependencias
-- Ejecuta `.\SetupMiddleware.ps1` para reinstalar dependencias
-- Verifica que el entorno virtual esté activado
+- Los scripts intentan instalar dependencias automáticamente
+- Si falla la instalación automática, ejecuta manualmente:
+  ```powershell
+  pip install -r requirements.txt
+  ```
+- O instala dependencias para un módulo específico:
+  ```powershell
+  python InstallDependencies.py --module ExportExcel
+  ```
 
 ### Error de permisos
 - Ejecuta PowerShell como administrador si es necesario

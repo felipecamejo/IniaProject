@@ -220,6 +220,7 @@ public class PythonMiddlewareHttpService {
     
     /**
      * Parsea un error HTTP y lo convierte en MiddlewareResponse.
+     * Proporciona mensajes de error claros y detallados.
      */
     private MiddlewareResponse parsearErrorHttp(Exception ex) {
         int statusCode = 500;
@@ -236,17 +237,117 @@ public class PythonMiddlewareHttpService {
                 statusCode = httpEx.getStatusCode().value();
             }
             
+            // Log detallado del cuerpo de la respuesta
+            logger.info("Cuerpo de respuesta del servidor Python (Status {}): {}", statusCode, responseBody);
+            
             if (responseBody != null && !responseBody.isEmpty()) {
-                MiddlewareResponse response = objectMapper.readValue(responseBody, MiddlewareResponse.class);
-                return response;
+                try {
+                    // FastAPI puede retornar el error en formato {"detail": {...}} o {"detail": "mensaje"}
+                    // Intentar parsear primero como MiddlewareResponse directo
+                    MiddlewareResponse response = objectMapper.readValue(responseBody, MiddlewareResponse.class);
+                    
+                    // Validar que la respuesta tiene valores válidos
+                    if (response.getExitoso() != null || response.getMensaje() != null || response.getCodigo() != null) {
+                        logger.info("Respuesta parseada correctamente: exitoso={}, mensaje={}, codigo={}", 
+                                   response.getExitoso(), response.getMensaje(), response.getCodigo());
+                        return response;
+                    } else {
+                        logger.warn("Respuesta parseada pero con valores null. Intentando parsear formato FastAPI...");
+                    }
+                } catch (Exception parseError) {
+                    logger.warn("No se pudo parsear como MiddlewareResponse directo: {}", parseError.getMessage());
+                }
+                
+                // Intentar parsear como formato FastAPI {"detail": {...}}
+                try {
+                    @SuppressWarnings("unchecked")
+                    java.util.Map<String, Object> jsonMap = objectMapper.readValue(
+                        responseBody, 
+                        objectMapper.getTypeFactory().constructMapType(
+                            java.util.Map.class, 
+                            String.class, 
+                            Object.class
+                        )
+                    );
+                    
+                    if (jsonMap.containsKey("detail")) {
+                        Object detail = jsonMap.get("detail");
+                        
+                        // Si detail es un diccionario (nuestra respuesta estructurada)
+                        if (detail instanceof java.util.Map) {
+                            @SuppressWarnings("unchecked")
+                            java.util.Map<String, Object> detailMap = (java.util.Map<String, Object>) detail;
+                            
+                            MiddlewareResponse response = new MiddlewareResponse();
+                            response.setExitoso((Boolean) detailMap.get("exitoso"));
+                            response.setMensaje((String) detailMap.get("mensaje"));
+                            response.setCodigo(detailMap.get("codigo") != null ? 
+                                             ((Number) detailMap.get("codigo")).intValue() : statusCode);
+                            response.setDetalles((String) detailMap.get("detalles"));
+                            @SuppressWarnings("unchecked")
+                            java.util.Map<String, Object> datos = (java.util.Map<String, Object>) detailMap.get("datos");
+                            response.setDatos(datos);
+                            
+                            logger.info("Respuesta parseada desde formato FastAPI detail: exitoso={}, mensaje={}", 
+                                       response.getExitoso(), response.getMensaje());
+                            return response;
+                        } 
+                        // Si detail es un string
+                        else if (detail instanceof String) {
+                            return crearRespuestaError(
+                                "Error en el servidor Python",
+                                String.format("Status: %d, Detalle: %s", statusCode, detail)
+                            );
+                        }
+                    }
+                    
+                    // Si no tiene "detail", intentar mapear directamente
+                    MiddlewareResponse response = new MiddlewareResponse();
+                    response.setExitoso((Boolean) jsonMap.get("exitoso"));
+                    response.setMensaje((String) jsonMap.get("mensaje"));
+                    if (jsonMap.get("codigo") != null) {
+                        response.setCodigo(((Number) jsonMap.get("codigo")).intValue());
+                    } else {
+                        response.setCodigo(statusCode);
+                    }
+                    response.setDetalles((String) jsonMap.get("detalles"));
+                    @SuppressWarnings("unchecked")
+                    java.util.Map<String, Object> datos = (java.util.Map<String, Object>) jsonMap.get("datos");
+                    response.setDatos(datos);
+                    
+                    // Validar que tiene al menos un campo válido
+                    if (response.getExitoso() != null || response.getMensaje() != null) {
+                        logger.info("Respuesta parseada desde JSON genérico: exitoso={}, mensaje={}", 
+                                   response.getExitoso(), response.getMensaje());
+                        return response;
+                    }
+                } catch (Exception mapError) {
+                    logger.error("Error parseando JSON del servidor Python: {}", mapError.getMessage());
+                    logger.error("Cuerpo de respuesta que no se pudo parsear: {}", responseBody);
+                }
+            } else {
+                logger.warn("El servidor Python retornó un cuerpo de respuesta vacío o null");
             }
-        } catch (Exception parseError) {
-            logger.warn("No se pudo parsear el cuerpo de error HTTP: {}", parseError.getMessage());
+        } catch (Exception e) {
+            logger.error("Error obteniendo cuerpo de respuesta del servidor Python: {}", e.getMessage(), e);
+        }
+        
+        // Si llegamos aquí, crear una respuesta de error genérica pero clara
+        String mensajeDetalle = ex.getMessage();
+        if (responseBody != null && !responseBody.isEmpty()) {
+            // Limitar el tamaño del mensaje para evitar respuestas muy largas
+            String cuerpoResumido = responseBody.length() > 500 
+                ? responseBody.substring(0, 500) + "..." 
+                : responseBody;
+            mensajeDetalle = String.format("Status: %d, Mensaje: %s. Respuesta del servidor: %s", 
+                                         statusCode, ex.getMessage(), cuerpoResumido);
+        } else {
+            mensajeDetalle = String.format("Status: %d, Mensaje: %s", statusCode, ex.getMessage());
         }
         
         return crearRespuestaError(
             "Error en el servidor Python",
-            String.format("Status: %d, Mensaje: %s", statusCode, ex.getMessage())
+            mensajeDetalle
         );
     }
 }

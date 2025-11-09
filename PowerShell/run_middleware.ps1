@@ -1,110 +1,162 @@
-# Script para ejecutar el middleware INIA
-# Uso: .\run_middleware.ps1 [comando] [opciones]
+# Script to start/restart the Python middleware server
+# Usage: .\run_middleware.ps1 [command]
 
 param(
     [Parameter(Position=0)]
-    [ValidateSet("insert", "export", "import", "server", "test", "help")]
-    [string]$Command = "help",
-    
-    [Parameter(Position=1)]
-    [string]$Options = ""
+    [ValidateSet("server", "stop", "help")]
+    [string]$Command = "help"
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# Obtener directorio del script (PowerShell/)
+# Get script directory (PowerShell/)
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# Navegar a la raíz del proyecto (un nivel arriba)
+# Navigate to project root (one level up)
 $projectRoot = Split-Path -Parent $scriptDir
 Set-Location $projectRoot
 
-# Navegar al directorio middleware
+# Navigate to middleware directory
 Push-Location "middleware"
 
-# Verificar que estamos en el directorio correcto
-if (-not (Test-Path "MassiveInsertFiles.py")) {
-    Write-Error "No se encontró MassiveInsertFiles.py en el directorio middleware/"
+# Verify we're in the correct directory
+if (-not (Test-Path "http_server.py")) {
+    Write-Error "http_server.py not found in middleware/ directory"
     Pop-Location
     exit 1
 }
 
-# Activar entorno virtual si existe
+# Activate virtual environment if it exists
 if (Test-Path ".venv\Scripts\Activate.ps1") {
-    Write-Host "Activando entorno virtual..." -ForegroundColor Cyan
+    Write-Host "Activating virtual environment..." -ForegroundColor Cyan
     . .\.venv\Scripts\Activate.ps1
 } else {
-    Write-Warning "No se encontró entorno virtual. Asegúrate de ejecutar SetupMiddleware.ps1 primero."
+    Write-Warning "Virtual environment not found. Make sure to run SetupMiddleware.ps1 first."
 }
 
-switch ($Command) {
-    "insert" {
-        Write-Host "Ejecutando inserción masiva de datos..." -ForegroundColor Green
-        python MassiveInsertFiles.py
+# ================================
+# SERVER MANAGEMENT FUNCTIONS
+# ================================
+
+function Test-PortInUse {
+    param([int]$Port)
+    try {
+        $connection = Test-NetConnection -ComputerName localhost -Port $Port -WarningAction SilentlyContinue -InformationLevel Quiet
+        return $connection
+    } catch {
+        return $false
     }
+}
+
+function Stop-ServerOnPort {
+    param([int]$Port)
     
-    "export" {
-        if ($Options) {
-            Write-Host "Exportando datos con opciones: $Options" -ForegroundColor Green
-            python ExportExcel.py $Options
-        } else {
-            Write-Host "Exportando todas las tablas a Excel..." -ForegroundColor Green
-            python ExportExcel.py --format xlsx
+    Write-Host "Checking if server is running on port $Port..." -ForegroundColor Yellow
+    
+    # Find processes using the port
+    $processes = Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue | 
+                 Select-Object -ExpandProperty OwningProcess -Unique
+    
+    if ($processes) {
+        foreach ($processId in $processes) {
+            try {
+                $process = Get-Process -Id $processId -ErrorAction SilentlyContinue
+                if ($process) {
+                    $processName = $process.ProcessName
+                    Write-Host "Stopping process $processName (PID: $processId) on port $Port..." -ForegroundColor Yellow
+                    Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+                    Start-Sleep -Seconds 1
+                    Write-Host "Process stopped successfully" -ForegroundColor Green
+                }
+            } catch {
+                Write-Warning "Could not stop process $processId : $($_.Exception.Message)"
+            }
         }
-    }
-    
-    "import" {
-        if ($Options) {
-            Write-Host "Importando datos con opciones: $Options" -ForegroundColor Green
-            python ImportExcel.py $Options
+        
+        # Wait a moment for the port to be released
+        Start-Sleep -Seconds 2
+        
+        # Verify the port is free
+        if (Test-PortInUse -Port $Port) {
+            Write-Warning "Port $Port is still in use. Try stopping it manually."
+            return $false
         } else {
-            Write-Host "Uso: .\run_middleware.ps1 import --file archivo.xlsx --table lote" -ForegroundColor Yellow
+            Write-Host "Port $Port released successfully" -ForegroundColor Green
+            return $true
         }
+    } else {
+        Write-Host "No processes using port $Port" -ForegroundColor Green
+        return $true
+    }
+}
+
+function Start-Server {
+    param([int]$Port = 9099)
+    
+    # Check and stop existing server
+    if (Test-PortInUse -Port $Port) {
+        Write-Host "`nServer detected on port $Port. Restarting..." -ForegroundColor Yellow
+        Stop-ServerOnPort -Port $Port
     }
     
-    "server" {
-        Write-Host "Iniciando servidor API en puerto 9099..." -ForegroundColor Green
-        Write-Host "Endpoints disponibles:" -ForegroundColor Yellow
-        Write-Host "  POST /insertar - Inserción masiva" -ForegroundColor White
-        Write-Host "  POST /exportar - Exportar tablas" -ForegroundColor White
-        Write-Host "  POST /importar - Importar archivos" -ForegroundColor White
-        Write-Host "  http://localhost:9099/docs - Documentación interactiva" -ForegroundColor White
+    Write-Host "`nStarting middleware API server on port $Port..." -ForegroundColor Green
+    Write-Host "Available endpoints:" -ForegroundColor Yellow
+    Write-Host "  POST /insertar - Mass insertion" -ForegroundColor White
+    Write-Host "  POST /exportar - Export tables" -ForegroundColor White
+    Write-Host "  POST /importar - Import files" -ForegroundColor White
+    Write-Host "  http://localhost:$Port/docs - Interactive API documentation" -ForegroundColor White
+    Write-Host "`nPress Ctrl+C to stop the server`n" -ForegroundColor Cyan
+    
+    # Start the server
+    try {
         python http_server.py
+    } catch {
+        Write-Error "Error starting server: $_"
+        Pop-Location
+        exit 1
+    }
+}
+
+# ================================
+# MAIN COMMANDS
+# ================================
+
+switch ($Command) {
+    "server" {
+        Start-Server -Port 9099
     }
     
-    "test" {
-        Write-Host "Ejecutando pruebas del sistema de inserción masiva..." -ForegroundColor Green
-        Write-Host "⚠️  ADVERTENCIA: Esto insertará ~35,000 registros para pruebas de laboratorio" -ForegroundColor Yellow
-        $confirm = Read-Host "¿Continuar? (s/N)"
-        if ($confirm -eq "s" -or $confirm -eq "S" -or $confirm -eq "si" -or $confirm -eq "Si") {
-            python test_massive_insert.py
+    "stop" {
+        Write-Host "Stopping server on port 9099..." -ForegroundColor Yellow
+        if (Stop-ServerOnPort -Port 9099) {
+            Write-Host "Server stopped successfully" -ForegroundColor Green
         } else {
-            Write-Host "Prueba cancelada por el usuario" -ForegroundColor Yellow
+            Write-Host "Could not stop server completely" -ForegroundColor Red
+            exit 1
         }
     }
     
     "help" {
-        Write-Host "=== MIDDLEWARE INIA - COMANDOS DISPONIBLES ===" -ForegroundColor Cyan
+        Write-Host "=== MIDDLEWARE SERVER - AVAILABLE COMMANDS ===" -ForegroundColor Cyan
         Write-Host ""
-        Write-Host "Uso: .\run_middleware.ps1 [comando] [opciones]" -ForegroundColor White
+        Write-Host "Usage: .\run_middleware.ps1 [command]" -ForegroundColor White
         Write-Host ""
-        Write-Host "Comandos:" -ForegroundColor Yellow
-        Write-Host "  insert                    - Ejecutar inserción masiva de datos" -ForegroundColor White
-        Write-Host "  export [opciones]         - Exportar tablas a Excel/CSV" -ForegroundColor White
-        Write-Host "  import [opciones]         - Importar datos desde archivos" -ForegroundColor White
-        Write-Host "  server                    - Iniciar servidor API FastAPI" -ForegroundColor White
-        Write-Host "  test                      - Ejecutar pruebas de inserción masiva (35K registros)" -ForegroundColor White
-        Write-Host "  help                      - Mostrar esta ayuda" -ForegroundColor White
+        Write-Host "Commands:" -ForegroundColor Yellow
+        Write-Host "  server                    - Start/Restart middleware API server" -ForegroundColor White
+        Write-Host "  stop                      - Stop middleware API server on port 9099" -ForegroundColor White
+        Write-Host "  help                      - Show this help" -ForegroundColor White
         Write-Host ""
-        Write-Host "Ejemplos:" -ForegroundColor Yellow
-        Write-Host "  .\run_middleware.ps1 insert" -ForegroundColor Gray
-        Write-Host "  .\run_middleware.ps1 export --tables lote,recibo --format xlsx" -ForegroundColor Gray
-        Write-Host "  .\run_middleware.ps1 import --file datos.xlsx --table lote" -ForegroundColor Gray
-        Write-Host "  .\run_middleware.ps1 server" -ForegroundColor Gray
-        Write-Host "  .\run_middleware.ps1 test" -ForegroundColor Gray
+        Write-Host "Examples:" -ForegroundColor Yellow
+        Write-Host "  .\run_middleware.ps1 server    # Start or restart the server" -ForegroundColor Gray
+        Write-Host "  .\run_middleware.ps1 stop     # Stop the server" -ForegroundColor Gray
+        Write-Host "  .\run_middleware.ps1 help    # Show help" -ForegroundColor Gray
+        Write-Host ""
+        Write-Host "The server will be available at:" -ForegroundColor Yellow
+        Write-Host "  http://localhost:9099" -ForegroundColor White
+        Write-Host "  http://localhost:9099/docs - API documentation" -ForegroundColor White
     }
 }
 
-# Restaurar directorio original
+# Restore original directory
 Pop-Location
