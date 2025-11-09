@@ -9,6 +9,7 @@ import { SanitarioService } from '../../../services/SanitarioService';
 import { HongoService } from '../../../services/HongoService';
 import { HongoDto } from '../../../models/Hongo.dto';
 import { DateService } from '../../../services/DateService';
+import { LogService } from '../../../services/LogService';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -126,7 +127,8 @@ export class SanitarioComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private sanitarioService: SanitarioService,
-    private hongoService: HongoService
+    private hongoService: HongoService,
+    private logService: LogService
   ) {}
 
   // Getter para determinar si está en modo readonly
@@ -549,6 +551,7 @@ export class SanitarioComponent implements OnInit {
         console.log('Sanitario creado con ID:', sanitarioId);
         // Guardar hongos después de crear el sanitario
         this.guardarHongos(sanitarioId);
+        this.logService.crearLog(sanitarioId, 'Sanitario', 'creado').subscribe();
       },
       error: (error) => {
         console.error('Error al crear sanitario:', error);
@@ -590,6 +593,8 @@ export class SanitarioComponent implements OnInit {
         console.log('Sanitario editado exitosamente:', response);
         // Guardar hongos después de editar el sanitario
         this.guardarHongos(this.editingId!);
+        
+        this.logService.crearLog(this.editingId!, 'Sanitario', 'editado').subscribe();
       },
       error: (error) => {
         console.error('Error al actualizar sanitario:', error);

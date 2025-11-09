@@ -302,13 +302,9 @@ export class PurezaPNotatumComponent implements OnInit {
           // Procesar repeticiones
           this.procesarRepeticiones(this.editingId!).then(() => {
 
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            const username = user?.nombre || 'Desconocido';
-            const rol = this.obtenerRolMasAlto(user?.roles);
 
             if (res != null) {
-              const mensaje = `Pureza con ID #${res} fue creada por ${username} con rol ${rol}`;
-              this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
+              this.logService.crearLog(Number(res), 'Pureza P. notatum', 'actualizada').subscribe();
             }
 
             this.safeNavigateToListado();
@@ -333,13 +329,10 @@ export class PurezaPNotatumComponent implements OnInit {
           console.log('Pureza P. notatum creado correctamente:', res);
           // Procesar repeticiones
           this.procesarRepeticiones(res).then(() => {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            const username = user?.nombre || 'Desconocido';
-            const rol = this.obtenerRolMasAlto(user?.roles);
+            
 
-            if (res != null) {
-              const mensaje = `Pureza con ID #${res} fue creada por ${username} con rol ${rol}`;
-              this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
+            if (res != null) { 
+              this.logService.crearLog(Number(res), 'Pureza P. notatum', 'creada').subscribe();
             }
 
             this.safeNavigateToListado();
@@ -374,22 +367,6 @@ export class PurezaPNotatumComponent implements OnInit {
       });
     });
   }
-
-    obtenerRolMasAlto(roles: string[] | string | undefined): string {
-    // Si no hay roles, retornar 'Desconocido'
-    if (!roles) return 'Desconocido';
-          
-    // Si es un string, convertir a array
-    const rolesArray = Array.isArray(roles) ? roles : [roles];
-          
-    // Definir jerarquía de roles (de mayor a menor)
-    if (rolesArray.includes('ADMIN')) return 'Administrador';
-    if (rolesArray.includes('ANALISTA')) return 'Analista';
-    if (rolesArray.includes('OBSERVADOR')) return 'Observador';
-          
-    return 'Desconocido';
-  }
-
 
   onCancel() {
     this.safeNavigateToListado();

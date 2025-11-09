@@ -410,13 +410,8 @@ export class PmsComponent implements OnInit {
           // Guardar gramos asociados al PMS
           this.guardarGramos(res);
 
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          const username = user?.nombre || 'Desconocido';
-          const rol = this.obtenerRolMasAlto(user?.roles);
-
           if (res != null) {
-            const mensaje = `PMS con ID #${res} fue creado por ${username} con rol ${rol}`;
-            this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
+            this.logService.crearLog(Number(res), 'PMS', 'creado').subscribe();
           }
 
           this.onCancel();
@@ -439,16 +434,9 @@ export class PmsComponent implements OnInit {
           console.log('PMS actualizado correctamente:', res);
           // Guardar gramos asociados al PMS
           this.guardarGramos(this.editingId!);
-
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          const username = user?.nombre || 'Desconocido';
-          const rol = this.obtenerRolMasAlto(user?.roles);
-
-          if (this.editingId != null) {
-            const mensaje = `PMS con ID #${this.editingId} fue editado por ${username} con rol ${rol}`;
-            this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
-          }
-
+          
+          this.logService.crearLog(this.editingId!, 'PMS', 'actualizado').subscribe();
+          
           this.onCancel();
         },
         error: (err) => {

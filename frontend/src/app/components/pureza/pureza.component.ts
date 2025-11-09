@@ -1037,13 +1037,9 @@ export class PurezaComponent implements OnInit {
           console.log('Pureza actualizada exitosamente:', response);
           this.isSubmitting = false;
 
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          const username = user?.nombre || 'Desconocido';
-          const rol = this.obtenerRolMasAlto(user?.roles);
 
           if (response != null) {
-            const mensaje = `Pureza con ID #${response} fue editada por ${username} con rol ${rol}`;
-            this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
+            this.logService.crearLog(Number(response), 'Pureza', 'actualizada').subscribe();
           }
 
           this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);
@@ -1068,13 +1064,8 @@ export class PurezaComponent implements OnInit {
         next: (response: any) => {
           this.isSubmitting = false;
 
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          const username = user?.nombre || 'Desconocido';
-          const rol = this.obtenerRolMasAlto(user?.roles);
-
           if (response != null) {
-            const mensaje = `Pureza con ID #${response} fue creada por ${username} con rol ${rol}`;
-            this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
+            this.logService.crearLog(Number(response), 'Pureza', 'creada').subscribe();
           }
 
           this.router.navigate([this.loteId + "/" + this.reciboId + "/listado-pureza"]);
@@ -1085,21 +1076,6 @@ export class PurezaComponent implements OnInit {
         }
       });
     }
-  }
-
-  obtenerRolMasAlto(roles: string[] | string | undefined): string {
-    // Si no hay roles, retornar 'Desconocido'
-    if (!roles) return 'Desconocido';
-          
-    // Si es un string, convertir a array
-    const rolesArray = Array.isArray(roles) ? roles : [roles];
-          
-    // Definir jerarquía de roles (de mayor a menor)
-    if (rolesArray.includes('ADMIN')) return 'Administrador';
-    if (rolesArray.includes('ANALISTA')) return 'Analista';
-    if (rolesArray.includes('OBSERVADOR')) return 'Observador';
-          
-    return 'Desconocido';
   }
 
 

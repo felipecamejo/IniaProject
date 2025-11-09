@@ -45,8 +45,8 @@ public class PMSController {
 
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
-    public ResponseEntity<String> editarPMS(@RequestBody PMSDto pmsDto) {
-        String result = this.pmsService.editarPMS(pmsDto);
+    public ResponseEntity<Long> editarPMS(@RequestBody PMSDto pmsDto) {
+        Long result = this.pmsService.editarPMS(pmsDto);
         return ResponseEntity.ok(result);
     }
 

@@ -7,7 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TetrazolioDto } from '../../../models/Tetrazolio.dto';
 import { TetrazolioService } from '../../../services/TetrazolioService';
-
+import { LogService } from '../../../services/LogService';
 
 @Component({
   selector: 'app-listado-tetrazolio.component',
@@ -20,7 +20,8 @@ export class ListadoTetrazolioComponent implements OnInit {
     constructor(
         private router: Router, 
         private route: ActivatedRoute,
-        private tetrazolioService: TetrazolioService
+        private tetrazolioService: TetrazolioService,
+        private logService: LogService
     ) {}
 
     selectedMes: string = '';
@@ -187,6 +188,7 @@ export class ListadoTetrazolioComponent implements OnInit {
             next: (response) => {
               console.log('Tetrazolio eliminado correctamente:', response);
               // Recargar los datos para reflejar los cambios
+              this.logService.crearLog(item.id!, 'Tetrazolio', 'eliminado').subscribe();
               this.cargarDatos();
             },
             error: (err) => {

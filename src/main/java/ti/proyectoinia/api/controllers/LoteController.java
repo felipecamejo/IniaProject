@@ -28,18 +28,10 @@ public class LoteController {
     @Operation(
             description = "Esta Funcion crea un nuevo Lote"
     )
-    public ResponseEntity<String> crearLote(@RequestBody LoteDto loteDto) {
-        if (loteDto.getNombre() != null && !loteDto.getNombre().trim().isEmpty()) {
-            if (loteDto.getNombre().matches(".*\\d.*")) {
-                return new ResponseEntity<>("El nombre del Lote no puede contener números", HttpStatus.BAD_REQUEST);
-            }
-            loteDto.setId(null);
-            String response = this.loteService.crearLote(loteDto);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-
-        } else {
-            return new ResponseEntity<>("El nombre del Lote es obligatorio", HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<Long> crearLote(@RequestBody LoteDto loteDto) {
+        loteDto.setId(null);
+        Long response = this.loteService.crearLote(loteDto);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping({"/listar"})
@@ -61,8 +53,8 @@ public class LoteController {
 
     @PutMapping({"/editar"})
     @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
-    public ResponseEntity<String> editarLote(@RequestBody LoteDto loteDto) {
-        String result = this.loteService.editarLote(loteDto);
+    public ResponseEntity<Long> editarLote(@RequestBody LoteDto loteDto) {
+        Long result = this.loteService.editarLote(loteDto);
         return ResponseEntity.ok(result);
     }
 
