@@ -1,7 +1,9 @@
 import os
 import csv
 import argparse
+import logging
 from datetime import date, datetime
+from urllib.parse import quote_plus
 
 # Dependencia opcional para Excel
 try:
@@ -12,40 +14,132 @@ try:
 except Exception:
     OPENPYXL_AVAILABLE = False
 
-from MassiveInsertFiles import (
-    create_engine, sessionmaker, text,
-    build_connection_string,
-    Lote, Maleza, Semilla, Usuario, Recibo, Deposito,
-    Dosn as DOSN, Cultivo, Germinacion, Pms as PMS, Pureza,
-    PurezaPnotatum as PurezaPNotatum, Sanitario, Hongo, Tetrazolio,
-    UsuarioLote, GramosPms, HumedadRecibo,
-    GREEN, RED, CYAN, RESET, logger, logging
-)
+# Importaciones SQLAlchemy
+try:
+    from sqlalchemy import create_engine, text
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.ext.automap import automap_base
+except ModuleNotFoundError:
+    print("Falta el paquete 'sqlalchemy'. Instálalo con: pip install SQLAlchemy")
+    raise
+
+# Configuración de logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# Configuración de conexión a la base de datos
+DEFAULT_CONFIG = {
+    'DB_USER': 'postgres',
+    'DB_PASSWORD': '897888fg2',
+    'DB_HOST': 'localhost',
+    'DB_PORT': '5432',
+    'DB_NAME': 'Inia',
+}
+
+DB_USER = os.getenv('DB_USER', os.getenv('POSTGRES_USER', DEFAULT_CONFIG['DB_USER']))
+DB_PASSWORD = os.getenv('DB_PASSWORD', os.getenv('POSTGRES_PASSWORD', DEFAULT_CONFIG['DB_PASSWORD']))
+DB_HOST = os.getenv('DB_HOST', os.getenv('POSTGRES_HOST', DEFAULT_CONFIG['DB_HOST']))
+DB_PORT = os.getenv('DB_PORT', os.getenv('POSTGRES_PORT', DEFAULT_CONFIG['DB_PORT']))
+DB_NAME = os.getenv('DB_NAME', os.getenv('POSTGRES_DB', DEFAULT_CONFIG['DB_NAME']))
 
 
+# ================================
+# MÓDULO: CONEXIÓN A BASE DE DATOS
+# ================================
+def build_connection_string() -> str:
+    """Construye la cadena de conexión escapando credenciales."""
+    database_url = os.getenv('DATABASE_URL')
+    if database_url:
+        if database_url.startswith('postgresql://'):
+            return database_url.replace('postgresql://', 'postgresql+psycopg2://', 1)
+        elif database_url.startswith('postgres://'):
+            return database_url.replace('postgres://', 'postgresql+psycopg2://', 1)
+        return database_url
+    
+    user_esc = quote_plus(DB_USER or '')
+    pass_esc = quote_plus(DB_PASSWORD or '')
+    host = DB_HOST or 'localhost'
+    port = DB_PORT or '5432'
+    db = DB_NAME or ''
+    return f'postgresql+psycopg2://{user_esc}:{pass_esc}@{host}:{port}/{db}'
+
+# ================================
+# MÓDULO: AUTOMAPEO DE MODELOS
+# ================================
+Base = None
+_engine = None
+_models_initialized = False
+MODELS = {}
+
+def inicializar_automap(engine=None):
+    """Inicializa automap_base y genera modelos automáticamente desde la BD."""
+    global Base, _engine, _models_initialized, MODELS
+    
+    if _models_initialized and Base is not None:
+        return Base
+    
+    if engine is None:
+        connection_string = build_connection_string()
+        _engine = create_engine(connection_string)
+    else:
+        _engine = engine
+    
+    Base = automap_base()
+    
+    try:
+        Base.prepare(autoload_with=_engine)
+        logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
+    except Exception as e:
+        logger.error(f"Error inicializando automap: {e}")
+        raise
+    
+    MODELS.clear()
+    for class_name in dir(Base.classes):
+        if not class_name.startswith('_'):
+            cls = getattr(Base.classes, class_name)
+            if hasattr(cls, '__tablename__'):
+                tabla_nombre = cls.__tablename__.lower()
+                MODELS[tabla_nombre] = cls
+                MODELS[class_name.lower()] = cls
+    
+    _models_initialized = True
+    return Base
+
+def obtener_modelo(nombre_tabla):
+    """Obtiene un modelo por nombre de tabla."""
+    if not _models_initialized or Base is None:
+        inicializar_automap()
+    
+    nombre_tabla_lower = nombre_tabla.lower()
+    if nombre_tabla_lower in MODELS:
+        return MODELS[nombre_tabla_lower]
+    
+    if Base is not None:
+        for class_name in dir(Base.classes):
+            if not class_name.startswith('_'):
+                try:
+                    cls = getattr(Base.classes, class_name)
+                    if hasattr(cls, '__tablename__') and cls.__tablename__.lower() == nombre_tabla_lower:
+                        MODELS[nombre_tabla_lower] = cls
+                        return cls
+                except Exception:
+                    continue
+    
+    raise AttributeError(f"Tabla '{nombre_tabla}' no encontrada en modelos reflejados")
+
+# ================================
+# MÓDULO: LOGGING
+# ================================
 def log_ok(message: str):
-    logger.info(f"{GREEN}✅ {message}{RESET}")
+    logger.info(f"✓ {message}")
 
 
 def log_fail(message: str):
-    logger.error(f"{RED}❌ {message}{RESET}")
+    logger.error(f"✗ {message}")
 
 
 def log_step(message: str):
-    logger.info(f"{CYAN}{message}{RESET}")
-
-
-# Solo análisis - incluyendo recibo como información clave
-MODELS = {
-    "recibo": Recibo,
-    "dosn": DOSN,
-    "germinacion": Germinacion,
-    "pms": PMS,
-    "pureza": Pureza,
-    "pureza_pnotatum": PurezaPNotatum,
-    "sanitario": Sanitario,
-    "tetrazolio": Tetrazolio,
-}
+    logger.info(f"→ {message}")
 
 
 def ensure_output_dir(path: str) -> str:
@@ -815,6 +909,12 @@ def export_selected_tables(tables: list, output_dir: str, fmt: str) -> None:
     try:
         connection_string = build_connection_string()
         engine = create_engine(connection_string)
+        
+        # Inicializar automapeo antes de crear la sesión
+        log_step("Inicializando automapeo de la base de datos...")
+        inicializar_automap(engine)
+        log_step(f"Modelos disponibles: {list(MODELS.keys())}")
+        
         Session = sessionmaker(bind=engine)
         session = Session()
         
@@ -824,18 +924,28 @@ def export_selected_tables(tables: list, output_dir: str, fmt: str) -> None:
         try:
             out_dir = ensure_output_dir(output_dir)
             exported = 0
+            
+            # Si no se especifican tablas, usar todas las disponibles
+            if not tables:
+                tables = list(MODELS.keys())
+            
             for name in tables:
-                model = MODELS.get(name.lower())
-                if not model:
-                    log_fail(f"Tabla desconocida: {name}")
+                try:
+                    model = obtener_modelo(name)
+                    if not model:
+                        log_fail(f"Tabla desconocida: {name}")
+                        continue
+                    
+                    if fmt == "xlsx":
+                        path = export_table_xlsx(session, model, out_dir)
+                    else:
+                        path = export_table_csv(session, model, out_dir)
+                    if path:
+                        exported += 1
+                except Exception as e:
+                    log_fail(f"Error exportando tabla {name}: {e}")
                     continue
-                
-                if fmt == "xlsx":
-                    path = export_table_xlsx(session, model, out_dir)
-                else:
-                    path = export_table_csv(session, model, out_dir)
-                if path:
-                    exported += 1
+            
             log_ok(f"Tablas exportadas correctamente: {exported}/{len(tables)}")
             
             if exported == 0:
@@ -853,8 +963,8 @@ def main():
     parser.add_argument(
         "--tables",
         nargs="*",
-        default=list(MODELS.keys()),
-        help="Lista de análisis a exportar. Por defecto exporta todos los análisis"
+        default=[],
+        help="Lista de análisis a exportar. Por defecto exporta todos los análisis disponibles"
     )
     parser.add_argument(
         "--out",

@@ -1,8 +1,10 @@
 import os
 import csv
 import argparse
+import logging
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 from datetime import datetime, date
+from urllib.parse import quote_plus
 
 # Dependencias opcionales para Excel
 try:
@@ -11,46 +13,157 @@ try:
 except Exception:
     OPENPYXL_AVAILABLE = False
 
-from MassiveInsertFiles import (
-    create_engine, sessionmaker, text,
-    build_connection_string,
-    Lote, Maleza, Semilla, Usuario, Recibo, Deposito,
-    Dosn as DOSN, Cultivo, Germinacion, Pms as PMS, Pureza,
-    PurezaPnotatum as PurezaPNotatum, Sanitario, Hongo, Tetrazolio,
-    UsuarioLote, SanitarioHongo, GramosPms, HumedadRecibo,
-    SanitarioHongoIds,
-    PurezaMalezaNormal, PurezaMalezaTolerada, PurezaMalezaToleranciaCero,
-    asegurar_autoincrementos,
-    logger, logging
-)
+# Importaciones SQLAlchemy
+try:
+    from sqlalchemy import create_engine, text, Table
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.ext.automap import automap_base
+except ModuleNotFoundError:
+    print("Falta el paquete 'sqlalchemy'. Instálalo con: pip install SQLAlchemy")
+    raise
 
+# Configuración de logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Mapeo de nombres lógicos a modelos (igual que en ExportExcel)
-MODELS = {
-    "lote": Lote,
-    "maleza": Maleza,
-    "semilla": Semilla,
-    "usuario": Usuario,
-    "recibo": Recibo,
-    "deposito": Deposito,
-    "dosn": DOSN,
-    "cultivo": Cultivo,
-    "germinacion": Germinacion,
-    "pms": PMS,
-    "gramos_pms": GramosPms,
-    "pureza": Pureza,
-    "pureza_pnotatum": PurezaPNotatum,
-    "sanitario": Sanitario,
-    "hongo": Hongo,
-    "tetrazolio": Tetrazolio,
-    "usuario_lote": UsuarioLote,
-    "sanitario_hongo": SanitarioHongo,
-    "humedad_recibo": HumedadRecibo,
-    "sanitario_hongo_ids": SanitarioHongoIds,
-    "pureza_maleza_normal": PurezaMalezaNormal,
-    "pureza_maleza_tolerada": PurezaMalezaTolerada,
-    "pureza_maleza_tolerancia_cero": PurezaMalezaToleranciaCero,
+# Configuración de conexión a la base de datos
+DEFAULT_CONFIG = {
+    'DB_USER': 'postgres',
+    'DB_PASSWORD': '897888fg2',
+    'DB_HOST': 'localhost',
+    'DB_PORT': '5432',
+    'DB_NAME': 'Inia',
 }
+
+DB_USER = os.getenv('DB_USER', os.getenv('POSTGRES_USER', DEFAULT_CONFIG['DB_USER']))
+DB_PASSWORD = os.getenv('DB_PASSWORD', os.getenv('POSTGRES_PASSWORD', DEFAULT_CONFIG['DB_PASSWORD']))
+DB_HOST = os.getenv('DB_HOST', os.getenv('POSTGRES_HOST', DEFAULT_CONFIG['DB_HOST']))
+DB_PORT = os.getenv('DB_PORT', os.getenv('POSTGRES_PORT', DEFAULT_CONFIG['DB_PORT']))
+DB_NAME = os.getenv('DB_NAME', os.getenv('POSTGRES_DB', DEFAULT_CONFIG['DB_NAME']))
+
+# ================================
+# MÓDULO: CONEXIÓN A BASE DE DATOS
+# ================================
+def build_connection_string() -> str:
+    """Construye la cadena de conexión escapando credenciales."""
+    database_url = os.getenv('DATABASE_URL')
+    if database_url:
+        if database_url.startswith('postgresql://'):
+            return database_url.replace('postgresql://', 'postgresql+psycopg2://', 1)
+        elif database_url.startswith('postgres://'):
+            return database_url.replace('postgres://', 'postgresql+psycopg2://', 1)
+        return database_url
+    
+    user_esc = quote_plus(DB_USER or '')
+    pass_esc = quote_plus(DB_PASSWORD or '')
+    host = DB_HOST or 'localhost'
+    port = DB_PORT or '5432'
+    db = DB_NAME or ''
+    return f'postgresql+psycopg2://{user_esc}:{pass_esc}@{host}:{port}/{db}'
+
+# ================================
+# MÓDULO: AUTOMAPEO DE MODELOS
+# ================================
+Base = None
+_engine = None
+_models_initialized = False
+MODELS = {}
+
+def inicializar_automap(engine=None):
+    """Inicializa automap_base y genera modelos automáticamente desde la BD."""
+    global Base, _engine, _models_initialized, MODELS
+    
+    if _models_initialized and Base is not None:
+        return Base
+    
+    if engine is None:
+        connection_string = build_connection_string()
+        _engine = create_engine(connection_string)
+    else:
+        _engine = engine
+    
+    Base = automap_base()
+    
+    try:
+        Base.prepare(autoload_with=_engine)
+        logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
+    except Exception as e:
+        logger.error(f"Error inicializando automap: {e}")
+        raise
+    
+    MODELS.clear()
+    for class_name in dir(Base.classes):
+        if not class_name.startswith('_'):
+            cls = getattr(Base.classes, class_name)
+            if hasattr(cls, '__tablename__'):
+                tabla_nombre = cls.__tablename__.lower()
+                MODELS[tabla_nombre] = cls
+                MODELS[class_name.lower()] = cls
+    
+    _models_initialized = True
+    return Base
+
+def obtener_modelo(nombre_tabla):
+    """Obtiene un modelo por nombre de tabla."""
+    if not _models_initialized or Base is None:
+        inicializar_automap()
+    
+    nombre_tabla_lower = nombre_tabla.lower()
+    if nombre_tabla_lower in MODELS:
+        return MODELS[nombre_tabla_lower]
+    
+    if Base is not None:
+        for class_name in dir(Base.classes):
+            if not class_name.startswith('_'):
+                try:
+                    cls = getattr(Base.classes, class_name)
+                    if hasattr(cls, '__tablename__') and cls.__tablename__.lower() == nombre_tabla_lower:
+                        MODELS[nombre_tabla_lower] = cls
+                        return cls
+                except Exception:
+                    continue
+    
+    raise AttributeError(f"Tabla '{nombre_tabla}' no encontrada en modelos reflejados")
+
+# ================================
+# MÓDULO: GESTIÓN DE SECUENCIAS
+# ================================
+def asegurar_autoincrementos(engine):
+    """Asegura que las columnas ID tengan default nextval(...) en PostgreSQL."""
+    try:
+        with engine.begin() as conn:
+            # Obtener todas las tablas con columnas de tipo serial o bigserial
+            query = text("""
+                SELECT table_name, column_name
+                FROM information_schema.columns
+                WHERE table_schema = 'public'
+                  AND column_default LIKE 'nextval%'
+                ORDER BY table_name, ordinal_position
+            """)
+            result = conn.execute(query).fetchall()
+            
+            for tabla, columna in result:
+                # Obtener nombre de la secuencia
+                seq_query = text("SELECT pg_get_serial_sequence(:full_table, :columna)")
+                seq_row = conn.execute(seq_query, {"full_table": f"public.{tabla}", "columna": columna}).fetchone()
+                seq_name = seq_row[0] if seq_row and seq_row[0] else f"public.{tabla}_{columna}_seq"
+                
+                # Sincronizar la secuencia con el valor actual (max(id))
+                max_query = text(f"SELECT COALESCE(MAX({columna}), 0) FROM {tabla}")
+                max_row = conn.execute(max_query).fetchone()
+                max_id = max_row[0] if max_row else 0
+                
+                if int(max_id) == 0:
+                    conn.execute(text(f"SELECT setval('{seq_name}', 1, false);"))
+                else:
+                    conn.execute(text(f"SELECT setval('{seq_name}', :val, true);"), {"val": int(max_id)})
+            
+            logger.info("Secuencias sincronizadas correctamente")
+    except Exception as e:
+        logger.warning(f"Error sincronizando secuencias: {e}")
+
+
+# MODELS se crea dinámicamente en inicializar_automap()
 
 
 def log_info(message: str):
@@ -422,29 +535,39 @@ def main():
 
     connection_string = build_connection_string()
     engine = create_engine(connection_string)
+    
+    # Inicializar automapeo antes de crear la sesión
+    log_info("Inicializando automapeo de la base de datos...")
+    inicializar_automap(engine)
+    log_info(f"Modelos disponibles: {list(MODELS.keys())}")
+    
     Session = sessionmaker(bind=engine)
     session = Session()
 
     try:
         if args.inspect:
-            log_info("🔍 Inspeccionando estructura de todas las tablas...")
+            log_info("Inspeccionando estructura de todas las tablas...")
             estructuras_reales = inspeccionar_todas_las_tablas(session)
             
             # Comparar modelos con estructura real
-            log_info("🔍 Comparando modelos con estructura real...")
+            log_info("Comparando modelos con estructura real...")
             for name, model in MODELS.items():
-                columnas_modelo = [c.name for c in model.__table__.columns]
-                columnas_reales = estructuras_reales.get(name.lower(), [])
-                columnas_faltantes = set(columnas_modelo) - set(columnas_reales)
-                columnas_extra = set(columnas_reales) - set(columnas_modelo)
-                
-                if columnas_faltantes:
-                    log_error(f"Modelo {name} tiene columnas que no existen en BD: {columnas_faltantes}")
-                if columnas_extra:
-                    log_info(f"BD {name} tiene columnas no en modelo: {columnas_extra}")
+                try:
+                    columnas_modelo = [c.name for c in model.__table__.columns]
+                    tabla_nombre = model.__tablename__.lower()
+                    columnas_reales = estructuras_reales.get(tabla_nombre, [])
+                    columnas_faltantes = set(columnas_modelo) - set(columnas_reales)
+                    columnas_extra = set(columnas_reales) - set(columnas_modelo)
+                    
+                    if columnas_faltantes:
+                        log_error(f"Modelo {name} tiene columnas que no existen en BD: {columnas_faltantes}")
+                    if columnas_extra:
+                        log_info(f"BD {name} tiene columnas no en modelo: {columnas_extra}")
+                except Exception as e:
+                    log_error(f"Error comparando modelo {name}: {e}")
             return
 
-        log_info("Asegurando autoincrementos antes de importar…")
+        log_info("Asegurando autoincrementos antes de importar...")
         try:
             asegurar_autoincrementos(engine)
         except Exception as e:
@@ -456,12 +579,12 @@ def main():
         if args.file:
             if not args.table:
                 raise RuntimeError("--table es requerido cuando se usa --file")
-            model = MODELS.get(args.table.lower())
+            model = obtener_modelo(args.table)
             if not model:
                 raise RuntimeError(f"Tabla desconocida: {args.table}")
             if not os.path.isfile(args.file):
                 raise RuntimeError(f"No existe el archivo: {args.file}")
-            log_info(f"Importando {args.file} hacia tabla {model.__tablename__}…")
+            log_info(f"Importando {args.file} hacia tabla {model.__tablename__}...")
             inserted, updated = import_one_file(session, model, args.file, args.format, args.upsert, args.keep_ids)
             total_inserted += inserted
             total_updated += updated
@@ -471,18 +594,22 @@ def main():
             if not files:
                 raise RuntimeError("No se encontraron archivos para importar en el directorio indicado")
             for tname, path in files:
-                model = MODELS.get(tname.lower())
-                if not model:
-                    log_error(f"Tabla desconocida: {tname}")
+                try:
+                    model = obtener_modelo(tname)
+                    if not model:
+                        log_error(f"Tabla desconocida: {tname}")
+                        continue
+                    log_info(f"Importando {os.path.basename(path)} hacia tabla {model.__tablename__}...")
+                    inserted, updated = import_one_file(session, model, path, args.format, args.upsert, args.keep_ids)
+                    total_inserted += inserted
+                    total_updated += updated
+                except Exception as e:
+                    log_error(f"Error importando {tname}: {e}")
                     continue
-                log_info(f"Importando {os.path.basename(path)} hacia tabla {model.__tablename__}…")
-                inserted, updated = import_one_file(session, model, path, args.format, args.upsert, args.keep_ids)
-                total_inserted += inserted
-                total_updated += updated
 
         # Sincronizar secuencias al final para evitar futuros conflictos de PK
         try:
-            log_info("Sincronizando secuencias tras importación…")
+            log_info("Sincronizando secuencias tras importación...")
             asegurar_autoincrementos(engine)
         except Exception as e:
             log_error(f"No se pudieron sincronizar secuencias al final: {e}")
