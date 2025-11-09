@@ -6,12 +6,18 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 from datetime import datetime, date
 from urllib.parse import quote_plus
 
-# Dependencias opcionales para Excel
+# Intentar importar módulo de instalación de dependencias
 try:
-    from openpyxl import load_workbook
-    OPENPYXL_AVAILABLE = True
-except Exception:
-    OPENPYXL_AVAILABLE = False
+    from InstallDependencies import verificar_e_instalar, instalar_dependencias_faltantes
+    INSTALL_DEPS_AVAILABLE = True
+except ImportError:
+    INSTALL_DEPS_AVAILABLE = False
+
+# Verificar e instalar dependencias SQLAlchemy
+if INSTALL_DEPS_AVAILABLE:
+    if not verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=True):
+        print("Intentando instalar SQLAlchemy...")
+        verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=False)
 
 # Importaciones SQLAlchemy
 try:
@@ -19,8 +25,33 @@ try:
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy.ext.automap import automap_base
 except ModuleNotFoundError:
-    print("Falta el paquete 'sqlalchemy'. Instálalo con: pip install SQLAlchemy")
-    raise
+    if INSTALL_DEPS_AVAILABLE:
+        print("Instalando dependencias faltantes...")
+        if instalar_dependencias_faltantes('ImportExcel', silent=False):
+            from sqlalchemy import create_engine, text, Table
+            from sqlalchemy.orm import sessionmaker
+            from sqlalchemy.ext.automap import automap_base
+        else:
+            print("No se pudieron instalar las dependencias. Instálalas manualmente con: pip install -r requirements.txt")
+            raise
+    else:
+        print("Falta el paquete 'sqlalchemy'. Instálalo con: pip install SQLAlchemy")
+        raise
+
+# Dependencias opcionales para Excel
+try:
+    from openpyxl import load_workbook
+    OPENPYXL_AVAILABLE = True
+except Exception:
+    OPENPYXL_AVAILABLE = False
+    # Intentar instalar openpyxl si el módulo de instalación está disponible
+    if INSTALL_DEPS_AVAILABLE:
+        if verificar_e_instalar('openpyxl', 'openpyxl', silent=False):
+            try:
+                from openpyxl import load_workbook
+                OPENPYXL_AVAILABLE = True
+            except Exception:
+                OPENPYXL_AVAILABLE = False
 
 # Configuración de logging
 logging.basicConfig(level=logging.INFO)
@@ -452,11 +483,88 @@ def insert_rows(session, model, rows: List[Dict[str, Any]], keep_ids: bool, batc
     return inserted
 
 
+def detectar_tabla_por_columnas(session, headers: List[str]) -> Optional[str]:
+    """
+    Intenta detectar la tabla correcta basándose en las columnas del archivo.
+    Compara las columnas del archivo con las columnas de todas las tablas disponibles.
+    """
+    try:
+        # Normalizar headers
+        headers_normalized = [h.lower().strip() for h in headers if h and h.strip()]
+        if not headers_normalized:
+            return None
+        
+        mejor_coincidencia = None
+        mejor_puntaje = 0
+        
+        # Obtener todas las tablas disponibles
+        query = text("""
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = 'public'
+                AND table_type = 'BASE TABLE'
+            ORDER BY table_name
+        """)
+        result = session.execute(query).fetchall()
+        tablas = [row[0] for row in result]
+        
+        for tabla in tablas:
+            try:
+                columnas_tabla = verificar_estructura_tabla(session, tabla)
+                if not columnas_tabla:
+                    continue
+                
+                # Normalizar columnas de tabla
+                columnas_tabla_normalized = [c.lower().strip() for c in columnas_tabla]
+                
+                # Calcular coincidencia
+                columnas_coincidentes = set(headers_normalized) & set(columnas_tabla_normalized)
+                puntaje = len(columnas_coincidentes)
+                
+                # Bonus si hay muchas coincidencias
+                if puntaje > mejor_puntaje:
+                    mejor_puntaje = puntaje
+                    mejor_coincidencia = tabla
+            except Exception:
+                continue
+        
+        # Solo retornar si hay una coincidencia razonable (al menos 3 columnas)
+        if mejor_puntaje >= 3:
+            log_info(f"Tabla detectada por columnas: {mejor_coincidencia} (coinciden {mejor_puntaje} columnas)")
+            return mejor_coincidencia
+        
+        return None
+    except Exception as e:
+        log_error(f"Error detectando tabla por columnas: {e}")
+        return None
+
+
 def import_one_file(session, model, file_path: str, fmt: Optional[str], upsert: bool, keep_ids: bool) -> Tuple[int, int]:
     if not fmt:
         fmt = detect_format_from_path(file_path)
     if fmt not in ("csv", "xlsx"):
         raise RuntimeError(f"Formato no soportado para: {file_path}")
+
+    # Validar que el nombre del archivo corresponde a la tabla
+    filename = os.path.basename(file_path)
+    file_base = os.path.splitext(filename)[0].lower()
+    table_name = model.__tablename__.lower()
+    
+    # Verificar coincidencia (permitir variaciones)
+    if file_base != table_name:
+        # Verificar variaciones comunes
+        variations_match = (
+            file_base == table_name.replace('_', '') or
+            file_base == table_name.replace('_', '-') or
+            file_base == table_name.replace('-', '_') or
+            table_name in file_base or
+            file_base in table_name
+        )
+        
+        if not variations_match:
+            log_info(f"Advertencia: El nombre del archivo '{filename}' no coincide exactamente con la tabla '{model.__tablename__}'. Continuando con la importación...")
+        else:
+            log_info(f"Archivo '{filename}' coincide con tabla '{model.__tablename__}' (variación aceptada)")
 
     if fmt == "csv":
         headers, data_rows = read_rows_from_csv(file_path)
@@ -477,7 +585,7 @@ def import_one_file(session, model, file_path: str, fmt: Optional[str], upsert: 
         columnas_disponibles = columnas_archivo & columnas_tabla
         
         if columnas_inexistentes:
-            log_error(f"Columnas en archivo que no existen en tabla {model.__tablename__}: {columnas_inexistentes}")
+            log_info(f"Columnas en archivo que no existen en tabla {model.__tablename__} (serán ignoradas): {columnas_inexistentes}")
         
         if not columnas_disponibles:
             log_error(f"No hay columnas compatibles entre archivo y tabla {model.__tablename__}")
@@ -508,15 +616,76 @@ def import_one_file(session, model, file_path: str, fmt: Optional[str], upsert: 
 
 
 def discover_input_files(input_dir: str, tables: List[str]) -> List[Tuple[str, str]]:
+    """
+    Descubre archivos de importación para las tablas especificadas.
+    Busca archivos con nombres normalizados (lowercase) y también acepta variaciones.
+    """
     files: List[Tuple[str, str]] = []  # (tabla, ruta)
+    
+    # Primero, obtener todos los archivos disponibles en el directorio
+    available_files = {}
+    if os.path.isdir(input_dir):
+        for filename in os.listdir(input_dir):
+            if filename.lower().endswith(('.xlsx', '.csv')):
+                base_name = os.path.splitext(filename)[0].lower()
+                ext = os.path.splitext(filename)[1].lower()
+                full_path = os.path.join(input_dir, filename)
+                # Almacenar con nombre normalizado como clave
+                if base_name not in available_files:
+                    available_files[base_name] = {}
+                available_files[base_name][ext] = full_path
+    
+    # Buscar archivos para cada tabla
     for t in tables:
         base = t.lower()
-        xlsx = os.path.join(input_dir, f"{base}.xlsx")
-        csvp = os.path.join(input_dir, f"{base}.csv")
-        if os.path.isfile(xlsx):
-            files.append((t, xlsx))
-        elif os.path.isfile(csvp):
-            files.append((t, csvp))
+        found = False
+        
+        # Buscar con nombre exacto normalizado
+        if base in available_files:
+            if '.xlsx' in available_files[base]:
+                files.append((t, available_files[base]['.xlsx']))
+                found = True
+            elif '.csv' in available_files[base]:
+                files.append((t, available_files[base]['.csv']))
+                found = True
+        
+        # Si no se encontró, buscar variaciones (sin guiones bajos, con guiones, etc.)
+        if not found:
+            # Buscar variaciones del nombre
+            variations = [
+                base.replace('_', ''),  # Sin guiones bajos
+                base.replace('_', '-'),  # Guiones bajos a guiones
+                base.replace('-', '_'),  # Guiones a guiones bajos
+            ]
+            
+            for variation in variations:
+                if variation in available_files:
+                    if '.xlsx' in available_files[variation]:
+                        files.append((t, available_files[variation]['.xlsx']))
+                        found = True
+                        log_info(f"Archivo encontrado para tabla '{t}' con variación: {variation}.xlsx")
+                        break
+                    elif '.csv' in available_files[variation]:
+                        files.append((t, available_files[variation]['.csv']))
+                        found = True
+                        log_info(f"Archivo encontrado para tabla '{t}' con variación: {variation}.csv")
+                        break
+        
+        # Si aún no se encontró, buscar archivos que contengan el nombre de la tabla
+        if not found:
+            for file_base, file_info in available_files.items():
+                if base in file_base or file_base in base:
+                    if '.xlsx' in file_info:
+                        files.append((t, file_info['.xlsx']))
+                        log_info(f"Archivo encontrado para tabla '{t}' por coincidencia parcial: {file_base}.xlsx")
+                        found = True
+                        break
+                    elif '.csv' in file_info:
+                        files.append((t, file_info['.csv']))
+                        log_info(f"Archivo encontrado para tabla '{t}' por coincidencia parcial: {file_base}.csv")
+                        found = True
+                        break
+    
     return files
 
 
@@ -526,7 +695,7 @@ def main():
     src.add_argument("--file", dest="file", help="Ruta de archivo a importar (csv/xlsx)")
     src.add_argument("--in", dest="indir", help="Directorio que contiene archivos por tabla")
     src.add_argument("--inspect", action="store_true", help="Inspeccionar estructura de todas las tablas")
-    parser.add_argument("--table", dest="table", help="Nombre de la tabla destino (requerido si --file)")
+    parser.add_argument("--table", dest="table", help="Nombre de la tabla destino (opcional si --file, se infiere del nombre del archivo)")
     parser.add_argument("--tables", nargs="*", default=[], help="Lista de tablas a importar (si --in)")
     parser.add_argument("--format", choices=["xlsx", "csv"], default=None, help="Forzar formato de archivo")
     parser.add_argument("--upsert", action="store_true", help="Actualizar si existe fila con misma PK")
@@ -577,13 +746,108 @@ def main():
         total_updated = 0
 
         if args.file:
-            if not args.table:
-                raise RuntimeError("--table es requerido cuando se usa --file")
-            model = obtener_modelo(args.table)
+            # Si no se especifica --table, intentar inferirlo del nombre del archivo
+            table_name = args.table
+            model = None
+            
+            if not table_name:
+                filename = os.path.basename(args.file)
+                inferred_table = os.path.splitext(filename)[0].lower()
+                log_info(f"No se especificó --table, intentando inferir desde nombre de archivo: {inferred_table}")
+                
+                # Verificar si el nombre es numérico (probablemente un ID, no un nombre de tabla)
+                is_numeric = inferred_table.isdigit()
+                
+                if is_numeric:
+                    log_info(f"El nombre del archivo es numérico ({inferred_table}), intentando detectar tabla por columnas...")
+                    # Leer headers del archivo para detectar la tabla
+                    try:
+                        if args.format == "csv" or (not args.format and detect_format_from_path(args.file) == "csv"):
+                            headers, _ = read_rows_from_csv(args.file)
+                        else:
+                            headers, _ = read_rows_from_xlsx(args.file)
+                        
+                        if headers:
+                            headers = normalize_header_names(headers)
+                            detected_table = detectar_tabla_por_columnas(session, headers)
+                            if detected_table:
+                                table_name = detected_table
+                                log_info(f"Tabla detectada automáticamente: {detected_table}")
+                            else:
+                                raise RuntimeError(
+                                    f"No se pudo detectar la tabla automáticamente para el archivo '{filename}'. "
+                                    f"Por favor especifica --table. Tablas disponibles: {list(MODELS.keys())}"
+                                )
+                        else:
+                            raise RuntimeError(f"No se pudieron leer los encabezados del archivo '{filename}'. Especifica --table.")
+                    except Exception as e:
+                        raise RuntimeError(
+                            f"No se pudo detectar la tabla automáticamente: {e}. "
+                            f"Por favor especifica --table. Tablas disponibles: {list(MODELS.keys())}"
+                        )
+                else:
+                    table_name = inferred_table
+            
+            # Intentar obtener el modelo
             if not model:
-                raise RuntimeError(f"Tabla desconocida: {args.table}")
+                try:
+                    model = obtener_modelo(table_name)
+                except (AttributeError, KeyError):
+                    # Si no se encuentra el modelo, intentar variaciones del nombre
+                    filename = os.path.basename(args.file)
+                    base_name = os.path.splitext(filename)[0].lower()
+                    
+                    # Solo intentar variaciones si el nombre no es numérico
+                    if not base_name.isdigit():
+                        # Intentar variaciones comunes
+                        variations = [
+                            base_name,
+                            base_name.replace('-', '_'),
+                            base_name.replace('_', '-'),
+                            base_name.replace('_', ''),
+                        ]
+                        
+                        for variation in variations:
+                            try:
+                                model = obtener_modelo(variation)
+                                if model:
+                                    log_info(f"Tabla encontrada con variación del nombre: {variation}")
+                                    break
+                            except (AttributeError, KeyError):
+                                continue
+                    
+                    if not model:
+                        # Si aún no se encontró y el nombre es numérico, intentar detectar por columnas
+                        if base_name.isdigit():
+                            log_info(f"Nombre numérico detectado, intentando detectar tabla por columnas...")
+                            try:
+                                if args.format == "csv" or (not args.format and detect_format_from_path(args.file) == "csv"):
+                                    headers, _ = read_rows_from_csv(args.file)
+                                else:
+                                    headers, _ = read_rows_from_xlsx(args.file)
+                                
+                                if headers:
+                                    headers = normalize_header_names(headers)
+                                    detected_table = detectar_tabla_por_columnas(session, headers)
+                                    if detected_table:
+                                        model = obtener_modelo(detected_table)
+                                        log_info(f"Tabla detectada automáticamente: {detected_table}")
+                            except Exception as e:
+                                log_error(f"Error detectando tabla por columnas: {e}")
+                        
+                        if not model:
+                            raise RuntimeError(
+                                f"Tabla desconocida: {table_name}. "
+                                f"Tablas disponibles: {list(MODELS.keys())}. "
+                                f"Si el archivo tiene un nombre numérico, especifica --table explícitamente."
+                            )
+            
+            if not model:
+                raise RuntimeError(f"Tabla desconocida: {table_name}")
+            
             if not os.path.isfile(args.file):
                 raise RuntimeError(f"No existe el archivo: {args.file}")
+            
             log_info(f"Importando {args.file} hacia tabla {model.__tablename__}...")
             inserted, updated = import_one_file(session, model, args.file, args.format, args.upsert, args.keep_ids)
             total_inserted += inserted

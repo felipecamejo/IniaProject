@@ -2,6 +2,7 @@ package ti.proyectoinia.api.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +14,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import ti.proyectoinia.services.PandMiddlewareService;
 import ti.proyectoinia.services.PythonMiddlewareHttpService;
+import ti.proyectoinia.api.responses.MiddlewareResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Controlador REST para manejar operaciones del middleware de pandas/SQLAlchemy.
@@ -32,6 +36,7 @@ import ti.proyectoinia.services.PythonMiddlewareHttpService;
 @Tag(name = "PandMiddleware", description = "Endpoints para ejecutar el middleware de pandas/SQLAlchemy")
 public class PandMiddlewareController {
 
+    private static final Logger logger = LoggerFactory.getLogger(PandMiddlewareController.class);
     private final PandMiddlewareService pandMiddlewareService;
     private final PythonMiddlewareHttpService pythonHttpService;
 
@@ -39,6 +44,7 @@ public class PandMiddlewareController {
      * Constructor del controlador.
      * 
      * @param pandMiddlewareService Servicio que maneja la ejecución de scripts de Python
+     * @param pythonHttpService Servicio que maneja la comunicación HTTP con el servidor Python
      */
     public PandMiddlewareController(PandMiddlewareService pandMiddlewareService,
                                     PythonMiddlewareHttpService pythonHttpService) {
@@ -50,16 +56,40 @@ public class PandMiddlewareController {
     @PostMapping("/http/exportar")
     @Secured({"ADMIN"})
     @Operation(summary = "Exportar tablas (HTTP Python)", description = "Exporta todas las tablas a Excel y descarga automáticamente el archivo ZIP - Solo ADMIN")
-    public ResponseEntity<byte[]> httpExportar() {
+    public ResponseEntity<?> httpExportar() {
         try {
+            logger.info("Iniciando exportación de tablas desde el backend");
+            
             // Exportar todas las tablas sin especificar tabla específica
             byte[] zip = pythonHttpService.descargarExportZip(null, "xlsx");
+            
             if (zip == null) {
-                return ResponseEntity.status(500).body("Error en la exportación - el servicio Python no respondió o retornó null".getBytes());
+                logger.error("El servicio Python no respondió o retornó null");
+                MiddlewareResponse errorResponse = new MiddlewareResponse();
+                errorResponse.setExitoso(false);
+                errorResponse.setMensaje("Error en la exportación");
+                errorResponse.setCodigo(500);
+                errorResponse.setDetalles("El servicio Python no respondió o retornó null. " +
+                                         "Verifica que el servidor Python esté ejecutándose en http://localhost:9099. " +
+                                         "Inicia el servidor con: python middleware/http_server.py o ejecuta: .\\run_middleware.ps1 server");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(errorResponse);
             }
+            
             if (zip.length == 0) {
-                return ResponseEntity.status(500).body("Error en la exportación - se generó un archivo vacío".getBytes());
+                logger.error("Se generó un archivo ZIP vacío");
+                MiddlewareResponse errorResponse = new MiddlewareResponse();
+                errorResponse.setExitoso(false);
+                errorResponse.setMensaje("Error en la exportación");
+                errorResponse.setCodigo(500);
+                errorResponse.setDetalles("Se generó un archivo ZIP vacío. No se exportaron tablas.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(errorResponse);
             }
+            
+            logger.info("Exportación completada exitosamente. Tamaño del ZIP: {} bytes", zip.length);
             
             // Configurar headers para descarga automática del archivo ZIP
             HttpHeaders headers = new HttpHeaders();
@@ -71,8 +101,15 @@ public class PandMiddlewareController {
                     .headers(headers)
                     .body(zip);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(("Error durante la exportación: " + e.getMessage() + 
-                    " (Tipo: " + e.getClass().getSimpleName() + ")").getBytes());
+            logger.error("Error inesperado durante la exportación: {}", e.getMessage(), e);
+            MiddlewareResponse errorResponse = new MiddlewareResponse();
+            errorResponse.setExitoso(false);
+            errorResponse.setMensaje("Error durante la exportación");
+            errorResponse.setCodigo(500);
+            errorResponse.setDetalles(String.format("Error: %s (Tipo: %s)", e.getMessage(), e.getClass().getSimpleName()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(errorResponse);
         }
     }
 
@@ -81,33 +118,82 @@ public class PandMiddlewareController {
     @PostMapping(value = "/http/importar", consumes = {"multipart/form-data"})
     @Secured({"ADMIN"})
     @Operation(summary = "Importar Excel automático", description = "Carga archivo Excel automáticamente a la base de datos - Solo ADMIN")
-    public ResponseEntity<String> httpImportar(
+    public ResponseEntity<MiddlewareResponse> httpImportar(
             @RequestPart("file") MultipartFile file) {
         try {
+            logger.info("Iniciando importación de archivo desde el backend");
+            
+            // Validar archivo
             if (file == null || file.isEmpty()) {
-                return ResponseEntity.badRequest().body("Archivo vacío");
+                logger.warn("Intento de importar archivo vacío");
+                MiddlewareResponse errorResponse = new MiddlewareResponse();
+                errorResponse.setExitoso(false);
+                errorResponse.setMensaje("Archivo vacío");
+                errorResponse.setCodigo(400);
+                errorResponse.setDetalles("Debe proporcionar un archivo para importar");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
             
             // Verificar que sea un archivo Excel
             String nombreArchivo = file.getOriginalFilename();
-            if (nombreArchivo == null || (!nombreArchivo.toLowerCase().endsWith(".xlsx") && !nombreArchivo.toLowerCase().endsWith(".xls"))) {
-                return ResponseEntity.badRequest().body("Solo se permiten archivos Excel (.xlsx o .xls)");
+            if (nombreArchivo == null || (!nombreArchivo.toLowerCase().endsWith(".xlsx") && 
+                    !nombreArchivo.toLowerCase().endsWith(".xls") && 
+                    !nombreArchivo.toLowerCase().endsWith(".csv"))) {
+                logger.warn("Intento de importar archivo con formato no válido: {}", nombreArchivo);
+                MiddlewareResponse errorResponse = new MiddlewareResponse();
+                errorResponse.setExitoso(false);
+                errorResponse.setMensaje("Formato de archivo no válido");
+                errorResponse.setCodigo(400);
+                errorResponse.setDetalles("Solo se permiten archivos Excel (.xlsx o .xls) o CSV (.csv)");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
+            
+            logger.info("Archivo recibido: {}, Tamaño: {} bytes", nombreArchivo, file.getSize());
             
             byte[] bytes = file.getBytes();
             
             // Determinar automáticamente la tabla basándose en el nombre del archivo
             // Por ejemplo, si el archivo se llama "usuarios.xlsx", la tabla será "usuarios"
             String tabla = determinarTablaDesdeNombre(nombreArchivo);
+            logger.info("Tabla determinada automáticamente: {}", tabla);
             
             // Importar con configuración automática (upsert=false, keep_ids=false por defecto)
-            String respuesta = pythonHttpService.importarTabla(tabla, false, false, nombreArchivo, bytes);
-            if (respuesta == null || respuesta.isBlank()) {
-                return ResponseEntity.status(500).body("Sin respuesta del middleware Python");
+            MiddlewareResponse respuesta = pythonHttpService.importarTabla(tabla, false, false, nombreArchivo, bytes);
+            
+            if (respuesta == null) {
+                logger.error("Sin respuesta del middleware Python");
+                MiddlewareResponse errorResponse = new MiddlewareResponse();
+                errorResponse.setExitoso(false);
+                errorResponse.setMensaje("Sin respuesta del middleware Python");
+                errorResponse.setCodigo(500);
+                errorResponse.setDetalles("El servidor Python no respondió. " +
+                                         "Verifica que el servidor esté ejecutándose en http://localhost:9099. " +
+                                         "Inicia el servidor con: python middleware/http_server.py o ejecuta: .\\run_middleware.ps1 server");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
             }
-            return ResponseEntity.ok(respuesta);
+            
+            // Retornar respuesta estructurada
+            HttpStatus status = respuesta.esExitoso() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR;
+            if (respuesta.getCodigo() != null) {
+                if (respuesta.getCodigo() >= 400 && respuesta.getCodigo() < 500) {
+                    status = HttpStatus.BAD_REQUEST;
+                } else if (respuesta.getCodigo() >= 500) {
+                    status = HttpStatus.INTERNAL_SERVER_ERROR;
+                }
+            }
+            
+            logger.info("Importación completada. Exitoso: {}, Mensaje: {}", 
+                       respuesta.esExitoso(), respuesta.getMensaje());
+            
+            return ResponseEntity.status(status).body(respuesta);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error enviando importación: " + e.getMessage());
+            logger.error("Error inesperado durante la importación: {}", e.getMessage(), e);
+            MiddlewareResponse errorResponse = new MiddlewareResponse();
+            errorResponse.setExitoso(false);
+            errorResponse.setMensaje("Error enviando importación");
+            errorResponse.setCodigo(500);
+            errorResponse.setDetalles(String.format("Error: %s (Tipo: %s)", e.getMessage(), e.getClass().getSimpleName()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
     

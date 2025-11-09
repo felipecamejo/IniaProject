@@ -6,22 +6,63 @@ from datetime import datetime, timedelta
 from urllib.parse import quote_plus
 from typing import Dict, List, Optional, Tuple, Any
 
+# Intentar importar módulo de instalación de dependencias
+try:
+    from InstallDependencies import verificar_e_instalar, instalar_dependencias_faltantes
+    INSTALL_DEPS_AVAILABLE = True
+except ImportError:
+    INSTALL_DEPS_AVAILABLE = False
+
+# Verificar e instalar dependencias SQLAlchemy
+if INSTALL_DEPS_AVAILABLE:
+    if not verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=True):
+        print("Intentando instalar SQLAlchemy...")
+        verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=False)
+
 # Importaciones SQLAlchemy
 try:
     from sqlalchemy import create_engine, text, inspect
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy.ext.automap import automap_base
 except ModuleNotFoundError:
-    print("Falta el paquete 'sqlalchemy'. Instálalo con: pip install SQLAlchemy")
-    raise
+    if INSTALL_DEPS_AVAILABLE:
+        print("Instalando dependencias faltantes...")
+        if instalar_dependencias_faltantes('MassiveInsertFiles', silent=False):
+            from sqlalchemy import create_engine, text, inspect
+            from sqlalchemy.orm import sessionmaker
+            from sqlalchemy.ext.automap import automap_base
+        else:
+            print("No se pudieron instalar las dependencias. Instálalas manualmente con: pip install -r requirements.txt")
+            raise
+    else:
+        print("Falta el paquete 'sqlalchemy'. Instálalo con: pip install SQLAlchemy")
+        raise
+
+# Verificar e instalar dependencias Pandas y NumPy
+if INSTALL_DEPS_AVAILABLE:
+    if not verificar_e_instalar('pandas', 'pandas', silent=True):
+        print("Intentando instalar pandas...")
+        verificar_e_instalar('pandas', 'pandas', silent=False)
+    if not verificar_e_instalar('numpy', 'numpy', silent=True):
+        print("Intentando instalar numpy...")
+        verificar_e_instalar('numpy', 'numpy', silent=False)
 
 # Importaciones Pandas
 try:
     import pandas as pd
     import numpy as np
 except ModuleNotFoundError:
-    print("Falta el paquete 'pandas'. Instálalo con: pip install pandas")
-    raise
+    if INSTALL_DEPS_AVAILABLE:
+        print("Instalando dependencias faltantes...")
+        if instalar_dependencias_faltantes('MassiveInsertFiles', silent=False):
+            import pandas as pd
+            import numpy as np
+        else:
+            print("No se pudieron instalar las dependencias. Instálalas manualmente con: pip install -r requirements.txt")
+            raise
+    else:
+        print("Faltan los paquetes 'pandas' y 'numpy'. Instálalos con: pip install pandas numpy")
+        raise
 
 # ================================
 # CONFIGURACIÓN Y LOGGING
