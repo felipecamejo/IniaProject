@@ -210,10 +210,12 @@ public class PandMiddlewareController {
      */
     @PostMapping(value = "/http/analizar", consumes = {"multipart/form-data"})
     @Secured({"ADMIN"})
-    @Operation(summary = "Analizar archivo Excel", description = "Analiza un archivo Excel y genera un mapeo de datos que muestra qué datos contiene y a qué entidades pertenecen - Solo ADMIN")
+    @Operation(summary = "Analizar archivo Excel", description = "Analiza un archivo Excel y genera un mapeo de datos que muestra qué datos contiene y a qué entidades pertenecen. Contrasta con la base de datos para identificar tablas reales - Solo ADMIN")
     public ResponseEntity<MiddlewareResponse> httpAnalizar(
             @RequestPart("file") MultipartFile file,
-            @org.springframework.web.bind.annotation.RequestParam(value = "formato", required = false, defaultValue = "json") String formato) {
+            @org.springframework.web.bind.annotation.RequestParam(value = "formato", required = false, defaultValue = "json") String formato,
+            @org.springframework.web.bind.annotation.RequestParam(value = "contrastar_bd", required = false, defaultValue = "true") Boolean contrastarBd,
+            @org.springframework.web.bind.annotation.RequestParam(value = "umbral_coincidencia", required = false, defaultValue = "30.0") Double umbralCoincidencia) {
         try {
             logger.info("Iniciando análisis de archivo Excel desde el backend");
             
@@ -252,12 +254,13 @@ public class PandMiddlewareController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
             
-            logger.info("Archivo recibido: {}, Tamaño: {} bytes, Formato salida: {}", nombreArchivo, file.getSize(), formato);
+            logger.info("Archivo recibido: {}, Tamaño: {} bytes, Formato salida: {}, Contrastar BD: {}, Umbral: {}%", 
+                       nombreArchivo, file.getSize(), formato, contrastarBd, umbralCoincidencia);
             
             byte[] bytes = file.getBytes();
             
             // Analizar el archivo Excel
-            MiddlewareResponse respuesta = pythonHttpService.analizarExcel(nombreArchivo, bytes, formato);
+            MiddlewareResponse respuesta = pythonHttpService.analizarExcel(nombreArchivo, bytes, formato, contrastarBd, umbralCoincidencia);
             
             if (respuesta == null) {
                 logger.error("Sin respuesta del middleware Python");

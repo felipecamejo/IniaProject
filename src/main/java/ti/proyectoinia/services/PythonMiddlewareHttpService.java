@@ -212,10 +212,19 @@ public class PythonMiddlewareHttpService {
      * @param filename Nombre del archivo Excel
      * @param fileBytes Contenido del archivo Excel
      * @param formato Formato de salida ("json" o "texto")
+     * @param contrastarBd Si es true, contrasta el mapeo con la base de datos
+     * @param umbralCoincidencia Porcentaje mínimo de coincidencia requerido
      * @return MiddlewareResponse con el resultado del análisis
      */
-    public MiddlewareResponse analizarExcel(String filename, byte[] fileBytes, String formato) {
+    public MiddlewareResponse analizarExcel(String filename, byte[] fileBytes, String formato, 
+                                           Boolean contrastarBd, Double umbralCoincidencia) {
         String url = baseUrl + "/analizar?formato=" + (formato == null ? "json" : formato);
+        if (contrastarBd != null) {
+            url += "&contrastar_bd=" + contrastarBd;
+        }
+        if (umbralCoincidencia != null) {
+            url += "&umbral_coincidencia=" + umbralCoincidencia;
+        }
         try {
             logger.info("Analizando archivo Excel {} en servidor Python", filename);
             HttpHeaders headers = new HttpHeaders();

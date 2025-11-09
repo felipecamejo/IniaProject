@@ -67,6 +67,7 @@ from ImportExcel import (
     normalize_header_names
 )
 from AnalizedExcel import analizar_excel, analizar_estructura_excel, generar_mapeo_datos
+from ContrastDatabase import contrastar_mapeo_con_bd
 from sqlalchemy import text
 
 # Configuración de logging
@@ -1282,29 +1283,36 @@ async def importar(
 
 
 @app.post("/analizar", tags=["Análisis"], summary="Analizar archivo Excel", 
-          description="Analiza un archivo Excel y genera un mapeo de datos que muestra qué datos contiene y a qué entidades pertenecen. Identifica automáticamente las columnas y las asocia con entidades del sistema (recibo, lote, dosn, pureza, etc.).",
-          response_description="Mapeo de datos del Excel analizado")
+          description="Analiza un archivo Excel y genera un mapeo de datos que muestra qué datos contiene y a qué entidades pertenecen. Identifica automáticamente las columnas, las asocia con entidades del sistema y contrasta con la base de datos para identificar tablas reales.",
+          response_description="Mapeo de datos del Excel analizado y contrastado con la base de datos")
 async def analizar(
-    file: UploadFile = File(..., description="Archivo Excel (.xlsx o .xls) a analizar. El archivo será analizado para identificar su estructura y mapear los datos a entidades del sistema."),
-    formato: str = Query(default="json", pattern="^(texto|json)$", description="Formato de salida: 'json' para respuesta completa en JSON, 'texto' para formato simplificado legible")
+    file: UploadFile = File(..., description="Archivo Excel (.xlsx o .xls) a analizar. El archivo será analizado para identificar su estructura, mapear los datos a entidades del sistema y contrastar con la base de datos."),
+    formato: str = Query(default="json", pattern="^(texto|json)$", description="Formato de salida: 'json' para respuesta completa en JSON, 'texto' para formato simplificado legible"),
+    contrastar_bd: bool = Query(default=True, description="Si es True, contrasta el mapeo con la base de datos para identificar tablas reales"),
+    umbral_coincidencia: float = Query(default=30.0, description="Porcentaje mínimo de coincidencia requerido para considerar una tabla (por defecto 30.0)")
 ):
     """
-    Analiza un archivo Excel y genera un mapeo de datos.
+    Analiza un archivo Excel y genera un mapeo de datos contrastado con la base de datos.
     
     **Funcionalidad:**
     - Analiza la estructura del Excel (hojas, columnas, tipos de datos)
     - Identifica a qué entidades pertenecen las columnas (recibo, lote, dosn, pureza, etc.)
+    - Contrasta con la base de datos para identificar tablas reales
     - Genera estadísticas por columna (valores nulos, tipos de datos, valores únicos)
-    - Retorna un mapeo completo de los datos y su pertenencia a entidades
+    - Retorna un mapeo completo con tablas reales de la base de datos
     
     **Parámetros:**
     - **file**: Archivo Excel (.xlsx o .xls) a analizar
     - **formato**: Formato de salida ('json' o 'texto')
+    - **contrastar_bd**: Si es True, contrasta con la base de datos (por defecto True)
+    - **umbral_coincidencia**: Porcentaje mínimo de coincidencia requerido (por defecto 30.0)
     
     **Respuesta:**
     - Mapeo completo con información de hojas, columnas y entidades identificadas
+    - Tablas reales de la base de datos identificadas para cada entidad
+    - Porcentaje de coincidencia con las tablas BD
     - Estadísticas por columna (tipos de datos, valores nulos, etc.)
-    - Logs detallados del proceso de análisis
+    - Logs detallados del proceso de análisis y contraste
     """
     tmp_path = None
     try:
@@ -1408,6 +1416,35 @@ async def analizar(
                     for col in entidad_info['columnas'][:5]:  # Solo primeras 5 columnas en log
                         logger.info(f"      * {col['nombre']}: {', '.join(col['tipo_datos'])} ({col['valores_nulos']} nulos)")
             
+            # Contrastar con base de datos si está habilitado
+            if contrastar_bd:
+                try:
+                    logger.info("Contrastando mapeo con base de datos...")
+                    mapeo_contrastado = contrastar_mapeo_con_bd(mapeo, umbral_minimo=umbral_coincidencia)
+                    logger.info(f"Contraste completado: {mapeo_contrastado['resumen'].get('entidades_con_tabla_bd', 0)}/{mapeo_contrastado['resumen'].get('total_entidades', 0)} entidades mapeadas a tablas BD")
+                    
+                    # Log detallado del contraste
+                    for hoja in mapeo_contrastado['hojas']:
+                        logger.info(f"  Hoja '{hoja['nombre']}':")
+                        for entidad_nombre, entidad_info in hoja['entidades'].items():
+                            tabla_bd = entidad_info.get('tabla_bd')
+                            porcentaje = entidad_info.get('porcentaje_coincidencia', 0.0)
+                            if tabla_bd:
+                                logger.info(f"    - Entidad '{entidad_nombre}' -> Tabla BD: {tabla_bd} ({porcentaje}% coincidencia)")
+                            else:
+                                logger.warning(f"    - Entidad '{entidad_nombre}' -> No se encontró tabla BD con coincidencia suficiente")
+                    
+                    # Usar mapeo contrastado
+                    mapeo = mapeo_contrastado
+                except Exception as contraste_error:
+                    logger.warning(f"Error contrastando con BD: {contraste_error}. Continuando con mapeo sin contraste...")
+                    # Continuar con el mapeo original si falla el contraste
+                    mapeo['resumen']['contraste_bd'] = False
+                    mapeo['resumen']['error_contraste'] = str(contraste_error)
+            else:
+                logger.info("Contraste con BD deshabilitado")
+                mapeo['resumen']['contraste_bd'] = False
+            
             # Preparar respuesta según formato
             if formato == "texto":
                 # Para formato texto, crear una representación legible
@@ -1417,6 +1454,15 @@ async def analizar(
                     "resumen": mapeo['resumen'],
                     "hojas": []
                 }
+                
+                # Agregar información de contraste si está disponible
+                if 'contraste_bd' in mapeo['resumen']:
+                    respuesta_texto['resumen']['contraste_bd'] = mapeo['resumen'].get('contraste_bd', False)
+                    if mapeo['resumen'].get('contraste_bd', False):
+                        respuesta_texto['resumen']['entidades_con_tabla_bd'] = mapeo['resumen'].get('entidades_con_tabla_bd', 0)
+                        respuesta_texto['resumen']['entidades_sin_tabla_bd'] = mapeo['resumen'].get('entidades_sin_tabla_bd', 0)
+                        respuesta_texto['resumen']['porcentaje_mapeo_exitoso'] = mapeo['resumen'].get('porcentaje_mapeo_exitoso', 0.0)
+                        respuesta_texto['resumen']['tablas_bd_disponibles'] = mapeo['resumen'].get('tablas_bd_disponibles', 0)
                 
                 for hoja in mapeo['hojas']:
                     hoja_texto = {
@@ -1433,6 +1479,19 @@ async def analizar(
                             "columnas": []
                         }
                         
+                        # Agregar información de contraste con BD si está disponible
+                        if 'tabla_bd' in entidad_info:
+                            entidad_texto['tabla_bd'] = entidad_info.get('tabla_bd')
+                            entidad_texto['porcentaje_coincidencia'] = entidad_info.get('porcentaje_coincidencia', 0.0)
+                            entidad_texto['coincidencia_encontrada'] = entidad_info.get('coincidencia_encontrada', False)
+                            if entidad_info.get('detalles_coincidencia'):
+                                detalles = entidad_info['detalles_coincidencia']
+                                entidad_texto['detalles_coincidencia'] = {
+                                    'columnas_coincidentes': detalles.get('columnas_coincidentes', []),
+                                    'columnas_no_coincidentes': detalles.get('columnas_no_coincidentes', []),
+                                    'total_coincidencias': detalles.get('total_coincidencias', 0)
+                                }
+                        
                         for col in entidad_info['columnas']:
                             col_texto = {
                                 "nombre": col['nombre'],
@@ -1446,14 +1505,26 @@ async def analizar(
                         hoja_texto["entidades"][entidad_nombre] = entidad_texto
                     respuesta_texto["hojas"].append(hoja_texto)
                 
+                mensaje = "Análisis de Excel completado exitosamente"
+                if mapeo['resumen'].get('contraste_bd', False):
+                    entidades_con_tabla = mapeo['resumen'].get('entidades_con_tabla_bd', 0)
+                    total_entidades = mapeo['resumen'].get('total_entidades', 0)
+                    mensaje += f". {entidades_con_tabla}/{total_entidades} entidades mapeadas a tablas BD"
+                
                 respuesta_exito = crear_respuesta_exito(
-                    mensaje="Análisis de Excel completado exitosamente",
+                    mensaje=mensaje,
                     datos=respuesta_texto
                 )
             else:
                 # Formato JSON completo
+                mensaje = "Análisis de Excel completado exitosamente"
+                if mapeo['resumen'].get('contraste_bd', False):
+                    entidades_con_tabla = mapeo['resumen'].get('entidades_con_tabla_bd', 0)
+                    total_entidades = mapeo['resumen'].get('total_entidades', 0)
+                    mensaje += f". {entidades_con_tabla}/{total_entidades} entidades mapeadas a tablas BD"
+                
                 respuesta_exito = crear_respuesta_exito(
-                    mensaje="Análisis de Excel completado exitosamente",
+                    mensaje=mensaje,
                     datos=mapeo
                 )
             
