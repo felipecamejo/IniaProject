@@ -1,0 +1,87 @@
+<div class="container">
+    <!-- Botón de navegación hacia atrás -->
+    <button class="back-button" (click)="goToHome()">
+        <i class="pi pi-arrow-left"></i>
+    </button>
+    
+    <p-card class="card">
+        <ng-template pTemplate="header">
+            <h2 class="title">Listado de Certificados</h2>
+        </ng-template>
+
+        <div class="search-section">
+            <div class="search-bar">
+                <input type="text" placeholder="Buscar certificados..." class="search-input" [(ngModel)]="searchText" name="search" />
+            </div>
+            <div class="filter-dropdown">
+                <select class="mes-select" [(ngModel)]="selectedTipo" name="tipo">
+                    <option value="">Todos los tipos</option>
+                    <option value="DEFINITIVO">Definitivo</option>
+                    <option value="PROVISORIO">Provisorio</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Mensaje cuando no hay elementos -->
+        <div class="no-results-message" *ngIf="itemsFiltrados.length === 0">
+            <div class="no-results-content">
+                <h3>No se encontraron Certificados</h3>
+                <p>No hay certificados que coincidan con los filtros seleccionados.</p>
+                <p>Intenta ajustar los criterios de búsqueda.</p>
+            </div>
+        </div>
+
+        <!-- Lista de certificados filtrados -->
+        <div class="blue-rectangle" 
+             *ngFor="let item of itemsFiltrados">
+            <div class="item-header">
+                <div class="item-info">
+                    <h3 class="item-title">{{ item.numeroCertificado || 'Sin número' }}</h3>
+                    <span class="item-subtitle">{{ item.nombreSolicitante || 'Sin solicitante' }}</span>
+                </div>
+                <div class="item-status">
+                    <span class="status-badge" [ngClass]="{'active': item.activo, 'inactive': !item.activo}">
+                        {{ getTipoLabel(item.tipoCertificado) }}
+                    </span>
+                </div>
+            </div>
+            <div class="divider-line"></div>
+            <div class="item-content">
+                <div class="item-description">
+                    <p><strong>Especie:</strong> {{ item.especie || 'N/A' }}</p>
+                    <p><strong>Cultivar:</strong> {{ item.cultivar || 'N/A' }}</p>
+                    <p><strong>Lote:</strong> {{ item.numeroLote || 'N/A' }}</p>
+                    <p><strong>Fecha de Emisión:</strong> {{ formatearFecha(item.fechaEmision) }}</p>
+                    <p *ngIf="item.firmante"><strong>Firmante:</strong> {{ item.firmante }}</p>
+                </div>
+                <div class="item-actions">
+                    <button class="action-button edit-button" (click)="verItem(item)" title="Ver">
+                        <i class="pi pi-eye"></i>
+                    </button>
+                    <button class="action-button edit-button" (click)="editarItem(item)" title="Editar">
+                        <i class="pi pi-pencil"></i>
+                    </button>
+                    <button class="action-button delete-button" (click)="eliminarItem(item)" title="Eliminar">
+                        <i class="pi pi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </p-card>
+
+    <!-- Popup de confirmación de eliminación -->
+    <app-confirm-dialog
+        [visible]="mostrarConfirmEliminar"
+        title="Eliminar Certificado"
+        [message]="'¿Estás seguro de que quieres eliminar este Certificado?'"
+        [itemName]="certificadoAEliminar?.numeroCertificado ? 'Certificado: ' + certificadoAEliminar!.numeroCertificado : ''"
+        [itemId]="certificadoAEliminar?.id ?? ''"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        [loading]="confirmLoading"
+        (confirm)="confirmarEliminacion()"
+        (cancel)="cancelarEliminacion()">
+    </app-confirm-dialog>
+</div>
+

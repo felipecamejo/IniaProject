@@ -4,6 +4,7 @@ import random
 from urllib.parse import quote_plus
 import sys
 import re
+import os
 
 # Importaciones con manejo explícito de dependencias faltantes
 try:
@@ -62,8 +63,9 @@ def insert_batch_optimized(session, objects_list, batch_size=1000, operation_nam
     log_ok(f"{operation_name} completada: {total} registros")
 
 # ================================
-# Configuración inline por defecto
+# Configuración con variables de entorno
 # ================================
+# Valores por defecto (para desarrollo local)
 DEFAULT_CONFIG = {
     'DB_USER': 'postgres',
     'DB_PASSWORD': '897888fg2',
@@ -72,12 +74,13 @@ DEFAULT_CONFIG = {
     'DB_NAME': 'Inia',
 }
 
-# Usar EXCLUSIVAMENTE la configuración por defecto definida arriba
-DB_USER = DEFAULT_CONFIG['DB_USER']
-DB_PASSWORD = DEFAULT_CONFIG['DB_PASSWORD']
-DB_HOST = DEFAULT_CONFIG['DB_HOST']
-DB_PORT = DEFAULT_CONFIG['DB_PORT']
-DB_NAME = DEFAULT_CONFIG['DB_NAME']
+# Leer variables de entorno o usar valores por defecto
+# Soporta tanto DATABASE_URL como variables individuales
+DB_USER = os.getenv('DB_USER', os.getenv('POSTGRES_USER', DEFAULT_CONFIG['DB_USER']))
+DB_PASSWORD = os.getenv('DB_PASSWORD', os.getenv('POSTGRES_PASSWORD', DEFAULT_CONFIG['DB_PASSWORD']))
+DB_HOST = os.getenv('DB_HOST', os.getenv('POSTGRES_HOST', DEFAULT_CONFIG['DB_HOST']))
+DB_PORT = os.getenv('DB_PORT', os.getenv('POSTGRES_PORT', DEFAULT_CONFIG['DB_PORT']))
+DB_NAME = os.getenv('DB_NAME', os.getenv('POSTGRES_DB', DEFAULT_CONFIG['DB_NAME']))
 
 # Lista opcional de usuarios a utilizar en las relaciones.
 # Puedes poner emails (str) o IDs (int o str numérica), por ejemplo:
@@ -85,7 +88,25 @@ DB_NAME = DEFAULT_CONFIG['DB_NAME']
 USUARIOS_SELECCIONADOS = []
 
 def build_connection_string():
-    """Construye la cadena de conexión escapando credenciales."""
+    """Construye la cadena de conexión escapando credenciales.
+    
+    Soporta:
+    - DATABASE_URL: URL completa de conexión (prioridad)
+    - Variables individuales: DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME
+    - Variables alternativas: POSTGRES_USER, POSTGRES_PASSWORD, etc.
+    - Valores por defecto si no hay variables de entorno
+    """
+    # Si existe DATABASE_URL, usarla directamente
+    database_url = os.getenv('DATABASE_URL')
+    if database_url:
+        # Asegurar que use el driver psycopg2
+        if database_url.startswith('postgresql://'):
+            return database_url.replace('postgresql://', 'postgresql+psycopg2://', 1)
+        elif database_url.startswith('postgres://'):
+            return database_url.replace('postgres://', 'postgresql+psycopg2://', 1)
+        return database_url
+    
+    # Construir desde variables individuales
     user_esc = quote_plus(DB_USER or '')
     pass_esc = quote_plus(DB_PASSWORD or '')
     host = DB_HOST or 'localhost'
@@ -105,6 +126,8 @@ class Lote(Base):
     lote_descripcion = Column(String(255), nullable=True)
     lote_fecha_creacion = Column(DateTime, nullable=True)
     lote_fecha_finalizacion = Column(DateTime, nullable=True)
+    lote_estado = Column(String(255), nullable=True)
+    lote_categoria = Column(String(255), nullable=True)
 
 class Maleza(Base):
     __tablename__ = 'maleza'
@@ -158,20 +181,27 @@ class Dosn(Base):
     __tablename__ = 'dosn'
     dosn_id = Column(BigInteger, primary_key=True, autoincrement=True)
     dosn_activo = Column(Boolean, nullable=True)
-    dosn_completo_reducido = Column(Boolean, nullable=True)
-    dosn_determinacion_brassica = Column(Float, nullable=True)
-    dosn_determinacion_cuscuta = Column(Float, nullable=True)
+    # Fechas INIA/INASE
+    dosn_fecha_inia = Column(DateTime, nullable=True)
+    dosn_fecha_inase = Column(DateTime, nullable=True)
+    # Gramos analizados INIA/INASE
+    dosn_gramos_analizados_inia = Column(Float, nullable=True)
+    dosn_gramos_analizados_inase = Column(Float, nullable=True)
+    # Tipos de análisis INIA/INASE
+    dosn_tipos_de_analisis_inia = Column(String(255), nullable=True)
+    dosn_tipos_de_analisis_inase = Column(String(255), nullable=True)
+    # Determinaciones
+    dosn_determinacion_brassica = Column(Boolean, nullable=True)
+    dosn_determinacion_brassica_gramos = Column(Float, nullable=True)
+    dosn_determinacion_cuscuta = Column(Boolean, nullable=True)
+    dosn_determinacion_cuscuta_gramos = Column(Float, nullable=True)
+    # Otros campos
     dosn_estandar = Column(Boolean, nullable=True)
-    dosn_fecha = Column(DateTime, nullable=True)
     dosn_fecha_analisis = Column(DateTime, nullable=True)
-    dosn_gramos_analizados = Column(Float, nullable=True)
-    dosn_malezas_tolerancia_cero = Column(Float, nullable=True)
-    dosn_otros_cultivos = Column(Float, nullable=True)
-    dosn_tipos_de_analisis = Column(String(255), nullable=True)
     dosn_fecha_creacion = Column(DateTime, nullable=True)
     dosn_fecha_repeticion = Column(DateTime, nullable=True)
-    recibo_id = Column(BigInteger, nullable=True)
     dosn_repetido = Column(Boolean, nullable=True)
+    recibo_id = Column(BigInteger, nullable=True)
 
 class Cultivo(Base):
     __tablename__ = 'cultivo'
@@ -186,38 +216,31 @@ class Germinacion(Base):
     germinacion_id = Column(BigInteger, primary_key=True, autoincrement=True)
     germinacion_activo = Column(Boolean, nullable=True)
     germinacion_comentarios = Column(String(255), nullable=True)
-    germinacion_fechaconteo_1 = Column(DateTime, nullable=True)
-    germinacion_fechaconteo_2 = Column(DateTime, nullable=True)
-    germinacion_fechaconteo_3 = Column(DateTime, nullable=True)
-    germinacion_fechaconteo_4 = Column(DateTime, nullable=True)
-    germinacion_fechaconteo_5 = Column(DateTime, nullable=True)
-    germinacion_fechafinal = Column(DateTime, nullable=True)
     germinacion_fechainicio = Column(DateTime, nullable=True)
-    germinacion_germinacion = Column(Integer, nullable=True)
-    germinacion_metodo = Column(String(255), nullable=True)
-    germinacion_nrodias = Column(Integer, nullable=True)
+    germinacion_totaldias = Column(Integer, nullable=True)
+    germinacion_tratamiento = Column(String(255), nullable=True)
     germinacion_nrosemillaporrepeticion = Column(Integer, nullable=True)
-    germinacion_panormal = Column(Integer, nullable=True)
-    germinacion_pmuertas = Column(Integer, nullable=True)
-    germinacion_pnormal = Column(Integer, nullable=True)
-    germinacion_predondeo = Column(Integer, nullable=True)
+    metodo_id = Column(BigInteger, nullable=True)  # FK a METODO
+    germinacion_temperatura = Column(Float, nullable=True)
     germinacion_prefrio = Column(String(255), nullable=True)
     germinacion_pretratamiento = Column(String(255), nullable=True)
-    germinacion_promediorepeticiones = Column(Float, nullable=True)
-    germinacion_repeticionanormal = Column(Integer, nullable=True)
-    germinacion_repeticiondura = Column(Integer, nullable=True)
-    germinacion_repeticionfresca = Column(Integer, nullable=True)
-    germinacion_repeticionmuerta = Column(Integer, nullable=True)
-    germinacion_repeticionnormal_1 = Column(Integer, nullable=True)
-    germinacion_repeticionnormal_2 = Column(Integer, nullable=True)
-    germinacion_repeticionnormal_3 = Column(Integer, nullable=True)
-    germinacion_repeticionnormal_4 = Column(Integer, nullable=True)
-    germinacion_repeticionnormal_5 = Column(Integer, nullable=True)
-    germinacion_semillasduras = Column(Integer, nullable=True)
-    germinacion_temperatura = Column(Float, nullable=True)
-    germinacion_totaldias = Column(Integer, nullable=True)
-    germinacion_totalrepeticion = Column(Integer, nullable=True)
-    germinacion_tratamiento = Column(String(255), nullable=True)
+    germinacion_nrodias = Column(Integer, nullable=True)
+    germinacion_fechafinal = Column(DateTime, nullable=True)
+    germinacion_predondeo = Column(Integer, nullable=True)
+    # Valores INIA/INASE
+    inia_germinacion_pnormal = Column(Integer, nullable=True)
+    inase_germinacion_pnormal = Column(Integer, nullable=True)
+    inia_germinacion_panormal = Column(Integer, nullable=True)
+    inase_germinacion_panormal = Column(Integer, nullable=True)
+    inia_germinacion_pmuertas = Column(Integer, nullable=True)
+    inase_germinacion_pmuertas = Column(Integer, nullable=True)
+    inia_germinacion_frescas = Column(Integer, nullable=True)
+    inase_germinacion_frescas = Column(Integer, nullable=True)
+    inia_germinacion_semillasduras = Column(Integer, nullable=True)
+    inase_germinacion_semillasduras = Column(Integer, nullable=True)
+    inia_germinacion_germinacion = Column(Integer, nullable=True)
+    inase_germinacion_germinacion = Column(Integer, nullable=True)
+    # Campos de control
     germinacion_fecha_creacion = Column(DateTime, nullable=True)
     germinacion_fecha_repeticion = Column(DateTime, nullable=True)
     recibo_id = Column(BigInteger, nullable=True)
@@ -227,14 +250,13 @@ class Pms(Base):
     __tablename__ = 'pms'
     pms_id = Column(BigInteger, primary_key=True, autoincrement=True)
     pms_activo = Column(Boolean, nullable=True)
-    peso_prom_cien_semillas = Column(Float, nullable=True)
     peso_mil_semillas = Column(Float, nullable=True)
     peso_prom_mil_semillas = Column(Float, nullable=True)
-    desvio_estandar = Column(Float, nullable=True)
-    coef_variacion = Column(Float, nullable=True)
     comentarios = Column(String(255), nullable=True)
+    pms_fecha_medicion = Column(DateTime, nullable=True)
     pms_fecha_creacion = Column(DateTime, nullable=True)
     pms_fecha_repeticion = Column(DateTime, nullable=True)
+    pms_estandar = Column(Boolean, nullable=True)
     recibo_id = Column(BigInteger, nullable=True)
     pms_repetido = Column(Boolean, nullable=True)
 
@@ -270,6 +292,8 @@ class Pureza(Base):
     material_inerte_inase = Column(Float, nullable=True)
     material_inerte_porcentaje_redondeo = Column(Float, nullable=True)
     material_inerte_porcentaje_redondeo_inase = Column(Float, nullable=True)
+    materia_inerte_tipo = Column(String(255), nullable=True)
+    materia_inerte_tipo_inase = Column(String(255), nullable=True)
     
     # Otros cultivos con variantes INIA/INASE
     otros_cultivos = Column(Float, nullable=True)
@@ -311,39 +335,36 @@ class Pureza(Base):
 class PurezaPnotatum(Base):
     __tablename__ = 'pureza_pnotatum'
     pureza_pnotatum_id = Column(BigInteger, primary_key=True, autoincrement=True)
-    pureza_at = Column(Float, nullable=True)
-    pureza_pi = Column(Float, nullable=True)
     pureza_activo = Column(Boolean, nullable=True)
-    pureza_peso_inicial = Column(Float, nullable=True)
-    pureza_porcentaje = Column(Float, nullable=True)
-    pureza_porcentaje_a = Column(Float, nullable=True)
-    pureza_repeticiones = Column(Integer, nullable=True)
-    pureza_semillas_ls = Column(Float, nullable=True)
-    pureza_total_a = Column(Integer, nullable=True)
-    pureza_pnotatum_fecha_creacion = Column(DateTime, nullable=True)
-    pureza_pnotatum_fecha_repeticion = Column(DateTime, nullable=True)
+    gramos_semilla_pura = Column(Float, nullable=True)
+    gramos_semilla_cultivos = Column(Float, nullable=True)
+    gramos_semilla_malezas = Column(Float, nullable=True)
+    gramos_materioa_inerte = Column(Float, nullable=True)
     recibo_id = Column(BigInteger, nullable=True)
     pureza_repetido = Column(Boolean, nullable=True)
+    pureza_pnotatum_fecha_creacion = Column(DateTime, nullable=True)
+    pureza_pnotatum_fecha_repeticion = Column(DateTime, nullable=True)
+    pureza_pnotatum_observaciones = Column(String(255), nullable=True)
 
 class Sanitario(Base):
     __tablename__ = 'sanitario'
     sanitario_id = Column(BigInteger, primary_key=True, autoincrement=True)
     sanitario_activo = Column(Boolean, nullable=True)
-    sanitario_estadoproductodosis = Column(String(255), nullable=True)
-    sanitario_fecha = Column(DateTime, nullable=True)
     sanitario_fechasiembra = Column(DateTime, nullable=True)
+    sanitario_fecha = Column(DateTime, nullable=True)
+    sanitario_metodo = Column(String(255), nullable=True)
+    sanitario_temperatura = Column(Integer, nullable=True)
     sanitario_horasluz = Column(Integer, nullable=True)
     sanitario_horasoscuridad = Column(Integer, nullable=True)
-    sanitario_metodo = Column(String(255), nullable=True)
     sanitario_nrodias = Column(Integer, nullable=True)
-    sanitario_nrosemillasrepeticion = Column(Integer, nullable=True)
+    sanitario_estado = Column(String(255), nullable=True)
     sanitario_observaciones = Column(String(255), nullable=True)
-    sanitario_temperatura = Column(Integer, nullable=True)
+    sanitario_nrosemillasrepeticion = Column(Integer, nullable=True)
+    sanitario_reciboid = Column(BigInteger, nullable=True)
     sanitario_estandar = Column(Boolean, nullable=True)
+    sanitario_repetido = Column(Boolean, nullable=True)
     sanitario_fechacreacion = Column(DateTime, nullable=True)
     sanitario_fecharepeticion = Column(DateTime, nullable=True)
-    sanitario_reciboid = Column(BigInteger, nullable=True)
-    sanitario_repetido = Column(Boolean, nullable=True)
 
 class HumedadRecibo(Base):
     __tablename__ = 'humedad_recibo'
@@ -612,18 +633,18 @@ def insert_pms(session, recibos):
     try:
         pms_list = []
         for i in range(5000):
+            fecha_medicion = generar_fecha_aleatoria(60)
             fecha_creacion = generar_fecha_aleatoria(30)
             fecha_repeticion = generar_fecha_aleatoria(15) if random.choice([True, False]) else None
             pms = Pms(
                 pms_activo=True,
-                peso_prom_cien_semillas=round(random.uniform(0.5, 2.0), 3),
                 peso_mil_semillas=round(random.uniform(20.0, 50.0), 2),
                 peso_prom_mil_semillas=round(random.uniform(20.0, 50.0), 2),
-                desvio_estandar=round(random.uniform(0.1, 2.0), 3),
-                coef_variacion=round(random.uniform(1.0, 10.0), 2),
                 comentarios=random.choice(DATOS_MUESTRA['comentarios']),
+                pms_fecha_medicion=fecha_medicion,
                 pms_fecha_creacion=fecha_creacion,
                 pms_fecha_repeticion=fecha_repeticion,
+                pms_estandar=random.choice([True, False]),
                 recibo_id=random.choice([r.recibo_id for r in recibos]),
                 pms_repetido=random.choice([True, False])
             )
@@ -827,22 +848,26 @@ def insert_dosn(session, recibos):
         log_step("➡️ Insertando DOSN...")
         dosns = []
         for i in range(5000):
-            fecha_dosn = generar_fecha_aleatoria(60)
+            fecha_inia = generar_fecha_aleatoria(60)
+            fecha_inase = generar_fecha_aleatoria(60)
             fecha_analisis = generar_fecha_aleatoria(30)
             fecha_creacion = generar_fecha_aleatoria(65)
             fecha_repeticion = generar_fecha_aleatoria(20) if random.choice([True, False]) else None
+            tipo_analisis = random.choice(DATOS_MUESTRA['tipos_analisis'])
             dosn = Dosn(
                 dosn_activo=True,
-                dosn_completo_reducido=random.choice([True, False]),
-                dosn_determinacion_brassica=round(random.uniform(0.0, 10.0), 2),
-                dosn_determinacion_cuscuta=round(random.uniform(0.0, 5.0), 2),
+                dosn_fecha_inia=fecha_inia,
+                dosn_fecha_inase=fecha_inase,
+                dosn_gramos_analizados_inia=round(random.uniform(10.0, 100.0), 2),
+                dosn_gramos_analizados_inase=round(random.uniform(10.0, 100.0), 2),
+                dosn_tipos_de_analisis_inia=tipo_analisis,
+                dosn_tipos_de_analisis_inase=tipo_analisis,
+                dosn_determinacion_brassica=random.choice([True, False]),
+                dosn_determinacion_brassica_gramos=round(random.uniform(0.0, 10.0), 2) if random.choice([True, False]) else None,
+                dosn_determinacion_cuscuta=random.choice([True, False]),
+                dosn_determinacion_cuscuta_gramos=round(random.uniform(0.0, 5.0), 2) if random.choice([True, False]) else None,
                 dosn_estandar=random.choice([True, False]),
-                dosn_fecha=fecha_dosn,
                 dosn_fecha_analisis=fecha_analisis,
-                dosn_gramos_analizados=round(random.uniform(10.0, 100.0), 2),
-                dosn_malezas_tolerancia_cero=round(random.uniform(0.0, 2.0), 2),
-                dosn_otros_cultivos=round(random.uniform(0.0, 5.0), 2),
-                dosn_tipos_de_analisis=random.choice(DATOS_MUESTRA['tipos_analisis']),
                 dosn_fecha_creacion=fecha_creacion,
                 dosn_fecha_repeticion=fecha_repeticion,
                 recibo_id=random.choice([r.recibo_id for r in recibos]),

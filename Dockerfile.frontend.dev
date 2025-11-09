@@ -1,8 +1,9 @@
 # Dockerfile para desarrollo del frontend Angular
 FROM node:20-alpine
 
-# Instalar dependencias del sistema
-RUN apk add --no-cache git
+# Crear usuario no root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
 
 # Establecer directorio de trabajo
 WORKDIR /app
@@ -10,11 +11,17 @@ WORKDIR /app
 # Copiar archivos de configuración
 COPY frontend/package*.json ./
 
+# Cambiar propietario
+RUN chown -R nodejs:nodejs /app
+
+# Cambiar a usuario no root
+USER nodejs
+
 # Instalar dependencias (incluyendo devDependencies para desarrollo)
 RUN npm install
 
 # Copiar código fuente
-COPY frontend/ .
+COPY --chown=nodejs:nodejs frontend/ .
 
 # Exponer el puerto de desarrollo
 EXPOSE 4200

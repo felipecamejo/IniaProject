@@ -15,6 +15,8 @@ import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
 import { LogService } from '../../../services/LogService';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { AuthService } from '../../../services/AuthService';
 
 
 @Component({
@@ -27,7 +29,8 @@ import { LogService } from '../../../services/LogService';
     InputNumberModule,
     ButtonModule,
     MultiSelectModule,
-    TableModule],
+    TableModule,
+    ConfirmDialogComponent],
   templateUrl: './pureza.component.html',
   styleUrl: './pureza.component.scss'
 })
@@ -38,6 +41,105 @@ export class PurezaComponent implements OnInit {
   isViewing: boolean = false;
   editingId: number | null = null;
   repetido: boolean = false;
+
+  // Variables para el diálogo de confirmación
+  mostrarConfirmEstandar: boolean = false;
+  mostrarConfirmRepetido: boolean = false;
+  estandarPendiente: boolean = false;
+  repetidoPendiente: boolean = false;
+
+  // Variables para controlar si ya está marcado (no se puede cambiar)
+  estandarOriginal: boolean = false;
+  repetidoOriginal: boolean = false;
+
+  // Getters para deshabilitar checkboxes si ya están marcados
+  get estandarDeshabilitado(): boolean {
+    return this.estandarOriginal;
+  }
+
+  get repetidoDeshabilitado(): boolean {
+    return this.repetidoOriginal;
+  }
+
+  // Getter para verificar si el usuario es admin
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  // Métodos para hacer checkboxes mutuamente excluyentes con confirmación
+  onEstandarChange() {
+    // Si ya estaba marcado como estándar, no permitir cambiar
+    if (this.estandarOriginal) {
+      this.estandar = true; // Revertir
+      return;
+    }
+
+    // Si está intentando marcar como estándar y ya está marcado como repetido
+    if (this.estandar && this.repetido) {
+      this.repetido = false;
+      this.repetidoOriginal = false;
+    }
+
+    // Si está intentando marcar como estándar, mostrar confirmación
+    if (this.estandar && !this.mostrarConfirmEstandar) {
+      this.estandarPendiente = true;
+      this.mostrarConfirmEstandar = true;
+      // Revertir el cambio hasta que se confirme
+      this.estandar = false;
+    }
+  }
+
+  onRepetidoChange() {
+    // Si ya estaba marcado como repetido, no permitir cambiar
+    if (this.repetidoOriginal) {
+      this.repetido = true; // Revertir
+      return;
+    }
+
+    // Si está intentando marcar como repetido y ya está marcado como estándar
+    if (this.repetido && this.estandar) {
+      this.estandar = false;
+      this.estandarOriginal = false;
+    }
+
+    // Si está intentando marcar como repetido, mostrar confirmación
+    if (this.repetido && !this.mostrarConfirmRepetido) {
+      this.repetidoPendiente = true;
+      this.mostrarConfirmRepetido = true;
+      // Revertir el cambio hasta que se confirme
+      this.repetido = false;
+    }
+  }
+
+  confirmarEstandar() {
+    this.estandar = true;
+    this.repetido = false;
+    this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
+    this.repetidoOriginal = false;
+    this.mostrarConfirmEstandar = false;
+    this.estandarPendiente = false;
+  }
+
+  cancelarEstandar() {
+    this.estandar = false;
+    this.mostrarConfirmEstandar = false;
+    this.estandarPendiente = false;
+  }
+
+  confirmarRepetido() {
+    this.repetido = true;
+    this.estandar = false;
+    this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
+    this.estandarOriginal = false;
+    this.mostrarConfirmRepetido = false;
+    this.repetidoPendiente = false;
+  }
+
+  cancelarRepetido() {
+    this.repetido = false;
+    this.mostrarConfirmRepetido = false;
+    this.repetidoPendiente = false;
+  }
 
   // Agregar propiedades para manejar errores
   errores: string[] = [];
@@ -687,6 +789,7 @@ export class PurezaComponent implements OnInit {
   };
 
   constructor(
+    private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
     private purezaService: PurezaService,
@@ -893,6 +996,9 @@ export class PurezaComponent implements OnInit {
         this.estandar = item.estandar || false;
         this.activo = item.activo !== undefined ? item.activo : true;
         this.repetido = item.repetido || false;
+        // Guardar valores originales para deshabilitar checkboxes si ya están marcados
+        this.estandarOriginal = item.estandar || false;
+        this.repetidoOriginal = item.repetido || false;
         
         // === CARGAR SELECCIONES DE MALEZAS Y CULTIVOS ===
         this.selectedMalezasComunes = item.malezasNormalesId || [];
@@ -986,6 +1092,8 @@ export class PurezaComponent implements OnInit {
     this.fechaEstandar = '';
     this.estandar = false;
     this.repetido = false;
+    this.estandarOriginal = false;
+    this.repetidoOriginal = false;
     this.fechaCreacionOriginal = null;
     
     // Limpiar materia inerte tipo

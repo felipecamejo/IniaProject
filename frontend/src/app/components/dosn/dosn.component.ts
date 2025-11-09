@@ -13,19 +13,22 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { CultivoService } from '../../../services/CultivoService';
 import { MalezaService } from '../../../services/MalezaService';
 import { LogService } from '../../../services/LogService';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { AuthService } from '../../../services/AuthService';
 
 
 @Component({
   selector: 'app-dosn.component',
   standalone: true,
-  imports: [
+      imports: [
     CommonModule,
     FormsModule,
     CardModule,
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-    MultiSelectModule
+    MultiSelectModule,
+    ConfirmDialogComponent
       ],
       templateUrl: './dosn.component.html',
       styleUrls: ['./dosn.component.scss']
@@ -38,7 +41,7 @@ import { LogService } from '../../../services/LogService';
       reciboId: number | null = null;
 
       // Todas las propiedades y métodos deben estar dentro de la clase
-      constructor(private dosnService: DOSNService, private cultivoService: CultivoService, private malezaService: MalezaService, private route: ActivatedRoute, private router: Router, private logService: LogService) {}
+      constructor(private dosnService: DOSNService, private cultivoService: CultivoService, private malezaService: MalezaService, private route: ActivatedRoute, private router: Router, private logService: LogService, private authService: AuthService) {}
 
       brassicaCuscuta = [
         { label: 'Brassica spp.', contiene: false, gramos: 0 },
@@ -177,6 +180,110 @@ import { LogService } from '../../../services/LogService';
       malezasOptions: { id: number, label: string }[] = [];
       malezasToleradasOptions: { id: number, label: string }[] = [];
       malezasCeroOptions: { id: number, label: string }[] = [];
+
+      // Campos para estándar
+      fechaEstandar: string = '';
+      estandar: boolean = false;
+      repetido: boolean = false;
+
+      // Variables para el diálogo de confirmación
+      mostrarConfirmEstandar: boolean = false;
+      mostrarConfirmRepetido: boolean = false;
+      estandarPendiente: boolean = false;
+      repetidoPendiente: boolean = false;
+
+      // Variables para controlar si ya está marcado (no se puede cambiar)
+      estandarOriginal: boolean = false;
+      repetidoOriginal: boolean = false;
+
+      // Getters para deshabilitar checkboxes si ya están marcados
+      get estandarDeshabilitado(): boolean {
+        return this.estandarOriginal;
+      }
+
+      get repetidoDeshabilitado(): boolean {
+        return this.repetidoOriginal;
+      }
+
+      // Getter para verificar si el usuario es admin
+      get isAdmin(): boolean {
+        return this.authService.isAdmin();
+      }
+
+      // Métodos para hacer checkboxes mutuamente excluyentes con confirmación
+      onEstandarChange() {
+        // Si ya estaba marcado como estándar, no permitir cambiar
+        if (this.estandarOriginal) {
+          this.estandar = true; // Revertir
+          return;
+        }
+
+        // Si está intentando marcar como estándar y ya está marcado como repetido
+        if (this.estandar && this.repetido) {
+          this.repetido = false;
+          this.repetidoOriginal = false;
+        }
+
+        // Si está intentando marcar como estándar, mostrar confirmación
+        if (this.estandar && !this.mostrarConfirmEstandar) {
+          this.estandarPendiente = true;
+          this.mostrarConfirmEstandar = true;
+          // Revertir el cambio hasta que se confirme
+          this.estandar = false;
+        }
+      }
+
+      onRepetidoChange() {
+        // Si ya estaba marcado como repetido, no permitir cambiar
+        if (this.repetidoOriginal) {
+          this.repetido = true; // Revertir
+          return;
+        }
+
+        // Si está intentando marcar como repetido y ya está marcado como estándar
+        if (this.repetido && this.estandar) {
+          this.estandar = false;
+          this.estandarOriginal = false;
+        }
+
+        // Si está intentando marcar como repetido, mostrar confirmación
+        if (this.repetido && !this.mostrarConfirmRepetido) {
+          this.repetidoPendiente = true;
+          this.mostrarConfirmRepetido = true;
+          // Revertir el cambio hasta que se confirme
+          this.repetido = false;
+        }
+      }
+
+      confirmarEstandar() {
+        this.estandar = true;
+        this.repetido = false;
+        this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
+        this.repetidoOriginal = false;
+        this.mostrarConfirmEstandar = false;
+        this.estandarPendiente = false;
+      }
+
+      cancelarEstandar() {
+        this.estandar = false;
+        this.mostrarConfirmEstandar = false;
+        this.estandarPendiente = false;
+      }
+
+      confirmarRepetido() {
+        this.repetido = true;
+        this.estandar = false;
+        this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
+        this.estandarOriginal = false;
+        this.mostrarConfirmRepetido = false;
+        this.repetidoPendiente = false;
+      }
+
+      cancelarRepetido() {
+        this.repetido = false;
+        this.mostrarConfirmRepetido = false;
+        this.repetidoPendiente = false;
+      }
 
       // Variables para manejar navegación
       isEditing: boolean = false;
@@ -574,6 +681,14 @@ import { LogService } from '../../../services/LogService';
       cuscuta.contiene = Boolean(d.determinacionCuscuta);
       cuscuta.gramos = d.determinacionCuscutaGramos ?? 0;
     }
+
+    // Campos estándar
+    this.estandar = d.estandar ?? false;
+    this.repetido = d.repetido ?? false;
+    // Guardar valores originales para deshabilitar checkboxes si ya están marcados
+    this.estandarOriginal = d.estandar ?? false;
+    this.repetidoOriginal = d.repetido ?? false;
+    this.fechaEstandar = this.toDateInput(d.fechaAnalisis);
   }
 
   private toDateInput(value: string | null): string {
@@ -644,9 +759,9 @@ import { LogService } from '../../../services/LogService';
       determinacionBrassicaGramos: brassica && brassica.contiene ? Number(brassica.gramos) : 0,
       determinacionCuscuta: cuscuta ? Boolean(cuscuta.contiene) : null,
       determinacionCuscutaGramos: cuscuta && cuscuta.contiene ? Number(cuscuta.gramos) : 0,
-      // Estandar y fecha análisis (preservar si existe)
-      estandar: this.dosn?.estandar ?? null,
-      fechaAnalisis: this.dosn?.fechaAnalisis ?? null,
+      // Estandar y fecha análisis
+      estandar: this.estandar ?? false,
+      fechaAnalisis: this.fechaEstandar ? `${this.fechaEstandar}T00:00:00` : null,
       // Colecciones por organismo
       malezasNormalesINIAId: this.selectedMalezasInia ?? [],
       malezasNormalesINASEId: this.selectedMalezasInase ?? [],
@@ -667,7 +782,7 @@ import { LogService } from '../../../services/LogService';
       cultivosINASE: toCantidadList(this.selectedCultivosInase, this.cultivosInaseCounts),
       // Preservar flags y metadatos
       activo: this.dosn?.activo ?? true,
-      repetido: this.dosn?.repetido ?? false,
+      repetido: this.repetido ?? false,
       fechaCreacion: this.dosn?.fechaCreacion ?? null,
       fechaRepeticion: this.dosn?.fechaRepeticion ?? null
     };
@@ -682,6 +797,10 @@ import { LogService } from '../../../services/LogService';
     
       if (this.validarFecha(this.fechaInia)) {
         this.errores.push('La fecha de análisis INIA no puede ser futura.');
+      }
+
+      if (this.validarFecha(this.fechaEstandar)) {
+        this.errores.push('La fecha estándar no puede ser futura.');
       }
 
       if (!this.validarNumero(this.gramosInase)) {

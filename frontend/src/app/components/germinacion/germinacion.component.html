@@ -357,12 +357,69 @@
         <textarea id="comentarios" [(ngModel)]="comentarios" name="comentarios" rows="4" [readonly]="isReadonly" style="width:100%; max-width:700px; padding:0.7rem 1rem; border-radius:10px; border:2px solid #2563eb; background:#f7fbff; font-size:1.05em; color:#1746a0; resize:vertical; box-shadow:0 2px 8px rgba(38,99,235,0.08);"></textarea>
       </div>
 
+      <!-- Checkboxes estándar y repetido (mutuamente excluyentes) - Solo visible para admin al editar -->
+      <div class="form-field" style="margin-bottom: 2.5rem; display: flex; gap: 2rem;" *ngIf="isEditing && isAdmin">
+        <div class="checkbox-item">
+          <input 
+            type="checkbox" 
+            id="estandar-checkbox"
+            [(ngModel)]="estandar" 
+            (change)="onEstandarChange()"
+            name="estandar"
+            class="custom-checkbox"
+            [disabled]="isReadonly || estandarDeshabilitado"
+          />
+          <label for="estandar-checkbox" class="checkbox-label">
+            <span class="checkmark"></span>
+            <span class="checkbox-text">Estándar</span>
+          </label>
+        </div>
+        
+        <div class="checkbox-item">
+          <input 
+            type="checkbox" 
+            id="repetido-checkbox"
+            [(ngModel)]="repetido" 
+            (change)="onRepetidoChange()"
+            name="repetido"
+            class="custom-checkbox"
+            [disabled]="isReadonly || repetidoDeshabilitado"
+          />
+          <label for="repetido-checkbox" class="checkbox-label">
+            <span class="checkmark"></span>
+            <span class="checkbox-text">Repetido</span>
+          </label>
+        </div>
+      </div>
+
       <div *ngIf="errores.length > 0" class="error-container">
         <p class="error-message">
           {{ errores.length === 1 ? '1 error encontrado' : errores.length + ' errores encontrados' }}
         </p>
         <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
       </div>
+
+      <!-- Diálogo de confirmación para Estándar -->
+      <app-confirm-dialog
+        [visible]="mostrarConfirmEstandar"
+        title="Confirmar análisis estándar"
+        message="¿Estás seguro de que deseas marcar este análisis como estándar? Una vez marcado, no podrás cambiarlo."
+        confirmText="Confirmar"
+        cancelText="Cancelar"
+        (confirm)="confirmarEstandar()"
+        (cancel)="cancelarEstandar()">
+      </app-confirm-dialog>
+
+      <!-- Diálogo de confirmación para Repetido -->
+      <app-confirm-dialog
+        [visible]="mostrarConfirmRepetido"
+        title="Confirmar análisis repetido"
+        message="¿Estás seguro de que deseas marcar este análisis como repetido? Una vez marcado, no podrás cambiarlo."
+        confirmText="Confirmar"
+        cancelText="Cancelar"
+        (confirm)="confirmarRepetido()"
+        (cancel)="cancelarRepetido()">
+      </app-confirm-dialog>
 
       <div class="submit-btn" style="margin-top: 1.2rem; display: flex; gap: 1rem;" *ngIf="!isReadonly">
         <button

@@ -10,6 +10,8 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
 import { GerminacionTablasService } from '../../../services/GerminacionTablasService';
 import { GerminacionService } from '../../../services/GerminacionService';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { AuthService } from '../../../services/AuthService';
 import { ConteoGerminacionDto } from '../../../models/ConteoGerminacion.dto';
 import { MetodoService } from '../../../services/MetodoService';
 import { MetodoDto } from '../../../models/Metodo.dto';
@@ -37,7 +39,8 @@ export interface RepeticionGerminacion {
     InputNumberModule,
     ButtonModule,
     MultiSelectModule,
-    TableModule
+    TableModule,
+    ConfirmDialogComponent
   ],
   templateUrl: './germinacion.component.html',
   styleUrl: './germinacion.component.scss'
@@ -177,6 +180,107 @@ export class GerminacionComponent implements OnInit {
 
   // Variables actuales (se actualizan según el tratamiento seleccionado)
   comentarios: string = '';
+  estandar: boolean = false;
+  repetido: boolean = false;
+
+  // Variables para el diálogo de confirmación
+  mostrarConfirmEstandar: boolean = false;
+  mostrarConfirmRepetido: boolean = false;
+  estandarPendiente: boolean = false;
+  repetidoPendiente: boolean = false;
+
+  // Variables para controlar si ya está marcado (no se puede cambiar)
+  estandarOriginal: boolean = false;
+  repetidoOriginal: boolean = false;
+
+  // Getters para deshabilitar checkboxes si ya están marcados
+  get estandarDeshabilitado(): boolean {
+    return this.estandarOriginal;
+  }
+
+  get repetidoDeshabilitado(): boolean {
+    return this.repetidoOriginal;
+  }
+
+  // Getter para verificar si el usuario es admin
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  // Métodos para hacer checkboxes mutuamente excluyentes con confirmación
+  onEstandarChange() {
+    // Si ya estaba marcado como estándar, no permitir cambiar
+    if (this.estandarOriginal) {
+      this.estandar = true; // Revertir
+      return;
+    }
+
+    // Si está intentando marcar como estándar y ya está marcado como repetido
+    if (this.estandar && this.repetido) {
+      this.repetido = false;
+      this.repetidoOriginal = false;
+    }
+
+    // Si está intentando marcar como estándar, mostrar confirmación
+    if (this.estandar && !this.mostrarConfirmEstandar) {
+      this.estandarPendiente = true;
+      this.mostrarConfirmEstandar = true;
+      // Revertir el cambio hasta que se confirme
+      this.estandar = false;
+    }
+  }
+
+  onRepetidoChange() {
+    // Si ya estaba marcado como repetido, no permitir cambiar
+    if (this.repetidoOriginal) {
+      this.repetido = true; // Revertir
+      return;
+    }
+
+    // Si está intentando marcar como repetido y ya está marcado como estándar
+    if (this.repetido && this.estandar) {
+      this.estandar = false;
+      this.estandarOriginal = false;
+    }
+
+    // Si está intentando marcar como repetido, mostrar confirmación
+    if (this.repetido && !this.mostrarConfirmRepetido) {
+      this.repetidoPendiente = true;
+      this.mostrarConfirmRepetido = true;
+      // Revertir el cambio hasta que se confirme
+      this.repetido = false;
+    }
+  }
+
+  confirmarEstandar() {
+    this.estandar = true;
+    this.repetido = false;
+    this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
+    this.repetidoOriginal = false;
+    this.mostrarConfirmEstandar = false;
+    this.estandarPendiente = false;
+  }
+
+  cancelarEstandar() {
+    this.estandar = false;
+    this.mostrarConfirmEstandar = false;
+    this.estandarPendiente = false;
+  }
+
+  confirmarRepetido() {
+    this.repetido = true;
+    this.estandar = false;
+    this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
+    this.estandarOriginal = false;
+    this.mostrarConfirmRepetido = false;
+    this.repetidoPendiente = false;
+  }
+
+  cancelarRepetido() {
+    this.repetido = false;
+    this.mostrarConfirmRepetido = false;
+    this.repetidoPendiente = false;
+  }
   numSemillas: string = '';
   // Listado de métodos expuestos por backend y selección actual
   metodos: MetodoDto[] = [];
@@ -262,6 +366,7 @@ export class GerminacionComponent implements OnInit {
   ];
 
   constructor(
+    private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
     private tablasSvc: GerminacionTablasService,
@@ -667,6 +772,11 @@ export class GerminacionComponent implements OnInit {
         console.groupEnd();
         // Encabezado / metadata
         this.comentarios = dto?.comentarios ?? '';
+        this.estandar = dto?.estandar ?? false;
+        this.repetido = dto?.repetido ?? false;
+        // Guardar valores originales para deshabilitar checkboxes si ya están marcados
+        this.estandarOriginal = dto?.estandar ?? false;
+        this.repetidoOriginal = dto?.repetido ?? false;
         this.numSemillas = dto?.nroSemillaPorRepeticion != null ? String(dto.nroSemillaPorRepeticion) : '';
         // Método: seleccionar por id si viene del backend
         this.metodoId = dto?.metodo?.id ?? null;
@@ -923,7 +1033,8 @@ export class GerminacionComponent implements OnInit {
       observaciones: '',
       reciboId: reciboId,
       activo: true,
-      repetido: false,
+      estandar: this.estandar || false,
+      repetido: this.repetido || false,
       fechaCreacion: null,
       fechaRepeticion: null,
     });
