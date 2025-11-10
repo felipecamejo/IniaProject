@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  */
 @RestController
-@RequestMapping("api/pandmiddleware")
+@RequestMapping("api/v1/pandmiddleware")
 @Tag(name = "PandMiddleware", description = "Endpoints para ejecutar el middleware de pandas/SQLAlchemy")
 public class PandMiddlewareController {
 
