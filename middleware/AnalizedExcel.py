@@ -1,6 +1,7 @@
 import os
 import argparse
 import logging
+import json
 from typing import Dict, List, Any, Optional, Tuple
 from collections import defaultdict
 
@@ -789,7 +790,7 @@ def imprimir_mapeo(mapeo: Dict[str, Any], formato: str = 'texto') -> None:
 # ================================
 # MÓDULO: FUNCIÓN PRINCIPAL
 # ================================
-def analizar_excel(ruta_archivo: str, formato_salida: str = 'texto') -> Dict[str, Any]:
+def analizar_excel(ruta_archivo: str, formato_salida: str = 'texto', imprimir: bool = True) -> Dict[str, Any]:
     """
     Función principal que analiza un archivo Excel y genera el mapeo de datos.
     
@@ -811,8 +812,9 @@ def analizar_excel(ruta_archivo: str, formato_salida: str = 'texto') -> Dict[str
         mapeo = generar_mapeo_datos(estructura)
         logger.info(f"Mapeo generado: {len(mapeo['hojas'])} hojas mapeadas")
         
-        # Imprimir resultado
-        imprimir_mapeo(mapeo, formato_salida)
+        # Imprimir resultado si se solicita
+        if imprimir:
+            imprimir_mapeo(mapeo, formato_salida)
         
         return mapeo
         
@@ -822,10 +824,11 @@ def analizar_excel(ruta_archivo: str, formato_salida: str = 'texto') -> Dict[str
 
 def main():
     """Función principal del script."""
-    parser = argparse.ArgumentParser(description="Analiza un archivo Excel y genera un mapeo de datos")
+    parser = argparse.ArgumentParser(description="Analiza uno o varios archivos Excel y genera el mapeo de datos")
     parser.add_argument(
-        "archivo",
-        help="Ruta al archivo Excel a analizar"
+        "archivos",
+        nargs="+",
+        help="Ruta(s) a los archivos Excel a analizar"
     )
     parser.add_argument(
         "--formato",
@@ -835,11 +838,32 @@ def main():
     )
     args = parser.parse_args()
     
-    try:
-        analizar_excel(args.archivo, args.formato)
-    except Exception as e:
-        logger.error(f"Error en el proceso principal: {e}")
-        raise
+    resultados_json: List[Dict[str, Any]] = []
+    errores: List[Dict[str, str]] = []
+    
+    for ruta in args.archivos:
+        logger.info(f"Procesando archivo '{ruta}'...")
+        try:
+            if args.formato == "texto":
+                print(f"\n=== Archivo: {ruta} ===\n")
+                analizar_excel(ruta, args.formato, imprimir=True)
+            else:
+                mapeo = analizar_excel(ruta, args.formato, imprimir=False)
+                resultados_json.append({"archivo": ruta, "mapeo": mapeo})
+        except Exception as e:
+            logger.error(f"Error procesando '{ruta}': {e}", exc_info=True)
+            errores.append({"archivo": ruta, "error": str(e)})
+    
+    if args.formato == "json":
+        salida = {
+            "total_archivos": len(args.archivos),
+            "procesados": resultados_json,
+            "errores": errores or None,
+        }
+        print(json.dumps(salida, indent=2, ensure_ascii=False))
+
+    if errores:
+        raise SystemExit(1)
 
 if __name__ == "__main__":
     main()

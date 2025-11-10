@@ -31,7 +31,7 @@ import { AuthService } from '../../../services/AuthService';
   styleUrls: ['./excel-middleware.component.scss']
 })
 export class ExcelMiddlewareComponent {
-  selectedFile: File | null = null;
+  selectedFiles: File[] = [];
   isExporting = false;
   isImporting = false;
   importResult: string | null = null;
@@ -51,39 +51,72 @@ export class ExcelMiddlewareComponent {
   }
 
   /**
-   * Maneja la selección de archivo
+   * Verifica si el usuario tiene permisos de ANALISTA
+   */
+  get isAnalista(): boolean {
+    return this.authService.isAnalista();
+  }
+
+  /**
+   * Verifica si el usuario puede exportar/importar (ADMIN o ANALISTA)
+   */
+  get canExportImport(): boolean {
+    return this.isAdmin || this.isAnalista;
+  }
+
+  /**
+   * Maneja la selección de archivos (uno o varios)
    */
   onFileSelect(event: any): void {
-    const file = event.files?.[0];
-    if (file) {
-      // Validar que sea un archivo Excel
-      const fileName = file.name.toLowerCase();
-      if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
-        this.selectedFile = file;
-        this.importError = null;
-        this.importResult = null;
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Archivo seleccionado',
-          detail: `Archivo "${file.name}" listo para importar`
-        });
-      } else {
-        this.selectedFile = null;
-        this.importError = 'Solo se permiten archivos Excel (.xlsx o .xls)';
+    const files: File[] = event.files || [];
+    if (files.length > 0) {
+      // Validar que todos los archivos sean Excel o CSV
+      const archivosValidos: File[] = [];
+      const archivosInvalidos: string[] = [];
+      
+      for (const file of files) {
+        const fileName = file.name.toLowerCase();
+        if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.csv')) {
+          archivosValidos.push(file);
+        } else {
+          archivosInvalidos.push(file.name);
+        }
+      }
+      
+      if (archivosInvalidos.length > 0) {
+        this.importError = `Los siguientes archivos no tienen un formato válido: ${archivosInvalidos.join(', ')}. Solo se permiten archivos Excel (.xlsx, .xls) o CSV (.csv)`;
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Solo se permiten archivos Excel (.xlsx o .xls)'
+          detail: `Algunos archivos no tienen un formato válido. Solo se permiten archivos Excel (.xlsx, .xls) o CSV (.csv)`
         });
+      }
+      
+      if (archivosValidos.length > 0) {
+        this.selectedFiles = archivosValidos;
+        this.importError = null;
+        this.importResult = null;
+        
+        const mensaje = archivosValidos.length === 1 
+          ? `Archivo "${archivosValidos[0].name}" listo para importar`
+          : `${archivosValidos.length} archivos listos para importar`;
+        
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Archivo(s) seleccionado(s)',
+          detail: mensaje
+        });
+      } else {
+        this.selectedFiles = [];
       }
     }
   }
 
   /**
-   * Maneja la eliminación del archivo seleccionado
+   * Maneja la eliminación de los archivos seleccionados
    */
   onFileRemove(): void {
-    this.selectedFile = null;
+    this.selectedFiles = [];
     this.importError = null;
     this.importResult = null;
   }
@@ -92,11 +125,11 @@ export class ExcelMiddlewareComponent {
    * Exporta todas las tablas a Excel
    */
   exportarTablas(): void {
-    if (!this.isAdmin) {
+    if (!this.canExportImport) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Acceso denegado',
-        detail: 'Solo los administradores pueden exportar datos'
+        detail: 'Solo los administradores y analistas pueden exportar datos'
       });
       return;
     }
@@ -164,23 +197,23 @@ export class ExcelMiddlewareComponent {
   }
 
   /**
-   * Importa el archivo Excel seleccionado
+   * Importa los archivos seleccionados (uno o varios)
    */
   importarExcel(): void {
-    if (!this.isAdmin) {
+    if (!this.canExportImport) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Acceso denegado',
-        detail: 'Solo los administradores pueden importar datos'
+        detail: 'Solo los administradores y analistas pueden importar datos'
       });
       return;
     }
 
-    if (!this.selectedFile) {
+    if (this.selectedFiles.length === 0) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Advertencia',
-        detail: 'Por favor selecciona un archivo Excel'
+        detail: 'Por favor selecciona al menos un archivo Excel o CSV'
       });
       return;
     }
@@ -189,28 +222,43 @@ export class ExcelMiddlewareComponent {
     this.importError = null;
     this.importResult = null;
 
+    const mensaje = this.selectedFiles.length === 1
+      ? 'Iniciando importación del archivo...'
+      : `Iniciando importación de ${this.selectedFiles.length} archivos...`;
+
     this.messageService.add({
       severity: 'info',
       summary: 'Importando',
-      detail: 'Iniciando importación del archivo...'
+      detail: mensaje
     });
 
-    this.middlewareService.importarExcel(this.selectedFile).subscribe({
-      next: (response: string) => {
-        this.importResult = response;
+    this.middlewareService.importarExcel(this.selectedFiles).subscribe({
+      next: (response: any) => {
+        // La respuesta puede ser string o un objeto JSON
+        if (typeof response === 'string') {
+          this.importResult = response;
+        } else {
+          // Si es un objeto, formatearlo como JSON
+          this.importResult = JSON.stringify(response, null, 2);
+        }
+        
+        const mensajeExito = this.selectedFiles.length === 1
+          ? 'Archivo importado correctamente'
+          : `${this.selectedFiles.length} archivos importados correctamente`;
+        
         this.messageService.add({
           severity: 'success',
           summary: 'Éxito',
-          detail: 'Archivo importado correctamente'
+          detail: mensajeExito
         });
         this.isImporting = false;
-        this.selectedFile = null;
+        this.selectedFiles = [];
       },
       error: (error) => {
         console.error('Error al importar:', error);
         const errorMessage = typeof error.error === 'string' 
           ? error.error 
-          : error.error?.message || 'Error al importar el archivo';
+          : error.error?.message || 'Error al importar los archivos';
         
         this.importError = errorMessage;
         this.messageService.add({

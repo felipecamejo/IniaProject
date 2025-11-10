@@ -674,7 +674,7 @@ def imprimir_mapeo_contrastado(mapeo: Dict[str, Any], formato: str = 'texto') ->
 # ================================
 # MÓDULO: FUNCIÓN PRINCIPAL
 # ================================
-def contrastar_json_con_bd(ruta_json: str, umbral_minimo: float = 30.0, formato_salida: str = 'texto') -> Dict[str, Any]:
+def contrastar_json_con_bd(ruta_json: str, umbral_minimo: float = 30.0, formato_salida: str = 'texto', imprimir: bool = True) -> Dict[str, Any]:
     """
     Función principal que toma un JSON de mapeo y lo contrasta con la base de datos.
     
@@ -702,7 +702,8 @@ def contrastar_json_con_bd(ruta_json: str, umbral_minimo: float = 30.0, formato_
         mapeo_contrastado = contrastar_mapeo_con_bd(mapeo_json, umbral_minimo)
         
         # Imprimir resultado
-        imprimir_mapeo_contrastado(mapeo_contrastado, formato_salida)
+        if imprimir:
+            imprimir_mapeo_contrastado(mapeo_contrastado, formato_salida)
         
         return mapeo_contrastado
         
@@ -712,10 +713,11 @@ def contrastar_json_con_bd(ruta_json: str, umbral_minimo: float = 30.0, formato_
 
 def main():
     """Función principal del script."""
-    parser = argparse.ArgumentParser(description="Contrasta un mapeo JSON con la base de datos para identificar tablas reales")
+    parser = argparse.ArgumentParser(description="Contrasta uno o varios mapeos JSON con la base de datos para identificar tablas reales")
     parser.add_argument(
-        "json_file",
-        help="Ruta al archivo JSON generado por AnalizedExcel.py"
+        "json_files",
+        nargs="+",
+        help="Ruta(s) a los archivos JSON generados por AnalizedExcel.py"
     )
     parser.add_argument(
         "--umbral",
@@ -731,11 +733,32 @@ def main():
     )
     args = parser.parse_args()
     
-    try:
-        contrastar_json_con_bd(args.json_file, args.umbral, args.formato)
-    except Exception as e:
-        logger.error(f"Error en el proceso principal: {e}")
-        raise
+    resultados_json: List[Dict[str, Any]] = []
+    errores: List[Dict[str, str]] = []
+    
+    for ruta in args.json_files:
+        logger.info(f"Contrastando archivo '{ruta}'...")
+        try:
+            if args.formato == "texto":
+                print(f"\n=== Archivo: {ruta} ===\n")
+                contrastar_json_con_bd(ruta, args.umbral, args.formato, imprimir=True)
+            else:
+                mapeo = contrastar_json_con_bd(ruta, args.umbral, args.formato, imprimir=False)
+                resultados_json.append({"archivo": ruta, "resultado": mapeo})
+        except Exception as e:
+            logger.error(f"Error contrastando '{ruta}': {e}", exc_info=True)
+            errores.append({"archivo": ruta, "error": str(e)})
+    
+    if args.formato == "json":
+        salida = {
+            "total_archivos": len(args.json_files),
+            "procesados": resultados_json,
+            "errores": errores or None,
+        }
+        print(json.dumps(salida, indent=2, ensure_ascii=False))
+
+    if errores:
+        raise SystemExit(1)
 
 if __name__ == "__main__":
     main()

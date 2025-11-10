@@ -36,8 +36,25 @@
         </div>
     </section>
 
+    <!-- Sección Excel - Visible para ADMIN y ANALISTA -->
+    <section class="section" *ngIf="canExportImport">
+        <h2 class="section-title">Gestión de Excel</h2>
+        <div class="button-group">
+            <button 
+                pButton 
+                type="button" 
+                label="Gestor Import/Export Excels" 
+                class="btn-primary" 
+                [disabled]="isExporting || isImporting"
+                (click)="goToExcelMiddleware()">
+            </button>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer">
         <p>© Inia 2025</p>
     </footer>
 </div>
+
+<p-toast></p-toast>

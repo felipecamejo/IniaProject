@@ -32,6 +32,7 @@ import { ListadoMetodosComponent } from './components/listado-metodos/listado-me
 import { CertificadoComponent } from './components/certificado/certificado.component';
 import { ListadoCertificadosComponent } from './components/listado-certificados/listado-certificados.component'; 
 import { ListadoLogsComponent } from './components/listado-logs/listado-logs.components';
+import { ExcelMiddlewareComponent } from './components/excel-middleware/excel-middleware.component';
 
 export const routes: Routes = [
     //rutas generales
@@ -39,6 +40,7 @@ export const routes: Routes = [
     { path : 'login', component: LoginComponent },
     { path : '', redirectTo: '/login', pathMatch: 'full' },
     { path : 'perfil', component: PerfilComponent },
+    { path : 'excel-middleware', component: ExcelMiddlewareComponent },
 
     //listados
     { path : 'listado-depositos', component: ListadoDepositosComponent },

@@ -795,3 +795,180 @@ def import_one_file(session, model, ruta_archivo: str, formato: str, upsert: boo
         raise
     
     return inserted, updated
+
+
+def _detectar_modelo_para_archivo(ruta_archivo: str, formato: str, tabla_cli: Optional[str]) -> Tuple[str, Any]:
+    """
+    Determina el modelo de destino para un archivo dado.
+
+    Args:
+        ruta_archivo: Ruta del archivo a importar.
+        formato: Formato detectado del archivo (csv/xlsx).
+        tabla_cli: Tabla proporcionada explícitamente por CLI.
+
+    Returns:
+        Tuple con (nombre_tabla, modelo_sqlalchemy).
+
+    Raises:
+        ValueError: Si no se puede determinar la tabla destino.
+    """
+    if tabla_cli:
+        try:
+            modelo = obtener_modelo(tabla_cli)
+            return tabla_cli, modelo
+        except Exception as exc:
+            raise ValueError(f"No se pudo obtener el modelo para la tabla '{tabla_cli}': {exc}") from exc
+
+    try:
+        tipo_analisis = detectar_tipo_analisis_por_contenido(ruta_archivo)
+    except Exception:
+        tipo_analisis = None
+
+    try:
+        if formato == 'xlsx':
+            headers, _ = read_rows_from_xlsx(ruta_archivo, max_rows=1)
+        else:
+            headers, _ = read_rows_from_csv(ruta_archivo, max_rows=1)
+    except Exception as exc:
+        raise ValueError(f"No se pudieron leer encabezados del archivo: {exc}") from exc
+
+    if not headers:
+        raise ValueError("El archivo no contiene encabezados para detectar la tabla destino")
+
+    tabla_detectada = detectar_tabla_por_columnas(None, headers, tipo_analisis)
+    if not tabla_detectada:
+        raise ValueError("No se pudo detectar automáticamente la tabla destino. Especifica una con '--table'.")
+
+    try:
+        modelo = obtener_modelo(tabla_detectada)
+    except Exception as exc:
+        raise ValueError(f"No se pudo obtener el modelo para la tabla detectada '{tabla_detectada}': {exc}") from exc
+
+    return tabla_detectada, modelo
+
+
+def _procesar_archivo_cli(
+    SessionFactory,
+    ruta_archivo: str,
+    tabla_cli: Optional[str],
+    upsert: bool,
+    keep_ids: bool,
+) -> Dict[str, Any]:
+    """Procesa un archivo desde CLI y retorna el resultado."""
+    resultado = {
+        "archivo": ruta_archivo,
+        "tabla": None,
+        "formato": None,
+        "insertados": 0,
+        "actualizados": 0,
+        "upsert": upsert,
+        "keep_ids": keep_ids,
+        "exito": False,
+        "mensaje": "",
+    }
+
+    if not os.path.exists(ruta_archivo):
+        resultado["mensaje"] = "El archivo no existe"
+        return resultado
+
+    formato = detect_format_from_path(ruta_archivo)
+    if not formato:
+        resultado["mensaje"] = "Formato de archivo no soportado (use .csv, .xlsx o .xls)"
+        return resultado
+
+    resultado["formato"] = formato
+
+    try:
+        tabla_destino, modelo = _detectar_modelo_para_archivo(ruta_archivo, formato, tabla_cli)
+        resultado["tabla"] = tabla_destino
+    except ValueError as exc:
+        resultado["mensaje"] = str(exc)
+        return resultado
+
+    session = SessionFactory()
+    try:
+        inserted, updated = import_one_file(session, modelo, ruta_archivo, formato, upsert=upsert, keep_ids=keep_ids)
+        resultado["insertados"] = inserted
+        resultado["actualizados"] = updated
+        resultado["exito"] = True
+        resultado["mensaje"] = "Importación completada"
+    except Exception as exc:
+        logger.error(f"Error importando '{ruta_archivo}': {exc}", exc_info=True)
+        resultado["mensaje"] = f"Error importando archivo: {exc}"
+    finally:
+        session.close()
+
+    return resultado
+
+
+def main():
+    """Entrada CLI para importar uno o varios archivos."""
+    parser = argparse.ArgumentParser(
+        description="Importa uno o varios archivos CSV/XLSX a la base de datos del proyecto INIA."
+    )
+    parser.add_argument(
+        "files",
+        nargs="+",
+        help="Ruta(s) de archivos a importar (.csv, .xlsx, .xls).",
+    )
+    parser.add_argument(
+        "--table",
+        help="Nombre de la tabla destino. Si no se especifica se intentará detectar automáticamente.",
+    )
+    parser.add_argument(
+        "--upsert",
+        action="store_true",
+        help="Actualiza los registros existentes coincidencia por clave primaria.",
+    )
+    parser.add_argument(
+        "--keep-ids",
+        action="store_true",
+        help="Mantiene los IDs provistos en el archivo en lugar de generar nuevos.",
+    )
+    args = parser.parse_args()
+
+    try:
+        engine = obtener_engine()
+        inicializar_automap(engine)
+    except Exception as exc:
+        logger.error(f"No se pudo inicializar la conexión a la base de datos: {exc}", exc_info=True)
+        raise SystemExit(1) from exc
+
+    SessionFactory = sessionmaker(bind=engine)
+
+    resultados: List[Dict[str, Any]] = []
+    for ruta in args.files:
+        logger.info(f"Procesando archivo '{ruta}'...")
+        resultado = _procesar_archivo_cli(SessionFactory, ruta, args.table, args.upsert, args.keep_ids)
+        resultados.append(resultado)
+        if resultado["exito"]:
+            logger.info(
+                f"  -> Tabla: {resultado['tabla']} | Insertados: {resultado['insertados']} | Actualizados: {resultado['actualizados']}"
+            )
+        else:
+            logger.warning(f"  -> Falló: {resultado['mensaje']}")
+
+    exitosos = [r for r in resultados if r["exito"]]
+    fallidos = [r for r in resultados if not r["exito"]]
+
+    print("\nResumen importación:")
+    for res in resultados:
+        estado = "OK" if res["exito"] else "ERROR"
+        detalle = (
+            f"{res['insertados']} insertados / {res['actualizados']} actualizados"
+            if res["exito"]
+            else res["mensaje"]
+        )
+        tabla = res["tabla"] or "desconocida"
+        print(f" - [{estado}] {res['archivo']} -> tabla '{tabla}' ({detalle})")
+
+    print(
+        f"\nArchivos procesados: {len(resultados)} | Exitosos: {len(exitosos)} | Con error: {len(fallidos)}"
+    )
+
+    if fallidos:
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    main()

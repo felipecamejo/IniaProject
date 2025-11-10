@@ -27,7 +27,8 @@ import org.slf4j.LoggerFactory;
  * - Analizar archivos Excel y generar mapeo de datos
  * - Insertar datos masivos de prueba usando MassiveInsertFiles.py
  * 
- * Todos los endpoints requieren permisos de ADMIN para su ejecución.
+ * Los endpoints de exportar e importar Excel requieren permisos de ADMIN o ANALISTA.
+ * Otros endpoints requieren permisos de ADMIN.
  * 
  * @author Sistema INIA
  * @version 1.0
@@ -55,8 +56,8 @@ public class PandMiddlewareController {
 
   
     @PostMapping("/http/exportar")
-    @Secured({"ADMIN"})
-    @Operation(summary = "Exportar tablas (HTTP Python)", description = "Exporta todas las tablas a Excel y descarga automáticamente el archivo ZIP - Solo ADMIN")
+    @Secured({"ADMIN", "ANALISTA"})
+    @Operation(summary = "Exportar tablas (HTTP Python)", description = "Exporta todas las tablas a Excel y descarga automáticamente el archivo ZIP - Solo ADMIN y ANALISTA")
     public ResponseEntity<?> httpExportar() {
         try {
             logger.info("Iniciando exportación de tablas desde el backend");
@@ -117,49 +118,114 @@ public class PandMiddlewareController {
     
 
     @PostMapping(value = "/http/importar", consumes = {"multipart/form-data"})
-    @Secured({"ADMIN"})
-    @Operation(summary = "Importar Excel automático", description = "Carga archivo Excel automáticamente a la base de datos - Solo ADMIN")
+    @Secured({"ADMIN", "ANALISTA"})
+    @Operation(summary = "Importar archivos Excel/CSV", description = "Importa uno o varios archivos Excel/CSV automáticamente a la base de datos. Detecta automáticamente si es un archivo o varios - Solo ADMIN y ANALISTA")
     public ResponseEntity<MiddlewareResponse> httpImportar(
-            @RequestPart("file") MultipartFile file) {
+            @RequestPart("files") MultipartFile[] files,
+            @org.springframework.web.bind.annotation.RequestParam(value = "table", required = false) String table,
+            @org.springframework.web.bind.annotation.RequestParam(value = "upsert", required = false, defaultValue = "false") Boolean upsert,
+            @org.springframework.web.bind.annotation.RequestParam(value = "keep_ids", required = false, defaultValue = "false") Boolean keepIds) {
         try {
-            logger.info("Iniciando importación de archivo desde el backend");
+            logger.info("Iniciando importación de archivos desde el backend");
             
-            // Validar archivo
-            if (file == null || file.isEmpty()) {
-                logger.warn("Intento de importar archivo vacío");
+            // Validar que se proporcionó al menos un archivo
+            if (files == null || files.length == 0) {
+                logger.warn("Intento de importar sin archivos");
                 MiddlewareResponse errorResponse = new MiddlewareResponse();
                 errorResponse.setExitoso(false);
-                errorResponse.setMensaje("Archivo vacío");
+                errorResponse.setMensaje("Archivo no proporcionado");
                 errorResponse.setCodigo(400);
-                errorResponse.setDetalles("Debe proporcionar un archivo para importar");
+                errorResponse.setDetalles("Debe proporcionar al menos un archivo para importar");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
             
-            // Verificar que sea un archivo Excel
-            String nombreArchivo = file.getOriginalFilename();
-            if (nombreArchivo == null || (!nombreArchivo.toLowerCase().endsWith(".xlsx") && 
-                    !nombreArchivo.toLowerCase().endsWith(".xls") && 
-                    !nombreArchivo.toLowerCase().endsWith(".csv"))) {
-                logger.warn("Intento de importar archivo con formato no válido: {}", nombreArchivo);
+            // Filtrar archivos nulos o vacíos
+            java.util.List<MultipartFile> archivosLista = new java.util.ArrayList<>();
+            for (MultipartFile f : files) {
+                if (f != null && !f.isEmpty()) {
+                    archivosLista.add(f);
+                }
+            }
+            
+            if (archivosLista.isEmpty()) {
+                logger.warn("Todos los archivos proporcionados están vacíos o son nulos");
                 MiddlewareResponse errorResponse = new MiddlewareResponse();
                 errorResponse.setExitoso(false);
-                errorResponse.setMensaje("Formato de archivo no válido");
+                errorResponse.setMensaje("Archivos inválidos");
                 errorResponse.setCodigo(400);
-                errorResponse.setDetalles("Solo se permiten archivos Excel (.xlsx o .xls) o CSV (.csv)");
+                errorResponse.setDetalles("Todos los archivos proporcionados están vacíos o son inválidos");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
             
-            logger.info("Archivo recibido: {}, Tamaño: {} bytes", nombreArchivo, file.getSize());
+            logger.info("Archivos recibidos: {} archivo(s)", archivosLista.size());
             
-            byte[] bytes = file.getBytes();
+            // Validar formatos de archivos
+            for (MultipartFile archivo : archivosLista) {
+                String nombreArchivo = archivo.getOriginalFilename();
+                if (nombreArchivo == null || (!nombreArchivo.toLowerCase().endsWith(".xlsx") && 
+                        !nombreArchivo.toLowerCase().endsWith(".xls") && 
+                        !nombreArchivo.toLowerCase().endsWith(".csv"))) {
+                    logger.warn("Intento de importar archivo con formato no válido: {}", nombreArchivo);
+                    MiddlewareResponse errorResponse = new MiddlewareResponse();
+                    errorResponse.setExitoso(false);
+                    errorResponse.setMensaje("Formato de archivo no válido");
+                    errorResponse.setCodigo(400);
+                    errorResponse.setDetalles(String.format("El archivo '%s' no tiene un formato válido. Solo se permiten archivos Excel (.xlsx o .xls) o CSV (.csv)", nombreArchivo));
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+                }
+                logger.info("  - {} ({} bytes)", nombreArchivo, archivo.getSize());
+            }
             
-            // Determinar automáticamente la tabla basándose en el nombre del archivo
-            // Por ejemplo, si el archivo se llama "usuarios.xlsx", la tabla será "usuarios"
-            String tabla = determinarTablaDesdeNombre(nombreArchivo);
-            logger.info("Tabla determinada automáticamente: {}", tabla);
+            // Detectar automáticamente si es un archivo o varios y procesar
+            // Si es un solo archivo, usar el método optimizado para un archivo
+            if (archivosLista.size() == 1) {
+                logger.info("Procesando un solo archivo...");
+                MultipartFile archivoUnico = archivosLista.get(0);
+                String nombreArchivo = archivoUnico.getOriginalFilename();
+                byte[] bytes = archivoUnico.getBytes();
+                
+                // Determinar tabla si no se proporcionó
+                String tablaDestino = table;
+                if (tablaDestino == null || tablaDestino.isBlank()) {
+                    tablaDestino = determinarTablaDesdeNombre(nombreArchivo);
+                    logger.info("Tabla determinada automáticamente: {}", tablaDestino);
+                }
+                
+                // Importar con configuración
+                MiddlewareResponse respuesta = pythonHttpService.importarTabla(tablaDestino, upsert, keepIds, nombreArchivo, bytes);
+                
+                if (respuesta == null) {
+                    logger.error("Sin respuesta del middleware Python");
+                    MiddlewareResponse errorResponse = new MiddlewareResponse();
+                    errorResponse.setExitoso(false);
+                    errorResponse.setMensaje("Sin respuesta del middleware Python");
+                    errorResponse.setCodigo(500);
+                    errorResponse.setDetalles("El servidor Python no respondió. " +
+                                             "Verifica que el servidor esté ejecutándose en http://localhost:9099. " +
+                                             "Inicia el servidor con: python middleware/http_server.py o ejecuta: .\\run_middleware.ps1 server");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+                }
+                
+                // Retornar respuesta estructurada
+                HttpStatus status = respuesta.esExitoso() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR;
+                if (respuesta.getCodigo() != null) {
+                    if (respuesta.getCodigo() >= 400 && respuesta.getCodigo() < 500) {
+                        status = HttpStatus.BAD_REQUEST;
+                    } else if (respuesta.getCodigo() >= 500) {
+                        status = HttpStatus.INTERNAL_SERVER_ERROR;
+                    }
+                }
+                
+                logger.info("Importación completada. Exitoso: {}, Mensaje: {}", 
+                           respuesta.esExitoso(), respuesta.getMensaje());
+                
+                return ResponseEntity.status(status).body(respuesta);
+            }
             
-            // Importar con configuración automática (upsert=false, keep_ids=false por defecto)
-            MiddlewareResponse respuesta = pythonHttpService.importarTabla(tabla, false, false, nombreArchivo, bytes);
+            // Si son múltiples archivos, usar el método de importación masiva
+            logger.info("Procesando {} archivos en lote...", archivosLista.size());
+            MiddlewareResponse respuesta = pythonHttpService.importarMultiplesTablas(
+                    table, upsert, keepIds, archivosLista.toArray(new MultipartFile[0]));
             
             if (respuesta == null) {
                 logger.error("Sin respuesta del middleware Python");
@@ -183,7 +249,7 @@ public class PandMiddlewareController {
                 }
             }
             
-            logger.info("Importación completada. Exitoso: {}, Mensaje: {}", 
+            logger.info("Importación masiva completada. Exitoso: {}, Mensaje: {}", 
                        respuesta.esExitoso(), respuesta.getMensaje());
             
             return ResponseEntity.status(status).body(respuesta);

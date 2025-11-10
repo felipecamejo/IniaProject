@@ -128,6 +128,101 @@ public class PythonMiddlewareHttpService {
     }
 
     /**
+     * Importa múltiples archivos Excel/CSV a la base de datos.
+     * 
+     * @param table Nombre de la tabla destino (opcional, se detecta automáticamente)
+     * @param upsert Si es true, actualiza registros existentes
+     * @param keepIds Si es true, mantiene los IDs del archivo
+     * @param files Array de archivos MultipartFile
+     * @return MiddlewareResponse con el resultado de la operación
+     */
+    public MiddlewareResponse importarMultiplesTablas(String table, boolean upsert, boolean keepIds, org.springframework.web.multipart.MultipartFile[] files) {
+        String url = baseUrl + "/importar";
+        try {
+            logger.info("Importando {} archivos en servidor Python", files.length);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            if (table != null && !table.isBlank()) {
+                body.add("table", table);
+            }
+            body.add("upsert", String.valueOf(upsert));
+            body.add("keep_ids", String.valueOf(keepIds));
+
+            // Agregar todos los archivos usando "files" (el servidor Python acepta "file" o "files")
+            for (org.springframework.web.multipart.MultipartFile file : files) {
+                if (file != null && !file.isEmpty()) {
+                    String originalFilename = file.getOriginalFilename();
+                    final String filename = (originalFilename == null || originalFilename.isBlank()) 
+                            ? "archivo.xlsx" 
+                            : originalFilename;
+                    final byte[] fileBytes = file.getBytes();
+                    
+                    ByteArrayResource fileResource = new ByteArrayResource(fileBytes) {
+                        @Override
+                        public String getFilename() {
+                            return filename;
+                        }
+                    };
+                    body.add("files", fileResource);
+                    logger.info("  - Archivo agregado: {} ({} bytes)", filename, file.getSize());
+                }
+            }
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
+            
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                try {
+                    MiddlewareResponse middlewareResponse = objectMapper.readValue(
+                        response.getBody(), 
+                        MiddlewareResponse.class
+                    );
+                    logger.info("Importación masiva completada. Exitoso: {}", middlewareResponse.esExitoso());
+                    return middlewareResponse;
+                } catch (Exception jsonError) {
+                    logger.error("Error parseando respuesta JSON del servidor Python: {}", jsonError.getMessage());
+                    return crearRespuestaError(
+                        "Error parseando respuesta del servidor Python",
+                        jsonError.getMessage()
+                    );
+                }
+            }
+            
+            return crearRespuestaError(
+                "El servidor Python no respondió correctamente",
+                "Status: " + response.getStatusCode()
+            );
+        } catch (HttpClientErrorException ex) {
+            logger.error("Error HTTP llamando a Python /importar: {} - {}", ex.getStatusCode(), ex.getMessage());
+            logger.error("Respuesta del servidor: {}", ex.getResponseBodyAsString());
+            return parsearErrorHttp(ex);
+        } catch (HttpServerErrorException ex) {
+            logger.error("Error HTTP llamando a Python /importar: {} - {}", ex.getStatusCode(), ex.getMessage());
+            logger.error("Respuesta del servidor: {}", ex.getResponseBodyAsString());
+            return parsearErrorHttp(ex);
+        } catch (RestClientException ex) {
+            logger.error("Error de conexión llamando a Python /importar: {}", ex.getMessage());
+            String mensajeDetalle = ex.getMessage();
+            if (mensajeDetalle != null && mensajeDetalle.contains("Connection refused")) {
+                mensajeDetalle = "El servidor Python no está ejecutándose. " +
+                               "Inicia el servidor con: python middleware/http_server.py o ejecuta: .\\run_middleware.ps1 server";
+            }
+            return crearRespuestaError(
+                "No se pudo conectar al servidor Python",
+                mensajeDetalle
+            );
+        } catch (Exception ex) {
+            logger.error("Error inesperado durante importación masiva: {}", ex.getMessage(), ex);
+            return crearRespuestaError(
+                "Error inesperado durante la importación masiva",
+                ex.getMessage()
+            );
+        }
+    }
+
+    /**
      * Importa un archivo Excel/CSV a la base de datos.
      * 
      * @param table Nombre de la tabla destino
