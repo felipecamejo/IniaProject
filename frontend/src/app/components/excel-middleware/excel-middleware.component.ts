@@ -36,6 +36,8 @@ export class ExcelMiddlewareComponent {
   isImporting = false;
   importResult: string | null = null;
   importError: string | null = null;
+  exportResult: string | null = null;
+  exportError: string | null = null;
 
   constructor(
     private middlewareService: MiddlewareService,
@@ -135,14 +137,25 @@ export class ExcelMiddlewareComponent {
     }
 
     this.isExporting = true;
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Exportando',
-      detail: 'Iniciando exportación de tablas...'
-    });
+    // Limpiar resultados anteriores
+    this.exportResult = null;
+    this.exportError = null;
 
     this.middlewareService.exportarTablas().subscribe({
       next: (blob: Blob) => {
+        // Verificar que el blob no esté vacío
+        if (blob.size === 0) {
+          this.exportError = 'El archivo generado está vacío. No se exportaron tablas.';
+          // Toast opcional (se puede comentar si solo se quiere mostrar en el panel)
+          // this.messageService.add({
+          //   severity: 'error',
+          //   summary: 'Error',
+          //   detail: this.exportError
+          // });
+          this.isExporting = false;
+          return;
+        }
+
         // Crear enlace de descarga
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -153,42 +166,93 @@ export class ExcelMiddlewareComponent {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
 
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Éxito',
-          detail: 'Exportación completada. El archivo se está descargando.'
-        });
+        // Mostrar resultado exitoso en el panel
+        const fileSizeMB = (blob.size / (1024 * 1024)).toFixed(2);
+        this.exportResult = `Exportación completada exitosamente.\n\nArchivo generado: export_tablas.xlsx.zip\nTamaño: ${fileSizeMB} MB\n\nEl archivo se ha descargado automáticamente.`;
+        
+        // Toast opcional (se puede comentar si solo se quiere mostrar en el panel)
+        // this.messageService.add({
+        //   severity: 'success',
+        //   summary: 'Éxito',
+        //   detail: 'Exportación completada. El archivo se está descargando.'
+        // });
         this.isExporting = false;
       },
       error: (error) => {
         console.error('Error al exportar:', error);
         let errorMessage = 'Error al exportar las tablas';
+        let errorDetails = '';
         
         if (error.error instanceof Blob) {
-          // Si el error viene como Blob, intentar leerlo como texto
+          // Si el error viene como Blob, intentar leerlo como texto (puede ser JSON)
           const reader = new FileReader();
           reader.onloadend = () => {
             const text = reader.result as string;
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: text || errorMessage
-            });
+            try {
+              // Intentar parsear como JSON
+              const jsonError = JSON.parse(text);
+              if (jsonError.mensaje) {
+                errorMessage = jsonError.mensaje;
+              }
+              if (jsonError.detalles) {
+                errorDetails = jsonError.detalles;
+              }
+              this.exportError = `${errorMessage}${errorDetails ? '\n\nDetalles: ' + errorDetails : ''}`;
+            } catch {
+              // Si no es JSON, usar el texto directamente
+              this.exportError = text || errorMessage;
+            }
+            // Toast opcional (se puede comentar si solo se quiere mostrar en el panel)
+            // this.messageService.add({
+            //   severity: 'error',
+            //   summary: 'Error',
+            //   detail: errorMessage
+            // });
+            this.isExporting = false;
           };
           reader.readAsText(error.error);
+        } else if (error.error && typeof error.error === 'object') {
+          // Si es un objeto de error estructurado
+          if (error.error.mensaje) {
+            errorMessage = error.error.mensaje;
+          }
+          if (error.error.detalles) {
+            errorDetails = error.error.detalles;
+          }
+          this.exportError = `${errorMessage}${errorDetails ? '\n\nDetalles: ' + errorDetails : ''}`;
+          // Toast opcional (se puede comentar si solo se quiere mostrar en el panel)
+          // this.messageService.add({
+          //   severity: 'error',
+          //   summary: 'Error',
+          //   detail: errorMessage
+          // });
         } else if (typeof error.error === 'string') {
           errorMessage = error.error;
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: errorMessage
-          });
+          this.exportError = errorMessage;
+          // Toast opcional (se puede comentar si solo se quiere mostrar en el panel)
+          // this.messageService.add({
+          //   severity: 'error',
+          //   summary: 'Error',
+          //   detail: errorMessage
+          // });
         } else {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: errorMessage
-          });
+          // Error genérico
+          if (error.status === 0) {
+            errorMessage = 'Error de conexión. Verifique que el servidor esté ejecutándose.';
+            errorDetails = 'No se pudo conectar al servidor. Asegúrese de que el servidor Python esté ejecutándose en http://localhost:9099.';
+          } else if (error.status === 500) {
+            errorMessage = 'Error interno del servidor durante la exportación.';
+            errorDetails = error.message || 'Error desconocido del servidor.';
+          } else {
+            errorMessage = `Error al exportar: ${error.message || 'Error desconocido'}`;
+          }
+          this.exportError = `${errorMessage}${errorDetails ? '\n\nDetalles: ' + errorDetails : ''}`;
+          // Toast opcional (se puede comentar si solo se quiere mostrar en el panel)
+          // this.messageService.add({
+          //   severity: 'error',
+          //   summary: 'Error',
+          //   detail: errorMessage
+          // });
         }
         
         this.isExporting = false;
@@ -226,46 +290,113 @@ export class ExcelMiddlewareComponent {
       ? 'Iniciando importación del archivo...'
       : `Iniciando importación de ${this.selectedFiles.length} archivos...`;
 
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Importando',
-      detail: mensaje
-    });
+    // Limpiar resultados anteriores
+    this.importResult = null;
+    this.importError = null;
+    
+    // Toast opcional (se puede comentar si solo se quiere mostrar en el panel)
+    // this.messageService.add({
+    //   severity: 'info',
+    //   summary: 'Importando',
+    //   detail: mensaje
+    // });
 
     this.middlewareService.importarExcel(this.selectedFiles).subscribe({
       next: (response: any) => {
-        // La respuesta puede ser string o un objeto JSON
+        // La respuesta puede ser string o un objeto JSON (MiddlewareResponse)
+        let resultMessage = '';
+        
         if (typeof response === 'string') {
-          this.importResult = response;
+          resultMessage = response;
+        } else if (response && typeof response === 'object') {
+          // Si es un objeto MiddlewareResponse
+          if (response.exitoso !== undefined) {
+            // Construir mensaje detallado
+            const partes: string[] = [];
+            if (response.mensaje) {
+              partes.push(`Estado: ${response.mensaje}`);
+            }
+            if (response.detalles) {
+              partes.push(`\nDetalles: ${response.detalles}`);
+            }
+            if (response.insertados !== undefined) {
+              partes.push(`\nRegistros insertados: ${response.insertados}`);
+            }
+            if (response.actualizados !== undefined) {
+              partes.push(`\nRegistros actualizados: ${response.actualizados}`);
+            }
+            if (response.tabla) {
+              partes.push(`\nTabla: ${response.tabla}`);
+            }
+            if (response.archivo) {
+              partes.push(`\nArchivo: ${response.archivo}`);
+            }
+            resultMessage = partes.join('\n');
+          } else {
+            // Si no tiene estructura conocida, formatear como JSON
+            resultMessage = JSON.stringify(response, null, 2);
+          }
         } else {
-          // Si es un objeto, formatearlo como JSON
-          this.importResult = JSON.stringify(response, null, 2);
+          resultMessage = 'Importación completada exitosamente.';
         }
+        
+        this.importResult = resultMessage;
+        this.importError = null;
         
         const mensajeExito = this.selectedFiles.length === 1
           ? 'Archivo importado correctamente'
           : `${this.selectedFiles.length} archivos importados correctamente`;
         
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Éxito',
-          detail: mensajeExito
-        });
+        // Toast opcional (se puede comentar si solo se quiere mostrar en el panel)
+        // this.messageService.add({
+        //   severity: 'success',
+        //   summary: 'Éxito',
+        //   detail: mensajeExito
+        // });
         this.isImporting = false;
         this.selectedFiles = [];
       },
       error: (error) => {
         console.error('Error al importar:', error);
-        const errorMessage = typeof error.error === 'string' 
-          ? error.error 
-          : error.error?.message || 'Error al importar los archivos';
+        let errorMessage = 'Error al importar los archivos';
+        let errorDetails = '';
         
-        this.importError = errorMessage;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: errorMessage
-        });
+        if (error.error && typeof error.error === 'object') {
+          // Si es un objeto de error estructurado (MiddlewareResponse)
+          if (error.error.mensaje) {
+            errorMessage = error.error.mensaje;
+          }
+          if (error.error.detalles) {
+            errorDetails = error.error.detalles;
+          }
+          this.importError = `${errorMessage}${errorDetails ? '\n\nDetalles: ' + errorDetails : ''}`;
+        } else if (typeof error.error === 'string') {
+          errorMessage = error.error;
+          this.importError = errorMessage;
+        } else {
+          // Error genérico
+          if (error.status === 0) {
+            errorMessage = 'Error de conexión. Verifique que el servidor esté ejecutándose.';
+            errorDetails = 'No se pudo conectar al servidor. Asegúrese de que el servidor Python esté ejecutándose en http://localhost:9099.';
+          } else if (error.status === 400) {
+            errorMessage = 'Error en la solicitud. Verifique los archivos seleccionados.';
+            errorDetails = error.message || 'Los archivos pueden tener un formato incorrecto o datos inválidos.';
+          } else if (error.status === 500) {
+            errorMessage = 'Error interno del servidor durante la importación.';
+            errorDetails = error.message || 'Error desconocido del servidor.';
+          } else {
+            errorMessage = `Error al importar: ${error.message || 'Error desconocido'}`;
+          }
+          this.importError = `${errorMessage}${errorDetails ? '\n\nDetalles: ' + errorDetails : ''}`;
+        }
+        
+        this.importResult = null;
+        // Toast opcional (se puede comentar si solo se quiere mostrar en el panel)
+        // this.messageService.add({
+        //   severity: 'error',
+        //   summary: 'Error',
+        //   detail: errorMessage
+        // });
         this.isImporting = false;
       }
     });

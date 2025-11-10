@@ -32,6 +32,28 @@
           styleClass="p-button-success">
         </p-button>
       </div>
+
+      <!-- Resultado de la exportación -->
+      <div *ngIf="exportResult" class="result-container">
+        <div class="result-panel success-panel">
+          <div class="result-header">
+            <i class="pi pi-check-circle"></i>
+            <strong>Exportación exitosa:</strong>
+          </div>
+          <pre class="result-pre">{{ exportResult }}</pre>
+        </div>
+      </div>
+
+      <!-- Error de la exportación -->
+      <div *ngIf="exportError" class="error-container">
+        <div class="result-panel error-panel">
+          <div class="result-header">
+            <i class="pi pi-times-circle"></i>
+            <strong>Error en la exportación:</strong>
+          </div>
+          <pre class="result-pre">{{ exportError }}</pre>
+        </div>
+      </div>
     </div>
 
     <p-divider></p-divider>
@@ -94,19 +116,24 @@
 
       <!-- Resultado de la importación -->
       <div *ngIf="importResult" class="result-container">
-        <p-message severity="success">
-          <ng-template pTemplate>
-            <div>
-              <strong>Importación exitosa:</strong>
-              <pre class="result-pre">{{ importResult }}</pre>
-            </div>
-          </ng-template>
-        </p-message>
+        <div class="result-panel success-panel">
+          <div class="result-header">
+            <i class="pi pi-check-circle"></i>
+            <strong>Importación exitosa:</strong>
+          </div>
+          <pre class="result-pre">{{ importResult }}</pre>
+        </div>
       </div>
 
       <!-- Error de la importación -->
       <div *ngIf="importError" class="error-container">
-        <p-message severity="error" [text]="importError"></p-message>
+        <div class="result-panel error-panel">
+          <div class="result-header">
+            <i class="pi pi-times-circle"></i>
+            <strong>Error en la importación:</strong>
+          </div>
+          <pre class="result-pre">{{ importError }}</pre>
+        </div>
       </div>
     </div>
   </p-card>
