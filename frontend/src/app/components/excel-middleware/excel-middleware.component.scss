@@ -1,47 +1,185 @@
-.excel-middleware-container {
-  padding: 2rem;
+// Los estilos de .form-grid y .submit-btn se importan desde styles.scss
 
-  h2 {
-    color: var(--primary-color);
-    font-weight: 600;
-    margin: 0;
+.container {
+  max-width: 800px !important;
+  width: 90% !important;
+  margin: 0 auto !important;
+}
+
+::ng-deep .card {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.section-export,
+.section-import {
+  margin: 2rem 0;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--azul);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  i {
+    font-size: 1.1rem;
   }
+}
 
-  h3 {
-    color: var(--primary-color);
-    font-weight: 600;
-    font-size: 1.25rem;
-  }
+.section-description {
+  color: #6c757d;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
 
-  .text-muted {
+.example-box {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--gris);
+
+  small {
     color: #6c757d;
-    line-height: 1.6;
+    font-size: 0.9rem;
+    line-height: 1.5;
+
+    code {
+      background-color: #e9ecef;
+      padding: 0.2rem 0.4rem;
+      border-radius: 0.25rem;
+      font-size: 0.9em;
+      color: #e83e8c;
+      font-family: 'Courier New', monospace;
+    }
+  }
+}
+
+.file-upload-wrapper {
+  margin-bottom: 1.5rem;
+
+  ::ng-deep .p-fileupload-basic {
+    .p-button {
+      width: 100%;
+      background: var(--celeste) !important;
+      border-color: var(--celeste) !important;
+      border-radius: 12px !important;
+      padding: 0.75rem 1.5rem !important;
+      font-weight: 600 !important;
+      font-family: var(--font-main) !important;
+      transition: all 0.2s ease !important;
+
+      &:hover {
+        background: #1746a0 !important;
+        border-color: #1746a0 !important;
+        filter: brightness(0.95) !important;
+      }
+    }
+  }
+}
+
+.files-selected {
+  background-color: #d4edda;
+  border-radius: 12px;
+  border: 1px solid #c3e6cb;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+
+  .files-header {
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #155724;
+    font-weight: 600;
+
+    i {
+      font-size: 1.1rem;
+    }
   }
 
-  code {
-    background-color: #f8f9fa;
-    padding: 0.2rem 0.4rem;
-    border-radius: 0.25rem;
-    font-size: 0.9em;
-    color: #e83e8c;
-    font-family: 'Courier New', monospace;
-  }
+  .files-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
 
-  pre {
+    li {
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #155724;
+
+      i {
+        font-size: 0.9rem;
+      }
+
+      .file-size {
+        color: #6c757d;
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+.submit-btn {
+  ::ng-deep .p-button {
+    background: var(--verde) !important;
+    background-color: var(--verde) !important;
+    border: 1px solid var(--verde) !important;
+    border-radius: 25px !important;
+    font-weight: 600 !important;
+    width: 100% !important;
+    padding: 0.75rem 1.5rem !important;
+    color: white !important;
+    font-family: var(--font-main) !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      filter: brightness(0.85) !important;
+    }
+
+    &:focus {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--verde) 25%, transparent) !important;
+    }
+
+    &:active {
+      background: var(--verde) !important;
+      background-color: var(--verde) !important;
+      border-color: var(--verde) !important;
+      filter: brightness(0.8) !important;
+    }
+  }
+}
+
+.result-container {
+  margin-top: 1.5rem;
+
+  .result-pre {
     background-color: #f8f9fa;
     padding: 0.75rem;
-    border-radius: 0.25rem;
+    border-radius: 12px;
     border: 1px solid #dee2e6;
     font-size: 0.9em;
     max-height: 200px;
     overflow-y: auto;
+    white-space: pre-wrap;
+    margin-top: 0.5rem;
+    font-family: 'Courier New', monospace;
   }
+}
 
-  ::ng-deep {
-    .p-fileupload-basic {
-      .p-button {
-        width: 100%;
-      }
-    }
-  }
+.error-container {
+  margin-top: 1.5rem;
 }
