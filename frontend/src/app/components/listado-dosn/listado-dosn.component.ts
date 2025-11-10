@@ -9,6 +9,7 @@ import { PMSDto } from '../../../models/PMS.dto';
 import { DOSNDto } from '../../../models/DOSN.dto';
 import { DOSNService } from '../../../services/DOSNService';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { LogService } from '../../../services/LogService';
 
 @Component({
   selector: 'app-listado-dosn.component',
@@ -21,7 +22,8 @@ export class ListadoDosnComponent implements OnInit {
     constructor(
         private router: Router, 
         private route: ActivatedRoute,
-        private dosnService: DOSNService
+        private dosnService: DOSNService,
+        private logService: LogService
     ) {}
 
     selectedMes: string = '';
@@ -211,6 +213,7 @@ export class ListadoDosnComponent implements OnInit {
       console.log('Eliminar DOSN:', item);
       this.dosnAEliminar = item;
       this.mostrarConfirmEliminar = true;
+
     }
 
     confirmarEliminacion() {
@@ -225,9 +228,12 @@ export class ListadoDosnComponent implements OnInit {
               const texto = typeof response === 'string' ? response : '';
               const idMatch = texto.match(/ID\s*:?\s*(\d+)/i);
               const id = idMatch ? Number(idMatch[1]) : dosn.id;
-              console.log(`DOSN eliminada correctamente. ID: ${id}`);
+              console.log(`DOSN eliminado correctamente. ID: ${id}`);
+
+              const loteId = this.route.snapshot.paramMap.get('loteId');
+              this.logService.crearLog(loteId ? parseInt(loteId) : 0, Number(id), 'DOSN', 'eliminado').subscribe();
             } catch (_) {
-              console.log('DOSN eliminada correctamente.');
+              console.log('DOSN eliminado correctamente.');
             }
             this.confirmLoading = false;
             this.mostrarConfirmEliminar = false;

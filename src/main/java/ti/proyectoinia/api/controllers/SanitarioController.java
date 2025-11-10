@@ -50,8 +50,8 @@ public class SanitarioController {
 
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
-    public ResponseEntity<String> editarSanitario(@RequestBody SanitarioDto sanitarioDto) {
-        String result = this.sanitarioService.editarSanitario(sanitarioDto);
+    public ResponseEntity<Long> editarSanitario(@RequestBody SanitarioDto sanitarioDto) {
+        Long result = this.sanitarioService.editarSanitario(sanitarioDto);
         return ResponseEntity.ok(result);
     }
 

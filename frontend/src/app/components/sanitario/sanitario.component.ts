@@ -9,6 +9,8 @@ import { SanitarioService } from '../../../services/SanitarioService';
 import { HongoService } from '../../../services/HongoService';
 import { HongoDto } from '../../../models/Hongo.dto';
 import { DateService } from '../../../services/DateService';
+import { LogService } from '../../../services/LogService';
+import { AuthService } from '../../../services/AuthService';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -16,9 +18,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { CheckboxModule } from 'primeng/checkbox';
-import { AuthService } from '../../../services/AuthService';
 import { TableModule } from 'primeng/table';
 import { MultiSelectModule } from 'primeng/multiselect';
 
@@ -32,7 +32,6 @@ import { MultiSelectModule } from 'primeng/multiselect';
     InputNumberModule,
     ButtonModule,
     DialogModule,
-    ConfirmDialogComponent,
     CheckboxModule,
     TableModule,
     MultiSelectModule
@@ -44,105 +43,6 @@ import { MultiSelectModule } from 'primeng/multiselect';
 export class SanitarioComponent implements OnInit {
   
   repetido: boolean = false;
-
-  // Variables para el diálogo de confirmación
-  mostrarConfirmEstandar: boolean = false;
-  mostrarConfirmRepetido: boolean = false;
-  estandarPendiente: boolean = false;
-  repetidoPendiente: boolean = false;
-
-  // Variables para controlar si ya está marcado (no se puede cambiar)
-  estandarOriginal: boolean = false;
-  repetidoOriginal: boolean = false;
-
-  // Getters para deshabilitar checkboxes si ya están marcados
-  get estandarDeshabilitado(): boolean {
-    return this.estandarOriginal;
-  }
-
-  get repetidoDeshabilitado(): boolean {
-    return this.repetidoOriginal;
-  }
-
-  // Getter para verificar si el usuario es admin
-  get isAdmin(): boolean {
-    return this.authService.isAdmin();
-  }
-
-  // Métodos para hacer checkboxes mutuamente excluyentes con confirmación
-  onEstandarChange() {
-    // Si ya estaba marcado como estándar, no permitir cambiar
-    if (this.estandarOriginal) {
-      this.estandar = true; // Revertir
-      return;
-    }
-
-    // Si está intentando marcar como estándar y ya está marcado como repetido
-    if (this.estandar && this.repetido) {
-      this.repetido = false;
-      this.repetidoOriginal = false;
-    }
-
-    // Si está intentando marcar como estándar, mostrar confirmación
-    if (this.estandar && !this.mostrarConfirmEstandar) {
-      this.estandarPendiente = true;
-      this.mostrarConfirmEstandar = true;
-      // Revertir el cambio hasta que se confirme
-      this.estandar = false;
-    }
-  }
-
-  onRepetidoChange() {
-    // Si ya estaba marcado como repetido, no permitir cambiar
-    if (this.repetidoOriginal) {
-      this.repetido = true; // Revertir
-      return;
-    }
-
-    // Si está intentando marcar como repetido y ya está marcado como estándar
-    if (this.repetido && this.estandar) {
-      this.estandar = false;
-      this.estandarOriginal = false;
-    }
-
-    // Si está intentando marcar como repetido, mostrar confirmación
-    if (this.repetido && !this.mostrarConfirmRepetido) {
-      this.repetidoPendiente = true;
-      this.mostrarConfirmRepetido = true;
-      // Revertir el cambio hasta que se confirme
-      this.repetido = false;
-    }
-  }
-
-  confirmarEstandar() {
-    this.estandar = true;
-    this.repetido = false;
-    this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
-    this.repetidoOriginal = false;
-    this.mostrarConfirmEstandar = false;
-    this.estandarPendiente = false;
-  }
-
-  cancelarEstandar() {
-    this.estandar = false;
-    this.mostrarConfirmEstandar = false;
-    this.estandarPendiente = false;
-  }
-
-  confirmarRepetido() {
-    this.repetido = true;
-    this.estandar = false;
-    this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
-    this.estandarOriginal = false;
-    this.mostrarConfirmRepetido = false;
-    this.repetidoPendiente = false;
-  }
-
-  cancelarRepetido() {
-    this.repetido = false;
-    this.mostrarConfirmRepetido = false;
-    this.repetidoPendiente = false;
-  }
 
   // Variables para manejar navegación
   isEditing: boolean = false;
@@ -172,6 +72,8 @@ export class SanitarioComponent implements OnInit {
   // Propiedades enlazadas con ngModel (DEPRECATED - usar las nuevas arrays)
   selectedMetodo: string = '';
   selectedEstado: string = '';
+
+  isAdmin: boolean = false;
 
   // Tabla de hongos seleccionados
   hongosTable: Array<{tipoHongo: string, repeticion: number , valor: number , incidencia: number}> = [];
@@ -229,6 +131,7 @@ export class SanitarioComponent implements OnInit {
     private router: Router,
     private sanitarioService: SanitarioService,
     private hongoService: HongoService,
+    private logService: LogService,
     private authService: AuthService
   ) {}
 
@@ -539,9 +442,6 @@ export class SanitarioComponent implements OnInit {
         this.activo = item.activo;
         this.estandar = item.estandar;
         this.repetido = item.repetido;
-        // Guardar valores originales para deshabilitar checkboxes si ya están marcados
-        this.estandarOriginal = item.estandar;
-        this.repetidoOriginal = item.repetido;
         this.fechaCreacion = item.fechaCreacion;
         this.fechaRepeticion = item.fechaRepeticion;
         
@@ -573,8 +473,6 @@ export class SanitarioComponent implements OnInit {
     this.activo = true;
     this.estandar = false;
     this.repetido = false;
-    this.estandarOriginal = false;
-    this.repetidoOriginal = false;
     this.fechaCreacion = null;
     this.fechaRepeticion = null;
   }
@@ -657,6 +555,9 @@ export class SanitarioComponent implements OnInit {
         console.log('Sanitario creado con ID:', sanitarioId);
         // Guardar hongos después de crear el sanitario
         this.guardarHongos(sanitarioId);
+        
+        const loteId = this.route.snapshot.paramMap.get('loteId');
+        this.logService.crearLog(loteId ? parseInt(loteId) : 0, sanitarioId, 'Sanitario', 'creado').subscribe();
       },
       error: (error) => {
         console.error('Error al crear sanitario:', error);
@@ -698,6 +599,9 @@ export class SanitarioComponent implements OnInit {
         console.log('Sanitario editado exitosamente:', response);
         // Guardar hongos después de editar el sanitario
         this.guardarHongos(this.editingId!);
+        
+        const loteId = this.route.snapshot.paramMap.get('loteId');
+        this.logService.crearLog(loteId ? parseInt(loteId) : 0, this.editingId!, 'Sanitario', 'editado').subscribe();
       },
       error: (error) => {
         console.error('Error al actualizar sanitario:', error);

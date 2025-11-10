@@ -51,8 +51,8 @@ public class PurezaPNotatumController {
 
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
-    public ResponseEntity<String> editarPurezaPNotatum(@RequestBody PurezaPNotatumDto purezaPNotatumDto) {
-        String result = this.purezaPNotatumService.editarPurezaPNotatum(purezaPNotatumDto);
+    public ResponseEntity<Long> editarPurezaPNotatum(@RequestBody PurezaPNotatumDto purezaPNotatumDto) {
+        Long result = this.purezaPNotatumService.editarPurezaPNotatum(purezaPNotatumDto);
         return ResponseEntity.ok(result);
     }
 

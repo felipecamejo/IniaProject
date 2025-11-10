@@ -13,4 +13,6 @@ public class LogDto {
 
     private Date fechaCreacion;
 
+    private Long loteId;
+
 }

@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
 import { SanitarioDto } from '../../../models/Sanitario.dto';
 import { ActivatedRoute } from '@angular/router';
 import { SanitarioService } from '../../../services/SanitarioService';
-
+import { LogService } from '../../../services/LogService';
 
 @Component({
   selector: 'app-listado-sanitario.component',
@@ -21,7 +21,8 @@ export class ListadoSanitarioComponent implements OnInit {
     constructor(
         private router: Router, 
         private route: ActivatedRoute,
-        private sanitarioService: SanitarioService
+        private sanitarioService: SanitarioService,
+        private logService: LogService
     ) {}
 
     selectedMes: string = '';
@@ -196,6 +197,7 @@ export class ListadoSanitarioComponent implements OnInit {
             console.log('Sanitario eliminado:', response);
             // Recargar la lista después de eliminar
             this.cargarSanitarios();
+            this.logService.crearLog(Number(this.loteId), Number(item.id), 'Sanitario', 'eliminado').subscribe();
           },
           error: (error) => {
             console.error('Error al eliminar sanitario:', error);

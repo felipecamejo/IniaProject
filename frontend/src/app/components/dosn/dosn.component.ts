@@ -388,8 +388,8 @@ import { AuthService } from '../../../services/AuthService';
                   const rol = this.obtenerRolMasAlto(user?.roles);
 
                   if (id != null) {
-                    const mensaje = `DOSN con ID #${id} fue editado por ${username} con rol ${rol}`;
-                    this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
+                    
+                    this.logService.crearLog(this.loteId ?? 0, Number(id), 'DOSN', 'actualizada').subscribe();
                   }
 
                   console.log(`DOSN actualizada correctamente con ID: ${id}`);
@@ -409,14 +409,9 @@ import { AuthService } from '../../../services/AuthService';
               this.dosnService.crear(payload).subscribe({
                 next: (id: number) => {
                   this.loading = false;
-                  
-                  const user = JSON.parse(localStorage.getItem('user') || '{}');
-                  const username = user?.nombre || 'Desconocido';
-                  const rol = this.obtenerRolMasAlto(user?.roles);
-
+ 
                   if (id != null) {
-                    const mensaje = `DOSN con ID #${id} fue creado por ${username} con rol ${rol}`;
-                    this.logService.crearLog({ id: null, texto: mensaje, fechaCreacion: new Date().toISOString() }).subscribe();
+                    this.logService.crearLog(this.loteId ?? 0, Number(id), 'DOSN', 'creada').subscribe();
                   }
 
                   console.log(`DOSN creada correctamente con ID: ${id}`);

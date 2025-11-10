@@ -33,6 +33,8 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   certificadoAEliminar: CertificadoDto | null = null;
   confirmLoading: boolean = false;
 
+  isAdmin: boolean = true;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -473,5 +475,9 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   onPopState(): void {
     console.log('Evento popstate detectado, recargando datos...');
     this.recargarDatos();
+  }
+
+  goToListadoLogs() {
+    this.router.navigate([`${this.loteId}/${this.reciboId}/listado-logs`]);
   }
 }

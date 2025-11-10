@@ -40,9 +40,8 @@ public class PMSService {
         return "PMS eliminado correctamente ID:" + id;
     }
 
-    public String editarPMS(PMSDto pmsDto) {
-        this.pmsRepository.save(mapsDtoEntityService.mapToEntityPMS(pmsDto));
-        return "PMS actualizado correctamente ID:" + pmsDto.getId();
+    public Long editarPMS(PMSDto pmsDto) {
+        return this.pmsRepository.save(mapsDtoEntityService.mapToEntityPMS(pmsDto)).getId();
     }
 
     public ResponseEntity<ResponseListadoPMS> listadoPMSporRecibo(Long id) {

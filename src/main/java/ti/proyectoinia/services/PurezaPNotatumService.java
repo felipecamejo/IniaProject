@@ -49,9 +49,8 @@ public class PurezaPNotatumService {
         return "PurezaPNotatum eliminada correctamente ID:" + id;
     }
 
-    public String editarPurezaPNotatum(PurezaPNotatumDto purezaPNotatumDto) {
-        this.purezaPNotatumRepository.save(mapsDtoEntityService.mapToEntityPurezaPNotatum(purezaPNotatumDto));
-        return "PurezaPNotatum actualizada correctamente ID:" + purezaPNotatumDto.getId();
+    public Long editarPurezaPNotatum(PurezaPNotatumDto purezaPNotatumDto) {
+        return this.purezaPNotatumRepository.save(mapsDtoEntityService.mapToEntityPurezaPNotatum(purezaPNotatumDto)).getId();
     }
 
     public ResponseEntity<ResponseListadoPurezaPNotatum> listadoPurezaPNotatumporRecibo(Long id) {

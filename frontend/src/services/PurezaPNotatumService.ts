@@ -40,11 +40,10 @@ export class PurezaPNotatumService {
     );
   }
 
-  editar(payload: PurezaPNotatumDto): Observable<string> {
-    return this.http.put(
+  editar(payload: PurezaPNotatumDto): Observable<number> {
+    return this.http.put<number>(
       `${this.urlService.baseUrl}${this.endpoint}/editar`,
-      payload,
-      { responseType: 'text' }
+      payload
     );
   }
 

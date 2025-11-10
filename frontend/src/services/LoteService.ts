@@ -15,11 +15,10 @@ export class LoteService {
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
-  crearLote(payload: LoteDto): Observable<string> {
-    return this.http.post(
+  crearLote(payload: LoteDto): Observable<number> {
+    return this.http.post<number>(
       `${this.urlService.baseUrl}${this.endpoint}/crear`,
       payload,
-      { responseType: 'text' }
     );
   }
 
@@ -35,11 +34,10 @@ export class LoteService {
     );
   }
 
-  editarLote(payload: LoteDto): Observable<string> {
-    return this.http.put(
+  editarLote(payload: LoteDto): Observable<number> {
+    return this.http.put<number>(
       `${this.urlService.baseUrl}${this.endpoint}/editar`,
-      payload,
-      { responseType: 'text' }
+      payload
     );
   }
 

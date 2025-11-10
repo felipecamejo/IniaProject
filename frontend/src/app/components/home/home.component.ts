@@ -21,9 +21,7 @@ export class HomeComponent {
     return this.authService.isAnalista();
   }
 
-  goToListadoLogs() {
-    this.router.navigate(['/listado-logs']);
-  }
+
 
   goToListadoLotes() {
     this.router.navigate(['/listado-lotes']);

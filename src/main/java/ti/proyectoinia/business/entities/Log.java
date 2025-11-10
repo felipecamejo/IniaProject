@@ -21,4 +21,8 @@ public class Log {
     @Column(name = "LOGS_FECHA_CREACION")
     private Date fechaCreacion;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "LOTE_ID", nullable = false)
+    private Lote lote;
+
 }
