@@ -133,6 +133,27 @@
   background-color: #ffe6e6 !important;
   box-shadow: 0 0 0 2px rgba(255,0,0,0.06) !important;
 }
+
+/* Resaltado de conteo que coincide con salida de pre-frío */
+.p-table td.salida-prefrio-cell {
+  background: #fff7ed !important; /* amber-50 */
+}
+:host ::ng-deep .rounded-table input.salida-prefrio-input {
+  border: 2px solid #f59e0b !important; /* amber-500 */
+  background-color: #fffbeb !important; /* amber-50/100 */
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.12) !important;
+}
+.tag-salida-prefrio {
+  margin-top: 0.25rem;
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #92400e; /* amber-800 */
+  background: #fef3c7; /* amber-200 */
+  border: 1px solid #f59e0b; /* amber-500 */
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+}
 .card {
   width: 100% !important;
   max-width: 980px !important;
@@ -245,4 +266,104 @@
       border-collapse: collapse;
       table-layout: auto;
     }
+}
+
+/* Destacado Pre-frío */
+.prefrio-highlight {
+  margin: 1.5rem 0 2rem 0;
+  padding: 1.2rem 1.4rem;
+  border: 2px solid #2563eb;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #eaf4ff 0%, #f7fbff 60%);
+  box-shadow: 0 4px 12px rgba(38,99,235,0.12);
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  position: relative;
+}
+
+.prefrio-badge {
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  white-space: nowrap;
+}
+
+.prefrio-content {
+  display: flex;
+  flex-direction: row;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.prefrio-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.prefrio-line .label {
+  font-weight: 600;
+  color: #1746a0;
+  margin-right: 0.35rem;
+}
+
+.prefrio-line .value {
+  font-weight: 600;
+  color: #0f172a;
+  background: #ffffff;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+@media (max-width: 860px) {
+  .prefrio-content { flex-direction: column; }
+  .prefrio-highlight { padding: 1rem 1.1rem; }
+}
+
+/* Producto y dosis input styling */
+.producto-dosis-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 1.8rem;
+  max-width: 520px;
+}
+.producto-dosis-group label {
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-bottom: 0.55rem;
+  color: #1746a0;
+  letter-spacing: 0.3px;
+}
+.producto-dosis-group input[type="text"] {
+  width: 100%;
+  padding: 0.65rem 0.95rem;
+  border: 2px solid #2563eb;
+  background: #f7fbff;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1746a0;
+  box-shadow: 0 2px 8px rgba(38,99,235,0.12);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.producto-dosis-group input[type="text"]:focus {
+  outline: none;
+  border-color: #1746a0;
+  box-shadow: 0 0 0 3px rgba(23,70,160,0.2);
+}
+.producto-dosis-group input[type="text"][readonly] {
+  background: #eef4ff;
+  border-color: #93c5fd;
+  color: #1e3a8a;
+  box-shadow: none;
 }

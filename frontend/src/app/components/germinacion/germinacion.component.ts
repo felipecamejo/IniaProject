@@ -96,15 +96,17 @@ export class GerminacionComponent implements OnInit {
   }
   // Promedio global de normales (sin redondeo)
   getPromedioNormalesGlobal(): number {
-    let total = 0;
-    let count = 0;
-    this.repeticiones.forEach(rep => {
-      rep.normales.forEach(val => {
-        total += val;
-        count++;
-      });
-    });
-    return count > 0 ? total / count : 0;
+    // Ajuste: el promedio global debe dividirse por la cantidad de repeticiones
+    // y NO por la cantidad total de celdas (repeticiones * conteos).
+    // Ejemplo: 2 repeticiones y 2 conteos -> 4 valores normales.
+    // Fórmula anterior: (n1+n2+n3+n4)/4 (incorrecto según nueva definición)
+    // Nueva fórmula: ( (sum(rep1.normales) + sum(rep2.normales)) ) / 2
+    if (this.repeticiones.length === 0) return 0;
+    const sumaPorRepeticion = this.repeticiones.reduce((acc, rep) => {
+      const sumaRep = rep.normales.reduce((s, v) => s + (Number(v) || 0), 0);
+      return acc + sumaRep;
+    }, 0);
+    return sumaPorRepeticion / this.repeticiones.length;
   }
   // Promedios manuales
   promedioManualNormales: number[] = [];
@@ -199,6 +201,18 @@ export class GerminacionComponent implements OnInit {
       return diff >= 0 ? diff : '';
     }
   };
+
+  // Helper: número de semillas por repetición como número
+  get numSemillasNumber(): number {
+    return Number(this.numSemillas) || 0;
+  }
+
+  // Helper: indica si el total de una repetición supera las semillas por repetición
+  superaSemillas(rep: RepeticionGerminacion): boolean {
+    const limite = this.numSemillasNumber;
+    if (limite <= 0) return false;
+    return this.getTotal(rep) > limite;
+  }
   // Las variables actuales ya están declaradas arriba, eliminamos duplicados
     // Fecha de salida de pre-frío calculada
     get fechaSalidaPreFrio(): string {
@@ -213,6 +227,21 @@ export class GerminacionComponent implements OnInit {
       const mm = String(fechaInicio.getMonth() + 1).padStart(2, '0');
       const yyyy = fechaInicio.getFullYear();
       return `${dd}-${mm}-${yyyy}`;
+    }
+
+    // Versión ISO (YYYY-MM-DD) para comparaciones con inputs tipo date
+    get fechaSalidaPreFrioISO(): string {
+      if (!this.fechas.inicio || this.preFrio === 'No') return '';
+      const diasMatch = this.preFrio.match(/(\d+)/);
+      const dias = diasMatch ? parseInt(diasMatch[1], 10) : 0;
+      if (dias === 0) return '';
+      const fechaInicio = new Date(this.fechas.inicio);
+      if (isNaN(fechaInicio.getTime())) return '';
+      fechaInicio.setDate(fechaInicio.getDate() + dias + 1);
+      const yyyy = fechaInicio.getFullYear();
+      const mm = String(fechaInicio.getMonth() + 1).padStart(2, '0');
+      const dd = String(fechaInicio.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
     }
 
       // N° de Dias: suma de totalDias y días de pre-frío
@@ -234,6 +263,14 @@ export class GerminacionComponent implements OnInit {
       this.fechas.conteos.splice(index, 1);
       this.syncNormalesConConteos();
     }
+  }
+
+  // Marca si el conteo i coincide con la fecha de salida de pre-frío
+  isConteoSalidaPreFrio(i: number): boolean {
+    const salida = this.fechaSalidaPreFrioISO;
+    if (!salida) return false;
+    const valor = (this.fechas.conteos[i] || '').trim();
+    return valor === salida;
   }
 
   // Datos de prueba (deberían venir de un servicio)
@@ -812,6 +849,32 @@ export class GerminacionComponent implements OnInit {
     return suma / this.repeticiones.length;
   }
 
+  // Porcentajes basados en: (Promedio sin redondeo / Número de semillas por repetición) * 100
+  private getPorcentaje(valorPromedio: number): number {
+    const n = this.numSemillasNumber;
+    if (n <= 0) return 0;
+    return (valorPromedio / n) * 100;
+  }
+
+  getPorcentajeNormalesGlobal(): number {
+    return this.getPorcentaje(this.getPromedioNormalesGlobal());
+  }
+  getPorcentajeAnormales(): number {
+    return this.getPorcentaje(this.getPromedioAnormales());
+  }
+  getPorcentajeDuras(): number {
+    return this.getPorcentaje(this.getPromedioDuras());
+  }
+  getPorcentajeFrescas(): number {
+    return this.getPorcentaje(this.getPromedioFrescas());
+  }
+  getPorcentajeMuertas(): number {
+    return this.getPorcentaje(this.getPromedioMuertas());
+  }
+  getPorcentajeTotal(): number {
+    return this.getPorcentaje(this.getPromedioTotal());
+  }
+
   nuevaRepeticion(numero: number): RepeticionGerminacion {
     return {
       numero,
@@ -1379,6 +1442,17 @@ export class GerminacionComponent implements OnInit {
 
     if (this.validarNumeroNegativo(this.inase.pNormales) || this.validarNumeroNegativo(this.inase.pAnormales) || this.validarNumeroNegativo(this.inase.duras) || this.validarNumeroNegativo(this.inase.frescas) || this.validarNumeroNegativo(this.inase.muertas) || this.validarNumeroNegativo(this.inase.germinacion)) {
       this.errores.push('Los valores de INASE no pueden ser negativos.');
+    }
+
+    // Validación nueva: total de cada repetición no debe superar número de semillas por repetición
+    const semillasPorRep = Number(this.numSemillas) || 0;
+    if (semillasPorRep > 0) {
+      this.repeticiones.forEach((rep, idx) => {
+        const totalRep = this.getTotal(rep);
+        if (totalRep > semillasPorRep) {
+          this.errores.push(`La repetición ${rep.numero || (idx+1)} supera el número de semillas (${totalRep} > ${semillasPorRep}).`);
+        }
+      });
     }
 
     return this.errores.length > 0;

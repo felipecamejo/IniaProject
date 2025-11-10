@@ -25,12 +25,13 @@
                   />
                 </td>
                 <ng-container *ngFor="let conteo of fechas.conteos; let i = index">
-                  <td class="col-fecha">
+                  <td class="col-fecha" [ngClass]="{ 'salida-prefrio-cell': isConteoSalidaPreFrio(i) }">
                     <div class="col-fecha-flex">
-                      <input type="date" [(ngModel)]="fechas.conteos[i]" [name]="'fechaConteo'+i" pInputText [readonly]="isReadonly" 
-                      />
+                      <input type="date" [(ngModel)]="fechas.conteos[i]" [name]="'fechaConteo'+i" pInputText [readonly]="isReadonly"
+                        [ngClass]="{ 'salida-prefrio-input': isConteoSalidaPreFrio(i) }" />
                       <button type="button" (click)="removeConteo(i)" style="margin-left:4px; color:#e11d48; background:none; border:none; font-size:1.2em; cursor:pointer;" *ngIf="fechas.conteos.length > 1 && !isReadonly">✕</button>
                     </div>
+                    <div *ngIf="isConteoSalidaPreFrio(i)" class="tag-salida-prefrio">Salida pre‑frío</div>
                   </td>
                 </ng-container>
                 <td class="col-fecha"><input type="number" [value]="fechas.totalDias" readonly pInputText class="calc-field"
@@ -42,6 +43,23 @@
               </tr>
             </ng-template>
           </p-table>
+      </div>
+
+      <!-- Aviso destacado de Pre-frío: justo debajo de la tabla de conteos -->
+      <div class="prefrio-highlight" *ngIf="preFrio && preFrio !== 'No'">
+        <div class="prefrio-content">
+          <span class="prefrio-badge">Pre‑frío</span>
+          <div class="prefrio-lines">
+            <div class="prefrio-line">
+              <span class="label">N° de días de frío:</span>
+              <span class="value">{{ numeroDias }}</span>
+            </div>
+            <div class="prefrio-line" *ngIf="fechaSalidaPreFrio">
+              <span class="label">Fecha de salida de pre‑frío:</span>
+              <span class="value">{{ fechaSalidaPreFrio }}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Select Tratamiento de semillas -->
@@ -56,11 +74,11 @@
         <span style="margin-top:0.7rem; color:#2563eb; font-weight:500; font-size:1em;">Elige el tratamiento para mostrar y editar su tabla correspondiente.</span>
       </div>
 
-      <!-- Producto y dosis -->
-      <div class="form-field" style="margin-bottom: 1.5rem; display: flex; align-items: center;">
-        <label for="productoDosis" style="font-weight:600; margin-right:1rem;">Producto y dosis:</label>
+      <!-- Producto y dosis (destacado) -->
+      <div class="producto-dosis-group">
+        <label for="productoDosis">Producto y dosis:</label>
         <input id="productoDosis" type="text" [(ngModel)]="productoDosis" name="productoDosis" pInputText [readonly]="isReadonly"
-          placeholder="Ingrese producto y dosis..." />
+               placeholder="Ingrese producto y dosis..." />
       </div>
 
       <!-- Selects adicionales en una sola fila -->
@@ -96,12 +114,6 @@
             <option value="No">No</option>
             <option *ngFor="let d of diasPreFrio" [value]="d">{{d}}</option>
           </select>
-            <div *ngIf="fechaSalidaPreFrio" style="margin-top:0.5rem; font-weight:600; color:#2563eb;">
-              Fecha de salida de pre-frío: {{ fechaSalidaPreFrio }}
-            </div>
-                <div style="margin-top:0.5rem; font-weight:600; color:#1746a0;">
-                  N° de Días: {{ numeroDias }}
-                </div>
         </div>
         <div class="form-field" style="margin-bottom: 0;">
           <label for="preTratamiento" style="font-weight:600; margin-right:0.5rem;">Pre-tratamiento:</label>
@@ -155,7 +167,7 @@
                   /></td>
                 <td style="min-width:160px; width:160px;">
                   <input type="number" [value]="getTotal(rep)" readonly pInputText class="calc-field" 
-                  [ngClass]="{ 'input-error': validarNumeroNegativo(getTotal(rep)) }"
+                  [ngClass]="{ 'input-error': validarNumeroNegativo(getTotal(rep)) || superaSemillas(rep) }"
                   />
                 </td>
                 <td style="min-width:160px; width:160px;">
@@ -205,7 +217,32 @@
                   [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPromedioNormalesGlobal()) }"
                   />
                 </td>
-                <td colspan="6" style="background:#e0e7ff;"></td>
+                <td>
+                  <input type="number" [value]="getPromedioAnormales()" readonly pInputText class="calc-field"
+                  [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPromedioAnormales()) }"
+                  />
+                </td>
+                <td>
+                  <input type="number" [value]="getPromedioDuras()" readonly pInputText class="calc-field"
+                  [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPromedioDuras()) }"
+                  />
+                </td>
+                <td>
+                  <input type="number" [value]="getPromedioFrescas()" readonly pInputText class="calc-field"
+                  [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPromedioFrescas()) }"
+                  />
+                </td>
+                <td>
+                  <input type="number" [value]="getPromedioMuertas()" readonly pInputText class="calc-field" 
+                  [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPromedioMuertas()) }"
+                  />
+                </td>
+                <td>
+                  <input type="number" [value]="getPromedioTotal()" readonly pInputText class="calc-field"
+                  [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPromedioTotal()) }"
+                  />
+                </td>
+                <td style="background:#e0e7ff;"></td>
               </tr>
               <tr>
                 <td style="font-weight:bold; background:#fffbe6;">Promedio redondeado</td>
@@ -244,28 +281,28 @@
               <tr>
                 <td style="font-weight:bold; background:#fef9c3;">%</td>
                 <td [attr.colspan]="fechas.conteos.length">
-                  <input type="number" [value]="''" readonly pInputText class="calc-field" />
+                  <input type="number" [value]="getPorcentajeNormalesGlobal()" readonly pInputText class="calc-field"
+                  [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPorcentajeNormalesGlobal()) }" />
                 </td>
                 <td>
-                  <input type="number" [value]="''" readonly pInputText class="calc-field" />
+                  <input type="number" [value]="getPorcentajeAnormales()" readonly pInputText class="calc-field"
+                  [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPorcentajeAnormales()) }" />
                 </td>
                 <td>
-                  <input type="number" [value]="''" readonly pInputText class="calc-field" />
+                  <input type="number" [value]="getPorcentajeDuras()" readonly pInputText class="calc-field"
+                  [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPorcentajeDuras()) }" />
                 </td>
                 <td>
-                  <input type="number" [value]="''" readonly pInputText class="calc-field" />
+                  <input type="number" [value]="getPorcentajeFrescas()" readonly pInputText class="calc-field"
+                  [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPorcentajeFrescas()) }" />
                 </td>
                 <td>
-                  <input type="number" [value]="''" readonly pInputText class="calc-field" />
+                  <input type="number" [value]="getPorcentajeMuertas()" readonly pInputText class="calc-field"
+                  [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPorcentajeMuertas()) }" />
                 </td>
                 <td>
-                  <input type="number" [value]="''" readonly pInputText class="calc-field" />
-                </td>
-                <td>
-                  <input type="number" [value]="''" readonly pInputText class="calc-field" />
-                </td>
-                <td>
-                  <input type="number" [value]="''" readonly pInputText class="calc-field" />
+                  <input type="number" [value]="getPorcentajeTotal()" readonly pInputText class="calc-field"
+                  [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPorcentajeTotal()) }" />
                 </td>
                 <td style="background:#fef9c3;"></td>
               </tr>
