@@ -89,7 +89,18 @@
 
                 <div class="modal-form-field">
                     <label for="modalParametro">Parámetro</label>
-                    <input id="modalParametro" type="text" [(ngModel)]="modalParametro" name="modalParametro" pInputText required placeholder="Ej: especie, origen, remite" />
+                    <select 
+                        id="modalParametro" 
+                        [(ngModel)]="modalParametro" 
+                        name="modalParametro" 
+                        required
+                        class="w-full"
+                        style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ced4da; width: 100%;">
+                        <option [value]="''">Seleccione un parámetro</option>
+                        <option *ngFor="let param of parametrosDisponibles" [value]="param.value">
+                            {{ param.label }}
+                        </option>
+                    </select>
                 </div>
 
                 <div class="modal-form-field">

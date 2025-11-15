@@ -43,6 +43,38 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
     autocompletadoAEliminar: AutocompletadoDto | null = null;
     confirmLoading: boolean = false;
 
+    // Lista de parámetros disponibles para el select
+    parametrosDisponibles: Array<{label: string, value: string}> = [
+        // Campos del Recibo
+        { label: 'Especie', value: 'especie' },
+        { label: 'N° Análisis (nLab)', value: 'nLab' },
+        { label: 'Origen', value: 'origen' },
+        { label: 'Remitente', value: 'remite' },
+        { label: 'Observaciones (Recibo)', value: 'observaciones' },
+        { label: 'Ficha', value: 'ficha' },
+        // Campos de Análisis de Pureza
+        { label: 'Materia Inerte Tipo (INIA)', value: 'materiaInerteTipo' },
+        { label: 'Materia Inerte Tipo (INASE)', value: 'materiaInerteTipoInase' },
+        // Campos de Análisis de Germinación
+        { label: 'Producto y Dosis', value: 'productoDosis' },
+        { label: 'Comentarios (Germinación)', value: 'comentarios' },
+        // Campos de Análisis Sanitario
+        { label: 'Método (Sanitario)', value: 'metodo' },
+        { label: 'Estado (Sanitario)', value: 'estado' },
+        { label: 'Observaciones (Sanitario)', value: 'observaciones' },
+        // Campos de Análisis de Tetrazolio
+        { label: 'Pretratamiento Custom', value: 'pretratamientoCustom' },
+        // Campos de Certificado
+        { label: 'Responsable Muestreo', value: 'responsableMuestreo' },
+        // Observaciones específicas por análisis
+        { label: 'Observaciones Pureza', value: 'observacionesPureza' },
+        { label: 'Observaciones Germinación', value: 'observacionesGerminacion' },
+        { label: 'Observaciones Sanitario', value: 'observacionesSanitario' },
+        { label: 'Observaciones Tetrazolio', value: 'observacionesTetrazolio' },
+        { label: 'Observaciones DOSN', value: 'observacionesDOSN' },
+        { label: 'Observaciones PMS', value: 'observacionesPMS' }
+    ];
+
     ngOnInit(): void {
         this.cargarAutocompletados();
         
