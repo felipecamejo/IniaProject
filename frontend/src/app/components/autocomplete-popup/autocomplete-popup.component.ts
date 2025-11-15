@@ -18,6 +18,7 @@ import { AutocompletadoDto } from '../../../models/Autocompletado.dto';
         class="autocomplete-popup"
         [style.top.px]="posicion.top"
         [style.left.px]="posicion.left"
+        [style.width.px]="posicion.width"
         (click)="$event.stopPropagation()"
       >
         <div class="autocomplete-header">
@@ -49,7 +50,7 @@ export class AutocompletePopupComponent implements OnInit, OnDestroy {
   parametro = '';
   opciones: AutocompletadoDto[] = [];
   elemento: HTMLInputElement | null = null;
-  posicion = { top: 0, left: 0 };
+  posicion = { top: 0, left: 0, width: 0 };
   indiceSeleccionado = 0;
   private subscription?: Subscription;
 
@@ -90,9 +91,46 @@ export class AutocompletePopupComponent implements OnInit, OnDestroy {
   private calcularPosicion(): void {
     if (!this.elemento) return;
     const rect = this.elemento.getBoundingClientRect();
+    const minPopupWidth = 250;
+    const maxPopupWidth = 400;
+    const popupHeight = 300; // max-height del popup
+    const spacing = 5; // Espacio entre el campo y el popup
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Calcular ancho del popup: coincidir con el campo, pero respetar min/max
+    const campoWidth = rect.width;
+    let popupWidth = Math.max(minPopupWidth, Math.min(maxPopupWidth, campoWidth));
+    
+    // Calcular posición vertical: debajo del campo
+    let top = rect.bottom + spacing;
+    
+    // Si el popup no cabe debajo, mostrarlo arriba
+    if (top + popupHeight > viewportHeight && rect.top > popupHeight) {
+      top = rect.top - popupHeight - spacing;
+    }
+    
+    // Calcular posición horizontal: alineado con el campo
+    let left = rect.left;
+    
+    // Ajustar si el popup se sale por la derecha
+    if (left + popupWidth > viewportWidth) {
+      left = viewportWidth - popupWidth - 10; // 10px de margen del borde
+    }
+    
+    // Asegurar que no se salga por la izquierda
+    if (left < 10) {
+      left = 10;
+      // Si se ajustó a la izquierda, reducir el ancho si es necesario
+      if (left + popupWidth > viewportWidth) {
+        popupWidth = viewportWidth - left - 10;
+      }
+    }
+    
     this.posicion = {
-      top: rect.bottom + window.scrollY + 5,
-      left: rect.left + window.scrollX
+      top: top,
+      left: left,
+      width: popupWidth
     };
   }
 

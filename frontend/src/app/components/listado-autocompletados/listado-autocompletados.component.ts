@@ -43,6 +43,41 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
     autocompletadoAEliminar: AutocompletadoDto | null = null;
     confirmLoading: boolean = false;
 
+    // Lista de tipos de datos disponibles para el select
+    tiposDatoDisponibles: Array<{label: string, value: string}> = [
+        { label: 'Texto', value: 'texto' },
+        { label: 'Número', value: 'número' },
+        { label: 'Fecha', value: 'fecha' },
+        { label: 'Descripción', value: 'descripción' },
+        { label: 'Observación', value: 'observación' }
+    ];
+
+    // Mapeo de parámetros a tipos de datos automáticos
+    mapeoParametroTipoDato: {[key: string]: string} = {
+        // Campos de texto generales
+        'especie': 'texto',
+        'nLab': 'texto',
+        'origen': 'texto',
+        'remite': 'texto',
+        'ficha': 'texto',
+        'materiaInerteTipo': 'texto',
+        'materiaInerteTipoInase': 'texto',
+        'productoDosis': 'texto',
+        'metodo': 'texto',
+        'estado': 'texto',
+        'pretratamientoCustom': 'texto',
+        'responsableMuestreo': 'texto',
+        // Campos de observaciones/comentarios -> observación o descripción
+        'observaciones': 'observación',
+        'comentarios': 'observación',
+        'observacionesPureza': 'observación',
+        'observacionesGerminacion': 'observación',
+        'observacionesSanitario': 'observación',
+        'observacionesTetrazolio': 'observación',
+        'observacionesDOSN': 'observación',
+        'observacionesPMS': 'observación'
+    };
+
     // Lista de parámetros disponibles para el select
     parametrosDisponibles: Array<{label: string, value: string}> = [
         // Campos del Recibo
@@ -117,6 +152,24 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
         
         return cumpleParametro || cumpleValor || cumpleTipoDato;
       });
+    }
+
+    // Método que se ejecuta cuando cambia el parámetro para actualizar automáticamente el tipo de dato
+    onParametroChange() {
+      if (this.modalParametro && this.mapeoParametroTipoDato[this.modalParametro]) {
+        this.modalTipoDato = this.mapeoParametroTipoDato[this.modalParametro];
+      } else {
+        this.modalTipoDato = '';
+      }
+    }
+
+    // Método para obtener el label del tipo de dato actual
+    getTipoDatoLabel(): string {
+      if (!this.modalTipoDato) {
+        return 'Se seleccionará automáticamente';
+      }
+      const tipo = this.tiposDatoDisponibles.find(t => t.value === this.modalTipoDato);
+      return tipo ? tipo.label : this.modalTipoDato;
     }
 
     crearItem() {

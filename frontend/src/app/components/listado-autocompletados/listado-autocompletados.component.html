@@ -83,15 +83,11 @@
         <form #modalForm="ngForm" (ngSubmit)="onSubmitModal(modalForm)">
             <div class="modal-form-grid">
                 <div class="modal-form-field">
-                    <label for="modalTipoDato">Tipo de Dato</label>
-                    <input id="modalTipoDato" type="text" [(ngModel)]="modalTipoDato" name="modalTipoDato" pInputText required placeholder="Ej: texto, número" />
-                </div>
-
-                <div class="modal-form-field">
                     <label for="modalParametro">Parámetro</label>
                     <select 
                         id="modalParametro" 
                         [(ngModel)]="modalParametro" 
+                        (ngModelChange)="onParametroChange()"
                         name="modalParametro" 
                         required
                         class="w-full"
@@ -104,8 +100,38 @@
                 </div>
 
                 <div class="modal-form-field">
+                    <label for="modalTipoDato">Tipo de Dato</label>
+                    <!-- Campo oculto para el valor real del tipo de dato -->
+                    <input 
+                        type="hidden"
+                        id="modalTipoDato" 
+                        [(ngModel)]="modalTipoDato" 
+                        name="modalTipoDato" 
+                        required />
+                    <!-- Campo visible readonly que muestra el label -->
+                    <input 
+                        type="text"
+                        readonly
+                        class="w-full"
+                        style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ced4da; width: 100%; background-color: #e9ecef; cursor: not-allowed;"
+                        [value]="getTipoDatoLabel()"
+                        placeholder="Se seleccionará automáticamente" />
+                    <small style="color: #6c757d; font-size: 0.875rem; margin-top: 0.25rem; display: block;">
+                        Se selecciona automáticamente según el parámetro elegido
+                    </small>
+                </div>
+
+                <div class="modal-form-field">
                     <label for="modalValor">Valor</label>
-                    <input id="modalValor" type="text" [(ngModel)]="modalValor" name="modalValor" pInputText required placeholder="Valor a autocompletar" />
+                    <textarea 
+                        id="modalValor" 
+                        [(ngModel)]="modalValor" 
+                        name="modalValor" 
+                        required 
+                        placeholder="Valor a autocompletar"
+                        rows="6"
+                        style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ced4da; font-family: inherit; font-size: inherit; resize: vertical; min-height: 120px;">
+                    </textarea>
                 </div>
             </div>
 
