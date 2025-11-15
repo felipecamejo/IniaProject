@@ -8,6 +8,8 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import ti.proyectoinia.business.entities.*;
 import ti.proyectoinia.business.repositories.*;
+import ti.proyectoinia.services.AutocompletadoService;
+import ti.proyectoinia.dtos.AutocompletadoDto;
 
 import java.util.List;
 
@@ -21,17 +23,20 @@ public class DebugController {
     private final MalezaRepository malezaRepository;
     private final HongoRepository hongoRepository;
     private final MetodoRepository metodoRepository;
+    private final AutocompletadoService autocompletadoService;
 
     public DebugController(DepositoRepository depositoRepository, 
                           CultivoRepository cultivoRepository,
                           MalezaRepository malezaRepository,
                           HongoRepository hongoRepository,
-                          MetodoRepository metodoRepository) {
+                          MetodoRepository metodoRepository,
+                          AutocompletadoService autocompletadoService) {
         this.depositoRepository = depositoRepository;
         this.cultivoRepository = cultivoRepository;
         this.malezaRepository = malezaRepository;
         this.hongoRepository = hongoRepository;
         this.metodoRepository = metodoRepository;
+        this.autocompletadoService = autocompletadoService;
     }
 
     @PostMapping({"/crear-datos-prueba"})
@@ -254,6 +259,65 @@ public class DebugController {
 
         } catch (Exception e) {
             return new ResponseEntity<>("Error al limpiar datos de prueba: " + e.getMessage(), 
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping({"/crear-autocompletados-analisis"})
+    @Secured({"ADMIN"})
+    @Operation(
+            description = "Endpoint de debug que crea varios autocompletados para campos de análisis comunes"
+    )
+    public ResponseEntity<String> crearAutocompletadosAnalisis() {
+        try {
+            StringBuilder resultado = new StringBuilder();
+            resultado.append("=== CREANDO AUTOCOMPLETADOS PARA CAMPOS DE ANÁLISIS ===\n\n");
+
+            // Definir campos de análisis y sus valores de ejemplo
+            String[][] camposAnalisis = {
+                // {parametro, valor1, valor2, valor3, valor4, valor5}
+                {"especie", "Trifolium repens", "Lolium perenne", "Festuca arundinacea", "Dactylis glomerata", "Poa pratensis"},
+                {"nLab", "LAB-2024-001", "LAB-2024-002", "LAB-2024-003", "LAB-2024-004", "LAB-2024-005"},
+                {"origen", "Montevideo", "Canelones", "Maldonado", "Colonia", "San José"},
+                {"remite", "INIA La Estanzuela", "INIA Tacuarembó", "INIA Salto Grande", "INIA Treinta y Tres", "INIA Paysandú"},
+                {"observaciones", "Muestra en buen estado", "Requiere análisis adicional", "Muestra fresca", "Alta calidad", "Cumple estándares"},
+                {"tipoAnalisisInase", "Completo", "Reducido", "Limitado", "Reducido - limitado", "Completo"},
+                {"tipoAnalisisInia", "Completo", "Reducido", "Limitado", "Reducido - limitado", "Completo"},
+                {"ficha", "FICHA-001", "FICHA-002", "FICHA-003", "FICHA-004", "FICHA-005"},
+                {"ingresaFrio", "2024-01-15", "2024-02-20", "2024-03-10", "2024-04-05", "2024-05-12"},
+                {"saleFrio", "2024-01-20", "2024-02-25", "2024-03-15", "2024-04-10", "2024-05-17"}
+            };
+
+            int totalCreados = 0;
+
+            for (String[] campo : camposAnalisis) {
+                String parametro = campo[0];
+                resultado.append("Campo: ").append(parametro).append("\n");
+
+                // Crear 5 autocompletados para cada campo
+                for (int i = 1; i < campo.length; i++) {
+                    AutocompletadoDto dto = new AutocompletadoDto();
+                    dto.setId(null);
+                    dto.setParametro(parametro);
+                    dto.setValor(campo[i]);
+                    dto.setTipoDato("texto");
+                    dto.setActivo(true);
+
+                    String response = autocompletadoService.crearAutocompletado(dto);
+                    resultado.append("   - ").append(response).append("\n");
+                    totalCreados++;
+                }
+                resultado.append("\n");
+            }
+
+            resultado.append("=== AUTOCOMPLETADOS CREADOS EXITOSAMENTE ===\n");
+            resultado.append("Total creado: ").append(totalCreados).append(" autocompletados para ")
+                    .append(camposAnalisis.length).append(" campos de análisis");
+
+            return new ResponseEntity<>(resultado.toString(), HttpStatus.CREATED);
+
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error al crear autocompletados: " + e.getMessage(), 
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

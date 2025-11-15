@@ -390,6 +390,35 @@ public class MapsDtoEntityService {
         return maleza;
     }
 
+    public AutocompletadoDto mapToDtoAutocompletado(Autocompletado autocompletado) {
+        if (autocompletado == null) {
+            return null;
+        }
+
+        AutocompletadoDto autocompletadoDto = new AutocompletadoDto();
+        autocompletadoDto.setId(autocompletado.getId());
+        autocompletadoDto.setTipoDato(autocompletado.getTipoDato());
+        autocompletadoDto.setParametro(autocompletado.getParametro());
+        autocompletadoDto.setValor(autocompletado.getValor());
+        autocompletadoDto.setActivo(autocompletado.isActivo());
+        return autocompletadoDto;
+    }
+
+    public Autocompletado mapToEntityAutocompletado(AutocompletadoDto autocompletadoDto) {
+        if (autocompletadoDto == null) {
+            return null;
+        }
+
+        Autocompletado autocompletado = new Autocompletado();
+        autocompletado.setId(autocompletadoDto.getId());
+        autocompletado.setTipoDato(autocompletadoDto.getTipoDato());
+        autocompletado.setParametro(autocompletadoDto.getParametro());
+        autocompletado.setValor(autocompletadoDto.getValor());
+        autocompletado.setActivo(autocompletadoDto.isActivo());
+
+        return autocompletado;
+    }
+
     public SanitarioDto mapToDtoSanitario(Sanitario sanitario) {
         if (sanitario == null) {
             return null;

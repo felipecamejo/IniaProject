@@ -74,6 +74,10 @@ export class HomeComponent {
     this.router.navigate(['/listado-metodos']);
   }
 
+  goToListadoAutocompletados() {
+    this.router.navigate(['/listado-autocompletados']);
+  }
+
   goToListadoCertificados() {
     this.router.navigate(['/listado-certificados']);
   }

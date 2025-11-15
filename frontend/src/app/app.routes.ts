@@ -28,6 +28,7 @@ import { ListadoDepositosComponent } from './components/listado-depositos/listad
 import { ListadoUsuariosComponent } from './components/listado-usuarios/listado-usuarios.component';
 import { UsuarioComponent } from './components/usuario/usuario.component';
 import { ListadoMetodosComponent } from './components/listado-metodos/listado-metodos.component';
+import { ListadoAutocompletadosComponent } from './components/listado-autocompletados/listado-autocompletados.component';
 // import { ListadoLogsComponent } from './components/listado-logs/listado-logs.components';
 import { CertificadoComponent } from './components/certificado/certificado.component';
 import { ListadoCertificadosComponent } from './components/listado-certificados/listado-certificados.component'; 
@@ -45,6 +46,7 @@ export const routes: Routes = [
     //listados
     { path : 'listado-depositos', component: ListadoDepositosComponent },
     { path : 'listado-metodos', component: ListadoMetodosComponent },
+    { path : 'listado-autocompletados', component: ListadoAutocompletadosComponent },
     { path : 'listado-usuarios', component: ListadoUsuariosComponent },
     { path : 'listado-lotes', component: ListadoLotesComponent }, // para todos los usuarios
     { path : 'listado-malezas', component: ListadoMalezasComponent },

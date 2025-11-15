@@ -12,8 +12,13 @@ WORKDIR /app
 # Copiar archivos de configuración de Maven primero (para cache de dependencias)
 COPY pom.xml .
 
-# Descargar dependencias (esto se cachea si pom.xml no cambia)
-RUN mvn dependency:go-offline -B
+# Descargar dependencias con reintentos (esto se cachea si pom.xml no cambia)
+# Reintentar hasta 3 veces con espera entre intentos para manejar errores temporales de red
+RUN for i in 1 2 3; do \
+        echo "Intento $i de descarga de dependencias Maven..." && \
+        mvn dependency:go-offline -B && break || \
+        (echo "Intento $i falló, reintentando en 15 segundos..." && sleep 15); \
+    done || (echo "ERROR: No se pudieron descargar las dependencias después de 3 intentos" && exit 1)
 
 # Copiar código fuente
 COPY src ./src
