@@ -38,7 +38,7 @@ Write-Host ""
 
 # Mostrar servicios en ejecución
 Write-Host "Servicios actuales:" -ForegroundColor Yellow
-docker-compose ps
+docker compose ps
 Write-Host ""
 
 # Preguntar confirmación
@@ -46,7 +46,7 @@ $confirm = Read-Host "Detener todos los servicios? (S/N)"
 if ($confirm -eq "S" -or $confirm -eq "s") {
     Write-Host ""
     Write-Host "Deteniendo servicios..." -ForegroundColor Yellow
-    docker-compose down
+    docker compose down
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host ""

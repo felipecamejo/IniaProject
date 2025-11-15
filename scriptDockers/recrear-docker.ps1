@@ -139,19 +139,19 @@ switch ($opcion) {
     "1" {
         Write-Host ""
         Write-Host "[1/5] Deteniendo servicios..." -ForegroundColor Yellow
-        docker-compose down
+        docker compose down
         
         Write-Host "[2/5] Reconstruyendo imágenes..." -ForegroundColor Yellow
-        docker-compose build --no-cache
+        docker compose build --no-cache
         
         Write-Host "[3/5] Levantando servicios..." -ForegroundColor Yellow
-        docker-compose up -d
+        docker compose up -d
         
         Write-Host "[4/5] Esperando servicios..." -ForegroundColor Yellow
         Start-Sleep -Seconds 10
         
         Write-Host "[5/5] Verificando estado..." -ForegroundColor Yellow
-        docker-compose ps
+        docker compose ps
         
         Write-Host ""
         Write-Host "Contenedores recreados exitosamente (datos mantenidos)" -ForegroundColor Green
@@ -175,22 +175,22 @@ switch ($opcion) {
         if ($confirmar -eq "ELIMINAR") {
             Write-Host ""
             Write-Host "[1/6] Deteniendo y eliminando contenedores con volúmenes..." -ForegroundColor Yellow
-            docker-compose down -v
+            docker compose down -v
             
             Write-Host "[2/6] Limpiando sistema Docker..." -ForegroundColor Yellow
             docker system prune -f
             
             Write-Host "[3/6] Reconstruyendo imágenes..." -ForegroundColor Yellow
-            docker-compose build --no-cache
+            docker compose build --no-cache
             
             Write-Host "[4/6] Levantando servicios..." -ForegroundColor Yellow
-            docker-compose up -d
+            docker compose up -d
             
             Write-Host "[5/6] Esperando servicios..." -ForegroundColor Yellow
             Start-Sleep -Seconds 15
             
             Write-Host "[6/6] Verificando estado..." -ForegroundColor Yellow
-            docker-compose ps
+            docker compose ps
             
             Write-Host ""
             Write-Host "Sistema completamente recreado" -ForegroundColor Green

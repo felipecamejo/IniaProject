@@ -54,7 +54,7 @@ services:
       - inia-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "sh -c 'exec 3<>/dev/tcp/localhost/8080' || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -67,14 +67,14 @@ services:
       dockerfile: Dockerfile.middleware
     container_name: inia-middleware
     environment:
-      # Variables de base de datos (valores reales del middleware)
-      DB_USER: postgres
-      DB_PASSWORD: 897888fg2
+      # Variables de base de datos (unificadas con backend)
+      DB_USER: inia_user
+      DB_PASSWORD: inia_password
       DB_HOST: database
       DB_PORT: 5432
       DB_NAME: Inia
       # También soportar DATABASE_URL para compatibilidad
-      DATABASE_URL: postgresql://postgres:897888fg2@database:5432/Inia
+      DATABASE_URL: postgresql://inia_user:inia_password@database:5432/Inia
       PYTHONPATH: /app
       PYTHONUNBUFFERED: 1
     depends_on:

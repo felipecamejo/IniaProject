@@ -88,7 +88,7 @@ Write-Host ""
 
 # Paso 1: Detener y eliminar contenedores con volúmenes
 Write-Host "[1/5] Deteniendo y eliminando contenedores con volúmenes..." -ForegroundColor Yellow
-docker-compose down -v
+docker compose down -v
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✓ Contenedores y volúmenes eliminados" -ForegroundColor Green
 } else {

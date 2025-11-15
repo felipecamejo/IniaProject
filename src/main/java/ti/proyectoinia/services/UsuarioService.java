@@ -8,6 +8,7 @@ import ti.proyectoinia.business.repositories.UsuarioRepository;
 import ti.proyectoinia.dtos.UsuarioDto;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;
+import java.util.List;
 
 @Service
 public class UsuarioService {
@@ -115,5 +116,14 @@ public class UsuarioService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * Verifica si existe al menos un usuario ADMIN activo en el sistema
+     * @return true si existe al menos un admin activo, false en caso contrario
+     */
+    public boolean existeAdminActivo() {
+        List<Usuario> admins = this.usuarioRepository.findByRolAndActivoTrue(ti.proyectoinia.business.entities.RolUsuario.ADMIN);
+        return admins != null && !admins.isEmpty();
     }
 }

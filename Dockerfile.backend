@@ -29,6 +29,11 @@ RUN mvn clean package -DskipTests -DskipFrontend=true
 # Etapa 2: Imagen de producción con JRE solamente
 FROM eclipse-temurin:21-jre-jammy
 
+# Instalar curl para healthchecks
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
 # Crear usuario no root para seguridad
 RUN groupadd -r spring && useradd -r -g spring spring
 

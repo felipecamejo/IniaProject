@@ -162,16 +162,16 @@ Write-Host "Directorio: $projectRoot" -ForegroundColor Green
 # Detener servicios anteriores (si existen)
 Write-Host ""
 Write-Host "[4/5] Verificando servicios existentes..." -ForegroundColor Yellow
-$existingContainers = docker-compose ps -q
+$existingContainers = docker compose ps -q
 if ($existingContainers) {
     Write-Host "Deteniendo servicios anteriores..." -ForegroundColor Yellow
-    docker-compose down
+    docker compose down
 }
 
 # Levantar servicios
 Write-Host ""
 Write-Host "[5/5] Levantando servicios con Docker Compose..." -ForegroundColor Yellow
-docker-compose up -d
+docker compose up -d
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""
@@ -182,41 +182,162 @@ if ($LASTEXITCODE -eq 0) {
     
     # Mostrar estado
     Write-Host "Estado de los servicios:" -ForegroundColor Cyan
-    docker-compose ps
+    docker compose ps
     
     Write-Host ""
     Write-Host "Esperando a que los servicios estén listos..." -ForegroundColor Yellow
-    Start-Sleep -Seconds 10
+    
+    # Esperar a que el backend esté listo (máximo 2 minutos)
+    $maxWait = 120
+    $waited = 0
+    $backendReady = $false
+    $frontendReady = $false
+    
+    Write-Host "Esperando a que el backend inicie..." -ForegroundColor Yellow
+    while ($waited -lt $maxWait) {
+        Start-Sleep -Seconds 5
+        $waited += 5
+        
+        # Verificar backend
+        if (-not $backendReady) {
+            try {
+                $response = Invoke-WebRequest -Uri "http://localhost:8080/Inia" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
+                if ($response.StatusCode -eq 200 -or $response.StatusCode -eq 401 -or $response.StatusCode -eq 403) {
+                    $backendReady = $true
+                    Write-Host "✓ Backend listo!" -ForegroundColor Green
+                }
+            } catch {
+                # Backend aún no está listo
+            }
+        }
+        
+        # Verificar frontend (puerto 80 para Nginx o 4200 para ng serve)
+        if (-not $frontendReady) {
+            try {
+                # Intentar puerto 80 primero (Nginx en producción)
+                $response = Invoke-WebRequest -Uri "http://localhost" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
+                if ($response.StatusCode -eq 200 -or $response.StatusCode -eq 304) {
+                    $frontendReady = $true
+                    Write-Host "✓ Frontend listo! (puerto 80)" -ForegroundColor Green
+                }
+            } catch {
+                # Si falla puerto 80, intentar puerto 4200 (ng serve en desarrollo)
+                try {
+                    $response = Invoke-WebRequest -Uri "http://localhost:4200" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
+                    if ($response.StatusCode -eq 200 -or $response.StatusCode -eq 304) {
+                        $frontendReady = $true
+                        Write-Host "✓ Frontend listo! (puerto 4200 - modo desarrollo)" -ForegroundColor Green
+                        Write-Host "  Nota: Frontend está en modo desarrollo. Usa http://localhost:4200" -ForegroundColor Yellow
+                    }
+                } catch {
+                    # Frontend aún no está listo
+                }
+            }
+        }
+        
+        # Si ambos están listos, salir
+        if ($backendReady -and $frontendReady) {
+            break
+        }
+        
+        if ($waited % 15 -eq 0) {
+            $status = "Backend: " + $(if ($backendReady) { "✓" } else { "⏳" }) + " | Frontend: " + $(if ($frontendReady) { "✓" } else { "⏳" })
+            Write-Host "  Esperando... ($waited segundos) - $status" -ForegroundColor Gray
+        }
+    }
+    
+    if (-not $backendReady) {
+        Write-Host "⚠ ADVERTENCIA: El backend puede tardar más en iniciar" -ForegroundColor Yellow
+        Write-Host "Puedes verificar los logs con: docker compose logs backend" -ForegroundColor Yellow
+    }
+    
+    if (-not $frontendReady) {
+        Write-Host "⚠ ADVERTENCIA: El frontend puede tardar más en iniciar" -ForegroundColor Yellow
+        Write-Host "Puedes verificar los logs con: docker compose logs frontend" -ForegroundColor Yellow
+        Write-Host "Intentando abrir el navegador de todas formas..." -ForegroundColor Yellow
+    }
     
     Write-Host ""
     Write-Host "URLs disponibles:" -ForegroundColor Cyan
-    Write-Host "  Frontend:     http://localhost" -ForegroundColor White
+    Write-Host "  Frontend:     http://localhost (o http://localhost:4200 si está en modo desarrollo)" -ForegroundColor White
     Write-Host "  Swagger UI:   http://localhost:8080/swagger-ui/index.html" -ForegroundColor White
     Write-Host "  Backend API:  http://localhost:8080/Inia" -ForegroundColor White
     Write-Host "  Middleware:   http://localhost:9099" -ForegroundColor White
     Write-Host ""
+    Write-Host "Credenciales de acceso:" -ForegroundColor Cyan
+    Write-Host "  Email:        admin@inia.com" -ForegroundColor White
+    Write-Host "  Password:     password123" -ForegroundColor White
+    Write-Host ""
     
-    # Preguntar si abrir navegador
-    $openBrowser = Read-Host "Abrir Frontend y Swagger en el navegador? (S/N)"
-    if ($openBrowser -eq "S" -or $openBrowser -eq "s") {
-        Write-Host "Abriendo navegadores..." -ForegroundColor Yellow
-        Start-Process "http://localhost"
-        Start-Sleep -Seconds 1
-        Start-Process "http://localhost:8080/swagger-ui/index.html"
-        Write-Host "Navegadores abiertos" -ForegroundColor Green
+    # Abrir navegador automáticamente
+    Write-Host ""
+    Write-Host "Abriendo navegador automáticamente..." -ForegroundColor Yellow
+    Start-Sleep -Seconds 3
+    
+    # Abrir Frontend (intentar ambos puertos)
+    $frontendUrl = "http://localhost"
+    if (-not $frontendReady) {
+        # Si no está listo en 80, intentar 4200
+        try {
+            $test4200 = Invoke-WebRequest -Uri "http://localhost:4200" -UseBasicParsing -TimeoutSec 2 -ErrorAction SilentlyContinue
+            if ($test4200.StatusCode -eq 200) {
+                $frontendUrl = "http://localhost:4200"
+            }
+        } catch {
+            # Usar puerto 80 por defecto
+        }
+    } else {
+        # Verificar si está en 4200
+        try {
+            $test4200 = Invoke-WebRequest -Uri "http://localhost:4200" -UseBasicParsing -TimeoutSec 2 -ErrorAction SilentlyContinue
+            if ($test4200.StatusCode -eq 200) {
+                $frontendUrl = "http://localhost:4200"
+            }
+        } catch {
+            # Usar puerto 80
+        }
+    }
+    
+    try {
+        Start-Process $frontendUrl
+        Write-Host "✓ Frontend abierto en el navegador: $frontendUrl" -ForegroundColor Green
+        if (-not $frontendReady) {
+            Write-Host "  Nota: El frontend puede tardar unos segundos más en cargar completamente" -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "⚠ No se pudo abrir el Frontend automáticamente" -ForegroundColor Yellow
+        Write-Host "  Abre manualmente: http://localhost o http://localhost:4200" -ForegroundColor White
+    }
+    
+    Start-Sleep -Seconds 3
+    
+    # Abrir Swagger (solo si el backend está listo)
+    if ($backendReady) {
+        try {
+            Start-Process "http://localhost:8080/swagger-ui/index.html"
+            Write-Host "✓ Swagger UI abierto en el navegador" -ForegroundColor Green
+        } catch {
+            Write-Host "⚠ No se pudo abrir Swagger automáticamente" -ForegroundColor Yellow
+            Write-Host "  Abre manualmente: http://localhost:8080/swagger-ui/index.html" -ForegroundColor White
+        }
+    } else {
+        Write-Host "⏭ Swagger no se abrió (backend aún iniciando)" -ForegroundColor Yellow
+        Write-Host "  Abre manualmente cuando esté listo: http://localhost:8080/swagger-ui/index.html" -ForegroundColor White
     }
     
     Write-Host ""
+    
+    Write-Host ""
     Write-Host "Comandos útiles:" -ForegroundColor Yellow
-    Write-Host "  Ver logs:     docker-compose logs -f [servicio]" -ForegroundColor White
-    Write-Host "  Ver estado:   docker-compose ps" -ForegroundColor White
-    Write-Host "  Detener:      docker-compose down" -ForegroundColor White
+    Write-Host "  Ver logs:     docker compose logs -f [servicio]" -ForegroundColor White
+    Write-Host "  Ver estado:   docker compose ps" -ForegroundColor White
+    Write-Host "  Detener:      docker compose down" -ForegroundColor White
     Write-Host ""
     
 } else {
     Write-Host ""
     Write-Host "ERROR: Falló al iniciar los servicios" -ForegroundColor Red
-    Write-Host "Revisa los logs con: docker-compose logs" -ForegroundColor Yellow
+    Write-Host "Revisa los logs con: docker compose logs" -ForegroundColor Yellow
     Write-Host ""
 }
 

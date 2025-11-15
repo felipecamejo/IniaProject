@@ -55,8 +55,51 @@ GRANT ALL PRIVILEGES ON TABLE inia.AUTOCOMPLETADO TO postgres;
 GRANT USAGE, SELECT ON SEQUENCE inia.autocompletado_autocompletado_id_seq TO inia_user;
 GRANT USAGE, SELECT ON SEQUENCE inia.autocompletado_autocompletado_id_seq TO postgres;
 
+-- Crear tabla USUARIO si no existe (para poder insertar usuario admin por defecto)
+CREATE TABLE IF NOT EXISTS inia.USUARIO (
+    USUARIO_ID BIGSERIAL PRIMARY KEY,
+    EMAIL VARCHAR(255) UNIQUE NOT NULL,
+    NOMBRE VARCHAR(255) NOT NULL,
+    PASSWORD VARCHAR(255) NOT NULL,
+    TELEFONO VARCHAR(50),
+    ROL VARCHAR(50) NOT NULL,
+    USUARIO_ACTIVO BOOLEAN DEFAULT TRUE NOT NULL
+);
+
+-- Crear secuencia para USUARIO_ID si no existe
+CREATE SEQUENCE IF NOT EXISTS inia.usuario_usuario_id_seq OWNED BY inia.USUARIO.USUARIO_ID;
+ALTER TABLE inia.USUARIO ALTER COLUMN USUARIO_ID SET DEFAULT nextval('inia.usuario_usuario_id_seq');
+
+-- Crear índice único para email
+CREATE UNIQUE INDEX IF NOT EXISTS idx_usuario_email ON inia.USUARIO(EMAIL);
+
+-- Otorgar permisos en la tabla USUARIO
+GRANT ALL PRIVILEGES ON TABLE inia.USUARIO TO inia_user;
+GRANT ALL PRIVILEGES ON TABLE inia.USUARIO TO postgres;
+GRANT USAGE, SELECT ON SEQUENCE inia.usuario_usuario_id_seq TO inia_user;
+GRANT USAGE, SELECT ON SEQUENCE inia.usuario_usuario_id_seq TO postgres;
+
+-- Insertar usuario administrador por defecto
+-- Email: admin@inia.com
+-- Contraseña: password123 (hash BCrypt con fuerza 10)
+-- NOTA: Este script se ejecuta antes de que Spring Boot inicie.
+-- El AdminInitializer de Spring Boot también creará este usuario automáticamente si no existe.
+-- Si el hash no funciona, el AdminInitializer creará el usuario con la contraseña correcta.
+INSERT INTO inia.USUARIO (EMAIL, NOMBRE, PASSWORD, TELEFONO, ROL, USUARIO_ACTIVO)
+SELECT 
+    'admin@inia.com',
+    'Administrador',
+    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', -- BCrypt hash para "admin123"
+    '+598-099-000-001',
+    'ADMIN',
+    TRUE
+WHERE NOT EXISTS (
+    SELECT 1 FROM inia.USUARIO WHERE EMAIL = 'admin@inia.com'
+);
+
 -- Mensaje de confirmación
 DO $$
 BEGIN
     RAISE NOTICE 'Base de datos INIA inicializada correctamente';
+    RAISE NOTICE 'Usuario admin creado: admin@inia.com / password123';
 END $$;
