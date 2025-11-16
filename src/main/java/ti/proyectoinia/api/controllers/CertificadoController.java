@@ -10,6 +10,8 @@ import ti.proyectoinia.api.responses.ResponseListadoCertificados;
 import ti.proyectoinia.dtos.CertificadoDto;
 import ti.proyectoinia.services.CertificadoService;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @RestController
 @RequestMapping({"api/v1/certificado"})
 public class CertificadoController {
@@ -58,6 +60,10 @@ public class CertificadoController {
             description = "Esta Funcion edita un Certificado"
     )
     public ResponseEntity<String> editarCertificado(@RequestBody CertificadoDto certificadoDto) {
+        if (certificadoDto.getId() == null) {
+            return new ResponseEntity<>("El ID del Certificado es obligatorio para editar", HttpStatus.BAD_REQUEST);
+        }
+
         try {
             String result = this.certificadoService.editarCertificado(certificadoDto);
             return ResponseEntity.ok(result);
@@ -77,6 +83,8 @@ public class CertificadoController {
         try {
             String mensaje = this.certificadoService.eliminarCertificado(id) + ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Certificado: " + e.getMessage());
         }
@@ -97,7 +105,11 @@ public class CertificadoController {
             description = "Esta Funcion lista todos los Certificados activos de un recibo"
     )
     public ResponseEntity<ResponseListadoCertificados> listarCertificadosPorRecibo(@PathVariable Long reciboId) {
-        return this.certificadoService.listadoCertificadosPorRecibo(reciboId);
+        ResponseEntity<ResponseListadoCertificados> resp = this.certificadoService.listadoCertificadosPorRecibo(reciboId);
+        if (resp == null) {
+            // Cuando el servicio devuelve null tratamos como Bad Request según pruebas de integración
+            return ResponseEntity.badRequest().build();
+        }
+        return resp;
     }
 }
-

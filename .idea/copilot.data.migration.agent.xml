@@ -52,11 +52,11 @@
         <entry key="58032276-61ae-4669-a578-325f549c18c5">
           <value>
             <set>
-              <option value="cdcb18c6-01f0-4f2f-a0fe-e0c42a01f050" />
-              <option value="76147653-80df-4a84-89c7-5b455ecea6cd" />
               <option value="37e9634d-7ab1-42cf-8b2f-849e510bf4ac" />
-              <option value="ad979917-1414-45bd-9820-ff733271fcaf" />
+              <option value="76147653-80df-4a84-89c7-5b455ecea6cd" />
               <option value="95f2d017-e1eb-454e-8c3c-495079be7664" />
+              <option value="ad979917-1414-45bd-9820-ff733271fcaf" />
+              <option value="cdcb18c6-01f0-4f2f-a0fe-e0c42a01f050" />
             </set>
           </value>
         </entry>
@@ -169,6 +169,19 @@
             </set>
           </value>
         </entry>
+        <entry key="a3d5327a-aca6-4aa0-a617-46c57f3d0c65">
+          <value>
+            <set>
+              <option value="e4920f0c-8cc6-4421-9a48-f2b504d26982" />
+              <option value="5f3845cc-a354-41ca-8ada-db867fe46359" />
+              <option value="b1c60ebe-5c21-4260-a779-6e2abf018354" />
+              <option value="2064a5a4-5f2e-479b-9a25-bde0d9dee62a" />
+              <option value="c745440e-51f8-40b4-8430-87dd02d554d9" />
+              <option value="25acf621-5f8a-416b-84f9-5fe0c9e822b9" />
+              <option value="516c333f-79e3-48a4-a3c3-9f49ec19e695" />
+            </set>
+          </value>
+        </entry>
         <entry key="a9a7b44f-7ad4-4f16-8487-c7d1c2d14fed">
           <value>
             <set>
@@ -249,6 +262,25 @@
             </set>
           </value>
         </entry>
+        <entry key="e80e9709-5177-4470-a6d5-764a698ad74f">
+          <value>
+            <set>
+              <option value="0fb9edbb-c0cd-41a3-a7bf-fd2ba6cb6de1" />
+              <option value="9681bc94-cd79-49c8-b6df-d1a9aa10edf9" />
+              <option value="9f71a088-20f8-4228-9e70-446f8391e9de" />
+              <option value="cbdc734f-863e-45e3-9167-1eae45d91d6d" />
+            </set>
+          </value>
+        </entry>
+        <entry key="f02c9bbf-7e6c-4a1c-8812-ad67976c3295">
+          <value>
+            <set>
+              <option value="d8eb7dad-cce3-4389-a909-7a38d10f43ff" />
+              <option value="b4afb725-23c4-4552-9961-9c259c33b883" />
+              <option value="704f3042-39ec-4837-8a90-02475cbca6e8" />
+            </set>
+          </value>
+        </entry>
         <entry key="f0d649d2-85bc-4ef0-92fa-d2bef3282706">
           <value>
             <set>
@@ -273,12 +305,7 @@
     <pendingWorkingSetItems>
       <entry key="03f4bbfa-f3d5-49de-b149-254b62b7535b" />
       <entry key="09150c0e-48af-4ad6-a43c-0d6f7f8dcea6" />
-      <entry key="58032276-61ae-4669-a578-325f549c18c5">
-        <set>
-          <option value="file://$PROJECT_DIR$/src/test/java/ti/proyectoinia/api/controllers/security/DOSNSecurityTest.java" />
-          <option value="file://$PROJECT_DIR$/src/test/java/ti/proyectoinia/api/controllers/security/GerminacionTablasSecurityTest.java" />
-        </set>
-      </entry>
+      <entry key="58032276-61ae-4669-a578-325f549c18c5" />
       <entry key="5ffb51d2-587b-4ad8-912b-7f75f42df6ef" />
       <entry key="614cc146-4334-48b5-bf6f-9602f9d9a2f7" />
       <entry key="669264b4-6953-4058-b944-1b631d62a17e" />
@@ -288,11 +315,31 @@
       <entry key="804a4f57-6653-41f4-ab52-2f3d27a831e9" />
       <entry key="855a24fe-6eda-4655-b13e-61eb5c01fa24" />
       <entry key="a2109dd4-0bf9-4d51-9ad9-95e9c93ed20d" />
+      <entry key="a3d5327a-aca6-4aa0-a617-46c57f3d0c65">
+        <set>
+          <option value="file://$PROJECT_DIR$/src/test/java/ti/proyectoinia/api/controllers/integration/UsuarioControllerTest.java" />
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/api/controllers/UsuarioController.java" />
+          <option value="file://$PROJECT_DIR$/src/test/java/ti/proyectoinia/api/controllers/integration/AutoCompletadoControllerTest.java" />
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/api/controllers/AutocompletadoController.java" />
+        </set>
+      </entry>
       <entry key="a9a7b44f-7ad4-4f16-8487-c7d1c2d14fed" />
       <entry key="b0b00b00-7023-4d65-9aae-7c67b9598c98" />
       <entry key="bd77f7f6-730c-443a-9385-f850aba977a5" />
       <entry key="c31684c1-2dc2-41da-82e2-5042b4c7a33e" />
       <entry key="ddb41aa2-2cc0-4ec7-bad2-35af77b0f013" />
+      <entry key="e80e9709-5177-4470-a6d5-764a698ad74f">
+        <set>
+          <option value="file://$PROJECT_DIR$/src/test/java/ti/proyectoinia/api/controllers/integration/UsuarioControllerTest.java" />
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/api/controllers/UsuarioController.java" />
+        </set>
+      </entry>
+      <entry key="f02c9bbf-7e6c-4a1c-8812-ad67976c3295">
+        <set>
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/api/controllers/AutocompletadoController.java" />
+          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/api/controllers/CertificadoController.java" />
+        </set>
+      </entry>
       <entry key="f0d649d2-85bc-4ef0-92fa-d2bef3282706" />
       <entry key="ff30c0b7-286d-466a-b5c1-f55a0bfb352a" />
     </pendingWorkingSetItems>

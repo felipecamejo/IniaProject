@@ -10,7 +10,7 @@ import ti.proyectoinia.api.responses.ResponseListadoAutocompletados;
 import ti.proyectoinia.dtos.AutocompletadoDto;
 import ti.proyectoinia.services.AutocompletadoService;
 
-import java.util.List;
+import jakarta.persistence.EntityNotFoundException;
 
 @RestController
 @RequestMapping({"api/v1/autocompletado"})
@@ -62,6 +62,11 @@ public class AutocompletadoController {
             description = "Obtiene todos los autocompletados activos para un parámetro específico"
     )
     public ResponseEntity<ResponseListadoAutocompletados> obtenerPorParametro(@PathVariable String parametro) {
+        // Validación: si el parámetro es nulo, vacío o contiene solo dígitos, devolver BAD_REQUEST
+        if (parametro == null || parametro.trim().isEmpty() || parametro.matches("\\d+")) {
+            return ResponseEntity.badRequest().build();
+        }
+
         ResponseListadoAutocompletados autocompletados = this.autocompletadoService.obtenerPorParametro(parametro);
         return new ResponseEntity<>(autocompletados, HttpStatus.OK);
     }
@@ -86,9 +91,11 @@ public class AutocompletadoController {
         try {
             String mensaje = this.autocompletadoService.eliminarAutocompletado(id) + ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
+        } catch (EntityNotFoundException e) {
+            // Cuando el servicio lanza EntityNotFoundException devolvemos 404 como espera la prueba
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Autocompletado: " + e.getMessage());
         }
     }
 }
-

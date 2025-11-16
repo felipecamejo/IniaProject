@@ -1,6 +1,8 @@
 package ti.proyectoinia.api.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.constraints.Email;
 import lombok.Generated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,9 +31,14 @@ public class UsuarioController {
             description = "Esta Funcion crea un nuevo Usuario"
     )
     public ResponseEntity<?> crearUsuario(@Valid @RequestBody UsuarioDto usuarioDto) {
-        usuarioDto.setId(null); // ID será generado automáticamente
-        String mensaje = this.usuarioService.crearUsuario(usuarioDto);
-        return new ResponseEntity<>(mensaje, HttpStatus.CREATED);
+        try {
+            usuarioDto.setId(null);
+            String mensaje = this.usuarioService.crearUsuario(usuarioDto);
+            return new ResponseEntity<>(mensaje, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            // Cuando el servicio indica que el usuario ya existe o hay conflicto
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
     }
 
     @GetMapping({"/listar"})
@@ -60,8 +67,13 @@ public class UsuarioController {
             description = "Esta Funcion edita un Usuario existente"
     )
     public ResponseEntity<String> editarUsuario(@Valid @RequestBody UsuarioDto usuarioDto) {
-        String result = this.usuarioService.editarUsuario(usuarioDto);
-        return ResponseEntity.ok(result);
+        try {
+            String result = this.usuarioService.editarUsuario(usuarioDto);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            // Errores de validación o argumentos inválidos en el servicio
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @Secured({"ADMIN"})
@@ -73,6 +85,9 @@ public class UsuarioController {
         try {
             String mensaje = this.usuarioService.eliminarUsuario(id) + ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
+        } catch (EntityNotFoundException e) {
+            // Cuando el servicio indica que no existe el recurso
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Usuario: " + e.getMessage());
         }
@@ -83,7 +98,7 @@ public class UsuarioController {
     @Operation(
             description = "Esta Funcion obtiene el perfil del usuario por email"
     )
-    public ResponseEntity<UsuarioDto> obtenerPerfilUsuario(@PathVariable String email) {
+    public ResponseEntity<UsuarioDto> obtenerPerfilUsuario(@PathVariable @Email String email) {
         UsuarioDto usuario = this.usuarioService.obtenerUsuarioPorEmail(email);
         if (usuario == null) {
             return ResponseEntity.notFound().build();
@@ -101,7 +116,8 @@ public class UsuarioController {
             // Extraer email del token JWT
             String email = this.usuarioService.extraerEmailDelToken(token);
             if (email == null) {
-                return ResponseEntity.badRequest().build();
+                // Si no se pudo extraer el email del token, considerarlo token inválido/unauthorized
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
             
             UsuarioDto usuario = this.usuarioService.obtenerUsuarioPorEmail(email);
@@ -109,7 +125,11 @@ public class UsuarioController {
                 return ResponseEntity.notFound().build();
             }
             return ResponseEntity.ok(usuario);
+        } catch (IllegalArgumentException e) {
+            // Excepción lanzada por la extracción del token → token inválido
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (Exception e) {
+            // Otros errores → Bad Request por seguridad
             return ResponseEntity.badRequest().build();
         }
     }
@@ -126,5 +146,3 @@ public class UsuarioController {
         return ResponseEntity.ok(result);
     }
 }
-
-
