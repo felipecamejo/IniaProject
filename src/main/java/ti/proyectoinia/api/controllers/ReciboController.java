@@ -51,7 +51,7 @@ public class ReciboController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     public ResponseEntity<String> editarRecibo(@RequestBody ReciboDto reciboDto) {
         try {
             String result = this.reciboService.editarRecibo(reciboDto);
@@ -60,20 +60,6 @@ public class ReciboController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>("Error al editar el recibo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @PutMapping({"/eliminar/{id}"})
-    @Secured({"ADMIN"})
-    @Operation(
-            description = "Esta Funcion elimina un Recibo"
-    )
-    public ResponseEntity<String> eliminarRecibo(@PathVariable Long id) {
-        try {
-            String mensaje = this.reciboService.eliminarRecibo(id)+ ". ID:" + id.toString();
-            return ResponseEntity.ok(mensaje);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Recibo: " + e.getMessage());
         }
     }
 }
