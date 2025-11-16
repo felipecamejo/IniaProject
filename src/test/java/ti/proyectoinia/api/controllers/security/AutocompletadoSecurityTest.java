@@ -11,12 +11,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import ti.proyectoinia.api.controllers.HongoController;
-import ti.proyectoinia.api.responses.ResponseListadoCultivos;
-import ti.proyectoinia.api.responses.ResponseListadoHongos;
-import ti.proyectoinia.business.entities.Hongo;
-import ti.proyectoinia.dtos.HongoDto;
-import ti.proyectoinia.services.HongoService;
+import ti.proyectoinia.api.controllers.AutocompletadoController;
+import ti.proyectoinia.api.responses.ResponseListadoAutocompletados;
+import ti.proyectoinia.dtos.AutocompletadoDto;
+import ti.proyectoinia.services.AutocompletadoService;
 
 import java.util.Collections;
 
@@ -27,10 +25,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(HongoController.class)
+@WebMvcTest(AutocompletadoController.class)
 @Import(TestSecurityConfig.class)
-public class HongoSecurityTest {
-
+public class AutocompletadoSecurityTest {
     @Autowired
     MockMvc mockMvc;
 
@@ -38,15 +35,15 @@ public class HongoSecurityTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    HongoService hongoService;
+    AutocompletadoService autocompletadoService;
 
-    String apiUrl = "/api/v1/hongo";
+    String apiUrl = "/api/v1/autocompletado";
 
     @TestConfiguration
     static class TestConfig {
         @Bean
-        public HongoService hongoService() {
-            return mock(HongoService.class);
+        public AutocompletadoService autocompletadoService() {
+            return mock(AutocompletadoService.class);
         }
     }
 
@@ -57,10 +54,10 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeCrear() throws Exception {
-        HongoDto dto = new HongoDto();
-        dto.setNombre("Maíz");
+        AutocompletadoDto dto = new AutocompletadoDto();
+        dto.setParametro("hola");
 
-        when(hongoService.crearHongo(any())).thenReturn("Creado");
+        when(autocompletadoService.crearAutocompletado(any())).thenReturn("Creado");
 
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -71,8 +68,8 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "OBSERVADOR")
     void userNoPuedeCrear() throws Exception {
-        HongoDto dto = new HongoDto();
-        dto.setNombre("Trigo");
+        AutocompletadoDto dto = new AutocompletadoDto();
+        dto.setParametro("halo?");
 
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -89,24 +86,24 @@ public class HongoSecurityTest {
     }
 
     // ============================================================================
-    //  GET /listar → ADMIN, ANALISTA, OBSERVADOR
+    //  GET /listar → ADMIN
     // ============================================================================
 
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeListar() throws Exception {
-        ResponseListadoHongos response = new ResponseListadoHongos();
-        response.setHongos(Collections.emptyList());
+        ResponseListadoAutocompletados response = new ResponseListadoAutocompletados();
+        response.setAutocompletados(Collections.emptyList());
 
-        when(hongoService.listadoHongos()).thenReturn(ResponseEntity.ok(response));
+        when(autocompletadoService.listadoAutocompletados()).thenReturn(ResponseEntity.ok(response));
 
         mockMvc.perform(get(apiUrl + "/listar"))
                 .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser(authorities = "GUEST")
-    void userNoPuedeListar() throws Exception {
+    @WithMockUser(authorities = "ANALISTA")
+    void AnalistaNoPuedeListar() throws Exception {
         mockMvc.perform(get(apiUrl + "/listar"))
                 .andExpect(status().isForbidden());
     }
@@ -124,11 +121,11 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ANALISTA")
     void analistaPuedeVerPorId() throws Exception {
-        HongoDto dto = new HongoDto();
+        AutocompletadoDto dto = new AutocompletadoDto();
         dto.setId(1L);
-        dto.setNombre("Soja");
+        dto.setParametro("Chau");
 
-        when(hongoService.obtenerHongoPorId(1L)).thenReturn(dto);
+        when(autocompletadoService.obtenerAutocompletadoPorId(1L)).thenReturn(dto);
 
         mockMvc.perform(get(apiUrl + "/1"))
                 .andExpect(status().isOk());
@@ -148,17 +145,49 @@ public class HongoSecurityTest {
     }
 
     // ============================================================================
+    //  GET Por Parametros /{id} → ADMIN, ANALISTA, OBSERVADOR
+    // ============================================================================
+
+    @Test
+    @WithMockUser(authorities = "ANALISTA")
+    void analistaPuedePorParametros() throws Exception {
+        ResponseListadoAutocompletados response = new ResponseListadoAutocompletados();
+        response.setAutocompletados(Collections.emptyList());
+
+        String parametro = "Chau";
+
+        when(autocompletadoService.obtenerPorParametro(parametro)).thenReturn(response);
+
+        mockMvc.perform(get(apiUrl + "/por-parametro/" + parametro))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(authorities = "GUEST")
+    void userNoPuedePorParametro() throws Exception {
+        mockMvc.perform(get(apiUrl + "/por-parametro/holis"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void noAutenticadoPorParametroDebeDar401() throws Exception {
+        mockMvc.perform(get(apiUrl + "/por-parametro/holis"))
+                .andExpect(status().isUnauthorized());
+    }
+
+
+    // ============================================================================
     //  PUT /editar → solo ADMIN
     // ============================================================================
 
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeEditar() throws Exception {
-        HongoDto dto = new HongoDto();
+        AutocompletadoDto dto = new AutocompletadoDto();
         dto.setId(1L);
-        dto.setNombre("Nuevo Nombre");
+        dto.setParametro("Nuevo Nombre");
 
-        when(hongoService.editarHongo(any())).thenReturn("Editado");
+        when(autocompletadoService.editarAutocompletado(any())).thenReturn("Editado");
 
         mockMvc.perform(put(apiUrl + "/editar")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -182,7 +211,7 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeEliminar() throws Exception {
-        when(hongoService.eliminarHongo(1L)).thenReturn("Eliminado");
+        when(autocompletadoService.eliminarAutocompletado(1L)).thenReturn("Eliminado");
 
         mockMvc.perform(put(apiUrl + "/eliminar/1"))
                 .andExpect(status().isOk());

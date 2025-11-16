@@ -51,7 +51,7 @@ public class ReciboController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN", "ANALISTA"})
+    @Secured({"ADMIN"})
     public ResponseEntity<String> editarRecibo(@RequestBody ReciboDto reciboDto) {
         try {
             String result = this.reciboService.editarRecibo(reciboDto);
@@ -62,4 +62,5 @@ public class ReciboController {
             return new ResponseEntity<>("Error al editar el recibo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 }

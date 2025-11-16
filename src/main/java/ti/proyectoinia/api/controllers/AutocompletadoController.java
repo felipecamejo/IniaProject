@@ -61,8 +61,8 @@ public class AutocompletadoController {
     @Operation(
             description = "Obtiene todos los autocompletados activos para un parámetro específico"
     )
-    public ResponseEntity<List<AutocompletadoDto>> obtenerPorParametro(@PathVariable String parametro) {
-        List<AutocompletadoDto> autocompletados = this.autocompletadoService.obtenerPorParametro(parametro);
+    public ResponseEntity<ResponseListadoAutocompletados> obtenerPorParametro(@PathVariable String parametro) {
+        ResponseListadoAutocompletados autocompletados = this.autocompletadoService.obtenerPorParametro(parametro);
         return new ResponseEntity<>(autocompletados, HttpStatus.OK);
     }
 

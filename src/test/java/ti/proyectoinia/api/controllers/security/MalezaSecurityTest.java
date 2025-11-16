@@ -7,29 +7,25 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import ti.proyectoinia.api.controllers.HongoController;
-import ti.proyectoinia.api.responses.ResponseListadoCultivos;
-import ti.proyectoinia.api.responses.ResponseListadoHongos;
-import ti.proyectoinia.business.entities.Hongo;
-import ti.proyectoinia.dtos.HongoDto;
-import ti.proyectoinia.services.HongoService;
+
+import ti.proyectoinia.api.controllers.MalezaController;
+import ti.proyectoinia.dtos.MalezaDto;
+import ti.proyectoinia.api.responses.ResponseListadoMalezas;
+import ti.proyectoinia.services.MalezaService;
 
 import java.util.Collections;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(HongoController.class)
+@WebMvcTest(MalezaController.class)
 @Import(TestSecurityConfig.class)
-public class HongoSecurityTest {
+public class MalezaSecurityTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -38,15 +34,15 @@ public class HongoSecurityTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    HongoService hongoService;
+    MalezaService malezaService;
 
-    String apiUrl = "/api/v1/hongo";
+    String apiUrl = "/api/v1/maleza";
 
     @TestConfiguration
     static class TestConfig {
         @Bean
-        public HongoService hongoService() {
-            return mock(HongoService.class);
+        public MalezaService MalezaService() {
+            return mock(MalezaService.class);
         }
     }
 
@@ -57,10 +53,10 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeCrear() throws Exception {
-        HongoDto dto = new HongoDto();
+        MalezaDto dto = new MalezaDto();
         dto.setNombre("Maíz");
 
-        when(hongoService.crearHongo(any())).thenReturn("Creado");
+        when(malezaService.crearMaleza(any())).thenReturn("Creado");
 
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -71,7 +67,7 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "OBSERVADOR")
     void userNoPuedeCrear() throws Exception {
-        HongoDto dto = new HongoDto();
+        MalezaDto dto = new MalezaDto();
         dto.setNombre("Trigo");
 
         mockMvc.perform(post(apiUrl + "/crear")
@@ -95,10 +91,10 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeListar() throws Exception {
-        ResponseListadoHongos response = new ResponseListadoHongos();
-        response.setHongos(Collections.emptyList());
+        ResponseListadoMalezas response = new ResponseListadoMalezas();
+        response.setMalezas(Collections.emptyList());
 
-        when(hongoService.listadoHongos()).thenReturn(ResponseEntity.ok(response));
+        when(malezaService.listadoMalezas()).thenReturn(ResponseEntity.ok(response));
 
         mockMvc.perform(get(apiUrl + "/listar"))
                 .andExpect(status().isOk());
@@ -124,11 +120,11 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ANALISTA")
     void analistaPuedeVerPorId() throws Exception {
-        HongoDto dto = new HongoDto();
+        MalezaDto dto = new MalezaDto();
         dto.setId(1L);
         dto.setNombre("Soja");
 
-        when(hongoService.obtenerHongoPorId(1L)).thenReturn(dto);
+        when(malezaService.obtenerMalezaPorId(1L)).thenReturn(dto);
 
         mockMvc.perform(get(apiUrl + "/1"))
                 .andExpect(status().isOk());
@@ -154,11 +150,11 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeEditar() throws Exception {
-        HongoDto dto = new HongoDto();
+        MalezaDto dto = new MalezaDto();
         dto.setId(1L);
         dto.setNombre("Nuevo Nombre");
 
-        when(hongoService.editarHongo(any())).thenReturn("Editado");
+        when(malezaService.editarMaleza(any())).thenReturn("Editado");
 
         mockMvc.perform(put(apiUrl + "/editar")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -182,7 +178,7 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeEliminar() throws Exception {
-        when(hongoService.eliminarHongo(1L)).thenReturn("Eliminado");
+        when(malezaService.eliminarMaleza(1L)).thenReturn("Eliminado");
 
         mockMvc.perform(put(apiUrl + "/eliminar/1"))
                 .andExpect(status().isOk());
@@ -200,4 +196,5 @@ public class HongoSecurityTest {
         mockMvc.perform(put(apiUrl + "/eliminar/1"))
                 .andExpect(status().isUnauthorized());
     }
+
 }

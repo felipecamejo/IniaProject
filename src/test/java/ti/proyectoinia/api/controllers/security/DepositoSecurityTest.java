@@ -7,29 +7,26 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import ti.proyectoinia.api.controllers.HongoController;
-import ti.proyectoinia.api.responses.ResponseListadoCultivos;
-import ti.proyectoinia.api.responses.ResponseListadoHongos;
-import ti.proyectoinia.business.entities.Hongo;
+import ti.proyectoinia.api.controllers.DepositoController;
+import ti.proyectoinia.api.responses.ResponseListadoDepositos;
+import ti.proyectoinia.dtos.DepositoDto;
 import ti.proyectoinia.dtos.HongoDto;
-import ti.proyectoinia.services.HongoService;
+import ti.proyectoinia.services.DepositoService;
 
 import java.util.Collections;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(HongoController.class)
+
+@WebMvcTest(DepositoController.class)
 @Import(TestSecurityConfig.class)
-public class HongoSecurityTest {
+public class DepositoSecurityTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -38,15 +35,15 @@ public class HongoSecurityTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    HongoService hongoService;
+    DepositoService depositoService;
 
-    String apiUrl = "/api/v1/hongo";
+    String apiUrl = "/api/v1/deposito";
 
     @TestConfiguration
     static class TestConfig {
         @Bean
-        public HongoService hongoService() {
-            return mock(HongoService.class);
+        public DepositoService depositoService() {
+            return mock(DepositoService.class);
         }
     }
 
@@ -57,10 +54,10 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeCrear() throws Exception {
-        HongoDto dto = new HongoDto();
+        DepositoDto dto = new DepositoDto();
         dto.setNombre("Maíz");
 
-        when(hongoService.crearHongo(any())).thenReturn("Creado");
+        when(depositoService.crearDeposito(any())).thenReturn("Creado");
 
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -71,7 +68,7 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "OBSERVADOR")
     void userNoPuedeCrear() throws Exception {
-        HongoDto dto = new HongoDto();
+        DepositoDto dto = new DepositoDto();
         dto.setNombre("Trigo");
 
         mockMvc.perform(post(apiUrl + "/crear")
@@ -95,10 +92,10 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeListar() throws Exception {
-        ResponseListadoHongos response = new ResponseListadoHongos();
-        response.setHongos(Collections.emptyList());
+        ResponseListadoDepositos response = new ResponseListadoDepositos();
+        response.setDepositos(Collections.emptyList());
 
-        when(hongoService.listadoHongos()).thenReturn(ResponseEntity.ok(response));
+        when(depositoService.listadoDepositos()).thenReturn(ResponseEntity.ok(response));
 
         mockMvc.perform(get(apiUrl + "/listar"))
                 .andExpect(status().isOk());
@@ -124,11 +121,11 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ANALISTA")
     void analistaPuedeVerPorId() throws Exception {
-        HongoDto dto = new HongoDto();
+        DepositoDto dto = new DepositoDto();
         dto.setId(1L);
         dto.setNombre("Soja");
 
-        when(hongoService.obtenerHongoPorId(1L)).thenReturn(dto);
+        when(depositoService.obtenerDepositoPorId(1L)).thenReturn(dto);
 
         mockMvc.perform(get(apiUrl + "/1"))
                 .andExpect(status().isOk());
@@ -158,7 +155,7 @@ public class HongoSecurityTest {
         dto.setId(1L);
         dto.setNombre("Nuevo Nombre");
 
-        when(hongoService.editarHongo(any())).thenReturn("Editado");
+        when(depositoService.editarDeposito(any())).thenReturn("Editado");
 
         mockMvc.perform(put(apiUrl + "/editar")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -182,7 +179,7 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeEliminar() throws Exception {
-        when(hongoService.eliminarHongo(1L)).thenReturn("Eliminado");
+        when(depositoService.eliminarDeposito(1L)).thenReturn("Eliminado");
 
         mockMvc.perform(put(apiUrl + "/eliminar/1"))
                 .andExpect(status().isOk());
@@ -200,4 +197,5 @@ public class HongoSecurityTest {
         mockMvc.perform(put(apiUrl + "/eliminar/1"))
                 .andExpect(status().isUnauthorized());
     }
+
 }

@@ -44,6 +44,19 @@ public class ReciboService {
         return mapsDtoEntityService.mapToDtoRecibo(recibo);
     }
 
+    /*
+    public String eliminarRecibo(Long id) {
+        if (id != null) {
+            this.reciboRepository.findById(id).ifPresent(recibo -> {
+                recibo.setActivo(false);
+                this.reciboRepository.save(recibo);
+            });
+        }
+        return "Recibo eliminado correctamente ID:" + id;
+    }
+    */
+
+
     public String editarRecibo(ReciboDto reciboDto) {
         // Validar que el lote existe y está activo
         if (reciboDto.getLoteId() != null) {
