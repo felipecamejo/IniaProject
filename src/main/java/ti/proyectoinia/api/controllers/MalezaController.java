@@ -1,6 +1,7 @@
 package ti.proyectoinia.api.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Generated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,17 +29,17 @@ public class MalezaController {
             description = "Esta Funcion crea un nuevo MalezaS"
     )
     public ResponseEntity<String> crearMaleza(@RequestBody MalezaDto malezaDto) {
-        if (malezaDto.getNombre() != null && !malezaDto.getNombre().trim().isEmpty()) {
-            if (malezaDto.getNombre().matches(".*\\d.*")) {
-                return new ResponseEntity<>("El nombre de la Maleza no puede contener números", HttpStatus.BAD_REQUEST);
-            }
-            malezaDto.setId((Long)null);
-            String response = this.MalezaService.crearMaleza(malezaDto);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-
-        } else {
-            return new ResponseEntity<>("El nombre de la Maleza es obligatorio", HttpStatus.BAD_REQUEST);
+        if (malezaDto.getNombre() == null || malezaDto.getNombre().trim().isEmpty() || malezaDto.getNombre().matches(".*\\d.*")) {
+            return new ResponseEntity<>("El nombre del cultivo es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
+
+        if (malezaDto.getId() != null && MalezaService.obtenerMalezaPorId(malezaDto.getId()) != null) {
+            return new ResponseEntity<>("Ya existe", HttpStatus.CONFLICT);
+        }
+
+        malezaDto.setId((Long)null);
+        String response = this.MalezaService.crearMaleza(malezaDto);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping({"/listar"})
@@ -73,7 +74,7 @@ public class MalezaController {
         }
     }
 
-    @PutMapping({"/eliminar/{id}"})
+    @DeleteMapping({"/eliminar/{id}"})
     @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina un malezaS"
@@ -82,7 +83,11 @@ public class MalezaController {
         try {
             String mensaje = this.MalezaService.eliminarMaleza(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
-        } catch (Exception e) {
+        }
+        catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Maleza no encontrada: " + e.getMessage());
+        }
+        catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar la Maleza: " + e.getMessage());
         }
     }

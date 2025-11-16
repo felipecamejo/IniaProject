@@ -29,13 +29,14 @@ public class AutocompletadoController {
             description = "Esta Funcion crea un nuevo Autocompletado"
     )
     public ResponseEntity<String> crearAutocompletado(@RequestBody AutocompletadoDto autocompletadoDto) {
-        if (autocompletadoDto.getParametro() != null && !autocompletadoDto.getParametro().trim().isEmpty()) {
-            autocompletadoDto.setId((Long)null);
-            String response = this.autocompletadoService.crearAutocompletado(autocompletadoDto);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } else {
-            return new ResponseEntity<>("El parámetro del Autocompletado es obligatorio", HttpStatus.BAD_REQUEST);
+        if (autocompletadoDto.getParametro() == null || autocompletadoDto.getParametro().trim().isEmpty()) {
+            return new ResponseEntity<>("El parámetro del Autocompletado no puede contener números", HttpStatus.BAD_REQUEST);
         }
+
+        autocompletadoDto.setId((Long)null);
+        String response = this.autocompletadoService.crearAutocompletado(autocompletadoDto);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+
     }
 
     @GetMapping({"/listar"})

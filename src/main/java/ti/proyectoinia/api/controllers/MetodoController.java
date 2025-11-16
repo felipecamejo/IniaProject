@@ -1,6 +1,7 @@
 package ti.proyectoinia.api.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Generated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,20 +28,18 @@ public class MetodoController {
             description = "Esta Funcion crea un nuevo Método"
     )
     public ResponseEntity<String> crearMetodo(@RequestBody MetodoDto metodoDto) {
-        if (metodoDto.getNombre() != null && !metodoDto.getNombre().trim().isEmpty()) {
-            if (metodoDto.getNombre().matches(".*\\d.*")) {
-                return new ResponseEntity<>("El nombre del Método no puede contener números", HttpStatus.BAD_REQUEST);
-            }
-            if (metodoDto.getAutor() == null || metodoDto.getAutor().trim().isEmpty()) {
-                return new ResponseEntity<>("El autor del Método es obligatorio", HttpStatus.BAD_REQUEST);
-            }
-            metodoDto.setId((Long)null);
-            String response = this.metodoService.crearMetodo(metodoDto);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
 
-        } else {
-            return new ResponseEntity<>("El nombre del Método es obligatorio", HttpStatus.BAD_REQUEST);
+        if (metodoDto.getNombre() == null || metodoDto.getNombre().trim().isEmpty() || metodoDto.getNombre().matches(".*\\d.*")) {
+            return new ResponseEntity<>("El nombre del cultivo es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
+
+        if (metodoDto.getId() != null && metodoService.obtenerMetodoPorId(metodoDto.getId()) != null) {
+            return new ResponseEntity<>("Ya existe", HttpStatus.CONFLICT);
+        }
+
+        metodoDto.setId((Long)null);
+        String response = this.metodoService.crearMetodo(metodoDto);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping({"/listar"})
@@ -64,21 +63,20 @@ public class MetodoController {
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
     public ResponseEntity<String> editarMetodo(@RequestBody MetodoDto metodoDto) {
-        if (metodoDto.getNombre() != null && !metodoDto.getNombre().trim().isEmpty()) {
-            if (metodoDto.getNombre().matches(".*\\d.*")) {
-                return new ResponseEntity<>("El nombre del Método no puede contener números", HttpStatus.BAD_REQUEST);
-            }
-            if (metodoDto.getAutor() == null || metodoDto.getAutor().trim().isEmpty()) {
-                return new ResponseEntity<>("El autor del Método es obligatorio", HttpStatus.BAD_REQUEST);
-            }
-            String result = this.metodoService.editarMetodo(metodoDto);
-            return ResponseEntity.ok(result);
-        } else {
-            return new ResponseEntity<>("El nombre del Método es obligatorio", HttpStatus.BAD_REQUEST);
+        if (metodoDto.getId() == null || metodoDto.getNombre() == null || metodoDto.getNombre().trim().isEmpty() || metodoDto.getNombre().matches(".*\\d.*")) {
+            return new ResponseEntity<>("El nombre es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
+
+        if (metodoDto.getAutor() == null || metodoDto.getAutor().trim().isEmpty()) {
+            return new ResponseEntity<>("El autor del Método es obligatorio", HttpStatus.BAD_REQUEST);
+        }
+
+        String result = this.metodoService.editarMetodo(metodoDto);
+        return ResponseEntity.ok(result);
+
     }
 
-    @PutMapping({"/eliminar/{id}"})
+    @DeleteMapping({"/eliminar/{id}"})
     @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina un método"
@@ -87,7 +85,11 @@ public class MetodoController {
         try {
             String mensaje = this.metodoService.eliminarMetodo(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
-        } catch (Exception e) {
+        }
+        catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Metodo no encontrado: " + e.getMessage());
+        }
+        catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Método: " + e.getMessage());
         }
     }

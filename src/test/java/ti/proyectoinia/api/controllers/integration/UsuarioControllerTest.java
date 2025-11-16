@@ -125,7 +125,7 @@ class UsuarioControllerTest {
         input.setRol(RolUsuario.ADMIN);
 
         Mockito.when(service.crearUsuario(any(UsuarioDto.class)))
-                .thenReturn("Usuario creado correctamente");
+                .thenReturn("Creado correctamente");
 
         mockMvc.perform(post(baseUrl + "/crear")
                         .with(csrf())
@@ -144,7 +144,7 @@ class UsuarioControllerTest {
         input.setRol(RolUsuario.ADMIN);
 
         Mockito.when(service.crearUsuario(any(UsuarioDto.class)))
-                .thenThrow(new IllegalArgumentException("El usuario ya existe"));
+                .thenThrow(new IllegalArgumentException("Ya existe"));
 
         mockMvc.perform(post(baseUrl + "/crear")
                         .with(csrf())
