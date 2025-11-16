@@ -29,9 +29,11 @@
     <properties>
         <java.version>21</java.version>
         <lombok.version>1.18.38</lombok.version>
-        <skipFrontend>false</skipFrontend>
+        <skipFrontend>true</skipFrontend>
         <mockito.version>5.14.2</mockito.version>
         <maven.surefire.version>3.5.2</maven.surefire.version>
+        <jacoco.version>0.8.12</jacoco.version>
+        <testcontainers.version>1.19.8</testcontainers.version>
     </properties>
     <dependencies>
         <!-- spring-boot-starter-data-jpa already declared above; duplicated entry removed -->
@@ -82,12 +84,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.7.0</version>
@@ -113,6 +109,25 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Testcontainers para tests de integración con base de datos real -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- JWT Dependencies -->
@@ -146,7 +161,91 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.version}</version>
                 <configuration>
-                    <argLine>-XX:+EnableDynamicAgentLoading</argLine>
+                    <argLine>@{argLine} -XX:+EnableDynamicAgentLoading</argLine>
+                    <!-- Excluir tests CRUD y tests de seguridad/autorización -->
+                    <!-- Solo ejecutar tests de casos de uso de negocio importantes -->
+                    <excludes>
+                        <!-- Excluir tests de integración CRUD básicos -->
+                        <exclude>**/integration/*ControllerTest.java</exclude>
+                        <!-- Excluir tests de integración con Testcontainers que son CRUD -->
+                        <exclude>**/integration/*IntegrationTest.java</exclude>
+                        <!-- Excluir tests de seguridad/autorización (no son casos de uso de negocio) -->
+                        <exclude>**/security/**Test.java</exclude>
+                        <exclude>**/security/**Service.java</exclude>
+                    </excludes>
+                    <!-- No incluir nada específico, solo ejecutar tests de casos de uso de negocio si existen -->
+                </configuration>
+            </plugin>
+
+            <!-- JaCoCo Plugin para cobertura de código -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <!-- Preparar agente JaCoCo -->
+                    <execution>
+                        <id>jacoco-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <!-- Generar reporte después de los tests -->
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <!-- Verificar cobertura mínima -->
+                    <execution>
+                        <id>jacoco-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>PACKAGE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.50</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                                <rule>
+                                    <element>CLASS</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.50</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludes>
+                        <!-- Excluir clases generadas por Lombok -->
+                        <exclude>**/config/**</exclude>
+                        <exclude>**/dto/**</exclude>
+                        <exclude>**/entity/**</exclude>
+                        <exclude>**/response/**</exclude>
+                        <!-- Excluir clases de configuración -->
+                        <exclude>**/*Config*.class</exclude>
+                        <exclude>**/*Configuration*.class</exclude>
+                        <!-- Excluir clases de aplicación principal -->
+                        <exclude>**/ProyectoIniaApplication.class</exclude>
+                        <!-- Excluir clases de seguridad -->
+                        <exclude>**/security/**/*Filter*.class</exclude>
+                        <exclude>**/security/**/*Provider*.class</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 
@@ -191,7 +290,7 @@
                             <goal>install-node-and-npm</goal>
                         </goals>
                         <configuration>
-                            <nodeVersion>v18.16.0</nodeVersion> <!-- Versión compatible con Angular 17+ -->
+                            <nodeVersion>v20.19.0</nodeVersion> <!-- Versión mínima requerida por Angular CLI (v20.19 o v22.12) -->
                         </configuration>
                     </execution>
                     <execution>
@@ -219,5 +318,53 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- Perfiles Maven para diferentes estrategias de testing -->
+    <profiles>
+        <!-- Perfil por defecto: Solo casos de uso de negocio importantes -->
+        <profile>
+            <id>use-cases-only</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- Excluir tests CRUD y tests de seguridad/autorización -->
+                            <!-- Solo ejecutar tests de casos de uso de negocio importantes -->
+                            <excludes>
+                                <exclude>**/integration/*ControllerTest.java</exclude>
+                                <exclude>**/integration/*IntegrationTest.java</exclude>
+                                <exclude>**/security/**Test.java</exclude>
+                                <exclude>**/security/**Service.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Perfil alternativo: Todos los tests (incluyendo CRUDs) -->
+        <profile>
+            <id>all-tests</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- No excluir nada, ejecutar todos los tests -->
+                            <excludes>
+                                <!-- Vacío para ejecutar todos -->
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

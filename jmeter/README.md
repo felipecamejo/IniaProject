@@ -43,6 +43,123 @@ Plan de prueba de rendimiento que incluye:
 jmeter -n -t scripts/INIA_API_Performance_Test.jmx -l results/performance-results.jtl -e -o reports/performance-report
 ```
 
+### 3. INIA_API_Use_Cases_Test_Simple.jmx
+Plan de prueba simplificado para pruebas controladas paso a paso que incluye:
+- Login y autenticación
+- Crear Lote (caso de uso básico)
+- Listar Lotes (consulta simple)
+- Estructura mínima y fácil de modificar
+- Ideal para depuración y pruebas controladas
+
+**Uso:**
+```powershell
+# Modo GUI (recomendado para pruebas controladas)
+.\PowerShell\RunJMeterSimple.ps1 -Mode gui
+
+# Modo No-GUI
+.\PowerShell\RunJMeterSimple.ps1 -Mode nogui
+```
+
+### 4. INIA_API_Crear_Usuarios.jmx
+Plan de prueba para crear usuarios de prueba que incluye:
+- Login como administrador
+- Crear 1 usuario Analista
+- Crear 2 usuarios Observadores
+- Listar usuarios creados
+- Estructura simple y fácil de modificar
+
+**Uso:**
+```powershell
+# Modo GUI (recomendado)
+.\PowerShell\RunJMeterCrearUsuarios.ps1 -Mode gui
+
+# Modo No-GUI
+.\PowerShell\RunJMeterCrearUsuarios.ps1 -Mode nogui
+```
+
+**Nota:** Los emails de los usuarios incluyen un timestamp para evitar duplicados.
+
+### 5. INIA_API_Use_Cases_Test.jmx
+Plan de prueba completo para casos de uso de negocio que incluye:
+- Flujos completos de negocio
+- Validaciones de reglas de negocio
+- Casos de prueba positivos y negativos
+- Múltiples casos de uso interconectados
+
+**Uso:**
+```powershell
+# Modo GUI
+.\PowerShell\RunJMeterUseCases.ps1 -Mode gui
+
+# Modo No-GUI
+.\PowerShell\RunJMeterUseCases.ps1 -Mode nogui
+```
+
+### 6. INIA_API_Bulk_Load_Test.jmx
+Plan de prueba de carga masiva de datos que incluye:
+- Inserción masiva de datos usando el endpoint `/api/v1/pandmiddleware/insertar-datos-masivos`
+- Importación masiva de archivos CSV usando `/api/v1/pandmiddleware/http/importar`
+- Configuración de carga con múltiples threads y loops
+- Timeouts extendidos para operaciones de larga duración (5 minutos)
+- Validaciones de respuesta y assertions
+- Setup thread group para autenticación inicial
+
+**Características:**
+- Prueba la capacidad del sistema para manejar inserciones masivas de datos
+- Evalúa el rendimiento de importación de archivos grandes
+- Configurable con variables: THREADS, RAMP_UP, LOOPS
+- Utiliza archivo CSV de prueba: `data/bulk_data.csv` (1000 registros)
+
+**Uso:**
+```bash
+jmeter -n -t scripts/INIA_API_Bulk_Load_Test.jmx \
+  -JTHREADS=5 \
+  -JRAMP_UP=10 \
+  -JLOOPS=3 \
+  -l results/bulk-load-results.jtl \
+  -e -o reports/bulk-load-report
+```
+
+**Nota importante:** Este plan de prueba puede tardar varios minutos en ejecutarse debido a la naturaleza de las operaciones masivas. Los timeouts están configurados para 5 minutos por request.
+
+### 4. INIA_API_Use_Cases_Test.jmx (NUEVO)
+Plan de prueba de casos de uso de negocio que incluye:
+- **Flujo completo de análisis**: Lote → Recibo → Análisis (PMS, DOSN)
+- **Validaciones de reglas de negocio**: Validar lote activo al crear recibo
+- **Consultas de negocio**: Listar análisis por recibo, verificar asociaciones
+- **Extracción de IDs**: Extrae IDs de respuestas para usar en requests siguientes
+- **Validaciones con assertions**: Verifica códigos de respuesta y mensajes de error
+
+**Casos de Uso Probados:**
+1. **CU01**: Crear Lote
+2. **CU02**: Crear Recibo (validando que el lote existe y está activo)
+3. **CU03**: Crear Análisis PMS asociado al recibo
+4. **CU04**: Crear Análisis DOSN asociado al recibo
+5. **CU05**: Listar PMS por Recibo (consulta de negocio)
+6. **CU06**: Verificar Asociación Recibo-Lote (validación de negocio)
+7. **CU07**: Validación de Regla de Negocio - Recibo con Lote Inactivo (debe fallar con 400)
+
+**Uso:**
+```bash
+# Ejecutar automáticamente (recomendado)
+.\PowerShell\RunJMeterUseCases.ps1
+
+# Ejecutar y generar reporte HTML
+.\PowerShell\RunJMeterUseCases.ps1 -GenerateReport
+
+# Abrir solo en GUI (sin ejecutar)
+.\PowerShell\RunJMeterUseCases.ps1 -Mode gui
+
+# Ejecutar en modo no-GUI
+.\PowerShell\RunJMeterUseCases.ps1 -Mode nogui
+```
+
+**Características:**
+- Prueba flujos completos de negocio, no solo CRUDs
+- Valida reglas de negocio importantes
+- Extrae y reutiliza IDs entre requests
+- Incluye validaciones de errores esperados
+
 ## Configuración
 
 ### Variables del Plan de Prueba
@@ -91,6 +208,18 @@ El proyecto incluye un script de PowerShell para facilitar la ejecución de prue
 # Ejecutar prueba de rendimiento
 .\PowerShell\RunJMeterTests.ps1 -TestPlan INIA_API_Performance_Test -Mode nogui -Threads 20 -RampUp 10 -Loops 10
 
+# Ejecutar prueba de carga masiva de datos
+.\PowerShell\RunJMeterTests.ps1 -TestPlan INIA_API_Bulk_Load_Test -Mode nogui -Threads 5 -RampUp 10 -Loops 3 -GenerateReport
+
+# Ejecutar pruebas de casos de uso (RECOMENDADO)
+.\PowerShell\RunJMeterUseCases.ps1
+
+# Ejecutar casos de uso y generar reporte HTML
+.\PowerShell\RunJMeterUseCases.ps1 -GenerateReport
+
+# Abrir casos de uso en GUI (sin ejecutar)
+.\PowerShell\RunJMeterUseCases.ps1 -Mode gui
+
 # Ejecutar y generar reporte HTML automáticamente
 .\PowerShell\RunJMeterTests.ps1 -TestPlan INIA_API_Test_Plan -Mode nogui -GenerateReport
 
@@ -101,16 +230,61 @@ El proyecto incluye un script de PowerShell para facilitar la ejecución de prue
 .\PowerShell\RunJMeterTests.ps1 -TestPlan INIA_API_Test_Plan -BaseUrl http://localhost:8080/Inia
 ```
 
-**Parámetros disponibles:**
-- `-TestPlan`: Nombre del plan de prueba (`INIA_API_Test_Plan` o `INIA_API_Performance_Test`)
+**Parámetros disponibles para RunJMeterTests.ps1:**
+- `-TestPlan`: Nombre del plan de prueba (`INIA_API_Test_Plan`, `INIA_API_Performance_Test`, o `INIA_API_Bulk_Load_Test`)
 - `-Mode`: Modo de ejecución (`gui` o `nogui`)
 - `-GenerateReport`: Genera reporte HTML automáticamente
 - `-BaseUrl`: URL base de la API (default: `http://localhost:8080/Inia`)
-- `-Threads`: Número de usuarios concurrentes (solo para performance test)
-- `-RampUp`: Tiempo de ramp-up en segundos (solo para performance test)
-- `-Loops`: Número de iteraciones (solo para performance test)
+- `-Threads`: Número de usuarios concurrentes (solo para performance test y bulk load test)
+- `-RampUp`: Tiempo de ramp-up en segundos (solo para performance test y bulk load test)
+- `-Loops`: Número de iteraciones (solo para performance test y bulk load test)
+
+**Parámetros disponibles para RunJMeterUseCases.ps1:**
+- `-Mode`: Modo de ejecución (`gui`, `nogui`, o `auto` - default: `auto`)
+  - `auto`: Ejecuta en no-GUI y luego abre GUI con el plan cargado
+  - `gui`: Solo abre GUI con el plan cargado (sin ejecutar)
+  - `nogui`: Solo ejecuta en modo no-GUI (sin abrir GUI)
+- `-GenerateReport`: Genera reporte HTML automáticamente (default: `true`)
+- `-BaseUrl`: URL base de la API (default: `http://localhost:8080/Inia`)
 
 ### Modo GUI (Interfaz Gráfica)
+
+#### Opción 1: Script PowerShell (Recomendado - Carga automática)
+
+Los scripts de PowerShell abren JMeter con el plan de prueba ya cargado:
+
+```powershell
+# Abrir plan de prueba funcional básico
+.\PowerShell\OpenJMeterTestPlan.ps1
+
+# Abrir plan de prueba de rendimiento
+.\PowerShell\OpenJMeterPerformance.ps1
+
+# Abrir plan de prueba de carga masiva
+.\PowerShell\OpenJMeterBulkLoad.ps1
+
+# Abrir plan específico
+.\PowerShell\OpenJMeter.ps1 -TestPlan INIA_API_Test_Plan
+
+# Abrir todos los planes
+.\PowerShell\OpenJMeter.ps1 -TestPlan All
+
+# Listar planes disponibles
+.\PowerShell\OpenJMeter.ps1 -List
+```
+
+**Ventaja**: El plan de prueba se carga automáticamente, no necesitas abrirlo manualmente.
+
+#### Opción 2: Usando RunJMeterTests.ps1
+
+```powershell
+# Abrir JMeter GUI con plan específico
+.\PowerShell\RunJMeterTests.ps1 -TestPlan INIA_API_Test_Plan -Mode gui
+.\PowerShell\RunJMeterTests.ps1 -TestPlan INIA_API_Performance_Test -Mode gui
+.\PowerShell\RunJMeterTests.ps1 -TestPlan INIA_API_Bulk_Load_Test -Mode gui
+```
+
+#### Opción 3: Manual (si prefieres abrir JMeter directamente)
 
 1. Abrir JMeter GUI:
    ```bash
@@ -146,6 +320,23 @@ jmeter -n -t scripts/INIA_API_Performance_Test.jmx \
   -JLOOPS=10 \
   -l results/performance-$(Get-Date -Format "yyyyMMdd-HHmmss").jtl
 ```
+
+#### Prueba de Carga Masiva
+```bash
+cd jmeter
+jmeter -n -t scripts/INIA_API_Bulk_Load_Test.jmx \
+  -JTHREADS=5 \
+  -JRAMP_UP=10 \
+  -JLOOPS=3 \
+  -l results/bulk-load-$(Get-Date -Format "yyyyMMdd-HHmmss").jtl \
+  -e -o reports/bulk-load-report-$(Get-Date -Format "yyyyMMdd-HHmmss")
+```
+
+**Nota:** La prueba de carga masiva puede tardar varios minutos. Asegúrate de que:
+- El backend esté corriendo y accesible
+- El middleware Python esté corriendo (si se usa el endpoint de importación)
+- Tengas suficiente espacio en disco para los resultados
+- El archivo `data/bulk_data.csv` exista y contenga datos válidos
 
 #### Generar Reporte HTML
 ```bash

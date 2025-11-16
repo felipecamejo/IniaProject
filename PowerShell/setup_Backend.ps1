@@ -168,8 +168,21 @@ function Set-JMeterEnvironment {
             }
         }
         
+        # Agregar configuración del directorio de trabajo por defecto
+        $projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+        $jmeterScriptsDir = Join-Path $projectRoot "jmeter\scripts"
+        
+        # Verificar si ya existe la configuración del directorio de trabajo
+        $hasUserDir = $newProperties | Where-Object { $_ -match "^user\.directory=" }
+        if (-not $hasUserDir) {
+            $newProperties += ""
+            $newProperties += "# Directorio de trabajo por defecto para planes de prueba INIA"
+            $newProperties += "user.directory=$jmeterScriptsDir"
+        }
+        
         Set-Content -Path $propertiesFile -Value $newProperties
         Write-ColorOutput "JMeter properties configured for better logging" "Green"
+        Write-ColorOutput "Directorio de trabajo por defecto: $jmeterScriptsDir" "Green"
     }
 }
 
