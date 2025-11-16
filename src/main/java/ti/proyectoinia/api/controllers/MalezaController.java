@@ -63,15 +63,13 @@ public class MalezaController {
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
     public ResponseEntity<String> editarMaleza(@RequestBody MalezaDto malezaDto) {
-        if (malezaDto.getNombre() != null && !malezaDto.getNombre().trim().isEmpty()) {
-            if (malezaDto.getNombre().matches(".*\\d.*")) {
-                return new ResponseEntity<>("El nombre del cliente no puede contener números", HttpStatus.BAD_REQUEST);
-            }
-            String result = this.MalezaService.editarMaleza(malezaDto);
-            return ResponseEntity.ok(result);
-        } else {
-            return new ResponseEntity<>("El nombre del MalezaS es obligatorio", HttpStatus.BAD_REQUEST);
+        if (malezaDto.getId() == null || malezaDto.getNombre() == null || malezaDto.getNombre().trim().isEmpty() || malezaDto.getNombre().matches(".*\\d.*")) {
+            return new ResponseEntity<>("El nombre es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
+
+        String result = this.MalezaService.editarMaleza(malezaDto);
+        return ResponseEntity.ok(result);
+
     }
 
     @DeleteMapping({"/eliminar/{id}"})

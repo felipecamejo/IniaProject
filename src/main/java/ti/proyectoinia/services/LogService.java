@@ -24,9 +24,9 @@ public class LogService {
         return ResponseEntity.ok(new ResponseListadoLogs(dtos));
     }
 
-    public Long crear(LogDto dtos) {
+    public String crear(LogDto dtos) {
         dtos.setId(null);
-        return this.logRepository.save(mapsDtoEntityService.mapToEntityLog(dtos)).getId();
+        return "Log creado con ID:" + this.logRepository.save(mapsDtoEntityService.mapToEntityLog(dtos)).getId();
     }
 }
 

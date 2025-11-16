@@ -75,12 +75,12 @@ public class AutocompletadoController {
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
     public ResponseEntity<String> editarAutocompletado(@RequestBody AutocompletadoDto autocompletadoDto) {
-        if (autocompletadoDto.getParametro() != null && !autocompletadoDto.getParametro().trim().isEmpty()) {
-            String result = this.autocompletadoService.editarAutocompletado(autocompletadoDto);
-            return ResponseEntity.ok(result);
-        } else {
-            return new ResponseEntity<>("El parámetro del Autocompletado es obligatorio", HttpStatus.BAD_REQUEST);
+        if (autocompletadoDto.getParametro() == null || autocompletadoDto.getParametro().trim().isEmpty()) {
+            return new ResponseEntity<>("El ID del Autocompletado es obligatorio", HttpStatus.BAD_REQUEST);
         }
+
+        String result = this.autocompletadoService.editarAutocompletado(autocompletadoDto);
+        return ResponseEntity.ok(result);
     }
 
     @PutMapping({"/eliminar/{id}"})

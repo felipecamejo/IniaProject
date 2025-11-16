@@ -47,7 +47,7 @@ public class LogSecurityTest {
     void adminPuedeCrearLog() throws Exception {
         LogDto dto = new LogDto();
 
-        when(logService.crear(any())).thenReturn(1L);
+        when(logService.crear(any())).thenReturn("Creado");
 
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -60,7 +60,7 @@ public class LogSecurityTest {
     void analistaPuedeCrearLog() throws Exception {
         LogDto dto = new LogDto();
 
-        when(logService.crear(any())).thenReturn(1L);
+        when(logService.crear(any())).thenReturn("Creado");
 
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -73,7 +73,7 @@ public class LogSecurityTest {
     void observadorPuedeCrearLog() throws Exception {
         LogDto dto = new LogDto();
 
-        when(logService.crear(any())).thenReturn(1L);
+        when(logService.crear(any())).thenReturn("Creado");
 
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
