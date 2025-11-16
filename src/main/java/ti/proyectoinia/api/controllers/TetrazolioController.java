@@ -1,6 +1,7 @@
 package ti.proyectoinia.api.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Generated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,13 +50,17 @@ public class TetrazolioController {
 
     @Secured({"ADMIN"})
     @PutMapping({"/editar"})
-    public ResponseEntity<String> editarTetrazolio(@RequestBody TetrazolioDto tetrazolioDto) {
-        String result = this.tetrazolioService.editarTetrazolio(tetrazolioDto);
+    public ResponseEntity<String> editarTetrazolio(@RequestBody TetrazolioDto dto) {
+        if (dto.getId() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El ID es obligatorio para editar");
+        }
+
+        String result = this.tetrazolioService.editarTetrazolio(dto);
         return ResponseEntity.ok(result);
     }
-    @Secured({"ADMIN"})
 
-    @PutMapping({"/eliminar/{id}"})
+    @Secured({"ADMIN"})
+    @DeleteMapping({"/eliminar/{id}"})
     @Operation(
             description = "Esta Funcion elimina una Tetrazolio"
     )
@@ -63,8 +68,10 @@ public class TetrazolioController {
         try {
             String mensaje = this.tetrazolioService.eliminarTetrazolio(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No encontrado");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar la Tetrazolio: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar: " + e.getMessage());
         }
     }
 
