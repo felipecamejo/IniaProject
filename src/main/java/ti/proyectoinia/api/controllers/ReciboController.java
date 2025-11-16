@@ -63,17 +63,4 @@ public class ReciboController {
         }
     }
 
-    @PutMapping({"/eliminar/{id}"})
-    @Secured({"ADMIN"})
-    @Operation(
-            description = "Esta Funcion elimina un Recibo"
-    )
-    public ResponseEntity<String> eliminarRecibo(@PathVariable Long id) {
-        try {
-            String mensaje = this.reciboService.eliminarRecibo(id)+ ". ID:" + id.toString();
-            return ResponseEntity.ok(mensaje);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Recibo: " + e.getMessage());
-        }
-    }
 }

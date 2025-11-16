@@ -17,7 +17,6 @@ import ti.proyectoinia.dtos.MalezaDto;
 import ti.proyectoinia.api.responses.ResponseListadoMalezas;
 import ti.proyectoinia.services.MalezaService;
 
-
 import java.util.Collections;
 
 import static org.mockito.Mockito.*;
@@ -53,7 +52,7 @@ public class MalezaSecurityTest {
 
     @Test
     @WithMockUser(authorities = "ADMIN")
-    void adminPuedeCrearCultivo() throws Exception {
+    void adminPuedeCrear() throws Exception {
         MalezaDto dto = new MalezaDto();
         dto.setNombre("Maíz");
 
@@ -67,7 +66,7 @@ public class MalezaSecurityTest {
 
     @Test
     @WithMockUser(authorities = "OBSERVADOR")
-    void userNoPuedeCrearCultivo() throws Exception {
+    void userNoPuedeCrear() throws Exception {
         MalezaDto dto = new MalezaDto();
         dto.setNombre("Trigo");
 
@@ -78,7 +77,7 @@ public class MalezaSecurityTest {
     }
 
     @Test
-    void noAutenticadoNoPuedeCrearCultivo() throws Exception {
+    void noAutenticadoNoPuedeCrear() throws Exception {
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))

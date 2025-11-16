@@ -52,7 +52,7 @@ public class CultivoSecurityTest {
 
     @Test
     @WithMockUser(authorities = "ADMIN")
-    void adminPuedeCrearCultivo() throws Exception {
+    void adminPuedeCrear() throws Exception {
         CultivoDto dto = new CultivoDto();
         dto.setNombre("Maíz");
 
@@ -66,7 +66,7 @@ public class CultivoSecurityTest {
 
     @Test
     @WithMockUser(authorities = "OBSERVADOR")
-    void userNoPuedeCrearCultivo() throws Exception {
+    void userNoPuedeCrear() throws Exception {
         CultivoDto dto = new CultivoDto();
         dto.setNombre("Trigo");
 
@@ -77,7 +77,7 @@ public class CultivoSecurityTest {
     }
 
     @Test
-    void noAutenticadoNoPuedeCrearCultivo() throws Exception {
+    void noAutenticadoNoPuedeCrear() throws Exception {
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))

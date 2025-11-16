@@ -5,6 +5,7 @@
     <option name="pendingSessionIds">
       <option value="03f4bbfa-f3d5-49de-b149-254b62b7535b" />
       <option value="09150c0e-48af-4ad6-a43c-0d6f7f8dcea6" />
+      <option value="58032276-61ae-4669-a578-325f549c18c5" />
       <option value="5ffb51d2-587b-4ad8-912b-7f75f42df6ef" />
       <option value="614cc146-4334-48b5-bf6f-9602f9d9a2f7" />
       <option value="669264b4-6953-4058-b944-1b631d62a17e" />
@@ -30,12 +31,12 @@
         <entry key="03f4bbfa-f3d5-49de-b149-254b62b7535b">
           <value>
             <set>
+              <option value="3fb99554-1e95-4761-9676-29dbf836bef5" />
               <option value="68a82a3d-5f6d-49b5-afdb-014572043bc2" />
+              <option value="9a00cb46-3c6b-4ecb-ba45-bc192b3de169" />
               <option value="9c56cd67-284a-4033-9f16-6a9d18cf39b3" />
               <option value="b37c7cbf-9e81-41ae-9214-4dc65226f59d" />
               <option value="c9124c8a-bcbd-4002-8694-2c9584f867cb" />
-              <option value="9a00cb46-3c6b-4ecb-ba45-bc192b3de169" />
-              <option value="3fb99554-1e95-4761-9676-29dbf836bef5" />
             </set>
           </value>
         </entry>
@@ -45,6 +46,17 @@
               <option value="01e407d2-5295-4b6e-a3e2-b9883b442057" />
               <option value="97ed0e0a-0a9e-4c8d-a661-5182b0dea98e" />
               <option value="a8561c32-f178-4872-be0d-df5e9b6f1186" />
+            </set>
+          </value>
+        </entry>
+        <entry key="58032276-61ae-4669-a578-325f549c18c5">
+          <value>
+            <set>
+              <option value="cdcb18c6-01f0-4f2f-a0fe-e0c42a01f050" />
+              <option value="76147653-80df-4a84-89c7-5b455ecea6cd" />
+              <option value="37e9634d-7ab1-42cf-8b2f-849e510bf4ac" />
+              <option value="ad979917-1414-45bd-9820-ff733271fcaf" />
+              <option value="95f2d017-e1eb-454e-8c3c-495079be7664" />
             </set>
           </value>
         </entry>
@@ -259,14 +271,14 @@
       </map>
     </option>
     <pendingWorkingSetItems>
-      <entry key="03f4bbfa-f3d5-49de-b149-254b62b7535b">
+      <entry key="03f4bbfa-f3d5-49de-b149-254b62b7535b" />
+      <entry key="09150c0e-48af-4ad6-a43c-0d6f7f8dcea6" />
+      <entry key="58032276-61ae-4669-a578-325f549c18c5">
         <set>
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/services/MapsDtoEntityService.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/business/entities/Log.java" />
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/services/LogService.java" />
+          <option value="file://$PROJECT_DIR$/src/test/java/ti/proyectoinia/api/controllers/security/DOSNSecurityTest.java" />
+          <option value="file://$PROJECT_DIR$/src/test/java/ti/proyectoinia/api/controllers/security/GerminacionTablasSecurityTest.java" />
         </set>
       </entry>
-      <entry key="09150c0e-48af-4ad6-a43c-0d6f7f8dcea6" />
       <entry key="5ffb51d2-587b-4ad8-912b-7f75f42df6ef" />
       <entry key="614cc146-4334-48b5-bf6f-9602f9d9a2f7" />
       <entry key="669264b4-6953-4058-b944-1b631d62a17e" />

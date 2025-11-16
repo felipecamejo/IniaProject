@@ -57,11 +57,12 @@ public class AutocompletadoService {
         return "Autocompletado eliminado correctamente ID:" + id;
     }
 
-    public List<AutocompletadoDto> obtenerPorParametro(String parametro) {
+    public ResponseListadoAutocompletados obtenerPorParametro(String parametro) {
         var autocompletados = this.autocompletadoRepository.findByParametroAndActivoTrue(parametro);
-        return autocompletados.stream()
+        var autocompletadosDto = autocompletados.stream()
                 .map(mapsDtoEntityService::mapToDtoAutocompletado)
                 .toList();
+        return new ResponseListadoAutocompletados(autocompletadosDto);
     }
 }
 

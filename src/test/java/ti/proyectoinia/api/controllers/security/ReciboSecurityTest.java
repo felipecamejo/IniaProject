@@ -7,18 +7,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import ti.proyectoinia.api.controllers.HongoController;
-import ti.proyectoinia.api.responses.ResponseListadoCultivos;
-import ti.proyectoinia.api.responses.ResponseListadoHongos;
-import ti.proyectoinia.business.entities.Hongo;
-import ti.proyectoinia.dtos.HongoDto;
-import ti.proyectoinia.services.HongoService;
-
-import java.util.Collections;
+import ti.proyectoinia.api.controllers.ReciboController;
+import ti.proyectoinia.dtos.CultivoDto;
+import ti.proyectoinia.dtos.ReciboDto;
+import ti.proyectoinia.services.ReciboService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -27,9 +23,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(HongoController.class)
+@WebMvcTest(ReciboController.class)
 @Import(TestSecurityConfig.class)
-public class HongoSecurityTest {
+public class ReciboSecurityTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -38,15 +34,15 @@ public class HongoSecurityTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    HongoService hongoService;
+    ReciboService reciboService;
 
-    String apiUrl = "/api/v1/hongo";
+    String apiUrl = "/api/v1/recibo";
 
     @TestConfiguration
     static class TestConfig {
         @Bean
-        public HongoService hongoService() {
-            return mock(HongoService.class);
+        public ReciboService cultivoService() {
+            return mock(ReciboService.class);
         }
     }
 
@@ -57,10 +53,10 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeCrear() throws Exception {
-        HongoDto dto = new HongoDto();
-        dto.setNombre("Maíz");
+        ReciboDto dto = new ReciboDto();
+        dto.setCultivar("Maíz");
 
-        when(hongoService.crearHongo(any())).thenReturn("Creado");
+        when(reciboService.crearRecibo(any())).thenReturn(dto);
 
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -71,8 +67,8 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "OBSERVADOR")
     void userNoPuedeCrear() throws Exception {
-        HongoDto dto = new HongoDto();
-        dto.setNombre("Trigo");
+        ReciboDto dto = new ReciboDto();
+        dto.setCultivar("Trigo");
 
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -89,46 +85,17 @@ public class HongoSecurityTest {
     }
 
     // ============================================================================
-    //  GET /listar → ADMIN, ANALISTA, OBSERVADOR
-    // ============================================================================
-
-    @Test
-    @WithMockUser(authorities = "ADMIN")
-    void adminPuedeListar() throws Exception {
-        ResponseListadoHongos response = new ResponseListadoHongos();
-        response.setHongos(Collections.emptyList());
-
-        when(hongoService.listadoHongos()).thenReturn(ResponseEntity.ok(response));
-
-        mockMvc.perform(get(apiUrl + "/listar"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockUser(authorities = "GUEST")
-    void userNoPuedeListar() throws Exception {
-        mockMvc.perform(get(apiUrl + "/listar"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void noAutenticadoListarDebeDar401() throws Exception {
-        mockMvc.perform(get(apiUrl + "/listar"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // ============================================================================
     //  GET /{id} → ADMIN, ANALISTA, OBSERVADOR
     // ============================================================================
 
     @Test
     @WithMockUser(authorities = "ANALISTA")
     void analistaPuedeVerPorId() throws Exception {
-        HongoDto dto = new HongoDto();
+        ReciboDto dto = new ReciboDto();
         dto.setId(1L);
-        dto.setNombre("Soja");
+        dto.setCultivar("Soja");
 
-        when(hongoService.obtenerHongoPorId(1L)).thenReturn(dto);
+        when(reciboService.obtenerReciboPorId(1L)).thenReturn(dto);
 
         mockMvc.perform(get(apiUrl + "/1"))
                 .andExpect(status().isOk());
@@ -154,11 +121,11 @@ public class HongoSecurityTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeEditar() throws Exception {
-        HongoDto dto = new HongoDto();
+        CultivoDto dto = new CultivoDto();
         dto.setId(1L);
         dto.setNombre("Nuevo Nombre");
 
-        when(hongoService.editarHongo(any())).thenReturn("Editado");
+        when(reciboService.editarRecibo(any())).thenReturn("Editado");
 
         mockMvc.perform(put(apiUrl + "/editar")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -175,29 +142,4 @@ public class HongoSecurityTest {
                 .andExpect(status().isForbidden());
     }
 
-    // ============================================================================
-    //  PUT /eliminar/{id} → solo ADMIN
-    // ============================================================================
-
-    @Test
-    @WithMockUser(authorities = "ADMIN")
-    void adminPuedeEliminar() throws Exception {
-        when(hongoService.eliminarHongo(1L)).thenReturn("Eliminado");
-
-        mockMvc.perform(put(apiUrl + "/eliminar/1"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockUser(authorities = "OBSERVADOR")
-    void userNoPuedeEliminar() throws Exception {
-        mockMvc.perform(put(apiUrl + "/eliminar/1"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void noAutenticadoEliminarDebeDar401() throws Exception {
-        mockMvc.perform(put(apiUrl + "/eliminar/1"))
-                .andExpect(status().isUnauthorized());
-    }
 }

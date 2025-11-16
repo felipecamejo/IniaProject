@@ -53,7 +53,7 @@ public class DepositoSecurityTest {
 
     @Test
     @WithMockUser(authorities = "ADMIN")
-    void adminPuedeCrearCultivo() throws Exception {
+    void adminPuedeCrear() throws Exception {
         DepositoDto dto = new DepositoDto();
         dto.setNombre("Maíz");
 
@@ -67,7 +67,7 @@ public class DepositoSecurityTest {
 
     @Test
     @WithMockUser(authorities = "OBSERVADOR")
-    void userNoPuedeCrearCultivo() throws Exception {
+    void userNoPuedeCrear() throws Exception {
         DepositoDto dto = new DepositoDto();
         dto.setNombre("Trigo");
 
@@ -78,7 +78,7 @@ public class DepositoSecurityTest {
     }
 
     @Test
-    void noAutenticadoNoPuedeCrearCultivo() throws Exception {
+    void noAutenticadoNoPuedeCrear() throws Exception {
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
