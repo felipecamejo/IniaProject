@@ -27,7 +27,7 @@ public class TetrazolioController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(
             description = "Esta Funcion crea una nueva Tetrazolio"
     )
@@ -48,8 +48,8 @@ public class TetrazolioController {
         }
     }
 
-    @Secured({"ADMIN"})
     @PutMapping({"/editar"})
+    @Secured({"ADMIN", "ANALISTA"})
     public ResponseEntity<String> editarTetrazolio(@RequestBody TetrazolioDto dto) {
         if (dto.getId() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El ID es obligatorio para editar");
@@ -59,8 +59,9 @@ public class TetrazolioController {
         return ResponseEntity.ok(result);
     }
 
-    @Secured({"ADMIN"})
+
     @DeleteMapping({"/eliminar/{id}"})
+    @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina una Tetrazolio"
     )
@@ -91,7 +92,7 @@ public class TetrazolioController {
     }
 
     @PutMapping("/actualizar-repeticiones/{tetrazolioId}")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Actualiza las repeticiones asociadas a un Tetrazolio, creando, actualizando y eliminando según la lista recibida")
     public ResponseEntity<String> actualizarRepeticionesCompleto(
             @PathVariable Long tetrazolioId,
@@ -114,7 +115,7 @@ public class TetrazolioController {
     }
 
     @PutMapping("/actualizar-detalles/{tetrazolioId}")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Actualiza los detalles de semillas asociados a un Tetrazolio, creando, actualizando y eliminando según la lista recibida")
     public ResponseEntity<String> actualizarDetallesCompleto(
             @PathVariable Long tetrazolioId,

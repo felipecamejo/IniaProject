@@ -28,7 +28,7 @@ public class GerminacionController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(
             description = "Esta Funcion crea una nueva germinacion"
     )
@@ -73,7 +73,7 @@ public class GerminacionController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     public ResponseEntity<String> editarGerminacion(@RequestBody GerminacionDto germinacionDto) {
         if (germinacionDto.getId() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El ID no puede ser nulo para la edición.");

@@ -27,7 +27,7 @@ public class GerminacionTablasController {
     }
 
     @PostMapping("/{germinacionId}/conteos")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Crea un nuevo conteo para la germinación indicada. Si no se indica numeroConteo, se asigna el siguiente correlativo.")
     public ResponseEntity<?> crearConteo(@PathVariable Long germinacionId, @RequestBody(required = false) ConteoGerminacionDto body) {
         try {
@@ -49,7 +49,7 @@ public class GerminacionTablasController {
     }
 
     @PutMapping("/normales/{tabla}")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Crea o actualiza el valor 'normal' para una repetición en un conteo específico. Tabla: SIN_CURAR | CURADA_PLANTA | CURADA_LABORATORIO.")
     public ResponseEntity<?> upsertNormal(@PathVariable String tabla, @RequestBody NormalPorConteoDto body) {
         try {
@@ -63,7 +63,7 @@ public class GerminacionTablasController {
     }
 
     @PutMapping("/finales/{tabla}")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Crea o actualiza los valores finales (anormal, duras, frescas, muertas) para una repetición. Tabla: SIN_CURAR | CURADA_PLANTA | CURADA_LABORATORIO.")
     public ResponseEntity<?> upsertFinales(@PathVariable String tabla, @RequestBody RepeticionFinalDto body) {
         try {
@@ -93,7 +93,7 @@ public class GerminacionTablasController {
     }
 
     @PostMapping("/{germinacionId}/celdas/{tabla}/repeticiones/{numeroRepeticion}")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Crea (si no existe) la repetición finales para la tabla dada y genera sus celdas 'normal' (NormalPorConteo) en todos los conteos existentes. Si no hay conteos, crea el Conteo 1. Si envías 0 como numeroRepeticion, el backend asigna el siguiente correlativo.")
     public ResponseEntity<?> agregarRepeticionATodosLosConteos(
             @PathVariable Long germinacionId,
@@ -111,7 +111,7 @@ public class GerminacionTablasController {
     }
 
     @PostMapping("/{germinacionId}/celdas/{tabla}/repeticiones")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Crea (si no existe) la repetición finales AUTO-NUMERADA para la tabla dada y genera sus celdas 'normal' (NormalPorConteo) en todos los conteos existentes. Si no hay conteos, crea el Conteo 1.")
     public ResponseEntity<?> agregarRepeticionAutoNumerada(
             @PathVariable Long germinacionId,

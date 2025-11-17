@@ -23,7 +23,7 @@ public class PMSController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(
             description = "Esta Funcion crea un nuevo PMS"
     )
@@ -45,7 +45,7 @@ public class PMSController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     public ResponseEntity<Long> editarPMS(@RequestBody PMSDto pmsDto) {
         if (pmsDto.getId() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(-1L);
