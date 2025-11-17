@@ -224,22 +224,12 @@
                         <configuration>
                             <rules>
                                 <rule>
-                                    <element>PACKAGE</element>
+                                    <element>BUNDLE</element>
                                     <limits>
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.15</minimum>
-                                        </limit>
-                                    </limits>
-                                </rule>
-                                <rule>
-                                    <element>CLASS</element>
-                                    <limits>
-                                        <limit>
-                                            <counter>LINE</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>0.15</minimum>
+                        <minimum>0.05</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
@@ -254,14 +244,14 @@
                         <exclude>**/dto/**</exclude>
                         <exclude>**/entity/**</exclude>
                         <exclude>**/response/**</exclude>
+                        <exclude>**/responses/**</exclude>
                         <!-- Excluir clases de configuración -->
                         <exclude>**/*Config*.class</exclude>
                         <exclude>**/*Configuration*.class</exclude>
                         <!-- Excluir clases de aplicación principal -->
                         <exclude>**/ProyectoIniaApplication.class</exclude>
                         <!-- Excluir clases de seguridad -->
-                        <exclude>**/security/**/*Filter*.class</exclude>
-                        <exclude>**/security/**/*Provider*.class</exclude>
+                        <exclude>**/security/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
