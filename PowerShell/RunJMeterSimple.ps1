@@ -1,16 +1,10 @@
-# Script para ejecutar pruebas simplificadas de casos de uso con JMeter
-# Uso: .\RunJMeterSimple.ps1 [-Mode <gui|nogui|auto>] [-GenerateReport]
+# Script para abrir JMeter GUI
+# Uso: .\RunJMeterSimple.ps1 [-Mode <gui|auto>]
 
 param(
     [Parameter(Mandatory=$false)]
-    [ValidateSet("gui", "nogui", "auto")]
-    [string]$Mode = "auto",
-    
-    [Parameter(Mandatory=$false)]
-    [switch]$GenerateReport = $true,
-    
-    [Parameter(Mandatory=$false)]
-    [string]$BaseUrl = "http://localhost:8080/Inia"
+    [ValidateSet("gui", "auto")]
+    [string]$Mode = "auto"
 )
 
 # Función para escribir mensajes con color
@@ -63,91 +57,37 @@ if (!(Test-Path $reportsDir)) {
     Write-ColorOutput "Directorio de reportes creado: $reportsDir" "Green"
 }
 
-# Construir ruta del plan de prueba simplificado
-$testPlanFile = Join-Path $scriptsDir "INIA_API_Use_Cases_Test_Simple.jmx"
-
-if (!(Test-Path $testPlanFile)) {
-    Write-ColorOutput "Error: Plan de prueba no encontrado: $testPlanFile" "Red"
-    exit 1
-}
-
 Write-ColorOutput "===============================================" "Cyan"
-Write-ColorOutput "    Pruebas Simplificadas - JMeter          " "Cyan"
+Write-ColorOutput "    Abrir JMeter GUI                        " "Cyan"
 Write-ColorOutput "===============================================" "Cyan"
 Write-ColorOutput ""
-Write-ColorOutput "Plan de Prueba: INIA_API_Use_Cases_Test_Simple" "White"
 Write-ColorOutput "Modo: $Mode" "White"
-Write-ColorOutput "Base URL: $BaseUrl" "White"
 Write-ColorOutput ""
 
 # Determinar modo de ejecución
 if ($Mode -eq "auto") {
-    # Auto: GUI si hay display, sino no-GUI
-    if ($env:DISPLAY -or $env:TERM) {
-        $Mode = "gui"
-    } else {
-        $Mode = "nogui"
-    }
+    # Auto: siempre GUI
+    $Mode = "gui"
 }
 
 if ($Mode -eq "gui") {
     Write-ColorOutput "Abriendo JMeter en modo GUI..." "Yellow"
-    Write-ColorOutput "Archivo: $testPlanFile" "Cyan"
     Write-ColorOutput ""
     
-    # Abrir JMeter GUI con el plan de prueba cargado
-    Start-Process "jmeter" -ArgumentList "-t", "`"$testPlanFile`""
+    # Abrir JMeter GUI sin cargar ningún plan
+    Start-Process "jmeter"
     
-    Write-ColorOutput "JMeter GUI abierto con el plan de prueba cargado." "Green"
-    Write-ColorOutput "El plan 'INIA_API_Use_Cases_Test_Simple' debería estar visible en la interfaz." "Green"
+    Write-ColorOutput "JMeter GUI abierto." "Green"
     Write-ColorOutput ""
-    Write-ColorOutput "Para ejecutar las pruebas:" "Yellow"
-    Write-ColorOutput "  1. Click en el botón 'Run' (▶) o presiona Ctrl+R" "White"
-    Write-ColorOutput "  2. Ver resultados en 'View Results Tree' y 'Summary Report'" "White"
+    Write-ColorOutput "Para cargar un plan de prueba:" "Yellow"
+    Write-ColorOutput "  1. File → Open → Selecciona un archivo .jmx" "White"
+    Write-ColorOutput "  2. O arrastra un archivo .jmx a la ventana de JMeter" "White"
     Write-ColorOutput ""
     Write-ColorOutput "Script completado." "Green"
 }
 else {
-    # Modo no-GUI
-    $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-    $resultsFile = Join-Path $resultsDir "simple-test-results-$timestamp.jtl"
-    $reportDir = Join-Path $reportsDir "simple-report-$timestamp"
-    
-    Write-ColorOutput "Ejecutando pruebas en modo no-GUI..." "Yellow"
-    Write-ColorOutput "Resultados: $resultsFile" "Cyan"
-    Write-ColorOutput ""
-    
-    # Ejecutar JMeter en modo no-GUI
-    $jmeterArgs = @(
-        "-n",
-        "-t", "`"$testPlanFile`"",
-        "-l", "`"$resultsFile`"",
-        "-JBASE_URL=$BaseUrl"
-    )
-    
-    if ($GenerateReport) {
-        $jmeterArgs += "-e"
-        $jmeterArgs += "-o"
-        $jmeterArgs += "`"$reportDir`""
-    }
-    
-    & $jmeterBat $jmeterArgs
-    
-    if ($LASTEXITCODE -eq 0) {
-        Write-ColorOutput ""
-        Write-ColorOutput "Pruebas completadas exitosamente!" "Green"
-        Write-ColorOutput "Resultados guardados en: $resultsFile" "Cyan"
-        
-        if ($GenerateReport) {
-            Write-ColorOutput "Reporte HTML generado en: $reportDir" "Cyan"
-            Write-ColorOutput ""
-            Write-ColorOutput "Para ver el reporte, abre en tu navegador:" "Yellow"
-            Write-ColorOutput "  file:///$($reportDir -replace '\\', '/')/index.html" "White"
-        }
-    } else {
-        Write-ColorOutput ""
-        Write-ColorOutput "Error al ejecutar las pruebas. Código de salida: $LASTEXITCODE" "Red"
-        exit $LASTEXITCODE
-    }
+    Write-ColorOutput "Este script solo abre JMeter en modo GUI." "Yellow"
+    Write-ColorOutput "Para ejecutar pruebas en modo no-GUI, usa otro script como RunJMeterCrearUsuarios.ps1" "White"
+    exit 0
 }
 

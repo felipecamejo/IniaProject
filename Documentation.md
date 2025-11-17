@@ -522,7 +522,7 @@ cd middleware
 - **Middleware API**: http://localhost:9099
 
 ### Usuarios por Defecto
-- **Administrador**: admin@inia.com / admin123
+- **Administrador**: admin@inia.com / password123
 - **Analista**: analista@inia.com / analista123
 
 ---

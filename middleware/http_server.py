@@ -8,10 +8,13 @@ import time
 import asyncio
 import signal
 import sys
+import multiprocessing
 from typing import Dict, Any, Optional, List, Tuple
 from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as FutureTimeoutError
 from functools import wraps
 from contextlib import asynccontextmanager
+from collections import defaultdict
+from datetime import datetime, timedelta
 
 # Intentar importar módulo de instalación de dependencias
 try:
@@ -30,18 +33,24 @@ if INSTALL_DEPS_AVAILABLE:
 
 # Importaciones FastAPI
 try:
-    from fastapi import FastAPI, HTTPException, Query, UploadFile, File, Form
+    from fastapi import FastAPI, HTTPException, Query, UploadFile, File, Form, Request
     from fastapi.responses import JSONResponse, FileResponse, Response
+    from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.middleware.gzip import GZipMiddleware
     from pydantic import BaseModel
     import uvicorn
+    import uuid
 except ModuleNotFoundError:
     if INSTALL_DEPS_AVAILABLE:
         print("Instalando dependencias faltantes...")
         if instalar_dependencias_faltantes('http_server', silent=False):
-            from fastapi import FastAPI, HTTPException, Query, UploadFile, File, Form
+            from fastapi import FastAPI, HTTPException, Query, UploadFile, File, Form, Request
             from fastapi.responses import JSONResponse, FileResponse, Response
+            from fastapi.middleware.cors import CORSMiddleware
+            from fastapi.middleware.gzip import GZipMiddleware
             from pydantic import BaseModel
             import uvicorn
+            import uuid
         else:
             print("No se pudieron instalar las dependencias. Instálalas manualmente con: pip install -r requirements.txt")
             raise
@@ -80,9 +89,21 @@ logger = logging.getLogger(__name__)
 # Límites de recursos para prevenir colapso
 MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE", 100 * 1024 * 1024))  # 100 MB por defecto
 MAX_TOTAL_FILES_SIZE = int(os.getenv("MAX_TOTAL_FILES_SIZE", 500 * 1024 * 1024))  # 500 MB total
-MAX_REQUEST_TIMEOUT = int(os.getenv("MAX_REQUEST_TIMEOUT", 300))  # 5 minutos por defecto
-MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", 10))  # 10 solicitudes simultáneas
+MAX_REQUEST_TIMEOUT = int(os.getenv("MAX_REQUEST_TIMEOUT", 600))  # 10 minutos por defecto (aumentado para operaciones pesadas)
+MAX_CONCURRENT_REQUESTS = int(os.getenv("MAX_CONCURRENT_REQUESTS", 50))  # 50 solicitudes simultáneas (aumentado)
 MAX_IMPORT_FILES = int(os.getenv("MAX_IMPORT_FILES", 50))  # Máximo 50 archivos por importación
+
+# Configuración de rate limiting
+RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", 100))  # 100 requests por minuto
+RATE_LIMIT_WINDOW = int(os.getenv("RATE_LIMIT_WINDOW", 60))  # Ventana de 60 segundos
+
+# Configuración de pool de threads para operaciones pesadas
+THREAD_POOL_WORKERS = int(os.getenv("THREAD_POOL_WORKERS", 10))  # 10 workers en el pool de threads
+
+# Configuración de pool de conexiones a BD
+DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", 10))  # 10 conexiones en el pool
+DB_MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", 20))  # 20 conexiones adicionales si se necesitan
+DB_POOL_RECYCLE = int(os.getenv("DB_POOL_RECYCLE", 3600))  # Reciclar conexiones cada hora
 
 # Circuit breaker para proteger contra fallos en cascada
 class CircuitBreaker:
@@ -125,6 +146,16 @@ import_circuit_breaker = CircuitBreaker(failure_threshold=3, recovery_timeout=12
 # Contador de solicitudes concurrentes
 _concurrent_requests = 0
 _concurrent_requests_lock = asyncio.Lock()
+
+# ThreadPoolExecutor global para operaciones pesadas
+GLOBAL_THREAD_POOL = ThreadPoolExecutor(
+    max_workers=THREAD_POOL_WORKERS,
+    thread_name_prefix="inia-worker"
+)
+
+# Rate limiting por IP
+rate_limits: Dict[str, List[datetime]] = defaultdict(list)
+_rate_limit_lock = asyncio.Lock()
 
 # ================================
 # ESTRUCTURA DE RESPUESTAS ESTÁNDAR
@@ -208,20 +239,146 @@ def obtener_mensaje_error_seguro(exc: Exception, contexto: str = "") -> str:
         return f"Error procesando solicitud{': ' + contexto if contexto else ''}"
 
 # Crear la aplicación FastAPI después de definir las funciones de respuesta
-app = FastAPI(title="INIA Python Middleware", version="1.0.0")
+app = FastAPI(
+    title="INIA Python Middleware",
+    version="1.0.0",
+    description="Middleware Python/FastAPI para operaciones de importación, exportación y análisis de datos",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
 
 # ================================
-# MIDDLEWARE Y MANEJADORES DE PROTECCIÓN
+# CONFIGURACIÓN DE MIDDLEWARE
 # ================================
+
+# Middleware CORS - Configurar antes que otros middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:4200",
+        "http://localhost:80",
+        "http://localhost:8080",
+        "https://solfuentes-prueba.netlify.app",
+        "http://localhost:*"
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+    expose_headers=["X-Request-ID", "X-Process-Time"]
+)
+
+# Middleware de compresión GZip
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Middleware para Request ID y Logging
 @app.middleware("http")
-async def protection_middleware(request, call_next):
+async def request_id_middleware(request: Request, call_next):
+    """Agrega un ID único a cada request para tracking y logging."""
+    request_id = str(uuid.uuid4())
+    request.state.request_id = request_id
+    
+    # Agregar request ID a los headers de respuesta
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request_id
+    return response
+
+# Middleware para Timing de Requests
+@app.middleware("http")
+async def timing_middleware(request: Request, call_next):
+    """Mide el tiempo de procesamiento de cada request."""
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = f"{process_time:.4f}"
+    return response
+
+# Middleware para Logging de Requests
+@app.middleware("http")
+async def logging_middleware(request: Request, call_next):
+    """Registra información detallada de cada request."""
+    request_id = getattr(request.state, "request_id", "unknown")
+    client_ip = request.client.host if request.client else "unknown"
+    method = request.method
+    path = request.url.path
+    query_params = str(request.query_params) if request.query_params else ""
+    
+    logger.info(f"[{request_id}] {method} {path}{'?' + query_params if query_params else ''} - IP: {client_ip}")
+    
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+        logger.info(f"[{request_id}] {method} {path} - Status: {status_code}")
+        return response
+    except Exception as e:
+        logger.error(f"[{request_id}] {method} {path} - Error: {str(e)}", exc_info=True)
+        raise
+
+# Middleware para Security Headers
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    """Agrega headers de seguridad a las respuestas."""
+    response = await call_next(request)
+    
+    # Headers de seguridad
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    
+    # Solo agregar CSP si no es una respuesta de archivo
+    if "application/zip" not in response.headers.get("content-type", ""):
+        response.headers["Content-Security-Policy"] = "default-src 'self'"
+    
+    return response
+
+# Middleware para Rate Limiting por IP
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Middleware para limitar el número de requests por IP."""
+    # Excluir endpoints de health check y docs del rate limiting
+    if request.url.path in ["/health", "/docs", "/redoc", "/openapi.json"]:
+        return await call_next(request)
+    
+    client_ip = request.client.host if request.client else "unknown"
+    now = datetime.now()
+    
+    # Limpiar requests antiguos de forma asíncrona
+    async with _rate_limit_lock:
+        # Limpiar requests fuera de la ventana de tiempo
+        rate_limits[client_ip] = [
+            req_time for req_time in rate_limits[client_ip]
+            if now - req_time < timedelta(seconds=RATE_LIMIT_WINDOW)
+        ]
+        
+        # Verificar límite
+        if len(rate_limits[client_ip]) >= RATE_LIMIT_REQUESTS:
+            request_id = getattr(request.state, "request_id", "unknown")
+            logger.warning(f"[{request_id}] Rate limit excedido para IP {client_ip}: {len(rate_limits[client_ip])}/{RATE_LIMIT_REQUESTS}")
+            respuesta_error = crear_respuesta_error(
+                mensaje="Demasiadas solicitudes",
+                codigo=429,
+                detalles=f"Límite de {RATE_LIMIT_REQUESTS} solicitudes por {RATE_LIMIT_WINDOW} segundos excedido. Intente más tarde."
+            )
+            response = JSONResponse(status_code=429, content=respuesta_error)
+            response.headers["Retry-After"] = str(RATE_LIMIT_WINDOW)
+            return response
+        
+        # Registrar request
+        rate_limits[client_ip].append(now)
+    
+    return await call_next(request)
+
+# Middleware para protección contra sobrecarga (debe ir después de logging pero antes de procesamiento pesado)
+@app.middleware("http")
+async def protection_middleware(request: Request, call_next):
     """Middleware para proteger el servidor contra sobrecarga."""
     global _concurrent_requests
+    request_id = getattr(request.state, "request_id", "unknown")
     
     # Verificar límite de solicitudes concurrentes
     async with _concurrent_requests_lock:
         if _concurrent_requests >= MAX_CONCURRENT_REQUESTS:
-            logger.warning(f"Límite de solicitudes concurrentes alcanzado: {_concurrent_requests}/{MAX_CONCURRENT_REQUESTS}")
+            logger.warning(f"[{request_id}] Límite de solicitudes concurrentes alcanzado: {_concurrent_requests}/{MAX_CONCURRENT_REQUESTS}")
             respuesta_error = crear_respuesta_error(
                 mensaje="Servidor sobrecargado",
                 codigo=503,
@@ -236,7 +393,7 @@ async def protection_middleware(request, call_next):
             response = await asyncio.wait_for(call_next(request), timeout=MAX_REQUEST_TIMEOUT)
             return response
         except asyncio.TimeoutError:
-            logger.error(f"Timeout en solicitud: {request.url.path} después de {MAX_REQUEST_TIMEOUT}s")
+            logger.error(f"[{request_id}] Timeout en solicitud: {request.url.path} después de {MAX_REQUEST_TIMEOUT}s")
             respuesta_error = crear_respuesta_error(
                 mensaje="Timeout en la solicitud",
                 codigo=504,
@@ -244,7 +401,7 @@ async def protection_middleware(request, call_next):
             )
             return JSONResponse(status_code=504, content=respuesta_error)
     except Exception as e:
-        logger.error(f"Error en middleware de protección: {e}", exc_info=True)
+        logger.error(f"[{request_id}] Error en middleware de protección: {e}", exc_info=True)
         respuesta_error = crear_respuesta_error(
             mensaje="Error interno del servidor",
             codigo=500,
@@ -350,6 +507,29 @@ def validar_cantidad_archivos(cantidad: int, max_files: int = MAX_IMPORT_FILES) 
         raise ValueError(f"La cantidad de archivos ({cantidad}) excede el límite máximo de {max_files}")
     return True
 
+# ================================
+# FUNCIÓN PARA CREAR ENGINE CON POOL OPTIMIZADO
+# ================================
+def create_engine_with_pool(connection_string: Optional[str] = None):
+    """
+    Crea un engine de SQLAlchemy con pool de conexiones optimizado.
+    Reutiliza conexiones para mejorar el rendimiento.
+    """
+    from sqlalchemy.pool import QueuePool
+    
+    if connection_string is None:
+        connection_string = build_connection_string()
+    
+    return create_engine(
+        connection_string,
+        poolclass=QueuePool,
+        pool_size=DB_POOL_SIZE,
+        max_overflow=DB_MAX_OVERFLOW,
+        pool_pre_ping=True,  # Verificar conexiones antes de usar
+        pool_recycle=DB_POOL_RECYCLE,  # Reciclar conexiones periódicamente
+        echo=False  # No mostrar SQL en logs (cambiar a True para debugging)
+    )
+
 def obtener_nombre_tabla_seguro(model) -> str:
     """
     Obtiene el nombre de la tabla de un modelo de forma segura.
@@ -388,51 +568,6 @@ def obtener_nombre_tabla_seguro(model) -> str:
     # Último recurso: usar el nombre de la clase como string
     return str(model).split('.')[-1].split("'")[0].lower()
 
-# ================================
-# MIDDLEWARE Y MANEJADORES DE PROTECCIÓN
-# ================================
-@app.middleware("http")
-async def protection_middleware(request, call_next):
-    """Middleware para proteger el servidor contra sobrecarga."""
-    global _concurrent_requests
-    
-    # Verificar límite de solicitudes concurrentes
-    async with _concurrent_requests_lock:
-        if _concurrent_requests >= MAX_CONCURRENT_REQUESTS:
-            logger.warning(f"Límite de solicitudes concurrentes alcanzado: {_concurrent_requests}/{MAX_CONCURRENT_REQUESTS}")
-            respuesta_error = crear_respuesta_error(
-                mensaje="Servidor sobrecargado",
-                codigo=503,
-                detalles=f"El servidor está procesando demasiadas solicitudes. Intente más tarde. Límite: {MAX_CONCURRENT_REQUESTS}"
-            )
-            return JSONResponse(status_code=503, content=respuesta_error)
-        _concurrent_requests += 1
-    
-    try:
-        # Aplicar timeout a la solicitud
-        try:
-            response = await asyncio.wait_for(call_next(request), timeout=MAX_REQUEST_TIMEOUT)
-            return response
-        except asyncio.TimeoutError:
-            logger.error(f"Timeout en solicitud: {request.url.path} después de {MAX_REQUEST_TIMEOUT}s")
-            respuesta_error = crear_respuesta_error(
-                mensaje="Timeout en la solicitud",
-                codigo=504,
-                detalles=f"La solicitud excedió el tiempo máximo de {MAX_REQUEST_TIMEOUT} segundos"
-            )
-            return JSONResponse(status_code=504, content=respuesta_error)
-    except Exception as e:
-        logger.error(f"Error en middleware de protección: {e}", exc_info=True)
-        respuesta_error = crear_respuesta_error(
-            mensaje="Error interno del servidor",
-            codigo=500,
-            detalles="Ocurrió un error inesperado al procesar la solicitud"
-        )
-        return JSONResponse(status_code=500, content=respuesta_error)
-    finally:
-        async with _concurrent_requests_lock:
-            _concurrent_requests -= 1
-
 # Manejador de señales para shutdown graceful
 def signal_handler(signum, frame):
     """Maneja señales de terminación para shutdown graceful."""
@@ -449,11 +584,53 @@ class InsertRequest(BaseModel):
     pass
 
 
-@app.post("/insertar")
-def insertar():
-    """Endpoint para insertar datos masivos. Retorna respuesta estructurada con validaciones."""
+@app.get("/health", tags=["Health"], summary="Health Check", 
+         description="Endpoint para verificar el estado del middleware")
+async def health_check(request: Request):
+    """Endpoint de health check para monitoreo del servicio."""
+    request_id = getattr(request.state, "request_id", "unknown")
     try:
-        logger.info("Iniciando inserción masiva de datos...")
+        # Verificar conexión a base de datos
+        try:
+            conn_str = build_connection_string()
+            engine = create_engine(conn_str)
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            db_status = "ok"
+        except Exception as db_error:
+            logger.warning(f"[{request_id}] Error en health check de BD: {db_error}")
+            db_status = "error"
+        
+        status = {
+            "status": "healthy" if db_status == "ok" else "degraded",
+            "service": "INIA Python Middleware",
+            "version": "1.0.0",
+            "database": db_status,
+            "concurrent_requests": _concurrent_requests,
+            "max_concurrent_requests": MAX_CONCURRENT_REQUESTS,
+            "request_id": request_id
+        }
+        
+        status_code = 200 if db_status == "ok" else 503
+        return JSONResponse(content=status, status_code=status_code)
+    except Exception as e:
+        logger.error(f"[{request_id}] Error en health check: {e}", exc_info=True)
+        status = {
+            "status": "unhealthy",
+            "service": "INIA Python Middleware",
+            "version": "1.0.0",
+            "error": str(e),
+            "request_id": request_id
+        }
+        return JSONResponse(content=status, status_code=503)
+
+
+@app.post("/insertar")
+async def insertar(request: Request):
+    """Endpoint para insertar datos masivos. Retorna respuesta estructurada con validaciones."""
+    request_id = getattr(request.state, "request_id", "unknown")
+    try:
+        logger.info(f"[{request_id}] Iniciando inserción masiva de datos...")
         
         # Validar conexión a base de datos antes de proceder con circuit breaker
         try:
@@ -464,9 +641,9 @@ def insertar():
                     conn.execute(text("SELECT 1"))
             
             db_circuit_breaker.call(test_db_connection)
-            logger.info("Conexión a base de datos validada correctamente")
+            logger.info(f"[{request_id}] Conexión a base de datos validada correctamente")
         except RuntimeError as cb_error:
-            logger.error(f"Circuit breaker bloqueando conexión a BD: {cb_error}")
+            logger.error(f"[{request_id}] Circuit breaker bloqueando conexión a BD: {cb_error}")
             respuesta_error = crear_respuesta_error(
                 mensaje="Servicio de base de datos temporalmente no disponible",
                 codigo=503,
@@ -474,7 +651,7 @@ def insertar():
             )
             raise HTTPException(status_code=503, detail=respuesta_error)
         except Exception as db_error:
-            logger.error(f"Error validando conexión a base de datos: {db_error}", exc_info=True)
+            logger.error(f"[{request_id}] Error validando conexión a base de datos: {db_error}", exc_info=True)
             respuesta_error = crear_respuesta_error(
                 mensaje="No se pudo conectar a la base de datos",
                 codigo=500,
@@ -482,24 +659,42 @@ def insertar():
             )
             raise HTTPException(status_code=500, detail=respuesta_error)
         
-        # Ejecutar inserción masiva
+        # Ejecutar inserción masiva en thread pool global para no bloquear el event loop
         try:
-            insertar_1000_registros_principales()
-            ok = True
+            # Ejecutar en thread pool executor global para operaciones bloqueantes
+            loop = asyncio.get_event_loop()
+            try:
+                # Ejecutar con timeout para evitar que se quede colgado
+                await asyncio.wait_for(
+                    loop.run_in_executor(GLOBAL_THREAD_POOL, insertar_1000_registros_principales),
+                    timeout=MAX_REQUEST_TIMEOUT - 10  # Dejar 10 segundos de margen
+                )
+                ok = True
+            except asyncio.TimeoutError:
+                logger.error(f"[{request_id}] Timeout durante inserción masiva (excedió {MAX_REQUEST_TIMEOUT - 10}s)")
+                ok = False
+                respuesta_error = crear_respuesta_error(
+                    mensaje="Timeout durante inserción masiva",
+                    codigo=504,
+                    detalles=f"La inserción masiva excedió el tiempo máximo permitido de {MAX_REQUEST_TIMEOUT - 10} segundos"
+                )
+                raise HTTPException(status_code=504, detail=respuesta_error)
+        except HTTPException:
+            raise
         except Exception as insert_error:
-            logger.error(f"Error durante inserción masiva: {insert_error}", exc_info=True)
+            logger.error(f"[{request_id}] Error durante inserción masiva: {insert_error}", exc_info=True)
             ok = False
         
         if not ok:
-            logger.error("La inserción masiva falló (retornó False)")
+            logger.error(f"[{request_id}] La inserción masiva falló")
             respuesta_error = crear_respuesta_error(
                 mensaje="La inserción masiva de datos falló",
                 codigo=500,
-                detalles="El proceso de inserción retornó False. Revisa los logs para más detalles."
+                detalles="El proceso de inserción falló. Revisa los logs para más detalles."
             )
             raise HTTPException(status_code=500, detail=respuesta_error)
         
-        logger.info("Inserción masiva completada exitosamente")
+        logger.info(f"[{request_id}] Inserción masiva completada exitosamente")
         respuesta_exito = crear_respuesta_exito(
             mensaje="Inserción masiva de datos completada exitosamente",
             datos={"proceso": "insertar_datos_masivos", "estado": "completado"}
@@ -509,7 +704,8 @@ def insertar():
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error inesperado en inserción masiva: {e}", exc_info=True)
+        request_id = getattr(request.state, "request_id", "unknown")
+        logger.error(f"[{request_id}] Error inesperado en inserción masiva: {e}", exc_info=True)
         respuesta_error = crear_respuesta_error(
             mensaje="Error inesperado durante la inserción masiva",
             codigo=500,
@@ -519,15 +715,17 @@ def insertar():
 
 
 @app.post("/exportar")
-def exportar(
+async def exportar(
+    request: Request,
     tablas: str = Query(default="", description="Lista separada por comas de tablas a exportar"),
     formato: str = Query(default="xlsx", pattern="^(xlsx|csv)$"),
     incluir_sin_pk: bool = Query(default=True, description="Incluir tablas sin Primary Key"),
 ):
     """Endpoint para exportar tablas a Excel. Retorna archivo ZIP con validaciones y mensajes estructurados."""
+    request_id = getattr(request.state, "request_id", "unknown")
     tmp_dir = None
     try:
-        logger.info(f"Iniciando exportación de tablas. Formato: {formato}, Incluir sin PK: {incluir_sin_pk}")
+        logger.info(f"[{request_id}] Iniciando exportación de tablas. Formato: {formato}, Incluir sin PK: {incluir_sin_pk}")
         
         # Validar formato
         if formato not in ("xlsx", "csv"):
@@ -547,9 +745,9 @@ def exportar(
                     conn.execute(text("SELECT 1"))
             
             db_circuit_breaker.call(test_db_connection)
-            logger.info("Conexión a base de datos validada correctamente")
+            logger.info(f"[{request_id}] Conexión a base de datos validada correctamente")
         except RuntimeError as cb_error:
-            logger.error(f"Circuit breaker bloqueando conexión a BD: {cb_error}")
+            logger.error(f"[{request_id}] Circuit breaker bloqueando conexión a BD: {cb_error}")
             respuesta_error = crear_respuesta_error(
                 mensaje="Servicio de base de datos temporalmente no disponible",
                 codigo=503,
@@ -558,7 +756,7 @@ def exportar(
             shutil.rmtree(tmp_dir, ignore_errors=True)
             raise HTTPException(status_code=503, detail=respuesta_error)
         except Exception as db_error:
-            logger.error(f"Error validando conexión a base de datos: {db_error}", exc_info=True)
+            logger.error(f"[{request_id}] Error validando conexión a base de datos: {db_error}", exc_info=True)
             respuesta_error = crear_respuesta_error(
                 mensaje="No se pudo conectar a la base de datos",
                 codigo=500,
@@ -573,14 +771,14 @@ def exportar(
             # por defecto exportar todas las tablas definidas en ExportExcel.MODELS
             from ExportExcel import MODELS
             tablas_list = list(MODELS.keys())
-            logger.info(f"No se especificaron tablas, exportando todas las disponibles: {len(tablas_list)} tablas")
+            logger.info(f"[{request_id}] No se especificaron tablas, exportando todas las disponibles: {len(tablas_list)} tablas")
         else:
-            logger.info(f"Exportando {len(tablas_list)} tabla(s) especificada(s): {', '.join(tablas_list)}")
+            logger.info(f"[{request_id}] Exportando {len(tablas_list)} tabla(s) especificada(s): {', '.join(tablas_list)}")
 
         # Crear directorio temporal
         try:
             tmp_dir = tempfile.mkdtemp(prefix="inia_export_")
-            logger.info(f"Directorio temporal creado: {tmp_dir}")
+            logger.info(f"[{request_id}] Directorio temporal creado: {tmp_dir}")
         except Exception as dir_error:
             respuesta_error = crear_respuesta_error(
                 mensaje="No se pudo crear directorio temporal",
@@ -593,7 +791,7 @@ def exportar(
         try:
             export_selected_tables(tablas_list, tmp_dir, formato, incluir_sin_pk=incluir_sin_pk)
         except Exception as export_error:
-            logger.error(f"Error durante la exportación: {export_error}", exc_info=True)
+            logger.error(f"[{request_id}] Error durante la exportación: {export_error}", exc_info=True)
             respuesta_error = crear_respuesta_error(
                 mensaje="Error durante la exportación de tablas",
                 codigo=500,
@@ -613,7 +811,7 @@ def exportar(
             shutil.rmtree(tmp_dir, ignore_errors=True)
             raise HTTPException(status_code=500, detail=respuesta_error)
         
-        logger.info(f"Se generaron {len(files_generated)} archivo(s) de exportación")
+        logger.info(f"[{request_id}] Se generaron {len(files_generated)} archivo(s) de exportación")
 
         # Empaquetar en zip
         zip_path = os.path.join(tmp_dir, "export.zip")
@@ -627,7 +825,7 @@ def exportar(
                         arcname = os.path.relpath(full, tmp_dir)
                         zf.write(full, arcname)
         except Exception as zip_error:
-            logger.error(f"Error creando archivo ZIP: {zip_error}")
+            logger.error(f"[{request_id}] Error creando archivo ZIP: {zip_error}")
             respuesta_error = crear_respuesta_error(
                 mensaje="No se pudo crear archivo ZIP",
                 codigo=500,
@@ -651,7 +849,7 @@ def exportar(
             with open(zip_path, "rb") as f:
                 zip_bytes = f.read()
         except Exception as read_error:
-            logger.error(f"Error leyendo archivo ZIP: {read_error}")
+            logger.error(f"[{request_id}] Error leyendo archivo ZIP: {read_error}")
             respuesta_error = crear_respuesta_error(
                 mensaje="Error leyendo archivo ZIP generado",
                 codigo=500,
@@ -670,7 +868,7 @@ def exportar(
             shutil.rmtree(tmp_dir, ignore_errors=True)
             raise HTTPException(status_code=500, detail=respuesta_error)
         
-        logger.info(f"Exportación completada exitosamente. Tamaño del ZIP: {len(zip_bytes)} bytes, {len(files_generated)} archivo(s)")
+        logger.info(f"[{request_id}] Exportación completada exitosamente. Tamaño del ZIP: {len(zip_bytes)} bytes, {len(files_generated)} archivo(s)")
         
         # Limpiar archivos temporales
         shutil.rmtree(tmp_dir, ignore_errors=True)
@@ -687,7 +885,8 @@ def exportar(
             shutil.rmtree(tmp_dir, ignore_errors=True)
         raise
     except Exception as e:
-        logger.error(f"Error inesperado durante exportación: {e}", exc_info=True)
+        request_id = getattr(request.state, "request_id", "unknown")
+        logger.error(f"[{request_id}] Error inesperado durante exportación: {e}", exc_info=True)
         if tmp_dir:
             shutil.rmtree(tmp_dir, ignore_errors=True)
         respuesta_error = crear_respuesta_error(
@@ -1046,6 +1245,7 @@ async def procesar_un_archivo(
 
 @app.post("/importar")
 async def importar(
+    request: Request,
     table: Optional[str] = Form(None, description="Tabla destino (opcional, se detecta automáticamente)"),
     upsert: bool = Form(False),
     keep_ids: bool = Form(False),
@@ -1053,8 +1253,9 @@ async def importar(
     files: Optional[List[UploadFile]] = File(None, description="Archivos CSV/XLSX (opcional)"),
 ):
     """Endpoint para importar archivos Excel/CSV a la base de datos. Acepta un archivo o múltiples archivos. Retorna respuesta estructurada con validaciones."""
+    request_id = getattr(request.state, "request_id", "unknown")
     try:
-        logger.info(f"Iniciando importación. Tabla: {table}, Upsert: {upsert}, Keep IDs: {keep_ids}")
+        logger.info(f"[{request_id}] Iniciando importación. Tabla: {table}, Upsert: {upsert}, Keep IDs: {keep_ids}")
         
         # Normalizar entrada: convertir file a lista si se proporciona
         archivos_lista: List[UploadFile] = []
@@ -1114,13 +1315,13 @@ async def importar(
             )
             raise HTTPException(status_code=400, detail=respuesta_error)
         
-        logger.info(f"Archivos recibidos: {len(archivos_lista)} archivo(s)")
+        logger.info(f"[{request_id}] Archivos recibidos: {len(archivos_lista)} archivo(s)")
         for i, archivo in enumerate(archivos_lista, 1):
-            logger.info(f"  {i}. {archivo.filename}, Tamaño: {archivo.size if hasattr(archivo, 'size') else 'desconocido'}")
+            logger.info(f"[{request_id}]   {i}. {archivo.filename}, Tamaño: {archivo.size if hasattr(archivo, 'size') else 'desconocido'}")
         
         # Inicializar modelos si no están inicializados (una sola vez)
         if not IMPORT_MODELS:
-            logger.info("Inicializando modelos de la base de datos...")
+            logger.info(f"[{request_id}] Inicializando modelos de la base de datos...")
             try:
                 conn_str = build_connection_string()
                 engine_init = create_engine(conn_str)
@@ -1148,7 +1349,7 @@ async def importar(
 
         # Si es un solo archivo, procesar directamente y retornar formato actual (compatibilidad)
         if len(archivos_lista) == 1:
-            logger.info("Procesando un solo archivo...")
+            logger.info(f"[{request_id}] Procesando un solo archivo...")
             resultado = await procesar_un_archivo(archivos_lista[0], table, upsert, keep_ids)
             
             if resultado["exito"]:
@@ -1174,7 +1375,7 @@ async def importar(
                 raise HTTPException(status_code=500, detail=respuesta_error)
         
         # Si son múltiples archivos, procesar en paralelo en lotes de 25
-        logger.info(f"Procesando {len(archivos_lista)} archivos en paralelo (lotes de 25)...")
+        logger.info(f"[{request_id}] Procesando {len(archivos_lista)} archivos en paralelo (lotes de 25)...")
         
         resultados: List[Dict[str, Any]] = []
         errores: List[Dict[str, Any]] = []
@@ -1184,7 +1385,7 @@ async def importar(
         lote_size = 25
         for i in range(0, len(archivos_lista), lote_size):
             lote = archivos_lista[i:i + lote_size]
-            logger.info(f"Procesando lote {i // lote_size + 1} ({len(lote)} archivos)...")
+            logger.info(f"[{request_id}] Procesando lote {i // lote_size + 1} ({len(lote)} archivos)...")
             
             # Procesar lote en paralelo (usar asyncio para funciones async)
             # Crear tareas async para el lote
@@ -1273,7 +1474,8 @@ async def importar(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error inesperado durante importación: {e}", exc_info=True)
+        request_id = getattr(request.state, "request_id", "unknown")
+        logger.error(f"[{request_id}] Error inesperado durante importación: {e}", exc_info=True)
         respuesta_error = crear_respuesta_error(
             mensaje="Error inesperado durante la importación",
             codigo=500,
@@ -1286,6 +1488,7 @@ async def importar(
           description="Analiza un archivo Excel y genera un mapeo de datos que muestra qué datos contiene y a qué entidades pertenecen. Identifica automáticamente las columnas, las asocia con entidades del sistema y contrasta con la base de datos para identificar tablas reales.",
           response_description="Mapeo de datos del Excel analizado y contrastado con la base de datos")
 async def analizar(
+    request: Request,
     file: UploadFile = File(..., description="Archivo Excel (.xlsx o .xls) a analizar. El archivo será analizado para identificar su estructura, mapear los datos a entidades del sistema y contrastar con la base de datos."),
     formato: str = Query(default="json", pattern="^(texto|json)$", description="Formato de salida: 'json' para respuesta completa en JSON, 'texto' para formato simplificado legible"),
     contrastar_bd: bool = Query(default=True, description="Si es True, contrasta el mapeo con la base de datos para identificar tablas reales"),
@@ -1314,9 +1517,10 @@ async def analizar(
     - Estadísticas por columna (tipos de datos, valores nulos, etc.)
     - Logs detallados del proceso de análisis y contraste
     """
+    request_id = getattr(request.state, "request_id", "unknown")
     tmp_path = None
     try:
-        logger.info(f"Iniciando análisis de Excel: {file.filename}")
+        logger.info(f"[{request_id}] Iniciando análisis de Excel: {file.filename}")
         
         # Validar que se proporcionó un archivo
         if not file.filename:
@@ -1394,19 +1598,19 @@ async def analizar(
         
         # Analizar el archivo Excel
         try:
-            logger.info(f"Iniciando análisis de estructura del Excel: {file.filename}")
+            logger.info(f"[{request_id}] Iniciando análisis de estructura del Excel: {file.filename}")
             
             # Analizar estructura del Excel
             estructura = analizar_estructura_excel(tmp_path)
-            logger.info(f"Estructura analizada: {len(estructura['hojas'])} hojas encontradas")
+            logger.info(f"[{request_id}] Estructura analizada: {len(estructura['hojas'])} hojas encontradas")
             
             for hoja in estructura['hojas']:
                 logger.info(f"  - Hoja '{hoja['nombre']}': {hoja['total_columnas']} columnas, {hoja['total_filas']} filas")
             
             # Generar mapeo de datos
-            logger.info("Generando mapeo de datos...")
+            logger.info(f"[{request_id}] Generando mapeo de datos...")
             mapeo = generar_mapeo_datos(estructura)
-            logger.info(f"Mapeo generado: {len(mapeo['hojas'])} hojas mapeadas")
+            logger.info(f"[{request_id}] Mapeo generado: {len(mapeo['hojas'])} hojas mapeadas")
             
             # Log detallado del mapeo
             for hoja in mapeo['hojas']:
@@ -1419,9 +1623,9 @@ async def analizar(
             # Contrastar con base de datos si está habilitado
             if contrastar_bd:
                 try:
-                    logger.info("Contrastando mapeo con base de datos...")
+                    logger.info(f"[{request_id}] Contrastando mapeo con base de datos...")
                     mapeo_contrastado = contrastar_mapeo_con_bd(mapeo, umbral_minimo=umbral_coincidencia)
-                    logger.info(f"Contraste completado: {mapeo_contrastado['resumen'].get('entidades_con_tabla_bd', 0)}/{mapeo_contrastado['resumen'].get('total_entidades', 0)} entidades mapeadas a tablas BD")
+                    logger.info(f"[{request_id}] Contraste completado: {mapeo_contrastado['resumen'].get('entidades_con_tabla_bd', 0)}/{mapeo_contrastado['resumen'].get('total_entidades', 0)} entidades mapeadas a tablas BD")
                     
                     # Log detallado del contraste
                     for hoja in mapeo_contrastado['hojas']:
@@ -1528,11 +1732,11 @@ async def analizar(
                     datos=mapeo
                 )
             
-            logger.info(f"Análisis completado exitosamente para {file.filename}")
+            logger.info(f"[{request_id}] Análisis completado exitosamente para {file.filename}")
             return JSONResponse(content=respuesta_exito, status_code=200)
             
         except FileNotFoundError as fnf_error:
-            logger.error(f"Archivo no encontrado: {fnf_error}", exc_info=True)
+            logger.error(f"[{request_id}] Archivo no encontrado: {fnf_error}", exc_info=True)
             respuesta_error = crear_respuesta_error(
                 mensaje="Archivo no encontrado",
                 codigo=404,
@@ -1542,7 +1746,7 @@ async def analizar(
                 safe_remove_file(tmp_path)
             raise HTTPException(status_code=404, detail=respuesta_error)
         except Exception as analisis_error:
-            logger.error(f"Error durante el análisis: {analisis_error}", exc_info=True)
+            logger.error(f"[{request_id}] Error durante el análisis: {analisis_error}", exc_info=True)
             respuesta_error = crear_respuesta_error(
                 mensaje="Error durante el análisis del Excel",
                 codigo=500,
@@ -1565,7 +1769,8 @@ async def analizar(
             safe_remove_file(tmp_path)
         raise
     except Exception as e:
-        logger.error(f"Error inesperado durante análisis: {e}", exc_info=True)
+        request_id = getattr(request.state, "request_id", "unknown")
+        logger.error(f"[{request_id}] Error inesperado durante análisis: {e}", exc_info=True)
         if tmp_path:
             safe_remove_file(tmp_path)
         respuesta_error = crear_respuesta_error(
@@ -1577,17 +1782,44 @@ async def analizar(
 
 
 if __name__ == "__main__":
-    # Configurar uvicorn con límites de protección
+    # Detectar número de CPUs disponibles
+    num_cpus = multiprocessing.cpu_count()
+    num_workers = int(os.getenv("UVICORN_WORKERS", 1))
+    
+    # Solo usar workers si se especifica explícitamente y es > 1
+    # En desarrollo, usar 1 worker para debugging más fácil
+    # En producción, usar múltiples workers (típicamente num_cpus o num_cpus * 2)
+    use_workers = num_workers > 1
+    
+    # Configurar uvicorn con límites de protección y optimizaciones
     config = uvicorn.Config(
         app,
         host="0.0.0.0",
         port=int(os.getenv("PY_MIDDLEWARE_PORT", "9099")),
         timeout_keep_alive=30,
         limit_concurrency=MAX_CONCURRENT_REQUESTS,
-        log_level="info"
+        log_level="info",
+        workers=num_workers if use_workers else None,
+        loop="asyncio",
+        access_log=True
     )
     server = uvicorn.Server(config)
-    logger.info(f"Servidor iniciado con protecciones: Max archivo={MAX_FILE_SIZE/(1024*1024):.1f}MB, Max total={MAX_TOTAL_FILES_SIZE/(1024*1024):.1f}MB, Timeout={MAX_REQUEST_TIMEOUT}s, Concurrentes={MAX_CONCURRENT_REQUESTS}")
+    
+    logger.info("=" * 80)
+    logger.info("Servidor FastAPI iniciado con optimizaciones:")
+    logger.info(f"  - Max archivo: {MAX_FILE_SIZE/(1024*1024):.1f}MB")
+    logger.info(f"  - Max total archivos: {MAX_TOTAL_FILES_SIZE/(1024*1024):.1f}MB")
+    logger.info(f"  - Timeout por request: {MAX_REQUEST_TIMEOUT}s")
+    logger.info(f"  - Requests concurrentes: {MAX_CONCURRENT_REQUESTS}")
+    logger.info(f"  - Rate limit: {RATE_LIMIT_REQUESTS} req/{RATE_LIMIT_WINDOW}s por IP")
+    logger.info(f"  - Thread pool workers: {THREAD_POOL_WORKERS}")
+    logger.info(f"  - DB pool size: {DB_POOL_SIZE} (max overflow: {DB_MAX_OVERFLOW})")
+    if use_workers:
+        logger.info(f"  - Uvicorn workers: {num_workers} (CPUs disponibles: {num_cpus})")
+    else:
+        logger.info(f"  - Uvicorn workers: 1 (modo desarrollo, CPUs disponibles: {num_cpus})")
+    logger.info("=" * 80)
+    
     server.run()
 
 

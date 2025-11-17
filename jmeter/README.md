@@ -168,7 +168,7 @@ Los planes de prueba utilizan las siguientes variables que puedes modificar:
 
 - `BASE_URL`: URL base de la API (default: `http://localhost:8080/Inia`)
 - `ADMIN_EMAIL`: Email del usuario administrador (default: `admin@inia.com`)
-- `ADMIN_PASSWORD`: Contraseña del administrador (default: `admin123`)
+- `ADMIN_PASSWORD`: Contraseña del administrador (default: `password123`)
 - `THREADS`: Número de usuarios concurrentes para pruebas de rendimiento (default: `10`)
 - `RAMP_UP`: Tiempo en segundos para alcanzar el número total de threads (default: `5`)
 - `LOOPS`: Número de iteraciones por thread (default: `5`)
@@ -181,7 +181,7 @@ Puedes sobrescribir las variables al ejecutar JMeter:
 jmeter -n -t scripts/INIA_API_Test_Plan.jmx \
   -JBASE_URL=http://localhost:8080/Inia \
   -JADMIN_EMAIL=admin@inia.com \
-  -JADMIN_PASSWORD=admin123 \
+  -JADMIN_PASSWORD=password123 \
   -l results/test-results.jtl
 ```
 

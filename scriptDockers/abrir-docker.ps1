@@ -109,7 +109,7 @@ Write-Host "  Swagger UI:   http://localhost:8080/swagger-ui/index.html" -Foregr
 Write-Host "  Backend API:  http://localhost:8080/Inia" -ForegroundColor White
 Write-Host "  Middleware:   http://localhost:9099" -ForegroundColor White
 Write-Host ""
-Write-Host "Usuario admin: admin@inia.com / admin123" -ForegroundColor Yellow
+Write-Host "Usuario admin: admin@inia.com / password123" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Para detener los servicios: docker compose down" -ForegroundColor Gray
 Write-Host "O ejecuta: .\scriptDockers\detener-docker.ps1" -ForegroundColor Gray

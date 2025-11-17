@@ -106,12 +106,35 @@ El servidor se ejecutará en `http://localhost:9099`
 python test_massive_insert.py
 ```
 
+#### 6. Pruebas del Middleware FastAPI
+```powershell
+# Asegúrate de que el servidor esté corriendo primero:
+.\PowerShell\run_middleware.ps1 server
+
+# En otra terminal, ejecuta las pruebas del middleware:
+python test_middleware.py
+```
+
+**El script de prueba verifica:**
+- Conexión al servidor
+- Endpoint `/health` y sus headers
+- Headers CORS
+- Unicidad de Request IDs
+- Middleware de timing (X-Process-Time)
+- Middleware de logging
+- Middleware de protección
+- Compresión GZip
+- Endpoints principales con Request IDs
+
 ### Endpoints de la API
 
+- **GET /health** - Health check del servicio (nuevo)
 - **POST /insertar** - Ejecutar inserción masiva de datos
 - **POST /exportar** - Exportar tablas (parámetros: `tablas`, `formato`)
 - **POST /importar** - Importar archivo (formulario: `table`, `file`, `upsert`, `keep_ids`)
-- **GET /docs** - Documentación interactiva de la API
+- **POST /analizar** - Analizar archivo Excel y generar mapeo de datos
+- **GET /docs** - Documentación interactiva de la API (Swagger)
+- **GET /redoc** - Documentación alternativa (ReDoc)
 
 ## Dependencias
 
@@ -135,6 +158,7 @@ middleware/
 ├── requirements.txt         # Dependencias Python
 ├── MassiveInsertFiles.py    # Inserción masiva de datos (modo laboratorio)
 ├── test_massive_insert.py   # Pruebas de rendimiento
+├── test_middleware.py       # Pruebas del middleware FastAPI
 ├── ExportExcel.py          # Exportación a Excel/CSV
 ├── ImportExcel.py          # Importación desde Excel/CSV
 ├── http_server.py          # Servidor API FastAPI

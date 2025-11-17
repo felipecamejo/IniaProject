@@ -79,27 +79,8 @@ GRANT ALL PRIVILEGES ON TABLE inia.USUARIO TO postgres;
 GRANT USAGE, SELECT ON SEQUENCE inia.usuario_usuario_id_seq TO inia_user;
 GRANT USAGE, SELECT ON SEQUENCE inia.usuario_usuario_id_seq TO postgres;
 
--- Insertar usuario administrador por defecto
--- Email: admin@inia.com
--- Contraseña: password123 (hash BCrypt con fuerza 10)
--- NOTA: Este script se ejecuta antes de que Spring Boot inicie.
--- El AdminInitializer de Spring Boot también creará este usuario automáticamente si no existe.
--- Si el hash no funciona, el AdminInitializer creará el usuario con la contraseña correcta.
-INSERT INTO inia.USUARIO (EMAIL, NOMBRE, PASSWORD, TELEFONO, ROL, USUARIO_ACTIVO)
-SELECT 
-    'admin@inia.com',
-    'Administrador',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', -- BCrypt hash para "admin123"
-    '+598-099-000-001',
-    'ADMIN',
-    TRUE
-WHERE NOT EXISTS (
-    SELECT 1 FROM inia.USUARIO WHERE EMAIL = 'admin@inia.com'
-);
-
--- Mensaje de confirmación
-DO $$
-BEGIN
-    RAISE NOTICE 'Base de datos INIA inicializada correctamente';
-    RAISE NOTICE 'Usuario admin creado: admin@inia.com / password123';
-END $$;
+-- NOTA: El usuario administrador por defecto NO se crea aquí.
+-- El usuario admin se crea automáticamente mediante:
+-- 1. AdminInitializer.java (al iniciar Spring Boot)
+-- 2. Endpoint /api/seguridad/ensure-admin (si se llama manualmente)
+-- Credenciales por defecto: admin@inia.com / password123

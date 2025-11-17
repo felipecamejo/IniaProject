@@ -19,3 +19,4 @@ pytest>=7.4.0
 pytest-asyncio>=0.21.0
 httpx>=0.25.0  # Requerido por TestClient
 pytest-cov>=4.1.0  # Para cobertura de código (opcional)
+requests>=2.31.0  # Para scripts de prueba HTTP
