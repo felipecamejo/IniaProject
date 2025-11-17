@@ -669,7 +669,7 @@ async def insertar(request: Request):
                     loop.run_in_executor(GLOBAL_THREAD_POOL, insertar_1000_registros_principales),
                     timeout=MAX_REQUEST_TIMEOUT - 10  # Dejar 10 segundos de margen
                 )
-                ok = True
+            ok = True
             except asyncio.TimeoutError:
                 logger.error(f"[{request_id}] Timeout durante inserción masiva (excedió {MAX_REQUEST_TIMEOUT - 10}s)")
                 ok = False
