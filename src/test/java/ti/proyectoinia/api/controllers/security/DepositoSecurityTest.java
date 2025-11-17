@@ -181,20 +181,20 @@ public class DepositoSecurityTest {
     void adminPuedeEliminar() throws Exception {
         when(depositoService.eliminarDeposito(1L)).thenReturn("Eliminado");
 
-        mockMvc.perform(put(apiUrl + "/eliminar/1"))
+        mockMvc.perform(delete(apiUrl + "/eliminar/1"))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(authorities = "OBSERVADOR")
     void userNoPuedeEliminar() throws Exception {
-        mockMvc.perform(put(apiUrl + "/eliminar/1"))
+        mockMvc.perform(delete(apiUrl + "/eliminar/1"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void noAutenticadoEliminarDebeDar401() throws Exception {
-        mockMvc.perform(put(apiUrl + "/eliminar/1"))
+        mockMvc.perform(delete(apiUrl + "/eliminar/1"))
                 .andExpect(status().isUnauthorized());
     }
 

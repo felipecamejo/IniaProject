@@ -167,10 +167,11 @@ public class TetrazolioSecurityService {
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeEditar() throws Exception {
         TetrazolioDto dto = new TetrazolioDto();
+        dto.setId(1L);
         Date now = new Date();
         dto.setFechaCreacion(now);
 
-        when(tetrazolioService.editarTetrazolio(dto)).thenReturn("1L");
+        when(tetrazolioService.editarTetrazolio(any())).thenReturn("1L");
 
         mockMvc.perform(put(apiUrl + "/editar")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -196,20 +197,20 @@ public class TetrazolioSecurityService {
     void adminPuedeEliminar() throws Exception {
         when(tetrazolioService.eliminarTetrazolio(1L)).thenReturn("Eliminado");
 
-        mockMvc.perform(put(apiUrl + "/eliminar/1"))
+        mockMvc.perform(delete(apiUrl + "/eliminar/1"))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(authorities = "OBSERVADOR")
     void userNoPuedeEliminar() throws Exception {
-        mockMvc.perform(put(apiUrl + "/eliminar/1"))
+        mockMvc.perform(delete(apiUrl + "/eliminar/1"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void noAutenticadoEliminarDebeDar401() throws Exception {
-        mockMvc.perform(put(apiUrl + "/eliminar/1"))
+        mockMvc.perform(delete(apiUrl + "/eliminar/1"))
                 .andExpect(status().isUnauthorized());
     }
 

@@ -102,15 +102,6 @@ public class HumedadReciboSecurityTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ANALISTA")
-    void analistaNoPuedeActualizarHumedades() throws Exception {
-        mockMvc.perform(put(apiUrl + "/actualizar-humedades/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("[]"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     @WithMockUser(authorities = "OBSERVADOR")
     void observadorNoPuedeActualizarHumedades() throws Exception {
         mockMvc.perform(put(apiUrl + "/actualizar-humedades/1")

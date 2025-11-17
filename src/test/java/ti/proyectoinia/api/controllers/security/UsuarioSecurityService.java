@@ -12,6 +12,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ti.proyectoinia.api.controllers.UsuarioController;
 import ti.proyectoinia.api.responses.ResponseListadoUsuarios;
+import ti.proyectoinia.business.entities.RolUsuario;
 import ti.proyectoinia.dtos.UsuarioDto;
 import ti.proyectoinia.services.UsuarioService;
 
@@ -47,6 +48,7 @@ class UsuarioSecurityService {
         dto.setEmail("test@inia.com");
         dto.setNombre("Test User");
         dto.setPassword("1234");
+        dto.setRol(RolUsuario.ANALISTA);
 
         when(usuarioService.crearUsuario(any())).thenReturn("Usuario creado");
 
@@ -58,11 +60,12 @@ class UsuarioSecurityService {
 
     @Test
     @WithMockUser(authorities = "GUEST")
-    void GuestPuedeCrearUsuario() throws Exception {
+    void GuestNoPuedeCrearUsuario() throws Exception {
         UsuarioDto dto = new UsuarioDto();
         dto.setEmail("test@inia.com");
         dto.setNombre("Test User");
         dto.setPassword("1234");
+        dto.setRol(RolUsuario.ANALISTA);
 
         when(usuarioService.crearUsuario(any())).thenReturn("Usuario creado");
 
@@ -78,6 +81,7 @@ class UsuarioSecurityService {
         dto.setEmail("test@inia.com");
         dto.setNombre("Test User");
         dto.setPassword("1234");
+        dto.setRol(RolUsuario.ANALISTA);
 
         when(usuarioService.crearUsuario(any())).thenReturn("Usuario creado");
 
@@ -158,6 +162,8 @@ class UsuarioSecurityService {
         UsuarioDto dto = new UsuarioDto();
         dto.setId(1L);
         dto.setEmail("edit@test.com");
+        dto.setNombre("Edited User");
+        dto.setRol(RolUsuario.ANALISTA);
 
         when(usuarioService.editarUsuario(any())).thenReturn("Usuario editado");
 
@@ -243,7 +249,9 @@ class UsuarioSecurityService {
     void actualizarPerfilUsuario() throws Exception {
         UsuarioDto dto = new UsuarioDto();
         dto.setId(1L);
+        dto.setEmail("actualizar@test.com");
         dto.setNombre("Nuevo Nombre");
+        dto.setRol(RolUsuario.ADMIN);
 
         when(usuarioService.editarUsuario(any())).thenReturn("Perfil actualizado");
 

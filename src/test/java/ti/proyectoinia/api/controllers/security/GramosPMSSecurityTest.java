@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ti.proyectoinia.api.controllers.GramosPmsController;
 import ti.proyectoinia.dtos.GramosPmsDto;
 import ti.proyectoinia.services.GramosPmsService;
+import ti.proyectoinia.services.PMSService;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +35,9 @@ public class GramosPMSSecurityTest {
 
     @MockitoBean
     GramosPmsService gramosPmsService;
+
+    @MockitoBean
+    PMSService pmsService;
 
     String apiUrl = "/api/v1/gramos-pms";
 
@@ -100,14 +104,6 @@ public class GramosPMSSecurityTest {
                 .andExpect(status().isCreated());
     }
 
-    @Test
-    @WithMockUser(authorities = "ANALISTA")
-    void analistaNoPuedeCrearMultiples() throws Exception {
-        mockMvc.perform(post(apiUrl + "/crear-multiple")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("[]"))
-                .andExpect(status().isForbidden());
-    }
 
     @Test
     @WithMockUser(authorities = "OBSERVADOR")

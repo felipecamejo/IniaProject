@@ -15,6 +15,7 @@ import ti.proyectoinia.dtos.GerminacionDto;
 import ti.proyectoinia.dtos.NormalPorConteoDto;
 import ti.proyectoinia.dtos.RepeticionFinalDto;
 import ti.proyectoinia.services.GerminacionMatrizService;
+import ti.proyectoinia.services.GerminacionService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,6 +43,9 @@ public class GerminacionTablasSecurityTest {
 
     @MockitoBean
     GerminacionMatrizService germinacionMatrizService;
+
+    @MockitoBean
+    GerminacionService germinacionService;
 
     String apiUrl = "/api/v1/germinacion/tablas";
 
@@ -183,6 +187,7 @@ public class GerminacionTablasSecurityTest {
         mapa.put("conteos", Collections.emptyList());
 
         when(germinacionMatrizService.listMatriz(id)).thenReturn(mapa);
+        when(germinacionService.obtenerGerminacionPorId(id)).thenReturn(new GerminacionDto()); // <-- mock añadido
 
         mockMvc.perform(get(apiUrl + "/" + id + "/resumen"))
                 .andExpect(status().isOk());
