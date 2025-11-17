@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import ti.proyectoinia.ProjectoIniaApplication;
+import ti.proyectoinia.api.controllers.security.TestSecurityConfig;
 import ti.proyectoinia.config.TestcontainersConfig;
 
 /**
@@ -31,9 +32,18 @@ import ti.proyectoinia.config.TestcontainersConfig;
         classes = ProjectoIniaApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-@Import(TestcontainersConfig.class)
+@Import({TestcontainersConfig.class, TestSecurityConfig.class})
 @ActiveProfiles("test")
-@TestPropertySource(locations = "classpath:application-test.properties")
+@TestPropertySource(
+    locations = "classpath:application-test.properties",
+    properties = {
+        // Sobrescribir propiedades de application.properties para evitar que Spring intente conectarse
+        // antes de que Testcontainers configure las propiedades dinámicas
+        "spring.datasource.url=",
+        "spring.datasource.username=",
+        "spring.datasource.password="
+    }
+)
 public abstract class AbstractTestcontainersIntegrationTest {
 
     /**

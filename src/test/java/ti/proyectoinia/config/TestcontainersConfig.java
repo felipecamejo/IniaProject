@@ -2,10 +2,14 @@ package ti.proyectoinia.config;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
+
+import java.time.Duration;
 
 /**
  * Configuración de Testcontainers para tests de integración con base de datos real.
@@ -18,11 +22,14 @@ import org.testcontainers.utility.DockerImageName;
  * - O usar @Import(TestcontainersConfig.class) en tus tests
  */
 @TestConfiguration
+@Order(Integer.MIN_VALUE)
 public class TestcontainersConfig {
 
     /**
      * Contenedor PostgreSQL compartido para todos los tests.
      * Se reutiliza entre tests para mejorar el rendimiento.
+     * Se inicia en el bloque static para asegurar que esté disponible
+     * antes de que Spring intente conectarse a la base de datos.
      */
     private static final PostgreSQLContainer<?> postgresContainer;
 
@@ -33,13 +40,24 @@ public class TestcontainersConfig {
                 .withDatabaseName("inia_test")
                 .withUsername("inia_user")
                 .withPassword("inia_password")
-                .withReuse(true); // Reutilizar contenedor entre ejecuciones
+                .withReuse(true) // Reutilizar contenedor entre ejecuciones
+                .withStartupTimeout(Duration.ofMinutes(2)) // Timeout de inicio
+                .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*", 2)) // Esperar a que PostgreSQL esté listo
+                .withConnectTimeoutSeconds(30); // Timeout de conexión
 
-        postgresContainer.start();
+        try {
+            postgresContainer.start();
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Error al iniciar contenedor Testcontainers. " +
+                    "Verifica que Docker esté corriendo y que tengas permisos suficientes. " +
+                    "Error: " + e.getMessage(), e);
+        }
     }
 
     /**
      * Configura las propiedades dinámicas de Spring para usar el contenedor PostgreSQL.
+     * Este método se ejecuta ANTES de que Spring intente crear el DataSource.
      * 
      * @param registry Registro de propiedades dinámicas de Spring
      */
@@ -48,7 +66,9 @@ public class TestcontainersConfig {
         registry.add("spring.datasource.url", postgresContainer::getJdbcUrl);
         registry.add("spring.datasource.username", postgresContainer::getUsername);
         registry.add("spring.datasource.password", postgresContainer::getPassword);
+        // Registrar ambas formas de especificar el driver para compatibilidad con Spring Boot 3.x
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+        registry.add("spring.datasource.driverClassName", () -> "org.postgresql.Driver");
         
         // Configuración JPA para tests
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");

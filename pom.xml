@@ -162,18 +162,17 @@
                 <version>${maven.surefire.version}</version>
                 <configuration>
                     <argLine>@{argLine} -XX:+EnableDynamicAgentLoading</argLine>
-                    <!-- Excluir tests CRUD y tests de seguridad/autorización -->
-                    <!-- Solo ejecutar tests de casos de uso de negocio importantes -->
+                    <!-- Excluir tests CRUD básicos y tests de seguridad/autorización -->
+                    <!-- Incluir tests de integración con Testcontainers (son importantes para validar BD real) -->
                     <excludes>
-                        <!-- Excluir tests de integración CRUD básicos -->
+                        <!-- Excluir tests de integración CRUD básicos (sin Testcontainers) -->
                         <exclude>**/integration/*ControllerTest.java</exclude>
-                        <!-- Excluir tests de integración con Testcontainers que son CRUD -->
-                        <exclude>**/integration/*IntegrationTest.java</exclude>
+                        <!-- Tests de integración con Testcontainers se INCLUYEN (no excluir) -->
                         <!-- Excluir tests de seguridad/autorización (no son casos de uso de negocio) -->
                         <exclude>**/security/**Test.java</exclude>
                         <exclude>**/security/**Service.java</exclude>
                     </excludes>
-                    <!-- No incluir nada específico, solo ejecutar tests de casos de uso de negocio si existen -->
+                    <!-- Incluir tests de integración con Testcontainers y casos de uso de negocio -->
                 </configuration>
             </plugin>
 
@@ -333,11 +332,11 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <!-- Excluir tests CRUD y tests de seguridad/autorización -->
-                            <!-- Solo ejecutar tests de casos de uso de negocio importantes -->
+                            <!-- Excluir tests CRUD básicos y tests de seguridad/autorización -->
+                            <!-- Incluir tests de integración con Testcontainers (son importantes) -->
                             <excludes>
                                 <exclude>**/integration/*ControllerTest.java</exclude>
-                                <exclude>**/integration/*IntegrationTest.java</exclude>
+                                <!-- Tests de integración con Testcontainers se INCLUYEN -->
                                 <exclude>**/security/**Test.java</exclude>
                                 <exclude>**/security/**Service.java</exclude>
                             </excludes>
