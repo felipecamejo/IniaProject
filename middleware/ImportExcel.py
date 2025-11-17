@@ -159,8 +159,8 @@ def inicializar_automap(engine=None):
         # Solo necesitamos las columnas para la importación, no las relaciones
         Base.prepare(
             autoload_with=_engine,
-            reflect=True,
             generate_relationship=None  # No generar relaciones automáticamente
+            # Nota: reflect=True está deprecado cuando se usa autoload_with (reflexión automática)
         )
         logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
     except Exception as e:
@@ -776,9 +776,23 @@ def import_one_file(session, model, ruta_archivo: str, formato: str, upsert: boo
                     batch_size = 1000
                     for i in range(0, len(filas_datos), batch_size):
                         batch = filas_datos[i:i + batch_size]
-                        stmt = insert(table).values(batch)
+                        # Filtrar None de las claves primarias para evitar SAWarning
+                        # Si la PK tiene autoincrement en la BD, no necesita valor explícito
+                        batch_clean = []
+                        for row in batch:
+                            row_clean = row.copy()
+                            # Remover valores None de columnas PK que puedan tener autoincrement
+                            for pk_col in table.primary_key.columns:
+                                if pk_col.name in row_clean and row_clean[pk_col.name] is None:
+                                    # Si la columna PK es None y puede tener autoincrement, removerla
+                                    # La BD generará el valor automáticamente
+                                    if pk_col.autoincrement or pk_col.server_default is not None:
+                                        del row_clean[pk_col.name]
+                            batch_clean.append(row_clean)
+                        
+                        stmt = insert(table).values(batch_clean)
                         result = session.execute(stmt)
-                        inserted += len(batch)
+                        inserted += len(batch_clean)
                 
                 session.commit()
                 logger.info(f"Importación completada: {inserted} insertados, {updated} actualizados")

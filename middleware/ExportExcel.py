@@ -132,8 +132,8 @@ def inicializar_automap(engine=None):
         # Solo necesitamos las columnas para la exportación, no las relaciones
         Base.prepare(
             autoload_with=_engine,
-            reflect=True,
             generate_relationship=None  # No generar relaciones automáticamente
+            # Nota: reflect=True está deprecado cuando se usa autoload_with (reflexión automática)
         )
         logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
     except Exception as e:

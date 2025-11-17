@@ -727,14 +727,8 @@ async def exportar(
     try:
         logger.info(f"[{request_id}] Iniciando exportación de tablas. Formato: {formato}, Incluir sin PK: {incluir_sin_pk}")
         
-        # Validar formato
-        if formato not in ("xlsx", "csv"):
-            respuesta_error = crear_respuesta_error(
-                mensaje="Formato no válido",
-                codigo=400,
-                detalles=f"El formato '{formato}' no es válido. Solo se acepta 'xlsx' o 'csv'"
-            )
-            raise HTTPException(status_code=400, detail=respuesta_error)
+        # Nota: El formato ya está validado por FastAPI mediante pattern="^(xlsx|csv)$" en Query
+        # FastAPI retornará 422 automáticamente si el formato no coincide
         
         # Validar conexión a base de datos con circuit breaker
         try:
@@ -1520,18 +1514,21 @@ async def analizar(
     request_id = getattr(request.state, "request_id", "unknown")
     tmp_path = None
     try:
-        logger.info(f"[{request_id}] Iniciando análisis de Excel: {file.filename}")
+        # Nota: El archivo ya está validado por FastAPI mediante File(...) (requerido)
+        # FastAPI retornará 422 automáticamente si el archivo no se proporciona
         
-        # Validar que se proporcionó un archivo
+        # Validar que el archivo tiene nombre (aunque FastAPI requiere el archivo, el filename puede ser None)
         if not file.filename:
             respuesta_error = crear_respuesta_error(
-                mensaje="Archivo no proporcionado",
+                mensaje="Nombre de archivo no proporcionado",
                 codigo=400,
-                detalles="Debe proporcionar un archivo Excel para analizar"
+                detalles="El archivo debe tener un nombre válido"
             )
             raise HTTPException(status_code=400, detail=respuesta_error)
         
-        # Validar extensión del archivo
+        logger.info(f"[{request_id}] Iniciando análisis de Excel: {file.filename}")
+        
+        # Validar extensión del archivo (FastAPI no valida el tipo de archivo por extensión)
         _, ext = os.path.splitext(file.filename)
         if ext.lower() not in ('.xlsx', '.xls'):
             respuesta_error = crear_respuesta_error(
@@ -1541,14 +1538,8 @@ async def analizar(
             )
             raise HTTPException(status_code=400, detail=respuesta_error)
         
-        # Validar formato de salida
-        if formato not in ("texto", "json"):
-            respuesta_error = crear_respuesta_error(
-                mensaje="Formato de salida no válido",
-                codigo=400,
-                detalles=f"El formato '{formato}' no es válido. Solo se acepta 'texto' o 'json'"
-            )
-            raise HTTPException(status_code=400, detail=respuesta_error)
+        # Nota: El formato de salida ya está validado por FastAPI mediante pattern="^(texto|json)$" en Query
+        # FastAPI retornará 422 automáticamente si el formato no coincide
         
         # Guardar archivo temporalmente
         try:

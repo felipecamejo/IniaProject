@@ -137,8 +137,8 @@ def inicializar_automap(engine=None):
         # Solo necesitamos las columnas para la inserción masiva, no las relaciones
         Base.prepare(
             autoload_with=_engine,
-            reflect=True,
             generate_relationship=None  # No generar relaciones automáticamente
+            # Nota: reflect=True está deprecado cuando se usa autoload_with (reflexión automática)
         )
         logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
     except Exception as e:
@@ -568,10 +568,20 @@ def generar_datos_tabla(engine, tabla_nombre: str, cantidad: int, ids_referencia
                         combinaciones_existentes.add(combinacion)
                         nuevas_filas.append(nueva_fila)
                 
-                if nuevas_filas:
+                if nuevas_filas and len(nuevas_filas) > 0:
                     df_nuevas = pd.DataFrame(nuevas_filas)
-                    df = pd.concat([df, df_nuevas], ignore_index=True)
-                    logger.info(f"Agregadas {len(nuevas_filas)} nuevas filas únicas a '{tabla_nombre}'")
+                    # Verificar que df_nuevas tenga datos válidos antes de concatenar (evita FutureWarning)
+                    # Filtrar filas que no sean completamente NA antes de concatenar
+                    if not df_nuevas.empty:
+                        # Eliminar columnas que sean completamente NA antes de concatenar
+                        df_nuevas_clean = df_nuevas.dropna(axis=1, how='all')
+                        if not df_nuevas_clean.empty:
+                            df = pd.concat([df, df_nuevas_clean], ignore_index=True)
+                            logger.info(f"Agregadas {len(nuevas_filas)} nuevas filas únicas a '{tabla_nombre}'")
+                        else:
+                            logger.warning(f"DataFrame df_nuevas solo contiene columnas NA para '{tabla_nombre}'")
+                    else:
+                        logger.warning(f"DataFrame df_nuevas está vacío para '{tabla_nombre}'")
                 else:
                     logger.warning(f"No se pudieron generar suficientes filas únicas para '{tabla_nombre}'. Generadas: {len(df)} de {cantidad}")
     
