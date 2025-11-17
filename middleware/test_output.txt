@@ -1,0 +1,379 @@
+﻿
+[1m[96m============================================================[0m
+[1m[96m            PRUEBAS DE MIDDLEWARE FASTAPI - INIA            [0m
+[1m[96m============================================================[0m
+
+[94m[INFO] URL Base: http://localhost:9099[0m
+[94m[INFO] Timeout: 30s[0m
+[94m[INFO] Inicio: 2025-11-16 22:15:56
+[0m
+
+[1m[96m============================================================[0m
+[1m[96m            1. Verificando Conexi¾n al Servidor             [0m
+[1m[96m============================================================[0m
+
+[92m[OK] Servidor disponible en http://localhost:9099[0m
+[94m[INFO] Endpoint probado: /health (Health check)[0m
+
+[1m[96m============================================================[0m
+[1m[96m                2. Probando Endpoint /health                [0m
+[1m[96m============================================================[0m
+
+[94m[INFO] Status Code: 200[0m
+[94m[INFO] Tiempo de respuesta: 2.1917s[0m
+[94m[INFO] Headers recibidos: 11[0m
+[92m[OK] X-Request-ID presente: 1b67fcb9-303f-43f0-82cc-9078bf0c0e87[0m
+[92m[OK] X-Process-Time presente: 0.1306s[0m
+[94m[INFO] 
+Verificando Security Headers:[0m
+[92m[OK] X-Content-Type-Options: nosniff[0m
+[92m[OK] X-Frame-Options: SAMEORIGIN[0m
+[92m[OK] X-XSS-Protection: 1; mode=block[0m
+[92m[OK] Referrer-Policy: strict-origin-when-cross-origin[0m
+[92m[OK] Respuesta JSON vßlida[0m
+[94m[INFO] Estado del servicio: healthy[0m
+[94m[INFO] Estado de BD: ok[0m
+[94m[INFO] Requests concurrentes: 1/10[0m
+
+[1m[96m============================================================[0m
+[1m[96m                  3. Probando CORS Headers                  [0m
+[1m[96m============================================================[0m
+
+[94m[INFO] Headers CORS encontrados:[0m
+[92m[OK] Access-Control-Allow-Origin: http://localhost:4200[0m
+[92m[OK] Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS[0m
+[93m[WARN] Access-Control-Allow-Headers: No encontrado[0m
+
+[1m[96m============================================================[0m
+[1m[96m            4. Probando Unicidad de Request IDs             [0m
+[1m[96m============================================================[0m
+
+[94m[INFO] Request 1: 9c682ecb-b85f-4ea3-901c-ec97c5a9a0df[0m
+[94m[INFO] Request 2: 81555e80-f42e-47b9-8d54-d27d8c50bcb8[0m
+[94m[INFO] Request 3: 891bcc07-325a-4552-a0ad-b2e1286447b2[0m
+[94m[INFO] Request 4: fc118c76-077d-413a-8615-92073b7b705a[0m
+[94m[INFO] Request 5: 8980c6d0-08e4-48d9-96ef-89374291b4f0[0m
+[92m[OK] Todos los Request IDs son ·nicos (5 ·nicos)[0m
+
+[1m[96m============================================================[0m
+[1m[96m              5. Probando Middleware de Timing              [0m
+[1m[96m============================================================[0m
+
+[92m[OK] Tiempo de procesamiento: 0.2022s[0m
+[92m[OK] Middleware de timing funcionando correctamente[0m
+
+[1m[96m============================================================[0m
+[1m[96m             6. Probando Middleware de Logging              [0m
+[1m[96m============================================================[0m
+
+[94m[INFO] El middleware de logging agrega request_id a todos los logs[0m
+[94m[INFO] Revisa la consola del servidor para ver logs con formato [request_id][0m
+[92m[OK] Middleware de logging configurado (verifica logs del servidor)[0m
+
+[1m[96m============================================================[0m
+[1m[96m            7. Probando Middleware de Protecci¾n            [0m
+[1m[96m============================================================[0m
+
+[94m[INFO] Este middleware limita requests concurrentes y aplica timeouts[0m
+[92m[OK] Middleware de protecci¾n permite requests normales[0m
+[94m[INFO] El middleware de protecci¾n estß activo[0m
+[94m[INFO] LÝmites configurados:[0m
+[94m[INFO]   - Max requests concurrentes: 10[0m
+[94m[INFO]   - Timeout por request: 300s[0m
+
+[1m[96m============================================================[0m
+[1m[96m                9. Probando Compresi¾n GZip                 [0m
+[1m[96m============================================================[0m
+
+[94m[INFO] Compresi¾n GZip no aplicada (puede ser normal para respuestas peque±as)[0m
+[94m[INFO] GZip se aplica automßticamente a respuestas > 1000 bytes[0m
+
+[1m[96m============================================================[0m
+[1m[96m             8. Probando Endpoints Principales              [0m
+[1m[96m============================================================[0m
+
+[94m[INFO] Probando GET /health[0m
+[92m[OK] GET /health - Request ID: ea7491c7-0421-44cc-a38e-c2e2fbde40bc[0m
+[92m[OK] Status: 200[0m
+[94m[INFO] Probando GET /docs[0m
+[92m[OK] GET /docs - Request ID: c93818e3-9cb9-4ccc-93e6-421d528c9fb6[0m
+[92m[OK] Status: 200[0m
+[94m[INFO] Probando POST /insertar[0m
+[93m[WARN] POST /insertar - Timeout (esperado para operaci¾n pesada)[0m
+[94m[INFO] Probando POST /exportar?formato=xlsx[0m
+[92m[OK] POST /exportar?formato=xlsx - Request ID: 6f795889-1307-4964-95cd-8c1aca0e18c7[0m
+[92m[OK] Status: 200[0m
+
+[1m[96m============================================================[0m
+[1m[96m                     RESUMEN DE PRUEBAS                     [0m
+[1m[96m============================================================[0m
+
+[92m[OK] health: OK[0m
+[92m[OK] cors: OK[0m
+[92m[OK] request_id_uniqueness: OK[0m
+[92m[OK] timing: OK[0m
+[92m[OK] logging: OK[0m
+[92m[OK] protection: OK[0m
+[92m[OK] gzip: OK[0m
+[92m[OK] endpoints: OK (4/4 endpoints OK)[0m
+[92m[OK]   /health: OK[0m
+[92m[OK]   /docs: OK[0m
+[92m[OK]   /insertar: OK[0m
+[92m[OK]   /exportar: OK[0m
+
+[1mTotal: 8/8 pruebas pasaron[0m
+
+
+[1m[96m============================================================[0m
+[1m[96m       LOG DETALLADO DE PRUEBAS - FASTAPI MIDDLEWARE        [0m
+[1m[96m============================================================[0m
+
+
+[1m[96m================================================================================[0m
+[1mINFORMACIËN DEL SERVIDOR[0m
+[1m[96m================================================================================[0m
+  [1mEstado:[0m healthy
+  [1mServicio:[0m INIA Python Middleware
+  [1mVersi¾n:[0m 1.0.0
+  [1mBase de datos:[0m ok
+  [1mRequests concurrentes:[0m 1/10
+  [1mRequest ID:[0m e237e782-f621-4b7f-b92b-63d0d9797c1e
+
+[1m[96m================================================================================[0m
+[1mESTAD═STICAS DE PRUEBAS[0m
+[1m[96m================================================================================[0m
+  [92m[PASSED][0m health........................ [2.192s]
+  [92m[PASSED][0m cors.......................... [2.091s]
+  [92m[PASSED][0m request_id_uniqueness......... [10.950s]
+  [92m[PASSED][0m timing........................ [2.256s]
+  [92m[PASSED][0m logging....................... [0.000s]
+  [92m[PASSED][0m protection.................... [2.227s]
+  [92m[PASSED][0m gzip.......................... [2.178s]
+  [92m[PASSED][0m endpoints..................... (4/4 endpoints) [33.145s]
+
+[1m[96m================================================================================[0m
+[1mRESUMEN FINAL[0m
+[1m[96m================================================================================[0m
+  [1mTotal de pruebas:[0m 8
+  [92m[OK] Exitosas:[0m 8
+  [1mTasa de Úxito:[0m 100.0%
+  [1mTiempo total:[0m 57.431s
+  [1mTiempo promedio por prueba:[0m 7.179s
+
+[1m[96m================================================================================[0m
+[1mRENDIMIENTO[0m
+[1m[96m================================================================================[0m
+  [1mPrueba mßs rßpida:[0m logging (0.000s)
+  [1mPrueba mßs lenta:[0m endpoints (33.145s)
+  [1mTiempo promedio:[0m 6.880s
+
+[1m[96m================================================================================[0m
+[1mTimestamp:[0m 2025-11-16 22:16:55
+[1m[96m================================================================================[0m
+
+[1m[92m================================================================================[0m
+[1m[92m[SUCCESS] TODAS LAS PRUEBAS PASARON EXITOSAMENTE[0m
+[1m[92m================================================================================[0m
+
+
+[1m[96m============================================================[0m
+[1m[96m     DETALLES COMPLETOS DE PRUEBAS - DATOS Y RESPUESTAS     [0m
+[1m[96m============================================================[0m
+
+
+[1m[96m================================================================================[0m
+[1mENDPOINTS DISPONIBLES EN EL SERVIDOR[0m
+[1m[96m================================================================================[0m
+
+[1mGET /health[0m
+  [94mURL:[0m http://localhost:9099/health
+  [94mMÚtodo:[0m GET
+  [94mDescripci¾n:[0m Health check del servicio
+
+[1mGET /docs[0m
+  [94mURL:[0m http://localhost:9099/docs
+  [94mMÚtodo:[0m GET
+  [94mDescripci¾n:[0m Documentaci¾n interactiva de la API (Swagger UI)
+
+[1mGET /redoc[0m
+  [94mURL:[0m http://localhost:9099/redoc
+  [94mMÚtodo:[0m GET
+  [94mDescripci¾n:[0m Documentaci¾n alternativa (ReDoc)
+
+[1mGET /openapi.json[0m
+  [94mURL:[0m http://localhost:9099/openapi.json
+  [94mMÚtodo:[0m GET
+  [94mDescripci¾n:[0m Esquema OpenAPI en formato JSON
+
+[1mPOST /insertar[0m
+  [94mURL:[0m http://localhost:9099/insertar
+  [94mMÚtodo:[0m POST
+  [94mDescripci¾n:[0m Ejecutar inserci¾n masiva de datos (1000 registros)
+
+[1mPOST /exportar[0m
+  [94mURL:[0m http://localhost:9099/exportar
+  [94mMÚtodo:[0m POST
+  [94mDescripci¾n:[0m Exportar tablas a Excel/CSV
+  [94mParßmetros:[0m
+    - tablas: string (query) - Lista separada por comas de tablas a exportar
+    - formato: string (query) - 'xlsx' o 'csv' (default: 'xlsx')
+    - incluir_sin_pk: boolean (query) - Incluir tablas sin Primary Key (default: True)
+
+[1mPOST /importar[0m
+  [94mURL:[0m http://localhost:9099/importar
+  [94mMÚtodo:[0m POST
+  [94mDescripci¾n:[0m Importar archivo CSV/XLSX a la base de datos
+  [94mParßmetros:[0m
+    - table: string (form) - Tabla destino (opcional, se detecta automßticamente)
+    - upsert: boolean (form) - Actualizar si existe (default: False)
+    - keep_ids: boolean (form) - Mantener IDs del archivo (default: False)
+    - file: file (form) - Archivo CSV/XLSX (opcional)
+    - files: file[] (form) - M·ltiples archivos CSV/XLSX (opcional)
+  [94mBody:[0m multipart/form-data
+
+[1mPOST /analizar[0m
+  [94mURL:[0m http://localhost:9099/analizar
+  [94mMÚtodo:[0m POST
+  [94mDescripci¾n:[0m Analizar archivo Excel y generar mapeo de datos
+  [94mParßmetros:[0m
+    - file: file (form) - Archivo Excel (.xlsx o .xls) a analizar (requerido)
+    - formato: string (query) - 'json' o 'texto' (default: 'json')
+    - contrastar_bd: boolean (query) - Contrastar con BD (default: True)
+    - umbral_coincidencia: float (query) - Porcentaje mÝnimo de coincidencia (default: 30.0)
+  [94mBody:[0m multipart/form-data
+
+
+[1m[96m================================================================================[0m
+[1mDETALLES DE PRUEBAS REALIZADAS[0m
+[1m[96m================================================================================[0m
+
+[1mHEALTH[0m
+  [94mEndpoint probado:[0m GET /health
+  [94mURL completa:[0m http://localhost:9099/health
+  [94mMÚtodo HTTP:[0m GET
+  [94mDescripci¾n:[0m Verifica el estado del servidor y la base de datos
+  [94mDatos enviados:[0m Ninguno
+  [94mHeaders enviados:[0m Ninguno especial
+  [92mResultado: [OK] EXITOSO[0m
+  [94mRespuesta del servidor:[0m
+    {
+    "status": "healthy",
+    "service": "INIA Python Middleware",
+    "version": "1.0.0",
+    "database": "ok",
+    "concurrent_requests": 1,
+    "max_concurrent_requests": 10,
+    "request_id": "1b67fcb9-303f-43f0-82cc-9078bf0c0e87"
+}
+  [94mHeaders importantes recibidos:[0m
+    - X-Request-ID: 1b67fcb9-303f-43f0-82cc-9078bf0c0e87
+    - X-Process-Time: 0.1306
+    - Content-Type: application/json
+  [94mTiempo de ejecuci¾n:[0m 2.192s
+
+[1mCORS[0m
+  [94mEndpoint probado:[0m OPTIONS /health
+  [94mURL completa:[0m http://localhost:9099/health
+  [94mMÚtodo HTTP:[0m OPTIONS
+  [94mDescripci¾n:[0m Verifica headers CORS con petici¾n preflight
+  [94mDatos enviados:[0m Ninguno
+  [94mHeaders enviados:[0m
+    - Origin: http://localhost:4200
+    - Access-Control-Request-Method: GET
+  [92mResultado: [OK] EXITOSO[0m
+  [94mTiempo de ejecuci¾n:[0m 2.091s
+
+[1mREQUEST_ID_UNIQUENESS[0m
+  [94mEndpoint probado:[0m GET /health (5 veces)
+  [94mURL completa:[0m http://localhost:9099/health
+  [94mMÚtodo HTTP:[0m GET
+  [94mDescripci¾n:[0m Verifica que cada request tenga un ID ·nico
+  [94mDatos enviados:[0m Ninguno
+  [94mHeaders enviados:[0m Ninguno especial
+  [92mResultado: [OK] EXITOSO[0m
+  [94mTiempo de ejecuci¾n:[0m 10.950s
+
+[1mTIMING[0m
+  [94mEndpoint probado:[0m GET /health
+  [94mURL completa:[0m http://localhost:9099/health
+  [94mMÚtodo HTTP:[0m GET
+  [94mDescripci¾n:[0m Verifica que el header X-Process-Time estÚ presente
+  [94mDatos enviados:[0m Ninguno
+  [94mHeaders enviados:[0m Ninguno especial
+  [92mResultado: [OK] EXITOSO[0m
+  [94mTiempo de ejecuci¾n:[0m 2.256s
+
+[1mLOGGING[0m
+  [94mEndpoint probado:[0m N/A (verificaci¾n de logs)
+  [94mURL completa:[0m N/A
+  [94mMÚtodo HTTP:[0m N/A
+  [94mDescripci¾n:[0m Verifica que el middleware de logging estÚ configurado
+  [94mDatos enviados:[0m Ninguno
+  [94mHeaders enviados:[0m Ninguno especial
+  [92mResultado: [OK] EXITOSO[0m
+  [94mTiempo de ejecuci¾n:[0m 0.000s
+
+[1mPROTECTION[0m
+  [94mEndpoint probado:[0m GET /health
+  [94mURL completa:[0m http://localhost:9099/health
+  [94mMÚtodo HTTP:[0m GET
+  [94mDescripci¾n:[0m Verifica que el middleware de protecci¾n permita requests normales
+  [94mDatos enviados:[0m Ninguno
+  [94mHeaders enviados:[0m Ninguno especial
+  [92mResultado: [OK] EXITOSO[0m
+  [94mTiempo de ejecuci¾n:[0m 2.227s
+
+[1mGZIP[0m
+  [94mEndpoint probado:[0m GET /health
+  [94mURL completa:[0m http://localhost:9099/health
+  [94mMÚtodo HTTP:[0m GET
+  [94mDescripci¾n:[0m Verifica compresi¾n GZip (se aplica a respuestas > 1000 bytes)
+  [94mDatos enviados:[0m Ninguno
+  [94mHeaders enviados:[0m
+    - Accept-Encoding: gzip
+  [92mResultado: [OK] EXITOSO[0m
+  [94mTiempo de ejecuci¾n:[0m 2.178s
+
+[1mENDPOINTS[0m
+  [94mEndpoint probado:[0m M·ltiples endpoints
+  [94mURL completa:[0m http://localhost:9099
+  [94mMÚtodo HTTP:[0m GET y POST
+  [94mDescripci¾n:[0m Prueba endpoints principales: /health, /docs, /insertar, /exportar
+  [94mDatos enviados:[0m Ninguno
+  [94mHeaders enviados:[0m Ninguno especial
+  [94mEndpoints probados:[0m 4
+  [94mEndpoints exitosos:[0m 4
+  [94mDetalles por endpoint:[0m
+    [92m[OK][0m /health
+      URL: http://localhost:9099/health
+      MÚtodo: GET
+      Status Code: 200
+      Request ID: ea7491c7-0421-44cc-a38e-c2e2fbde40bc
+      Process Time: 0.0684s
+      Respuesta: {'status': 'healthy', 'service': 'INIA Python Middleware', 'version': '1.0.0', 'database': 'ok', 'concurrent_requests': 1, 'max_concurrent_requests': 10, 'request_id': 'ea7491c7-0421-44cc-a38e-c2e2fbd...
+    [92m[OK][0m /docs
+      URL: http://localhost:9099/docs
+      MÚtodo: GET
+      Status Code: 200
+      Request ID: c93818e3-9cb9-4ccc-93e6-421d528c9fb6
+      Process Time: 0.0007s
+      Respuesta: 
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+    <link rel="shortcut icon" href="https://...
+    [92m[OK][0m /insertar
+      URL: http://localhost:9099/insertar
+      MÚtodo: POST
+      Status Code: N/A
+      Error: Timeout
+    [92m[OK][0m /exportar
+      URL: http://localhost:9099/exportar?formato=xlsx
+      MÚtodo: POST
+      Status Code: 200
+      Request ID: 6f795889-1307-4964-95cd-8c1aca0e18c7
+      Process Time: 3.6967s
+      Respuesta: Archivo ZIP (210832 bytes)
+  [94mTiempo de ejecuci¾n:[0m 33.145s
+

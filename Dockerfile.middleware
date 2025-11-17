@@ -38,8 +38,8 @@ COPY --from=builder /root/.local /home/appuser/.local
 # Copiar código fuente del middleware
 COPY --chown=appuser:appuser middleware/ .
 
-# Crear directorio para exports si no existe
-RUN mkdir -p exports && chown appuser:appuser exports
+# Crear directorios necesarios para producción
+RUN mkdir -p exports logs && chown appuser:appuser exports logs
 
 # Cambiar a usuario no root
 USER appuser
@@ -49,8 +49,21 @@ ENV PATH=/home/appuser/.local/bin:$PATH
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
+# Variables de entorno por defecto para producción
+ENV UVICORN_WORKERS=8
+ENV MAX_CONCURRENT_REQUESTS=200
+ENV MAX_REQUEST_TIMEOUT=600
+ENV RATE_LIMIT_REQUESTS=200
+ENV RATE_LIMIT_WINDOW=60
+ENV THREAD_POOL_WORKERS=50
+ENV DB_POOL_SIZE=30
+ENV DB_MAX_OVERFLOW=50
+ENV DB_POOL_RECYCLE=3600
+ENV LOG_LEVEL=info
+
 # Exponer el puerto
 EXPOSE 9099
 
 # Comando para ejecutar la aplicación FastAPI
-CMD ["uvicorn", "http_server:app", "--host", "0.0.0.0", "--port", "9099", "--workers", "1"]
+# Usar el script http_server.py directamente para aprovechar todas las optimizaciones
+CMD ["python", "http_server.py"]

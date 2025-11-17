@@ -682,7 +682,7 @@ def print_test_details_log(results: Dict[str, Any], test_times: Dict[str, float]
         # Mostrar resultado
         if isinstance(result, dict) and 'success' in result:
             if result['success']:
-                print(f"  {Colors.GREEN}Resultado: ✓ EXITOSO{Colors.RESET}")
+                print(f"  {Colors.GREEN}Resultado: [OK] EXITOSO{Colors.RESET}")
                 if 'data' in result:
                     print(f"  {Colors.BLUE}Respuesta del servidor:{Colors.RESET}")
                     print(f"    {json.dumps(result['data'], indent=4, ensure_ascii=False)}")
@@ -693,14 +693,14 @@ def print_test_details_log(results: Dict[str, Any], test_times: Dict[str, float]
                         if header in result['headers']:
                             print(f"    - {header}: {result['headers'][header]}")
             else:
-                print(f"  {Colors.RED}Resultado: ✗ FALLIDO{Colors.RESET}")
+                print(f"  {Colors.RED}Resultado: [FAIL] FALLIDO{Colors.RESET}")
                 if 'error' in result:
                     print(f"  {Colors.RED}Error: {result['error']}{Colors.RESET}")
         elif isinstance(result, bool):
             if result:
-                print(f"  {Colors.GREEN}Resultado: ✓ EXITOSO{Colors.RESET}")
+                print(f"  {Colors.GREEN}Resultado: [OK] EXITOSO{Colors.RESET}")
             else:
-                print(f"  {Colors.RED}Resultado: ✗ FALLIDO{Colors.RESET}")
+                print(f"  {Colors.RED}Resultado: [FAIL] FALLIDO{Colors.RESET}")
         elif isinstance(result, dict) and test_name == "endpoints":
             # Filtrar _details del conteo
             endpoint_results = {k: v for k, v in result.items() if k != "_details"}
@@ -715,7 +715,7 @@ def print_test_details_log(results: Dict[str, Any], test_times: Dict[str, float]
                 for endpoint, detail in result["_details"].items():
                     endpoint_result = endpoint_results.get(endpoint, {})
                     success = endpoint_result.get("success", False) if isinstance(endpoint_result, dict) else False
-                    status = f"{Colors.GREEN}✓{Colors.RESET}" if success else f"{Colors.YELLOW}⚠{Colors.RESET}"
+                    status = f"{Colors.GREEN}[OK]{Colors.RESET}" if success else f"{Colors.YELLOW}[WARN]{Colors.RESET}"
                     print(f"    {status} {endpoint}")
                     print(f"      URL: {detail.get('url', 'N/A')}")
                     print(f"      Método: {detail.get('method', 'N/A')}")
@@ -733,7 +733,7 @@ def print_test_details_log(results: Dict[str, Any], test_times: Dict[str, float]
                         print(f"      Error: {detail['error']}")
             else:
                 for endpoint, success in endpoint_results.items():
-                    status = f"{Colors.GREEN}✓{Colors.RESET}" if (isinstance(success, dict) and success.get("success", False)) else f"{Colors.YELLOW}⚠{Colors.RESET}"
+                    status = f"{Colors.GREEN}[OK]{Colors.RESET}" if (isinstance(success, dict) and success.get("success", False)) else f"{Colors.YELLOW}[WARN]{Colors.RESET}"
                     print(f"    {status} {endpoint}")
         
         print(f"  {Colors.BLUE}Tiempo de ejecución:{Colors.RESET} {test_time:.3f}s")
@@ -785,10 +785,10 @@ def print_detailed_log(results: Dict[str, Any], start_time: float, test_times: D
             total_tests += 1
             if endpoints_success:
                 passed_tests += 1
-                status = f"{Colors.GREEN}✓ PASSED{Colors.RESET}"
+                status = f"{Colors.GREEN}[PASSED]{Colors.RESET}"
             else:
                 failed_tests += 1
-                status = f"{Colors.YELLOW}⚠ PARTIAL{Colors.RESET}"
+                status = f"{Colors.YELLOW}[PARTIAL]{Colors.RESET}"
             
             test_time = test_times.get(test_name, 0)
             print(f"  {status} {test_name:.<30} ({endpoint_passed}/{endpoint_count} endpoints) [{test_time:.3f}s]")
@@ -796,10 +796,10 @@ def print_detailed_log(results: Dict[str, Any], start_time: float, test_times: D
             total_tests += 1
             if result.get("success", False):
                 passed_tests += 1
-                status = f"{Colors.GREEN}✓ PASSED{Colors.RESET}"
+                status = f"{Colors.GREEN}[PASSED]{Colors.RESET}"
             else:
                 failed_tests += 1
-                status = f"{Colors.RED}✗ FAILED{Colors.RESET}"
+                status = f"{Colors.RED}[FAILED]{Colors.RESET}"
             
             test_time = test_times.get(test_name, 0)
             print(f"  {status} {test_name:.<30} [{test_time:.3f}s]")
@@ -807,10 +807,10 @@ def print_detailed_log(results: Dict[str, Any], start_time: float, test_times: D
             total_tests += 1
             if result:
                 passed_tests += 1
-                status = f"{Colors.GREEN}✓ PASSED{Colors.RESET}"
+                status = f"{Colors.GREEN}[PASSED]{Colors.RESET}"
             else:
                 failed_tests += 1
-                status = f"{Colors.RED}✗ FAILED{Colors.RESET}"
+                status = f"{Colors.RED}[FAILED]{Colors.RESET}"
             
             test_time = test_times.get(test_name, 0)
             print(f"  {status} {test_name:.<30} [{test_time:.3f}s]")
@@ -823,9 +823,9 @@ def print_detailed_log(results: Dict[str, Any], start_time: float, test_times: D
     success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
     
     print(f"  {Colors.BOLD}Total de pruebas:{Colors.RESET} {total_tests}")
-    print(f"  {Colors.GREEN}✓ Exitosas:{Colors.RESET} {passed_tests}")
+    print(f"  {Colors.GREEN}[OK] Exitosas:{Colors.RESET} {passed_tests}")
     if failed_tests > 0:
-        print(f"  {Colors.RED}✗ Fallidas:{Colors.RESET} {failed_tests}")
+        print(f"  {Colors.RED}[FAIL] Fallidas:{Colors.RESET} {failed_tests}")
     print(f"  {Colors.BOLD}Tasa de éxito:{Colors.RESET} {success_rate:.1f}%")
     print(f"  {Colors.BOLD}Tiempo total:{Colors.RESET} {total_time:.3f}s")
     print(f"  {Colors.BOLD}Tiempo promedio por prueba:{Colors.RESET} {(total_time/total_tests):.3f}s" if total_tests > 0 else "N/A")
@@ -852,11 +852,11 @@ def print_detailed_log(results: Dict[str, Any], start_time: float, test_times: D
     # Estado final
     if passed_tests == total_tests:
         print(f"{Colors.BOLD}{Colors.GREEN}{'='*80}{Colors.RESET}")
-        print(f"{Colors.BOLD}{Colors.GREEN}✓ TODAS LAS PRUEBAS PASARON EXITOSAMENTE{Colors.RESET}")
+        print(f"{Colors.BOLD}{Colors.GREEN}[SUCCESS] TODAS LAS PRUEBAS PASARON EXITOSAMENTE{Colors.RESET}")
         print(f"{Colors.BOLD}{Colors.GREEN}{'='*80}{Colors.RESET}\n")
     else:
         print(f"{Colors.BOLD}{Colors.YELLOW}{'='*80}{Colors.RESET}")
-        print(f"{Colors.BOLD}{Colors.YELLOW}⚠ ALGUNAS PRUEBAS FALLARON (puede ser normal si falta BD){Colors.RESET}")
+        print(f"{Colors.BOLD}{Colors.YELLOW}[WARNING] ALGUNAS PRUEBAS FALLARON (puede ser normal si falta BD){Colors.RESET}")
         print(f"{Colors.BOLD}{Colors.YELLOW}{'='*80}{Colors.RESET}\n")
 
 def main():
@@ -922,17 +922,17 @@ def main():
             endpoints_success = success_rate >= 0.75
             
             if endpoints_success:
-                print_success(f"{test_name}: ✓ ({endpoint_passed}/{endpoint_count} endpoints OK)")
+                print_success(f"{test_name}: OK ({endpoint_passed}/{endpoint_count} endpoints OK)")
             else:
-                print_warning(f"{test_name}: ⚠ ({endpoint_passed}/{endpoint_count} endpoints OK)")
+                print_warning(f"{test_name}: PARTIAL ({endpoint_passed}/{endpoint_count} endpoints OK)")
             
             # Mostrar detalles de cada endpoint
             for endpoint, endpoint_result in endpoint_results.items():
                 success = endpoint_result.get("success", False) if isinstance(endpoint_result, dict) else False
                 if success:
-                    print_success(f"  {endpoint}: ✓")
+                    print_success(f"  {endpoint}: OK")
                 else:
-                    print_warning(f"  {endpoint}: ⚠ (puede ser normal si falta BD)")
+                    print_warning(f"  {endpoint}: WARN (puede ser normal si falta BD)")
             
             total_tests += 1
             if endpoints_success:
@@ -940,18 +940,18 @@ def main():
         elif isinstance(result, dict):
             # Otros dicts (como health endpoint)
             if result.get("success", False):
-                print_success(f"{test_name}: ✓")
+                print_success(f"{test_name}: OK")
                 passed_tests += 1
             else:
-                print_error(f"{test_name}: ✗")
+                print_error(f"{test_name}: FAILED")
             total_tests += 1
         elif isinstance(result, bool):
             # Resultados booleanos
             if result:
-                print_success(f"{test_name}: ✓")
+                print_success(f"{test_name}: OK")
                 passed_tests += 1
             else:
-                print_error(f"{test_name}: ✗")
+                print_error(f"{test_name}: FAILED")
             total_tests += 1
     
     print(f"\n{Colors.BOLD}Total: {passed_tests}/{total_tests} pruebas pasaron{Colors.RESET}\n")

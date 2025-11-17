@@ -19,9 +19,22 @@ services:
     volumes:
       # Montar código fuente para hot reload
       - ./middleware:/app
+    # En desarrollo, usar uvicorn con reload para hot reload
+    # En producción, usar python http_server.py (definido en docker-compose.yml)
     command: ["uvicorn", "http_server:app", "--host", "0.0.0.0", "--port", "9099", "--reload", "--workers", "1"]
     environment:
       PYTHONPATH: /app
+      # Optimizaciones para desarrollo (valores más bajos)
+      UVICORN_WORKERS: 1
+      MAX_CONCURRENT_REQUESTS: 20
+      MAX_REQUEST_TIMEOUT: 300
+      RATE_LIMIT_REQUESTS: 200
+      RATE_LIMIT_WINDOW: 60
+      THREAD_POOL_WORKERS: 5
+      DB_POOL_SIZE: 5
+      DB_MAX_OVERFLOW: 10
+      DB_POOL_RECYCLE: 3600
+      PY_MIDDLEWARE_PORT: 9099
 
   # Frontend con hot reload para desarrollo
   frontend:
