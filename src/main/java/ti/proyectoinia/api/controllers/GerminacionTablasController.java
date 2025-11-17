@@ -9,6 +9,7 @@ import ti.proyectoinia.dtos.ConteoGerminacionDto;
 import ti.proyectoinia.dtos.NormalPorConteoDto;
 import ti.proyectoinia.dtos.RepeticionFinalDto;
 import ti.proyectoinia.services.GerminacionMatrizService;
+import ti.proyectoinia.services.GerminacionService;
 
 import java.util.List;
 import java.util.Map;
@@ -18,9 +19,11 @@ import java.util.Map;
 public class GerminacionTablasController {
 
     private final GerminacionMatrizService service;
+    private final GerminacionService serviceGerminacion;
 
-    public GerminacionTablasController(GerminacionMatrizService service) {
+    public GerminacionTablasController(GerminacionMatrizService service, GerminacionService serviceGerminacion) {
         this.service = service;
+        this.serviceGerminacion = serviceGerminacion;
     }
 
     @PostMapping("/{germinacionId}/conteos")
@@ -77,6 +80,14 @@ public class GerminacionTablasController {
     @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     @Operation(description = "Devuelve un resumen estructurado para la germinación: lista de conteos, normales por conteo para cada tratamiento y finales por repetición.")
     public ResponseEntity<Map<String, Object>> obtenerResumen(@PathVariable Long germinacionId) {
+        if (germinacionId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        if (serviceGerminacion.obtenerGerminacionPorId(germinacionId) == null || service.listMatriz(germinacionId) == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
         Map<String, Object> matriz = service.listMatriz(germinacionId);
         return ResponseEntity.ok(matriz);
     }

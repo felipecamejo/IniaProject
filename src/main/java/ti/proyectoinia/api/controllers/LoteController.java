@@ -1,6 +1,7 @@
 package ti.proyectoinia.api.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Generated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -54,11 +55,15 @@ public class LoteController {
     @PutMapping({"/editar"})
     @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<Long> editarLote(@RequestBody LoteDto loteDto) {
+        if (loteDto.getId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Long result = this.loteService.editarLote(loteDto);
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping({"/eliminar/{id}"})
+    @DeleteMapping({"/eliminar/{id}"})
     @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina un Lote"
@@ -67,6 +72,8 @@ public class LoteController {
         try {
             String mensaje = this.loteService.eliminarLote(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No encontrado");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Lote: " + e.getMessage());
         }

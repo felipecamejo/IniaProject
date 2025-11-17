@@ -13,7 +13,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ti.proyectoinia.api.controllers.CertificadoController;
 import ti.proyectoinia.api.responses.ResponseListadoCertificados;
-import ti.proyectoinia.api.responses.ResponseListadoUsuarios;
 import ti.proyectoinia.dtos.CertificadoDto;
 import ti.proyectoinia.services.CertificadoService;
 
