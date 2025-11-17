@@ -11,12 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ti.proyectoinia.api.controllers.DOSNController;
-import ti.proyectoinia.api.responses.ResponseListadoDOSN;
-import ti.proyectoinia.dtos.DOSNDto;
-import ti.proyectoinia.services.DOSNService;
+import ti.proyectoinia.api.controllers.LoteController;
+import ti.proyectoinia.api.responses.ResponseListadoLotes;
+import ti.proyectoinia.dtos.LoteDto;
+import ti.proyectoinia.services.LoteService;
 
-import java.util.Date;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -24,28 +23,27 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(DOSNController.class)
-public class DOSNControllerTest {
+@WebMvcTest(LoteController.class)
+public class LoteControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private DOSNService service;
+    private LoteService service;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private final String baseUrl = "/api/v1/DOSN";
+    private final String baseUrl = "/api/v1/lote";
 
     // ---- GET /{id} ----
     @Test
     @WithMockUser(authorities = "ADMIN")
     void getById_ReturnsOk() throws Exception {
-        DOSNDto dto = new DOSNDto();
+        LoteDto dto = new LoteDto();
         dto.setId(1L);
-        dto.setFechaCreacion(new Date());
 
-        Mockito.when(service.obtenerDOSNPorId(1L)).thenReturn(dto);
+        Mockito.when(service.obtenerLotePorId(1L)).thenReturn(dto);
 
         mockMvc.perform(get(baseUrl + "/1"))
                 .andExpect(status().isOk());
@@ -54,7 +52,7 @@ public class DOSNControllerTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void getById_ReturnsNotFound() throws Exception {
-        Mockito.when(service.obtenerDOSNPorId(2L)).thenReturn(null);
+        Mockito.when(service.obtenerLotePorId(2L)).thenReturn(null);
 
         mockMvc.perform(get(baseUrl + "/2"))
                 .andExpect(status().isNotFound());
@@ -71,11 +69,10 @@ public class DOSNControllerTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void crear_ReturnsCreated() throws Exception {
-        DOSNDto input = new DOSNDto();
+        LoteDto input = new LoteDto();
         input.setId(null);
-        input.setFechaCreacion(new Date());
 
-        Mockito.when(service.crearDOSN(any(DOSNDto.class))).thenReturn(1L);
+        Mockito.when(service.crearLote(any(LoteDto.class))).thenReturn(1L);
 
         mockMvc.perform(post(baseUrl + "/crear")
                         .with(csrf())
@@ -88,25 +85,22 @@ public class DOSNControllerTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void editar_ReturnsOk() throws Exception {
-        DOSNDto input = new DOSNDto();
+        LoteDto input = new LoteDto();
         input.setId(1L);
-        input.setFechaCreacion(new Date());
 
-        Mockito.when(service.editarDOSN(any(DOSNDto.class))).thenReturn("Actualizado");
+        Mockito.when(service.editarLote(any(LoteDto.class))).thenReturn(input.getId());
 
         mockMvc.perform(put(baseUrl + "/editar")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(input)))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Actualizado"));
+                .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(authorities = "ADMIN")
     void editar_ReturnsBadRequest_WhenIdNull() throws Exception {
-        DOSNDto input = new DOSNDto();
-        input.setFechaCreacion(new Date());
+        LoteDto input = new LoteDto();
 
         mockMvc.perform(put(baseUrl + "/editar")
                         .with(csrf())
@@ -119,66 +113,46 @@ public class DOSNControllerTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void eliminar_ReturnsOk() throws Exception {
-        Mockito.when(service.eliminarDOSN(1L)).thenReturn("Eliminado");
+        Mockito.when(service.eliminarLote(1L)).thenReturn("Eliminado");
 
         mockMvc.perform(delete(baseUrl + "/eliminar/1")
                         .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Eliminado. ID:1"));
+                .andExpect(status().isOk());
 
-        Mockito.verify(service).eliminarDOSN(1L);
+        Mockito.verify(service).eliminarLote(1L);
     }
 
     @Test
     @WithMockUser(authorities = "ADMIN")
     void eliminar_ReturnsBadRequest() throws Exception {
         Mockito.doThrow(new EntityNotFoundException("No existe"))
-                .when(service).eliminarDOSN(2L);
+                .when(service).eliminarLote(2L);
 
         mockMvc.perform(delete(baseUrl + "/eliminar/2")
                         .with(csrf()))
                 .andExpect(status().isNotFound());
 
-        Mockito.verify(service).eliminarDOSN(2L);
+        Mockito.verify(service).eliminarLote(2L);
     }
 
-    //----- GET /listar/recibo/{id} -----
+    //----- GET /listar -----
     @Test
     @WithMockUser(authorities = "ADMIN")
-    void listarPorRecibo_ReturnsOk() throws Exception {
-        Long reciboId = 1L;
+    void listar_ReturnsOk() throws Exception {
 
-        ResponseListadoDOSN response = new ResponseListadoDOSN();
-        DOSNDto dosn1 = new DOSNDto();
-        dosn1.setId(1L);
-        DOSNDto dosn2 = new DOSNDto();
-        dosn2.setId(2L);
-        response.setDOSN(List.of(dosn1, dosn2));
+        ResponseListadoLotes response = new ResponseListadoLotes();
+        LoteDto entity1 = new LoteDto();
+        entity1.setId(1L);
+        LoteDto entity2 = new LoteDto();
+        entity2.setId(2L);
+        response.setLotes(List.of(entity1, entity2));
 
-        Mockito.when(service.listadoDOSNporRecibo(reciboId))
+        Mockito.when(service.listadoLotes())
                 .thenReturn(ResponseEntity.ok(response));
 
-        mockMvc.perform(get(baseUrl + "/listar/recibo/" + reciboId))
+        mockMvc.perform(get(baseUrl + "/listar"))
                 .andExpect(status().isOk());
     }
 
-    @Test
-    @WithMockUser(authorities = "ADMIN")
-    void listarPorRecibo_ReturnsNotFound() throws Exception {
-        Long reciboId = 99L;
-
-        Mockito.when(service.listadoDOSNporRecibo(reciboId))
-                .thenReturn(ResponseEntity.notFound().build());
-
-        mockMvc.perform(get(baseUrl + "/listar/recibo/" + reciboId))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @WithMockUser(authorities = "ADMIN")
-    void listarPorRecibo_IdInvalid_ReturnsBadRequest() throws Exception {
-        mockMvc.perform(get(baseUrl + "/listar/recibo/abc"))
-                .andExpect(status().isBadRequest());
-    }
 
 }

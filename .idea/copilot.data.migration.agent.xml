@@ -16,6 +16,7 @@
       <option value="855a24fe-6eda-4655-b13e-61eb5c01fa24" />
       <option value="9975886c-2285-4e37-89f8-b5798ada4767" />
       <option value="a2109dd4-0bf9-4d51-9ad9-95e9c93ed20d" />
+      <option value="a2e5c49a-6607-4726-8c07-8d921ca54805" />
       <option value="a9a7b44f-7ad4-4f16-8487-c7d1c2d14fed" />
       <option value="b0b00b00-7023-4d65-9aae-7c67b9598c98" />
       <option value="bd77f7f6-730c-443a-9385-f850aba977a5" />
@@ -169,6 +170,15 @@
             </set>
           </value>
         </entry>
+        <entry key="a2e5c49a-6607-4726-8c07-8d921ca54805">
+          <value>
+            <set>
+              <option value="34c7db2f-d139-4b9e-9cb4-4d3054e127d2" />
+              <option value="63f07797-d96b-4dbc-ab58-925a7067aaaf" />
+              <option value="5ac44bf4-e1cb-414b-80f8-1cdce75b41bc" />
+            </set>
+          </value>
+        </entry>
         <entry key="a3d5327a-aca6-4aa0-a617-46c57f3d0c65">
           <value>
             <set>
@@ -179,6 +189,14 @@
               <option value="b1c60ebe-5c21-4260-a779-6e2abf018354" />
               <option value="c745440e-51f8-40b4-8430-87dd02d554d9" />
               <option value="e4920f0c-8cc6-4421-9a48-f2b504d26982" />
+            </set>
+          </value>
+        </entry>
+        <entry key="a5fb2554-7f79-4f44-811c-d395203f4524">
+          <value>
+            <set>
+              <option value="2516cc5a-f22c-40bd-8cf4-345692bfde29" />
+              <option value="31137567-430a-4413-8f6d-1655ae5c95e1" />
             </set>
           </value>
         </entry>
@@ -323,23 +341,25 @@
       <entry key="804a4f57-6653-41f4-ab52-2f3d27a831e9" />
       <entry key="855a24fe-6eda-4655-b13e-61eb5c01fa24" />
       <entry key="a2109dd4-0bf9-4d51-9ad9-95e9c93ed20d" />
+      <entry key="a2e5c49a-6607-4726-8c07-8d921ca54805">
+        <set>
+          <option value="file://$PROJECT_DIR$/src/test/java/ti/proyectoinia/api/controllers/integration/GerminacionTablasControllerTest.java" />
+        </set>
+      </entry>
       <entry key="a3d5327a-aca6-4aa0-a617-46c57f3d0c65" />
+      <entry key="a5fb2554-7f79-4f44-811c-d395203f4524">
+        <set>
+          <option value="file://$PROJECT_DIR$/src/test/java/ti/proyectoinia/api/controllers/integration/GerminacionTablasControllerTest.java" />
+        </set>
+      </entry>
       <entry key="a9a7b44f-7ad4-4f16-8487-c7d1c2d14fed" />
       <entry key="b0b00b00-7023-4d65-9aae-7c67b9598c98" />
       <entry key="bd77f7f6-730c-443a-9385-f850aba977a5" />
       <entry key="c31684c1-2dc2-41da-82e2-5042b4c7a33e" />
-      <entry key="dc1c721a-6e4f-43e8-b133-c029966f1735">
-        <set>
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/api/controllers/CultivoController.java" />
-        </set>
-      </entry>
+      <entry key="dc1c721a-6e4f-43e8-b133-c029966f1735" />
       <entry key="ddb41aa2-2cc0-4ec7-bad2-35af77b0f013" />
       <entry key="e80e9709-5177-4470-a6d5-764a698ad74f" />
-      <entry key="f02c9bbf-7e6c-4a1c-8812-ad67976c3295">
-        <set>
-          <option value="file://$PROJECT_DIR$/src/main/java/ti/proyectoinia/api/controllers/CultivoController.java" />
-        </set>
-      </entry>
+      <entry key="f02c9bbf-7e6c-4a1c-8812-ad67976c3295" />
       <entry key="f0d649d2-85bc-4ef0-92fa-d2bef3282706" />
       <entry key="ff30c0b7-286d-466a-b5c1-f55a0bfb352a" />
     </pendingWorkingSetItems>
