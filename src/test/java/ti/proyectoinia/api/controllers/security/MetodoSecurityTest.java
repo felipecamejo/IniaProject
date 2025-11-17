@@ -135,7 +135,7 @@ public class MetodoSecurityTest {
 
         mockMvc.perform(put(apiUrl + "/editar")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nombre\":\"ABC\",\"autor\":\"Juan\"}"))
+                        .content("{\"id\":1,\"nombre\":\"ABC\",\"autor\":\"Juan\"}"))
                 .andExpect(status().isOk());
     }
 
@@ -166,20 +166,20 @@ public class MetodoSecurityTest {
         when(metodoService.eliminarMetodo(1L))
                 .thenReturn("Método eliminado");
 
-        mockMvc.perform(put(apiUrl + "/eliminar/1"))
+        mockMvc.perform(delete(apiUrl + "/eliminar/1"))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(authorities = "GUEST")
     void guestNoPuedeEliminarMetodo() throws Exception {
-        mockMvc.perform(put(apiUrl + "/eliminar/1"))
+        mockMvc.perform(delete(apiUrl + "/eliminar/1"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void noAutenticadoDebeRetornar401AlEliminarMetodo() throws Exception {
-        mockMvc.perform(put(apiUrl + "/eliminar/1"))
+        mockMvc.perform(delete(apiUrl + "/eliminar/1"))
                 .andExpect(status().isUnauthorized());
     }
 }

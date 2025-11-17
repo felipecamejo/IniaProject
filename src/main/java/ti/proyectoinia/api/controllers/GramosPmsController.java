@@ -35,7 +35,7 @@ public class GramosPmsController {
     }
 
     @PostMapping("/crear-multiple")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Crea múltiples GramosPms en una sola llamada")
     public ResponseEntity<Object> crearMultiples(@RequestBody List<GramosPmsDto> dtos) {
         List<GramosPmsDto> validos = new java.util.ArrayList<>();

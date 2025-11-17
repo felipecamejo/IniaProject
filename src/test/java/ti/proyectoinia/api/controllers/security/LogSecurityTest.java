@@ -42,10 +42,12 @@ public class LogSecurityTest {
     //  POST /crear → ADMIN, ANALISTA, OBSERVADOR
     // ============================================================================
 
+
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeCrearLog() throws Exception {
         LogDto dto = new LogDto();
+        dto.setTexto("Texto de prueba");
 
         when(logService.crear(any())).thenReturn("Creado");
 
@@ -59,6 +61,7 @@ public class LogSecurityTest {
     @WithMockUser(authorities = "ANALISTA")
     void analistaPuedeCrearLog() throws Exception {
         LogDto dto = new LogDto();
+        dto.setTexto("Texto de prueba");
 
         when(logService.crear(any())).thenReturn("Creado");
 
@@ -72,6 +75,7 @@ public class LogSecurityTest {
     @WithMockUser(authorities = "OBSERVADOR")
     void observadorPuedeCrearLog() throws Exception {
         LogDto dto = new LogDto();
+        dto.setTexto("Texto de prueba");
 
         when(logService.crear(any())).thenReturn("Creado");
 

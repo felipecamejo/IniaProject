@@ -27,7 +27,7 @@ public class SanitarioController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(
             description = "Esta Funcion crea un nuevo MalezaS"
     )
@@ -50,7 +50,7 @@ public class SanitarioController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     public ResponseEntity<Long> editarSanitario(@RequestBody SanitarioDto dto) {
         if (dto.getId() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(-1L);
@@ -84,7 +84,7 @@ public class SanitarioController {
     }
 
     @PutMapping("/actualizar-hongos/{sanitarioId}")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Actualiza los hongos asociados a un sanitario, creando, actualizando y eliminando según la lista recibida")
     public ResponseEntity<String> actualizarHongosCompleto(
             @PathVariable Long sanitarioId,

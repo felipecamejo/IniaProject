@@ -124,11 +124,14 @@ public class LoteSecurityTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeEditarLote() throws Exception {
+        LoteDto dto = new LoteDto();
+        dto.setId(1L);
+
         when(loteService.editarLote(any(LoteDto.class))).thenReturn(1L);
 
         mockMvc.perform(put(apiUrl + "/editar")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk());
     }
 
@@ -149,7 +152,7 @@ public class LoteSecurityTest {
     void adminPuedeEliminarLote() throws Exception {
         when(loteService.eliminarLote(1L)).thenReturn("Lote eliminado");
 
-        mockMvc.perform(put(apiUrl + "/eliminar/1"))
+        mockMvc.perform(delete(apiUrl + "/eliminar/1"))
                 .andExpect(status().isOk());
     }
 

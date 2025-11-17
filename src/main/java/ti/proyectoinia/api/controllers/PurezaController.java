@@ -24,7 +24,7 @@ public class PurezaController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(
             description = "Esta Funcion crea un nuevo registro de Pureza"
     )
@@ -46,7 +46,7 @@ public class PurezaController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     public ResponseEntity<Long> editarPureza(@RequestBody PurezaDto dto) {
         if (dto.getId() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(-1L);

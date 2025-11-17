@@ -30,7 +30,7 @@ public class HumedadReciboController {
     }
 
     @PutMapping("/actualizar-humedades/{reciboId}")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Reemplaza todas las HumedadRecibo de un recibo: borra físicamente las existentes y crea las recibidas")
     public ResponseEntity<Object> actualizarHumedades(@PathVariable Long reciboId, @RequestBody List<HumedadReciboDto> dtos) {
         // Validar cada dto: lugar y numero son obligatorios para crear

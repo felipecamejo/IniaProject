@@ -29,7 +29,7 @@ public class PurezaPNotatumController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(
             description = "Esta Funcion crea una nueva PurezaPNotatum"
     )
@@ -51,7 +51,7 @@ public class PurezaPNotatumController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     public ResponseEntity<Long> editarPurezaPNotatum(@RequestBody PurezaPNotatumDto dto) {
         if (dto.getId() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(-1L);
@@ -85,7 +85,7 @@ public class PurezaPNotatumController {
     }
 
     @PutMapping("/actualizar-repeticiones/{purezaPNotatumId}")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Actualiza los Repeticiones asociados a una PPN, creando, actualizando y eliminando según la lista recibida")
     public ResponseEntity<String> actualizarRepeticionesCompleto(
             @PathVariable Long purezaPNotatumId,

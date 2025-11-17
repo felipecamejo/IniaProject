@@ -25,7 +25,7 @@ public class DOSNController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(
             description = "Esta Funcion crea una nueva DOSN"
     )
@@ -50,7 +50,7 @@ public class DOSNController {
 
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     public ResponseEntity<String> editarDOSN(@RequestBody DOSNDto dosnDto) {
         if (dosnDto.getId() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El ID no puede ser nulo para la edición.");

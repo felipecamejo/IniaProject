@@ -8,6 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { GerminacionDto } from '../../../models/Germinacion.dto';
 import { GerminacionService } from '../../../services/GerminacionService';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { LogService } from '../../../services/LogService';
 
 @Component({
   selector: 'app-listado-germinacion',
@@ -17,7 +18,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
   styleUrl: './listado-germinacion.component.scss'
 })
 export class ListadoGerminacionComponent implements OnInit {
-  constructor(private router: Router, private route: ActivatedRoute, private germSvc: GerminacionService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private germSvc: GerminacionService, private logService : LogService) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
@@ -148,13 +149,22 @@ export class ListadoGerminacionComponent implements OnInit {
       this.confirmLoading = true;
       const germinacion = this.germinacionAEliminar;
 
-      // Simular eliminación local (ya que no hay servicio de eliminación implementado)
-      this.items = this.items.filter(germ => germ.id !== germinacion.id);
-      console.log('Germinación eliminada');
-      
-      this.confirmLoading = false;
-      this.mostrarConfirmEliminar = false;
-      this.germinacionAEliminar = null;
+      this.germSvc.eliminar(germinacion.id!).subscribe({
+        next: () => {
+          this.items = this.items.filter(g => g.id !== germinacion.id);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.germinacionAEliminar = null;
+          
+          this.logService.crearLog(this.loteId ? parseInt(this.loteId) : 0, Number(this.reciboId), 'Germinacion', 'eliminada').subscribe();
+        },
+        error: (err) => {
+          console.error('Error eliminando germinación', err);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.germinacionAEliminar = null;
+        }
+      });
     }
 
     cancelarEliminacion() {
