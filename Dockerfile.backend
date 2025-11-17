@@ -53,8 +53,8 @@ USER spring
 EXPOSE 8080
 
 # Variables de entorno por defecto
-ENV DB_USER=inia_user
-ENV DB_PASS=inia_password
+ENV DB_USER=postgres
+ENV DB_PASS=897888fg2
 ENV JWT_SECRET=your_jwt_secret_here_change_in_production
 ENV JWT_EXPIRATION=86400000
 ENV SPRING_PROFILES_ACTIVE=docker

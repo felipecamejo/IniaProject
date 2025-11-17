@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import ti.proyectoinia.ProjectoIniaApplication;
 
@@ -33,16 +32,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(classes = ProjectoIniaApplication.class)
 @Import({TestcontainersConfig.class, ti.proyectoinia.api.controllers.security.TestSecurityConfig.class})
 @ActiveProfiles("test")
-@TestPropertySource(
-    locations = "classpath:application-test.properties",
-    properties = {
-        // Sobrescribir propiedades de application.properties para evitar que Spring intente conectarse
-        // antes de que Testcontainers configure las propiedades dinámicas
-        "spring.datasource.url=",
-        "spring.datasource.username=",
-        "spring.datasource.password="
-    }
-)
 @DisplayName("Verificación de Conexión Testcontainers")
 class TestcontainersConnectionTest {
 
@@ -101,8 +90,8 @@ class TestcontainersConnectionTest {
         String password = TestcontainersConfig.getPassword();
 
         // Assert
-        assertEquals("inia_user", username, "El usuario debería ser inia_user");
-        assertEquals("inia_password", password, "La contraseña debería ser inia_password");
+        assertEquals("postgres", username, "El usuario debería ser postgres");
+        assertEquals("897888fg2", password, "La contraseña debería ser 897888fg2");
     }
 
     @Test

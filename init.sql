@@ -16,12 +16,6 @@ CREATE SCHEMA IF NOT EXISTS inia;
 -- El usuario postgres ya existe por defecto en PostgreSQL
 ALTER USER postgres WITH PASSWORD '897888fg2';
 
--- Configurar permisos para inia_user
-GRANT ALL PRIVILEGES ON DATABASE "Inia" TO inia_user;
-GRANT ALL PRIVILEGES ON SCHEMA inia TO inia_user;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA inia TO inia_user;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA inia TO inia_user;
-
 -- Configurar permisos para postgres (usado por el middleware)
 GRANT ALL PRIVILEGES ON DATABASE "Inia" TO postgres;
 GRANT ALL PRIVILEGES ON SCHEMA inia TO postgres;
@@ -29,8 +23,6 @@ GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA inia TO postgres;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA inia TO postgres;
 
 -- Configurar secuencias por defecto
-ALTER DEFAULT PRIVILEGES IN SCHEMA inia GRANT ALL ON TABLES TO inia_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA inia GRANT ALL ON SEQUENCES TO inia_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA inia GRANT ALL ON TABLES TO postgres;
 ALTER DEFAULT PRIVILEGES IN SCHEMA inia GRANT ALL ON SEQUENCES TO postgres;
 
@@ -49,10 +41,7 @@ CREATE INDEX IF NOT EXISTS idx_autocompletado_parametro_activo
 ON inia.AUTOCOMPLETADO(AUTOCOMPLETADO_PARAMETRO, AUTOCOMPLETADO_ACTIVO) 
 WHERE AUTOCOMPLETADO_ACTIVO = TRUE;
 
--- Otorgar permisos en la nueva tabla
-GRANT ALL PRIVILEGES ON TABLE inia.AUTOCOMPLETADO TO inia_user;
 GRANT ALL PRIVILEGES ON TABLE inia.AUTOCOMPLETADO TO postgres;
-GRANT USAGE, SELECT ON SEQUENCE inia.autocompletado_autocompletado_id_seq TO inia_user;
 GRANT USAGE, SELECT ON SEQUENCE inia.autocompletado_autocompletado_id_seq TO postgres;
 
 -- Crear tabla USUARIO si no existe (para poder insertar usuario admin por defecto)
@@ -73,10 +62,7 @@ ALTER TABLE inia.USUARIO ALTER COLUMN USUARIO_ID SET DEFAULT nextval('inia.usuar
 -- Crear índice único para email
 CREATE UNIQUE INDEX IF NOT EXISTS idx_usuario_email ON inia.USUARIO(EMAIL);
 
--- Otorgar permisos en la tabla USUARIO
-GRANT ALL PRIVILEGES ON TABLE inia.USUARIO TO inia_user;
 GRANT ALL PRIVILEGES ON TABLE inia.USUARIO TO postgres;
-GRANT USAGE, SELECT ON SEQUENCE inia.usuario_usuario_id_seq TO inia_user;
 GRANT USAGE, SELECT ON SEQUENCE inia.usuario_usuario_id_seq TO postgres;
 
 -- NOTA: El usuario administrador por defecto NO se crea aquí.

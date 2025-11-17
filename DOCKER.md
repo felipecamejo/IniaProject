@@ -68,8 +68,8 @@ ls Dockerfile.* docker-compose.yml
 Crear un archivo `.env` en la raíz del proyecto:
 ```env
 # Base de datos
-DB_USER=inia_user
-DB_PASS=inia_password
+DB_USER=postgres
+DB_PASS=897888fg2
 POSTGRES_DB=Inia
 
 # JWT
@@ -396,7 +396,7 @@ docker volume inspect iniaproject_postgres_data
 
 # Acceder a un contenedor
 docker-compose exec backend bash
-docker-compose exec database psql -U inia_user -d Inia
+docker-compose exec database psql -U postgres -d Inia
 ```
 
 ### Limpieza Completa

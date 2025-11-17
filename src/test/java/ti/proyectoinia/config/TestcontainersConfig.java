@@ -28,25 +28,32 @@ public class TestcontainersConfig {
     /**
      * Contenedor PostgreSQL compartido para todos los tests.
      * Se reutiliza entre tests para mejorar el rendimiento.
-     * Se inicia en el bloque static para asegurar que esté disponible
-     * antes de que Spring intente conectarse a la base de datos.
      */
-    private static final PostgreSQLContainer<?> postgresContainer;
+    private static final PostgreSQLContainer<?> postgresContainer = createAndStartContainer();
 
-    static {
-        postgresContainer = new PostgreSQLContainer<>(
+    @SuppressWarnings("resource")
+    private static PostgreSQLContainer<?> createAndStartContainer() {
+        // Verificar que JWT_SECRET esté disponible (debe estar configurado en pom.xml)
+        String jwtSecret = System.getenv("JWT_SECRET");
+        if (jwtSecret == null || jwtSecret.trim().isEmpty()) {
+            System.err.println("ADVERTENCIA: JWT_SECRET no está configurado como variable de entorno. " +
+                    "Asegúrate de que esté configurado en pom.xml en maven-surefire-plugin.");
+        }
+
+        PostgreSQLContainer<?> container = new PostgreSQLContainer<>(
                 DockerImageName.parse("postgres:16-alpine")
                         .asCompatibleSubstituteFor("postgres"))
-                .withDatabaseName("inia_test")
-                .withUsername("inia_user")
-                .withPassword("inia_password")
-                .withReuse(true) // Reutilizar contenedor entre ejecuciones
+                .withDatabaseName("Inia")
+                .withUsername("postgres")
+                .withPassword("897888fg2")
                 .withStartupTimeout(Duration.ofMinutes(2)) // Timeout de inicio
                 .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*", 2)) // Esperar a que PostgreSQL esté listo
                 .withConnectTimeoutSeconds(30); // Timeout de conexión
 
         try {
-            postgresContainer.start();
+            container.start();
+            Runtime.getRuntime().addShutdownHook(new Thread(TestcontainersConfig::stopContainer));
+            return container;
         } catch (Exception e) {
             throw new RuntimeException(
                     "Error al iniciar contenedor Testcontainers. " +
