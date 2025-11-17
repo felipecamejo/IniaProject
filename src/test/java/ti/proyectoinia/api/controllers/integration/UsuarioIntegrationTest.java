@@ -177,14 +177,9 @@ class UsuarioIntegrationTest extends AbstractTestcontainersIntegrationTest {
                         .with(csrf()))
                 .andExpect(status().isOk());
 
-        // Verificar que ya no existe
-        try {
-            usuarioService.obtenerUsuarioPorId(usuarioCreado.getId());
-            assert false : "El usuario debería haber sido eliminado";
-        } catch (Exception e) {
-            // Esperado - el usuario fue eliminado
-            assert true;
-        }
+        // Verificar que ya no existe (el servicio retorna null para usuarios inactivos)
+        UsuarioDto usuarioEliminado = usuarioService.obtenerUsuarioPorId(usuarioCreado.getId());
+        assert usuarioEliminado == null : "El usuario debería haber sido eliminado";
     }
 
     @Test

@@ -73,13 +73,14 @@ class TestcontainersConnectionTest {
     void obtenerJdbcUrl_DeberiaRetornarUrlValida() {
         // Arrange & Act
         String jdbcUrl = TestcontainersConfig.getJdbcUrl();
+        String databaseName = TestcontainersConfig.getPostgresContainer().getDatabaseName();
 
         // Assert
         assertNotNull(jdbcUrl, "La URL JDBC no debería ser null");
         assertTrue(jdbcUrl.startsWith("jdbc:postgresql://"), 
                    "La URL debería comenzar con jdbc:postgresql://");
-        assertTrue(jdbcUrl.contains("inia_test"), 
-                   "La URL debería contener el nombre de la base de datos");
+        assertTrue(jdbcUrl.contains(databaseName), 
+                   "La URL debería contener el nombre de la base de datos configurada (" + databaseName + ")");
     }
 
     @Test
