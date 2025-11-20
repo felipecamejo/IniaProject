@@ -3,17 +3,30 @@
   margin-right: auto;
   min-width: 0;
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .tetrazolio-table th,
 .tetrazolio-table td {
   text-align: center;
-  min-width: 110px;
-  width: 1%;
-  padding: 0.3em 0.2em;
+  min-width: 80px;
+  width: auto;
+  padding: 0.4em 0.3em;
   word-break: break-word;
+
+  @media (max-width: 768px) {
+    padding: 0.3em 0.2em;
+    min-width: 70px;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.2em 0.1em;
+    min-width: 60px;
+    font-size: 0.8rem;
+  }
 }
+
 .btn-agregar-rep {
   background: var(--celeste, #2563eb) !important;
   color: #fff !important;
@@ -26,11 +39,17 @@
   margin-bottom: 0.5rem;
   margin-top: 1.2rem;
   transition: background 0.2s, color 0.2s, border 0.2s;
-}
-.btn-agregar-rep:hover, .btn-agregar-rep:focus {
-  background: #1746a0 !important;
-  color: #fff !important;
-  border-color: #1746a0 !important;
+
+  @media (max-width: 480px) {
+    font-size: 0.9em !important;
+    padding: 0.4rem 1rem !important;
+  }
+
+  &:hover, &:focus {
+    background: #1746a0 !important;
+    color: #fff !important;
+    border-color: #1746a0 !important;
+  }
 }
 
 /* Botón clonar tabla: estética similar a agregar-rep pero más compacto */
@@ -44,11 +63,17 @@
   padding: 0.35rem 0.9rem !important;
   box-shadow: 0 1px 4px rgba(38,99,235,0.10) !important;
   transition: background 0.2s, color 0.2s, border 0.2s;
-}
-.btn-clonar-tabla.p-button:hover,
-.btn-clonar-tabla.p-button:focus {
-  background: #1746a0 !important;
-  border-color: #1746a0 !important;
+
+  @media (max-width: 480px) {
+    font-size: 0.85em !important;
+    padding: 0.3rem 0.7rem !important;
+  }
+
+  &:hover,
+  &:focus {
+    background: #1746a0 !important;
+    border-color: #1746a0 !important;
+  }
 }
 
 /* Encabezado fila por tabla con botón eliminar */
@@ -57,11 +82,19 @@
   align-items: center;
   justify-content: space-between;
   margin: 0.4rem 0 0.4rem 0;
+
+  @media (max-width: 480px) {
+    margin: 0.3rem 0 0.3rem 0;
+  }
 }
 
 .tabla-titulo {
   margin: 0;
   color: #555;
+
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+  }
 }
 
 .btn-eliminar-tabla.p-button {
@@ -73,12 +106,17 @@
   height: 2rem !important;
   padding: 0 !important;
   box-shadow: 0 1px 4px rgba(218,105,106,0.12) !important;
-}
-.btn-eliminar-tabla.p-button:hover,
-.btn-eliminar-tabla.p-button:focus {
-  background: color-mix(in srgb, var(--rojo, #DA696A) 8%, #fff) !important;
-}
 
+  @media (max-width: 480px) {
+    width: 1.7rem !important;
+    height: 1.7rem !important;
+  }
+
+  &:hover,
+  &:focus {
+    background: color-mix(in srgb, var(--rojo, #DA696A) 8%, #fff) !important;
+  }
+}
 
 .p-table {
   border: none;
@@ -86,6 +124,12 @@
   box-shadow: 0 6px 32px rgba(38,99,235,0.13), 0 1.5px 8px rgba(0,0,0,0.10);
   background: #f7fbff;
   overflow: visible;
+  table-layout: auto;
+
+  @media (max-width: 768px) {
+    overflow-x: auto;
+    display: block;
+  }
 }
 
 .p-table th, .p-table td {
@@ -100,6 +144,18 @@
   font-size: 1.08em;
   letter-spacing: 0.5px;
   border-bottom: 2px solid #cbd5e1;
+  padding: 10px 8px;
+
+  @media (max-width: 768px) {
+    font-size: 0.95rem;
+    padding: 8px 6px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.8rem;
+    padding: 6px 4px;
+    letter-spacing: 0;
+  }
 }
 
 .p-table .footer-label {
@@ -108,6 +164,18 @@
   border-bottom: none;
   border-right: 2px solid #cbd5e1;
   font-weight: 600;
+}
+
+.p-table td {
+  padding: 8px 8px;
+
+  @media (max-width: 768px) {
+    padding: 6px 6px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 4px 4px;
+  }
 }
 
 .p-table input[type="number"] {
@@ -121,12 +189,24 @@
   width: 100%;
   box-sizing: border-box;
   transition: border 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
+
+  @media (max-width: 768px) {
+    padding: 0.2rem 0.2rem;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.15rem 0.15rem;
+    font-size: 0.85rem;
+  }
+
+  &:focus {
+    border: 1.5px solid #2563eb;
+    outline: none;
+    box-shadow: 0 2px 12px rgba(38,99,235,0.13);
+  }
 }
-.p-table input[type="number"]:focus {
-  border: 1.5px solid #2563eb;
-  outline: none;
-  box-shadow: 0 2px 12px rgba(38,99,235,0.13);
-}
+
 .p-table input[type="number"][readonly],
 .p-table input[type="number"][readonly="readonly"] {
   background: #f0f2f7;
@@ -136,13 +216,41 @@
   font-weight: 500;
   cursor: default;
 }
+
+/* Asegurar que los botones en la última columna no se corten */
+.p-button-sm {
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.85rem !important;
+  
+  @media (max-width: 768px) {
+    padding: 0.2rem 0.4rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.15rem 0.3rem !important;
+    font-size: 0.7rem !important;
+  }
+}
+
 .card {
   width: 100% !important;
   max-width: 1200px !important;
-  min-width: 900px !important;
   margin: 0 auto !important;
   overflow-x: auto !important;
   box-sizing: border-box !important;
+
+  @media (max-width: 1024px) {
+    max-width: 95%;
+  }
+
+  @media (max-width: 768px) {
+    max-width: 98%;
+  }
+
+  @media (max-width: 480px) {
+    max-width: 100%;
+  }
 }
 // Los estilos de .form-grid y .submit-btn se importan desde styles.scss
 
@@ -262,29 +370,6 @@
   align-items: center;
 }
 
-/* Mensajes de error de validación */
-.error-container {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background: #fef2f2;
-  border: 1px solid var(--rojo, #DA696A);
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(218, 105, 106, 0.1);
-}
-
-.error-message {
-  color: var(--rojo, #DA696A);
-  font-size: 0.95em;
-  margin: 0.25rem 0;
-  font-weight: 500;
-  line-height: 1.5;
-}
-
-.error-message:first-child {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
 /* Estilos para inputs con error */
 .input-error {
   border-color: var(--rojo, #DA696A) !important;
@@ -311,3 +396,4 @@
     border-bottom: 2px solid #cbd5e1;
   }
 }
+

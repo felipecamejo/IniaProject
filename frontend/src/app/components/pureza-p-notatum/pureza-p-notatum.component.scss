@@ -1,3 +1,24 @@
+// Estilos para hacer la card más ancha y responsive
+.container {
+  max-width: 800px !important;
+  width: 90% !important;
+  margin: 0 auto !important;
+
+  @media (max-width: 768px) {
+    width: 95% !important;
+  }
+
+  @media (max-width: 480px) {
+    width: 98% !important;
+    padding: 0.5rem !important;
+  }
+}
+
+::ng-deep .card {
+  width: 100% !important;
+  max-width: none !important;
+}
+
 .btn-agregar-rep {
   background: var(--celeste, #2563eb) !important;
   color: #fff !important;
@@ -16,6 +37,11 @@
     color: #fff !important;
     border-color: #1746a0 !important;
   }
+
+  @media (max-width: 480px) {
+    font-size: 0.9em !important;
+    padding: 0.4rem 1rem !important;
+  }
 }
 
 .p-table {
@@ -25,6 +51,10 @@
   width: 100%;
   overflow: hidden;
 
+  @media (max-width: 768px) {
+    overflow-x: auto;
+  }
+
   th {
     background: linear-gradient(135deg, var(--azul) 0%, color-mix(in srgb, var(--azul) 85%, var(--celeste) 15%) 100%) !important;
     color: white !important;
@@ -33,12 +63,32 @@
     text-align: center !important;
     border: none !important;
     font-family: var(--font-main) !important;
+
+    @media (max-width: 768px) {
+      padding: 10px 12px !important;
+      font-size: 0.9rem !important;
+    }
+
+    @media (max-width: 480px) {
+      padding: 8px 8px !important;
+      font-size: 0.8rem !important;
+    }
   }
 
   td {
     text-align: center;
     padding: 8px 12px;
     border-bottom: 1px solid #e5e7eb;
+
+    @media (max-width: 768px) {
+      padding: 6px 10px;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 480px) {
+      padding: 4px 6px;
+      font-size: 0.8rem;
+    }
 
     input, select {
       width: 100%;
@@ -47,6 +97,16 @@
       border-radius: 6px;
       text-align: center;
       
+      @media (max-width: 768px) {
+        padding: 5px 6px;
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 480px) {
+        padding: 4px 4px;
+        font-size: 0.8rem;
+      }
+
       &:focus {
         outline: none;
         border-color: var(--celeste);
@@ -70,28 +130,43 @@
   color: #6b7280;
   font-style: italic;
   padding: 1.5rem !important;
+
+  @media (max-width: 480px) {
+    padding: 1rem !important;
+    font-size: 0.9rem;
+  }
 }
 
 .table-section {
   margin-bottom: 2rem;
+
+  @media (max-width: 480px) {
+    margin-bottom: 1rem;
+  }
 }
 
 .table-title {
   color: var(--azul);
   font-weight: 600;
   margin-bottom: 1rem;
+
+  @media (max-width: 480px) {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+  }
 }
 
 .table-wrapper {
   margin-bottom: 2rem;
-}
-.card {
-  width: 100% !important;
-  max-width: 980px !important;
-  min-width: 900px !important;
-  margin: 0 auto !important;
-  overflow-x: auto !important;
-  box-sizing: border-box !important;
+  overflow-x: auto;
+
+  @media (max-width: 768px) {
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    margin-bottom: 1rem;
+  }
 }
 // Los estilos de .form-grid y .submit-btn se importan desde styles.scss
 
@@ -107,6 +182,11 @@
     color: white !important;
     font-family: var(--font-main) !important;
     transition: all 0.2s ease !important;
+
+    @media (max-width: 480px) {
+      padding: 0.6rem 1rem !important;
+      font-size: 0.9rem !important;
+    }
 
     &:hover {
       background: var(--verde) !important;
@@ -149,6 +229,10 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 0.5rem;
+
+  @media (max-width: 480px) {
+    gap: 0.3rem;
+  }
 }
 
 .chip {
@@ -164,6 +248,11 @@
   border: 1px solid var(--celeste, #2563eb);
   transition: background 0.2s;
 
+  @media (max-width: 480px) {
+    font-size: 0.85em;
+    padding: 0.2rem 0.6rem 0.2rem 0.6rem;
+  }
+
   button {
     background: none;
     border: none;
@@ -176,27 +265,15 @@
     transition: background 0.2s;
     line-height: 1;
 
+    @media (max-width: 480px) {
+      font-size: 1em;
+      margin-left: 0.3em;
+    }
+
     &:hover {
       background: var(--rojo, #DA696A);
     }
   }
-}
-
-.card {
-  width: 100%;
-  max-width: calc(100vw - 48px);
-  min-width: 900px;
-  margin: 0 auto;
-  overflow-x: auto;
-  box-sizing: border-box;
-}
-
-.p-table {
-  width: 100%;
-  min-width: 900px;
-  max-width: 100%;
-  border-collapse: collapse;
-  table-layout: auto;
 }
 
 // Estilos mejorados para los checkboxes
@@ -207,6 +284,11 @@
   border-radius: 12px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 480px) {
+    margin-top: 0.75rem;
+    padding: 1rem;
+  }
 }
 
 .checkbox-title {
@@ -214,6 +296,11 @@
   color: #1746a0;
   font-size: 1.1em;
   font-weight: 600;
+
+  @media (max-width: 480px) {
+    font-size: 1em;
+    margin-bottom: 0.75rem;
+  }
 }
 
 .checkbox-grid {

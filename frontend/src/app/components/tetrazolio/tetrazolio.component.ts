@@ -16,7 +16,7 @@ interface DetalleSemillas {
   viablesSeveros: DetalleCategoria;
   noViables: DetalleCategoria;
 }
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -28,7 +28,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { AuthService } from '../../../services/AuthService';
 import { LogService } from '../../../services/LogService';
 
@@ -48,8 +47,7 @@ export interface RepeticionTetrazolio {
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-    MultiSelectModule,
-    ConfirmDialogComponent
+    MultiSelectModule
   ],
   templateUrl: './tetrazolio.component.html',
   styleUrl: './tetrazolio.component.scss'
@@ -57,8 +55,9 @@ export interface RepeticionTetrazolio {
 export class TetrazolioComponent implements OnInit {
   // Campos nuevos del formulario
   cantidadSemillas: number | null = null;
-  // Errores de validación mostrados en UI (estilo login)
-  erroresValidacion: string[] = [];
+
+  // Agregar propiedades para manejar errores
+  errores: string[] = [];
 
   // Pretratamiento: seleccionar o especificar
   pretratamientoOptions: { label: string; value: any }[] = [
@@ -110,12 +109,6 @@ export class TetrazolioComponent implements OnInit {
   // Prevención de doble envío
   isSubmitting: boolean = false;
 
-  // Variables para el diálogo de confirmación
-  mostrarConfirmEstandar: boolean = false;
-  mostrarConfirmRepetido: boolean = false;
-  estandarPendiente: boolean = false;
-  repetidoPendiente: boolean = false;
-
   // Variables para controlar si ya está marcado (no se puede cambiar)
   estandarOriginal: boolean = false;
   repetidoOriginal: boolean = false;
@@ -147,14 +140,9 @@ export class TetrazolioComponent implements OnInit {
       this.repetido = false;
       this.repetidoOriginal = false;
     }
-
-    // Si está intentando marcar como estándar, mostrar confirmación
-    if (this.estandar && !this.mostrarConfirmEstandar) {
-      this.estandarPendiente = true;
-      this.mostrarConfirmEstandar = true;
-      // Revertir el cambio hasta que se confirme
-      this.estandar = false;
-    }
+    
+    // Actualizar validaciones dinámicamente
+    this.manejarProblemas();
   }
 
   onRepetidoChange() {
@@ -169,44 +157,9 @@ export class TetrazolioComponent implements OnInit {
       this.estandar = false;
       this.estandarOriginal = false;
     }
-
-    // Si está intentando marcar como repetido, mostrar confirmación
-    if (this.repetido && !this.mostrarConfirmRepetido) {
-      this.repetidoPendiente = true;
-      this.mostrarConfirmRepetido = true;
-      // Revertir el cambio hasta que se confirme
-      this.repetido = false;
-    }
-  }
-
-  confirmarEstandar() {
-    this.estandar = true;
-    this.repetido = false;
-    this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
-    this.repetidoOriginal = false;
-    this.mostrarConfirmEstandar = false;
-    this.estandarPendiente = false;
-  }
-
-  cancelarEstandar() {
-    this.estandar = false;
-    this.mostrarConfirmEstandar = false;
-    this.estandarPendiente = false;
-  }
-
-  confirmarRepetido() {
-    this.repetido = true;
-    this.estandar = false;
-    this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
-    this.estandarOriginal = false;
-    this.mostrarConfirmRepetido = false;
-    this.repetidoPendiente = false;
-  }
-
-  cancelarRepetido() {
-    this.repetido = false;
-    this.mostrarConfirmRepetido = false;
-    this.repetidoPendiente = false;
+    
+    // Actualizar validaciones dinámicamente
+    this.manejarProblemas();
   }
 
   // Getter para determinar si está en modo readonly
@@ -783,13 +736,20 @@ export class TetrazolioComponent implements OnInit {
 
   onSubmit() {
     // Prevenir doble envío
+
+    if (this.manejarProblemas()) {
+      // Hay errores: cancelar envío y permitir correcciones
+      this.isSubmitting = false;
+      return;
+    }
+
     if (this.isSubmitting) {
       console.warn('Ya se está procesando una solicitud, ignorando...');
       return;
     }
 
     this.isSubmitting = true;
-    this.erroresValidacion = [];
+    this.errores = [];
     console.log('Iniciando envío del formulario...');
 
     // Sincronizar repeticiones a repeticionesEntries antes de enviar
@@ -888,12 +848,10 @@ export class TetrazolioComponent implements OnInit {
       console.log('Detalles de semillas:', this.detalles);
 
       // Validaciones antes de actualizar
-      const validaciones = this.validarDatosCreacion();
-      if (!validaciones.esValido) {
-        console.error('VALIDACIONES FALLIDAS:', validaciones.errores);
+      if (this.manejarProblemas()) {
+        console.error('VALIDACIONES FALLIDAS:', this.errores);
         // Restablecer estado de envío para reactivar los botones y mostrar errores en pantalla
         this.isSubmitting = false;
-        this.erroresValidacion = validaciones.errores || [];
         return;
       }
 
@@ -962,12 +920,10 @@ export class TetrazolioComponent implements OnInit {
       console.log('Detalles de semillas:', this.detalles);
 
       // Validaciones antes de crear
-      const validaciones = this.validarDatosCreacion();
-      if (!validaciones.esValido) {
-        console.error('VALIDACIONES FALLIDAS:', validaciones.errores);
+      if (this.manejarProblemas()) {
+        console.error('VALIDACIONES FALLIDAS:', this.errores);
         // Restablecer estado de envío para reactivar los botones y mostrar errores en pantalla
         this.isSubmitting = false;
-        this.erroresValidacion = validaciones.errores || [];
         return;
       }
 
@@ -1032,87 +988,71 @@ export class TetrazolioComponent implements OnInit {
     }
   }
 
-  private validarDatosCreacion(): { esValido: boolean; errores: string[] } {
-    const errores: string[] = [];
-
-    console.log('Iniciando validaciones de datos...');
+  manejarProblemas(): boolean {
+    this.errores = []; // Reiniciar errores
 
     // Validar cantidad de semillas
     if (this.cantidadSemillas === null || this.cantidadSemillas === undefined || this.cantidadSemillas <= 0) {
-      errores.push('La cantidad de semillas debe ser mayor a 0');
-      console.warn('Cantidad de semillas inválida:', this.cantidadSemillas);
+      this.errores.push('La cantidad de semillas debe ser mayor a 0');
     }
     if (this.cantidadSemillas !== null && this.cantidadSemillas < 0) {
-      errores.push('La cantidad de semillas no puede ser menor que cero');
-      console.warn('Cantidad de semillas negativa:', this.cantidadSemillas);
+      this.errores.push('La cantidad de semillas no puede ser menor que cero');
     }
 
     // Validar pretratamiento
     if (this.selectedPretratamiento === null || this.selectedPretratamiento === undefined) {
-      errores.push('Debe seleccionar un pretratamiento');
-      console.warn('Pretratamiento no seleccionado');
+      this.errores.push('Debe seleccionar un pretratamiento');
     }
 
     // Validar concentración
     const concentracion = this.selectedConcentracion === 'custom' ? this.concentracionCustom : this.selectedConcentracion;
     if (concentracion === null || concentracion === undefined) {
-      errores.push('La concentración es requerida');
-      console.warn('Concentración no definida');
+      this.errores.push('La concentración es requerida');
     } else if (concentracion < 0) {
-      errores.push('La concentración no puede ser menor que cero');
-      console.warn('Concentración negativa:', concentracion);
+      this.errores.push('La concentración no puede ser menor que cero');
     }
 
     // Validar tinción horas
     const tincionHoras = this.selectedTincionHs === 'custom' ? this.tincionHsCustom : this.selectedTincionHs;
     if (tincionHoras === null || tincionHoras === undefined || tincionHoras <= 0) {
-      errores.push('Las horas de tinción deben ser un valor válido mayor a 0');
-      console.warn('Tinción horas inválida:', tincionHoras);
+      this.errores.push('Las horas de tinción deben ser un valor válido mayor a 0');
     }
     if (tincionHoras !== null && tincionHoras !== undefined && tincionHoras < 0) {
-      errores.push('Las horas de tinción no pueden ser menores que cero');
-      console.warn('Tinción horas negativa:', tincionHoras);
+      this.errores.push('Las horas de tinción no pueden ser menores que cero');
     }
 
     // Validar tinción grados
     if (this.tincionC === null || this.tincionC === undefined || this.tincionC <= 0) {
-      errores.push('Los grados de tinción deben ser un valor válido mayor a 0');
-      console.warn('Tinción grados inválida:', this.tincionC);
+      this.errores.push('Los grados de tinción deben ser un valor válido mayor a 0');
     }
     if (this.tincionC !== null && this.tincionC !== undefined && this.tincionC < 0) {
-      errores.push('Los grados de tinción no pueden ser menores que cero');
-      console.warn('Tinción grados negativa:', this.tincionC);
+      this.errores.push('Los grados de tinción no pueden ser menores que cero');
     }
 
     // Validar fecha
     if (!this.fecha || this.fecha.trim() === '') {
-      errores.push('Debe seleccionar una fecha');
-      console.warn('Fecha no seleccionada');
+      this.errores.push('Debe seleccionar una fecha');
     } else {
       // Validar formato de fecha
       const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!fechaRegex.test(this.fecha)) {
-        errores.push('El formato de fecha debe ser YYYY-MM-DD');
-        console.warn('Formato de fecha inválido:', this.fecha);
+        this.errores.push('El formato de fecha debe ser YYYY-MM-DD');
       }
     }
 
     // Validar repeticiones
     if (!this.repeticiones || this.repeticiones.length === 0) {
-      errores.push('Debe tener al menos una repetición');
-      console.warn('No hay repeticiones definidas');
+      this.errores.push('Debe tener al menos una repetición');
     } else {
       // Validar que todas las repeticiones tengan datos válidos
       this.repeticiones.forEach((rep, index) => {
         if (rep.viables < 0 || rep.noViables < 0 || rep.duras < 0) {
-          errores.push(`La repetición ${index + 1} tiene valores negativos. Los valores no pueden ser menores que cero`);
-          console.warn(`Repetición ${index + 1} con valores negativos:`, rep);
+          this.errores.push(`La repetición ${index + 1} tiene valores negativos. Los valores no pueden ser menores que cero`);
         }
 
         const totalRep = rep.viables + rep.noViables + rep.duras;
         if (totalRep === 0) {
-          errores.push(`La repetición ${index + 1} no tiene datos ingresados`);
-          console.warn(`Repetición ${index + 1} sin datos:`, rep);
+          this.errores.push(`La repetición ${index + 1} no tiene datos ingresados`);
         }
       });
     }
@@ -1122,32 +1062,28 @@ export class TetrazolioComponent implements OnInit {
       const promedioViables = parseFloat(this.getPromedioViables(false));
       if (!isNaN(promedioViables)) {
         if (promedioViables < 0 || promedioViables > 100) {
-          errores.push(`El promedio de viables (${promedioViables.toFixed(2)}%) debe estar entre 0 y 100`);
-          console.warn('Promedio de viables fuera de rango:', promedioViables);
+          this.errores.push(`El promedio de viables (${promedioViables.toFixed(2)}%) debe estar entre 0 y 100`);
         }
       }
 
       const promedioNoViables = parseFloat(this.getPromedioNoViables(false));
       if (!isNaN(promedioNoViables)) {
         if (promedioNoViables < 0 || promedioNoViables > 100) {
-          errores.push(`El promedio de no viables (${promedioNoViables.toFixed(2)}%) debe estar entre 0 y 100`);
-          console.warn('Promedio de no viables fuera de rango:', promedioNoViables);
+          this.errores.push(`El promedio de no viables (${promedioNoViables.toFixed(2)}%) debe estar entre 0 y 100`);
         }
       }
 
       const promedioDuras = parseFloat(this.getPromedioDuras(false));
       if (!isNaN(promedioDuras)) {
         if (promedioDuras < 0 || promedioDuras > 100) {
-          errores.push(`El promedio de duras (${promedioDuras.toFixed(2)}%) debe estar entre 0 y 100`);
-          console.warn('Promedio de duras fuera de rango:', promedioDuras);
+          this.errores.push(`El promedio de duras (${promedioDuras.toFixed(2)}%) debe estar entre 0 y 100`);
         }
       }
     }
 
     // Validar detalles de semillas
     if (!this.detalles || this.detalles.length === 0) {
-      errores.push('Debe tener al menos una tabla de detalles de semillas');
-      console.warn('No hay detalles de semillas definidos');
+      this.errores.push('Debe tener al menos una tabla de detalles de semillas');
     } else {
       // Validar que todos los valores en detalles sean >= 0
       this.detalles.forEach((det, tablaIndex) => {
@@ -1164,22 +1100,13 @@ export class TetrazolioComponent implements OnInit {
               cat.categoria.ambiente < 0 || cat.categoria.chinches < 0 ||
               cat.categoria.fracturas < 0 || cat.categoria.otros < 0 ||
               cat.categoria.duras < 0) {
-            errores.push(`La tabla ${tablaIndex + 1} en ${cat.nombre} tiene valores negativos. Los valores no pueden ser menores que cero`);
-            console.warn(`Tabla ${tablaIndex + 1} - ${cat.nombre} con valores negativos:`, cat.categoria);
+            this.errores.push(`La tabla ${tablaIndex + 1} en ${cat.nombre} tiene valores negativos. Los valores no pueden ser menores que cero`);
           }
         });
       });
     }
 
-    const esValido = errores.length === 0;
-
-    if (esValido) {
-      console.log('Todas las validaciones pasaron correctamente');
-    } else {
-      console.log('Se encontraron errores de validación:', errores);
-    }
-
-    return { esValido, errores };
+    return this.errores.length > 0;
   }
 
   private async procesarRepeticiones(tetrazolioId: number): Promise<void> {

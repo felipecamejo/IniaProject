@@ -65,7 +65,7 @@
       <!-- Select Tratamiento de semillas -->
       <div class="form-field" style="margin-bottom: 2.5rem; display: flex; flex-direction: column; align-items: flex-start;">
         <label for="tratamientoSemillas" style="font-weight:700; font-size:1.2em; margin-bottom:0.7rem; color:#1746a0; letter-spacing:0.5px;">Tipo de tratamiento de semillas</label>
-        <select id="tratamientoSemillas" [(ngModel)]="tratamientoSemillas" (change)="onTratamientoChange()" name="tratamientoSemillas" [disabled]="isReadonly"
+        <select id="tratamientoSemillas" [(ngModel)]="tratamientoSemillas" (change)="onSelectChanges()" name="tratamientoSemillas" [disabled]="isReadonly"
           style="padding:0.7rem 1.5rem; border-radius:12px; border:2px solid #2563eb; background:#f7fbff; font-size:1.15em; font-weight:600; color:#1746a0; box-shadow:0 2px 8px rgba(38,99,235,0.08); transition:border 0.2s;">
           <option value="sin curar">Sin curar</option>
           <option value="curada en planta">Curada en planta</option>
@@ -85,7 +85,7 @@
       <div style="display: flex; flex-wrap: wrap; gap: 1.2rem; align-items: center; margin-bottom: 1.5rem;">
         <div class="form-field" style="margin-bottom: 0;">
           <label for="numSemillas" style="font-weight:600; margin-right:0.5rem;">Número de semillas por repetición:</label>
-          <select id="numSemillas" [(ngModel)]="numSemillas" name="numSemillas" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
+          <select id="numSemillas" [(ngModel)]="numSemillas" name="numSemillas" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;" (change)="manejarProblemas()">
             <option value="25">25</option>
             <option value="50">50</option>
             <option value="100">100</option>
@@ -93,14 +93,14 @@
         </div>
         <div class="form-field" style="margin-bottom: 0;">
           <label for="metodo" style="font-weight:600; margin-right:0.5rem;">Método:</label>
-          <select id="metodo" [(ngModel)]="metodoId" name="metodoId" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
+          <select id="metodo" [(ngModel)]="metodoId" name="metodoId" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;" (change)="manejarProblemas()">
             <option [ngValue]="null">Seleccione...</option>
             <option *ngFor="let m of metodos" [ngValue]="m.id">{{ m.nombre }}</option>
           </select>
         </div>
         <div class="form-field" style="margin-bottom: 0;">
           <label for="temperatura" style="font-weight:600; margin-right:0.5rem;">Temperatura:</label>
-          <select id="temperatura" [(ngModel)]="temperatura" name="temperatura" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
+          <select id="temperatura" [(ngModel)]="temperatura" name="temperatura" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;" (change)="manejarProblemas()">
             <option value="15°C">15°C</option>
             <option value="20°C">20°C</option>
             <option value="25°C">25°C</option>
@@ -110,14 +110,14 @@
         </div>
         <div class="form-field" style="margin-bottom: 0;">
           <label for="preFrio" style="font-weight:600; margin-right:0.5rem;">Pre-frío:</label>
-          <select id="preFrio" [(ngModel)]="preFrio" name="preFrio" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
+          <select id="preFrio" [(ngModel)]="preFrio" name="preFrio" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;" (change)="manejarProblemas()">
             <option value="No">No</option>
             <option *ngFor="let d of diasPreFrio" [value]="d">{{d}}</option>
           </select>
         </div>
         <div class="form-field" style="margin-bottom: 0;">
           <label for="preTratamiento" style="font-weight:600; margin-right:0.5rem;">Pre-tratamiento:</label>
-          <select id="preTratamiento" [(ngModel)]="preTratamiento" name="preTratamiento" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;">
+          <select id="preTratamiento" [(ngModel)]="preTratamiento" name="preTratamiento" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;" (change)="manejarProblemas()">
             <option value="No">No</option>
             <option value="KNO3">KNO3</option>
             <option value="Pre-lavado">Pre-lavado</option>

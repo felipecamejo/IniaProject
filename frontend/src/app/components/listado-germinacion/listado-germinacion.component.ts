@@ -7,13 +7,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GerminacionDto } from '../../../models/Germinacion.dto';
 import { GerminacionService } from '../../../services/GerminacionService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { LogService } from '../../../services/LogService';
 
 @Component({
   selector: 'app-listado-germinacion',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule],
   templateUrl: './listado-germinacion.component.html',
   styleUrl: './listado-germinacion.component.scss'
 })
@@ -50,11 +49,6 @@ export class ListadoGerminacionComponent implements OnInit {
     ];
 
     items: GerminacionDto[] = [];
-
-    // Propiedades para el popup de confirmación
-    mostrarConfirmEliminar: boolean = false;
-    germinacionAEliminar: GerminacionDto | null = null;
-    confirmLoading: boolean = false;
 
     ngOnInit(): void {
       this.loteId = this.route.snapshot.paramMap.get('loteId');
@@ -140,36 +134,20 @@ export class ListadoGerminacionComponent implements OnInit {
 
     eliminarGerminacion(item: GerminacionDto) {
       console.log('Eliminar Germinación:', item);
-      this.germinacionAEliminar = item;
-      this.mostrarConfirmEliminar = true;
-    }
-
-    confirmarEliminacion() {
-      if (!this.germinacionAEliminar) return;
-      this.confirmLoading = true;
-      const germinacion = this.germinacionAEliminar;
-
-      this.germSvc.eliminar(germinacion.id!).subscribe({
+      const confirmacion = confirm('¿Estás seguro de que quieres eliminar esta Germinación?');
+      
+      if (!confirmacion) return;
+      
+      this.germSvc.eliminar(item.id!).subscribe({
         next: () => {
-          this.items = this.items.filter(g => g.id !== germinacion.id);
-          this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
-          this.germinacionAEliminar = null;
-          
+          this.items = this.items.filter(g => g.id !== item.id);
           this.logService.crearLog(this.loteId ? parseInt(this.loteId) : 0, Number(this.reciboId), 'Germinacion', 'eliminada').subscribe();
+          alert('Germinación eliminada exitosamente.');
         },
         error: (err) => {
           console.error('Error eliminando germinación', err);
-          this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
-          this.germinacionAEliminar = null;
+          alert('Error al eliminar la Germinación. Por favor, inténtalo de nuevo.');
         }
       });
-    }
-
-    cancelarEliminacion() {
-      this.mostrarConfirmEliminar = false;
-      this.germinacionAEliminar = null;
-      this.confirmLoading = false;
     }
 }

@@ -7,13 +7,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PMSDto } from '../../../models/PMS.dto';
 import { PMSService } from '../../../services/PMSService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { LogService } from '../../../services/LogService';
 
 @Component({
   selector: 'app-listado-pms.component',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule],
   templateUrl: './listado-pms.component.html',
   styleUrl: './listado-pms.component.scss'
 })
@@ -51,11 +50,6 @@ export class ListadoPmsComponent implements OnInit {
     anios: { label: string, id: number }[] = [];
 
     items: PMSDto[] = [];
-
-    // Propiedades para el popup de confirmación
-    mostrarConfirmEliminar: boolean = false;
-    pmsAEliminar: PMSDto | null = null;
-    confirmLoading: boolean = false;
 
     cargarItems() {
       if (this.reciboId == null || isNaN(this.reciboId)) {
@@ -210,47 +204,22 @@ export class ListadoPmsComponent implements OnInit {
 
     eliminarPMS(item: PMSDto) {
       console.log('Eliminar PMS:', item);
-      this.pmsAEliminar = item;
-      this.mostrarConfirmEliminar = true;
-    }
-
-    confirmarEliminacion() {
-      if (!this.pmsAEliminar) return;
-      this.confirmLoading = true;
-      const pms = this.pmsAEliminar;
-
-      if (pms.id == null) {
-        console.warn('Item no tiene id, no se puede eliminar');
-        this.confirmLoading = false;
-        this.mostrarConfirmEliminar = false;
-        this.pmsAEliminar = null;
-        return;
-      }
-
-      this.pmsService.eliminar(pms.id).subscribe({
+      const confirmacion = confirm('¿Estás seguro de que quieres eliminar este PMS?');
+      
+      if (!confirmacion || item.id == null) return;
+      
+      this.pmsService.eliminar(item.id).subscribe({
         next: (res) => {
           console.log('PMS eliminado en backend:', res);
-          this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
-          this.pmsAEliminar = null;
-
-          this.logService.crearLog(Number(this.loteId), Number(pms.id), 'PMS', 'eliminado').subscribe();
+          this.logService.crearLog(Number(this.loteId), Number(item.id), 'PMS', 'eliminado').subscribe();
           // Actualizar lista localmente
-          this.items = this.items.filter(pmsItem => pmsItem.id !== pms.id);
+          this.items = this.items.filter(pmsItem => pmsItem.id !== item.id);
+          alert('PMS eliminado exitosamente.');
         },
         error: (err) => {
           console.error('Error eliminando PMS:', err);
-          this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
-          this.pmsAEliminar = null;
           alert('Error al eliminar el PMS. Por favor, inténtalo de nuevo.');
         }
       });
-    }
-
-    cancelarEliminacion() {
-      this.mostrarConfirmEliminar = false;
-      this.pmsAEliminar = null;
-      this.confirmLoading = false;
     }
 }
