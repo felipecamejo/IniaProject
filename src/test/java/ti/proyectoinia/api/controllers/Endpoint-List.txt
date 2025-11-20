@@ -1,0 +1,192 @@
+Formato: URL (METHOD)
+
+Autenticación
+
+http://localhost:8080/Inia/api/seguridad/login (POST)
+
+Usuario
+
+http://localhost:8080/Inia/api/v1/usuario/listar (GET)
+http://localhost:8080/Inia/api/v1/usuario/perfil/{email} (GET)
+http://localhost:8080/Inia/api/v1/usuario/perfil/actual (GET)
+http://localhost:8080/Inia/api/v1/usuario/editar (PUT)
+http://localhost:8080/Inia/api/v1/usuario/perfil/actualizar (PUT)
+http://localhost:8080/Inia/api/v1/usuario/crear (POST)
+http://localhost:8080/Inia/api/v1/usuario/{id} (GET)
+http://localhost:8080/Inia/api/v1/usuario/{id} (PUT)
+http://localhost:8080/Inia/api/v1/usuario/eliminar/{id} (DELETE)
+
+Lote
+
+http://localhost:8080/Inia/api/v1/lote/crear (POST)
+http://localhost:8080/Inia/api/v1/lote/listar (GET)
+http://localhost:8080/Inia/api/v1/lote/{id} (GET)
+http://localhost:8080/Inia/api/v1/lote/editar (PUT)
+http://localhost:8080/Inia/api/v1/lote/eliminar/{id} (PUT)
+http://localhost:8080/Inia/api/v1/lote/recibo/{loteId} (GET)
+http://localhost:8080/Inia/api/v1/lote/verificar-asociacion/{loteId}/{reciboId} (GET)
+
+Recibo
+
+http://localhost:8080/Inia/api/v1/recibo/crear (POST)
+http://localhost:8080/Inia/api/v1/recibo/{id} (GET)
+http://localhost:8080/Inia/api/v1/recibo/editar (PUT)
+http://localhost:8080/Inia/api/v1/recibo/listar-por-lote/{loteId} (GET)
+http://localhost:8080/Inia/api/v1/recibo/listar (GET)
+
+Autocompletado
+
+http://localhost:8080/Inia/api/v1/autocompletado/crear (POST)
+http://localhost:8080/Inia/api/v1/autocompletado/listar (GET)
+http://localhost:8080/Inia/api/v1/autocompletado/{id} (GET)
+http://localhost:8080/Inia/api/v1/autocompletado/editar (PUT)
+http://localhost:8080/Inia/api/v1/autocompletado/eliminar/{id} (PUT)
+http://localhost:8080/Inia/api/v1/autocompletado/por-parametro/{parametro} (GET)
+
+Certificado
+
+http://localhost:8080/Inia/api/v1/certificado/crear (POST)
+http://localhost:8080/Inia/api/v1/certificado/{id} (GET)
+http://localhost:8080/Inia/api/v1/certificado/editar (PUT)
+http://localhost:8080/Inia/api/v1/certificado/eliminar/{id} (PUT)
+http://localhost:8080/Inia/api/v1/certificado/listar (GET)
+http://localhost:8080/Inia/api/v1/certificado/recibo/{reciboId} (GET)
+
+Cultivo
+
+http://localhost:8080/Inia/api/v1/cultivo/crear (POST)
+http://localhost:8080/Inia/api/v1/cultivo/listar (GET)
+http://localhost:8080/Inia/api/v1/cultivo/{id} (GET)
+http://localhost:8080/Inia/api/v1/cultivo/editar (PUT)
+http://localhost:8080/Inia/api/v1/cultivo/eliminar/{id} (PUT)
+
+Depósito
+
+http://localhost:8080/Inia/api/v1/deposito/crear (POST)
+http://localhost:8080/Inia/api/v1/deposito/{id} (GET)
+http://localhost:8080/Inia/api/v1/deposito/editar (PUT)
+http://localhost:8080/Inia/api/v1/deposito/eliminar/{id} (PUT)
+http://localhost:8080/Inia/api/v1/deposito/listar (GET)
+
+DOSN
+
+http://localhost:8080/Inia/api/v1/DOSN/crear (POST)
+http://localhost:8080/Inia/api/v1/DOSN/listar/recibo/{reciboId} (GET)
+http://localhost:8080/Inia/api/v1/DOSN/{id} (GET)
+http://localhost:8080/Inia/api/v1/DOSN/editar (PUT)
+http://localhost:8080/Inia/api/v1/DOSN/eliminar/{id} (PUT)
+
+Germinación
+
+http://localhost:8080/Inia/api/v1/germinacion/crear (POST)
+http://localhost:8080/Inia/api/v1/germinacion/listar (GET)
+http://localhost:8080/Inia/api/v1/germinacion/listar/recibo/{reciboId} (GET)
+http://localhost:8080/Inia/api/v1/germinacion/{id} (GET)
+http://localhost:8080/Inia/api/v1/germinacion/editar (PUT)
+http://localhost:8080/Inia/api/v1/germinacion/eliminar/{id} (PUT)
+
+Germinación (tablas)
+
+http://localhost:8080/Inia/api/v1/germinacion/tablas/{germinacionId}/conteos (POST)
+http://localhost:8080/Inia/api/v1/germinacion/tablas/{germinacionId}/conteos (GET)
+http://localhost:8080/Inia/api/v1/germinacion/tablas/normales/{tabla} (PUT)
+http://localhost:8080/Inia/api/v1/germinacion/tablas/finales/{tabla} (PUT)
+http://localhost:8080/Inia/api/v1/germinacion/tablas/{germinacionId}/resumen (GET)
+http://localhost:8080/Inia/api/v1/germinacion/tablas/{germinacionId}/celdas/{tabla}/repeticiones (POST)
+http://localhost:8080/Inia/api/v1/germinacion/tablas/{germinacionId}/celdas/{tabla}/repeticiones/{numeroRepeticion} (POST)
+
+Gramos PMS
+
+http://localhost:8080/Inia/api/v1/gramos-pms/crear-multiple (POST)
+http://localhost:8080/Inia/api/v1/gramos-pms/pms/{pmsId} (GET)
+
+Hongo
+
+http://localhost:8080/Inia/api/v1/hongo/crear (POST)
+http://localhost:8080/Inia/api/v1/hongo/listar (GET)
+http://localhost:8080/Inia/api/v1/hongo/{id} (GET)
+http://localhost:8080/Inia/api/v1/hongo/editar (PUT)
+http://localhost:8080/Inia/api/v1/hongo/eliminar/{id} (PUT)
+
+HumedadRecibo
+
+http://localhost:8080/Inia/api/v1/humedadRecibo/actualizar-humedades/{reciboId} (PUT)
+http://localhost:8080/Inia/api/v1/humedadRecibo/eliminar-multiple (PUT) — llamada con http.request('put', ...)
+http://localhost:8080/Inia/api/v1/humedadRecibo/recibo/{reciboId} (GET)
+
+Log
+
+http://localhost:8080/Inia/api/v1/log/crear (POST)
+http://localhost:8080/Inia/api/v1/log/listar/{loteId} (GET)
+
+Maleza
+
+http://localhost:8080/Inia/api/v1/maleza/crear (POST)
+http://localhost:8080/Inia/api/v1/maleza/listar (GET)
+http://localhost:8080/Inia/api/v1/maleza/{id} (GET)
+http://localhost:8080/Inia/api/v1/maleza/editar (PUT)
+http://localhost:8080/Inia/api/v1/maleza/eliminar/{id} (PUT)
+
+Método
+
+http://localhost:8080/Inia/api/v1/metodo/crear (POST)
+http://localhost:8080/Inia/api/v1/metodo/listar (GET)
+http://localhost:8080/Inia/api/v1/metodo/{id} (GET)
+http://localhost:8080/Inia/api/v1/metodo/editar (PUT)
+http://localhost:8080/Inia/api/v1/metodo/eliminar/{id} (PUT)
+
+Middleware
+
+http://localhost:8080/Inia/api/v1/pandmiddleware/http/exportar (POST) — devuelve blob
+http://localhost:8080/Inia/api/v1/pandmiddleware/http/importar (POST) — recibe FormData
+
+PMS
+
+http://localhost:8080/Inia/api/v1/pms/crear (POST)
+http://localhost:8080/Inia/api/v1/pms/listar/recibo/{reciboId} (GET)
+http://localhost:8080/Inia/api/v1/pms/{id} (GET)
+http://localhost:8080/Inia/api/v1/pms/editar (PUT)
+http://localhost:8080/Inia/api/v1/pms/eliminar/{id} (PUT)
+
+Pureza P. notatum
+
+http://localhost:8080/Inia/api/v1/PurezaPNotatum/crear (POST)
+http://localhost:8080/Inia/api/v1/PurezaPNotatum/listar (GET)
+http://localhost:8080/Inia/api/v1/PurezaPNotatum/listar/recibo/{reciboId} (GET)
+http://localhost:8080/Inia/api/v1/PurezaPNotatum/{id} (GET)
+http://localhost:8080/Inia/api/v1/PurezaPNotatum/editar (PUT)
+http://localhost:8080/Inia/api/v1/PurezaPNotatum/eliminar/{id} (PUT)
+http://localhost:8080/Inia/api/v1/PurezaPNotatum/listar-repeticiones/{purezaPNotatumId} (GET)
+http://localhost:8080/Inia/api/v1/PurezaPNotatum/actualizar-repeticiones/{purezaPNotatumId} (PUT)
+
+Pureza
+
+http://localhost:8080/Inia/api/v1/pureza/crear (POST)
+http://localhost:8080/Inia/api/v1/pureza/listar/recibo/{reciboId} (GET)
+http://localhost:8080/Inia/api/v1/pureza/{id} (GET)
+http://localhost:8080/Inia/api/v1/pureza/editar (PUT)
+http://localhost:8080/Inia/api/v1/pureza/eliminar/{id} (PUT)
+
+Sanitario
+
+http://localhost:8080/Inia/api/v1/sanitario/crear (POST)
+http://localhost:8080/Inia/api/v1/sanitario/listar (GET)
+http://localhost:8080/Inia/api/v1/sanitario/listar/recibo/{reciboId} (GET)
+http://localhost:8080/Inia/api/v1/sanitario/{id} (GET)
+http://localhost:8080/Inia/api/v1/sanitario/editar (PUT)
+http://localhost:8080/Inia/api/v1/sanitario/eliminar/{id} (PUT)
+http://localhost:8080/Inia/api/v1/sanitario/actualizar-hongos/{sanitarioId} (PUT)
+http://localhost:8080/Inia/api/v1/sanitario/listar-hongos/{sanitarioId} (GET)
+
+Tetrazolio
+
+http://localhost:8080/Inia/api/v1/tetrazolio/crear (POST)
+http://localhost:8080/Inia/api/v1/tetrazolio/listar (GET)
+http://localhost:8080/Inia/api/v1/tetrazolio/listar/recibo/{reciboId} (GET)
+http://localhost:8080/Inia/api/v1/tetrazolio/{id} (GET)
+http://localhost:8080/Inia/api/v1/tetrazolio/editar (PUT)
+http://localhost:8080/Inia/api/v1/tetrazolio/eliminar/{id} (PUT)
+http://localhost:8080/Inia/api/v1/tetrazolio/listar-repeticiones/{tetrazolioId} (GET)
+http://localhost:8080/Inia/api/v1/tetrazolio/actualizar-repeticiones/{tetrazolioId} (PUT)
+http://localhost:8080/Inia/api/v1/tetrazolio/listar-detalles/{tetrazolioId} (GET)
+http://localhost:8080/Inia/api/v1/tetrazolio/actualizar-detalles/{tetrazolioId} (PUT)
