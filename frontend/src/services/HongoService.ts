@@ -43,9 +43,8 @@ export class HongoService {
   }
 
   eliminar(id: number): Observable<string> {
-    return this.http.put(
+    return this.http.delete(
       `${this.urlService.baseUrl}${this.endpoint}/eliminar/${id}`,
-      {},
       { responseType: 'text' }
     );
   }
