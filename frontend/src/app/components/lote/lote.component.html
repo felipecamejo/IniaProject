@@ -14,8 +14,13 @@
 
               <div class="form-field">
                 <label for="descripcion">Descripcion</label>
-                <input id="descripcion" type="number" [(ngModel)]="descripcion" name="descripcion" pInputText />
-              </div>
+                <textarea
+                    id="descripcion"
+                    rows="3"
+                    [(ngModel)]="descripcion"
+                    name="descripcion"
+                ></textarea>
+                </div>
 
               <div class="form-field">
                 <label for="categoria">Categoria</label>

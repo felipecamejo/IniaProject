@@ -7,13 +7,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PurezaDto } from '../../../models/Pureza.dto';
 import { PurezaService } from '../../../services/PurezaService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { LogService } from '../../../services/LogService';
 
 @Component({
   selector: 'app-listado-pureza.component',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule],
   templateUrl: './listado-pureza.component.html',
   styleUrl: './listado-pureza.component.scss'
 })
@@ -58,11 +57,6 @@ export class ListadoPurezaComponent implements OnInit {
     anios: { label: string, id: number }[] = [];
 
     items: PurezaDto[] = [];
-
-    // Propiedades para el popup de confirmación
-    mostrarConfirmEliminar: boolean = false;
-    purezaAEliminar: PurezaDto | null = null;
-    confirmLoading: boolean = false;
 
     navegarAVer(item: PurezaDto) {
           console.log('Navegando para ver Pureza:', item);
@@ -210,41 +204,22 @@ export class ListadoPurezaComponent implements OnInit {
 
     eliminarPureza(item: PurezaDto) {
         console.log('Eliminar Pureza:', item);
-        this.purezaAEliminar = item;
-        this.mostrarConfirmEliminar = true;
-    }
-
-    confirmarEliminacion() {
-        if (!this.purezaAEliminar) return;
-        this.confirmLoading = true;
-        const pureza = this.purezaAEliminar;
-
-        if (pureza.id) {
-            this.purezaService.eliminar(pureza.id).subscribe({
-                next: (response) => {
-                    console.log('Pureza eliminada exitosamente:', response);
-                    this.confirmLoading = false;
-                    this.mostrarConfirmEliminar = false;
-                    this.purezaAEliminar = null;
-                    this.logService.crearLog(Number(this.loteId), Number(pureza.id), 'Pureza', 'eliminada').subscribe();
-
-                    // Recargar la lista después de eliminar
-                    this.cargarPurezas();
-                },
-                error: (error) => {
-                    console.error('Error al eliminar la pureza:', error);
-                    this.confirmLoading = false;
-                    this.mostrarConfirmEliminar = false;
-                    this.purezaAEliminar = null;
-                    alert('Error al eliminar la pureza. Por favor, inténtalo de nuevo.');
-                }
-            });
-        }
-    }
-
-    cancelarEliminacion() {
-        this.mostrarConfirmEliminar = false;
-        this.purezaAEliminar = null;
-        this.confirmLoading = false;
+        const confirmacion = confirm('¿Estás seguro de que quieres eliminar esta Pureza?');
+        
+        if (!confirmacion || !item.id) return;
+        
+        this.purezaService.eliminar(item.id).subscribe({
+            next: (response) => {
+                console.log('Pureza eliminada exitosamente:', response);
+                this.logService.crearLog(Number(this.loteId), Number(item.id), 'Pureza', 'eliminada').subscribe();
+                alert('Pureza eliminada exitosamente.');
+                // Recargar la lista después de eliminar
+                this.cargarPurezas();
+            },
+            error: (error) => {
+                console.error('Error al eliminar la pureza:', error);
+                alert('Error al eliminar la pureza. Por favor, inténtalo de nuevo.');
+            }
+        });
     }
 }

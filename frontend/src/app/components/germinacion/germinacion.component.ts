@@ -1492,6 +1492,11 @@ export class GerminacionComponent implements OnInit {
     return promedio < 0 || promedio > 100;
   }
 
+  onSelectChanges() {
+    this.manejarProblemas();
+    this.onTratamientoChange();
+  }
+
   manejarProblemas(): boolean {
     this.errores = []; // Reiniciar errores
 

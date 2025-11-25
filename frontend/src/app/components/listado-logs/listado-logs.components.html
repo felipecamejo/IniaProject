@@ -6,7 +6,7 @@
     
     <p-card class="card">
         <ng-template pTemplate="header">
-            <h2 class="title">Listado de Logs</h2>
+            <h2 class="title">Historial de Cambios</h2>
         </ng-template>
 
         <div class="search-section">
@@ -30,8 +30,8 @@
         <!-- Mensaje cuando no hay elementos -->
         <div class="no-results-message" *ngIf="itemsFiltrados.length === 0">
             <div class="no-results-content">
-                <h3>No se encontraron Logs</h3>
-                <p>No hay Logs que coincidan con los filtros seleccionados.</p>
+                <h3>No se encontraron Cambios</h3>
+                <p>No hay Cambios que coincidan con los filtros seleccionados.</p>
                 <p>Intenta ajustar los criterios de búsqueda.</p>
             </div>
         </div>
@@ -42,7 +42,7 @@
              >
             <div class="item-header">
                     <div class="item-info">
-                        <h3 class="item-title">Log #{{ item.id }}</h3>
+                        <h3 class="item-title">Cambio #{{ item.id }}</h3>
                     </div>
                     <div class="item-status">
                         
