@@ -58,6 +58,12 @@ export class ListadoDosnComponent implements OnInit {
 
     items: DOSNDto[] = [];
 
+    // Propiedades de paginación
+    page = 0; // 0-based
+    size = 12;
+    totalElements = 0;
+    totalPages = 0;
+
     // Propiedades para el popup de confirmación
     mostrarConfirmEliminar: boolean = false;
     dosnAEliminar: DOSNDto | null = null;
@@ -77,6 +83,7 @@ export class ListadoDosnComponent implements OnInit {
                 console.log(`Listado de DOSN cargado: ${this.items.length} registro(s).`);
                 // Actualizar años disponibles después de cargar los items
                 this.actualizarAniosDisponibles();
+                this.page = 0; // Reset a primera página cuando se cargan nuevos datos
             },
             error: (error) => {
                 const detalle = error?.error || error?.message || error;
@@ -118,7 +125,7 @@ export class ListadoDosnComponent implements OnInit {
 
     get itemsFiltrados() {
       const seguros = Array.isArray(this.items) ? this.items : [];
-      return seguros.filter(item => {
+      const filtrados = seguros.filter(item => {
         const cumpleId = !this.searchText || item.id?.toString().includes(this.searchText);
         const fechaParaFiltro = this.getFechaConTipo(item).fecha;
         const cumpleMes = !this.selectedMes || this.getMesFromFecha(fechaParaFiltro) === parseInt(this.selectedMes);
@@ -130,6 +137,15 @@ export class ListadoDosnComponent implements OnInit {
         }
         return a.repetido ? 1 : -1;
       });
+
+      // Calcular paginación
+      this.totalElements = filtrados.length;
+      this.totalPages = Math.ceil(this.totalElements / this.size);
+
+      // Paginar los resultados
+      const startIndex = this.page * this.size;
+      const endIndex = startIndex + this.size;
+      return filtrados.slice(startIndex, endIndex);
     }
 
     getFechaConTipo(item: DOSNDto): { fecha: string, tipo: string } {
@@ -251,5 +267,37 @@ export class ListadoDosnComponent implements OnInit {
       this.mostrarConfirmEliminar = false;
       this.dosnAEliminar = null;
       this.confirmLoading = false;
+    }
+
+    // Métodos de paginación
+    nextPage(): void {
+      if (this.page < this.totalPages - 1) {
+        this.page++;
+      }
+    }
+
+    prevPage(): void {
+      if (this.page > 0) {
+        this.page--;
+      }
+    }
+
+    onPageSizeChange(value: string): void {
+      const newSize = parseInt(value, 10);
+      if (!isNaN(newSize) && newSize > 0) {
+        this.size = newSize;
+        this.page = 0; // Reset a primera página
+      }
+    }
+
+    getFirstItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      return this.page * this.size + 1;
+    }
+
+    getLastItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      const endIndex = this.page * this.size + this.itemsFiltrados.length;
+      return endIndex;
     }
 }

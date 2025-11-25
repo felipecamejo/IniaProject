@@ -42,7 +42,7 @@
             </div>
         </div>
 
-        <!-- Lista de lotes filtrados -->
+    <!-- Lista de lotes filtrados -->
         <div class="blue-rectangle" 
              *ngFor="let item of itemsFiltrados"
              (click)="menuAnalisis(item.id)"
@@ -71,7 +71,33 @@
                 </div>
             </div>
         </div>
-       
+        
+        <!-- Paginación -->
+        <div class="pagination" *ngIf="totalPages > 1">
+            <div class="pagination-info">
+                <span>
+                    Mostrando {{ getFirstItemIndex() }} - {{ getLastItemIndex() }} de {{ totalElements }}
+                    <span *ngIf="itemsFiltrados.length < items.length" class="filter-note">
+                        ({{ itemsFiltrados.length }} en esta página después de filtros)
+                    </span>
+                </span>
+            </div>
+            <div class="pagination-controls">
+                <button class="page-btn" (click)="prevPage()" [disabled]="page === 0 || loading">
+                    <i class="pi pi-angle-left"></i>
+                </button>
+                <span class="page-indicator">Página {{ page + 1 }} / {{ totalPages }}</span>
+                <button class="page-btn" (click)="nextPage()" [disabled]="page >= totalPages - 1 || loading">
+                    <i class="pi pi-angle-right"></i>
+                </button>
+                <select class="size-select" [ngModel]="size" (ngModelChange)="onPageSizeChange($event)">
+                    <option [value]="10">10</option>
+                    <option [value]="12">12</option>
+                    <option [value]="20">20</option>
+                    <option [value]="50">50</option>
+                </select>
+            </div>
+        </div>
         
     </p-card>
 

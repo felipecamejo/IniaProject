@@ -1,8 +1,13 @@
 package ti.proyectoinia.services;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ti.proyectoinia.api.responses.ResponseListadoLotes;
+import ti.proyectoinia.api.responses.ResponseListadoLotesPage;
 import ti.proyectoinia.business.entities.Lote;
 import ti.proyectoinia.business.repositories.LoteRepository;
 import ti.proyectoinia.business.repositories.ReciboRepository;
@@ -57,6 +62,36 @@ public class LoteService {
                 .toList();
         ResponseListadoLotes responseListadoLotes = new ResponseListadoLotes(lotesDto);
         return ResponseEntity.ok(responseListadoLotes);
+    }
+
+    /**
+     * Paginated listing of active lotes.
+     * @param page page number (0-based)
+     * @param size page size
+     * @param sortField field to sort by
+     * @param direction ASC or DESC
+     * @return paginated response
+     */
+    public ResponseEntity<ResponseListadoLotesPage> listadoLotesPage(int page, int size, String sortField, String direction) {
+    if (size <= 0) size = 20;
+    if (page < 0) page = 0;
+    if (sortField == null || sortField.isBlank()) sortField = "fechaCreacion";
+    Sort sort = direction != null && direction.equalsIgnoreCase("ASC") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+    Pageable pageable = PageRequest.of(page, size, sort);
+    Page<Lote> pageResult = this.loteRepository.findByActivoTrue(pageable);
+    var contentDto = pageResult.getContent().stream()
+        .map(mapsDtoEntityService::mapToDtoLote)
+        .toList();
+    ResponseListadoLotesPage response = new ResponseListadoLotesPage(
+        contentDto,
+        pageResult.getNumber(),
+        pageResult.getSize(),
+        pageResult.getTotalElements(),
+        pageResult.getTotalPages(),
+        pageResult.isFirst(),
+        pageResult.isLast()
+    );
+    return ResponseEntity.ok(response);
     }
 
     public Optional<Long> obtenerReciboIdPorLoteId(Long loteId) {

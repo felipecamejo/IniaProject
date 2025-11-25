@@ -79,7 +79,30 @@
                 </div>
             </div>
         </div>
-       
+        
+        <!-- Paginación -->
+        <div class="pagination" *ngIf="totalPages > 1">
+            <div class="pagination-info">
+                <span>
+                    Mostrando {{ getFirstItemIndex() }} - {{ getLastItemIndex() }} de {{ totalElements }}
+                </span>
+            </div>
+            <div class="pagination-controls">
+                <button class="page-btn" (click)="prevPage()" [disabled]="page === 0">
+                    <i class="pi pi-angle-left"></i>
+                </button>
+                <span class="page-indicator">Página {{ page + 1 }} / {{ totalPages }}</span>
+                <button class="page-btn" (click)="nextPage()" [disabled]="page >= totalPages - 1">
+                    <i class="pi pi-angle-right"></i>
+                </button>
+                <select class="size-select" [ngModel]="size" (ngModelChange)="onPageSizeChange($event)">
+                    <option [value]="10">10</option>
+                    <option [value]="12">12</option>
+                    <option [value]="20">20</option>
+                    <option [value]="50">50</option>
+                </select>
+            </div>
+        </div>
         
     </p-card>
 

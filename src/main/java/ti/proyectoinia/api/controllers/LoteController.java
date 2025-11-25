@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import ti.proyectoinia.api.responses.ResponseListadoLotes;
+import ti.proyectoinia.api.responses.ResponseListadoLotesPage;
 import ti.proyectoinia.dtos.LoteDto;
 import ti.proyectoinia.services.LoteService;
 import java.util.Optional;
@@ -46,6 +47,18 @@ public class LoteController {
     @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<ResponseListadoLotes> getLotes() {
         return this.loteService.listadoLotes();
+    }
+
+    @GetMapping({"/listar-page"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Operation(description = "Listado paginado de lotes activos")
+    public ResponseEntity<ResponseListadoLotesPage> getLotesPage(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @RequestParam(name = "sort", defaultValue = "fechaCreacion") String sort,
+            @RequestParam(name = "direction", defaultValue = "DESC") String direction
+    ) {
+        return this.loteService.listadoLotesPage(page, size, sort, direction);
     }
 
     @GetMapping({"/{id}"})

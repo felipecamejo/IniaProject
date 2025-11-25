@@ -9,7 +9,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { LoteDto } from '../../../models/Lote.dto';
-import { LoteService } from '../../../services/LoteService';
+import { LoteService, ResponseListadoLotesPage } from '../../../services/LoteService';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 
@@ -76,7 +76,13 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
         console.log('Años disponibles:', this.anios);
     }
 
-    items: LoteDto[] = [];
+  // Datos de la página actual
+  items: LoteDto[] = [];
+  page = 0; // 0-based
+  size = 12;
+  totalElements = 0;
+  totalPages = 0;
+  loading = false;
     
     /**
      * Formatea una fecha (posiblemente en ISO o YYYY-MM-DD[T...] ) a DD/MM/YYYY.
@@ -91,7 +97,7 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
         const year = partes[0];
         const month = partes[1];
         const day = partes[2];
-        return `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
+        return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
       }
       // Intentar parsear con Date como fallback
       const d = new Date(fecha);
@@ -99,7 +105,7 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
       const dd = String(d.getDate()).padStart(2, '0');
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const yyyy = d.getFullYear();
-      return `${dd}-${mm}-${yyyy}`;
+      return `${dd}/${mm}/${yyyy}`;
     }
 
     getFechaConTipo(item: LoteDto): { fecha: string, tipo: string } {
@@ -112,15 +118,15 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
     mostrarConfirmEliminar: boolean = false;
     confirmLoading: boolean = false;
 
-    ngOnInit(): void {
-        this.cargarLotes();
+  ngOnInit(): void {
+    this.cargarLotesPage();
         
         // Suscribirse a cambios de navegación para recargar cuando se regrese
         this.navigationSubscription = this.router.events
             .pipe(filter(event => event instanceof NavigationEnd))
             .subscribe((event: NavigationEnd) => {
                 if (event.url === '/listado-lotes') {
-                    this.cargarLotes();
+          this.cargarLotesPage();
                 }
             });
     }
@@ -131,20 +137,72 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
         }
     }
 
-    cargarLotes(): void {
-        this.loteService.listarLotes().subscribe({
-            next: (response) => {
-                this.items = response?.lotes ?? [];
-                this.actualizarAniosDisponibles();
-            },
-            error: (error) => {
-                console.error('Error al listar lotes', error);
-                this.items = [];
-            }
-        });
+  cargarLotesPage(): void {
+    this.loading = true;
+    this.loteService.listarLotesPage({ page: this.page, size: this.size, sort: 'fechaCreacion', direction: 'DESC' }).subscribe({
+      next: (response: ResponseListadoLotesPage) => {
+        this.items = response.content ?? [];
+        this.totalElements = response.totalElements ?? 0;
+        this.totalPages = response.totalPages ?? 0;
+        this.actualizarAniosDisponibles();
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error al listar lotes paginados', error);
+        this.items = [];
+        this.totalElements = 0;
+        this.totalPages = 0;
+        this.loading = false;
+      }
+    });
+  }
+
+  // Navegación de páginas
+  nextPage(): void {
+    if (this.page < this.totalPages - 1) {
+      this.page++;
+      this.cargarLotesPage();
     }
+  }
+
+  prevPage(): void {
+    if (this.page > 0) {
+      this.page--;
+      this.cargarLotesPage();
+    }
+  }
+
+  goToPage(p: number): void {
+    if (p >= 0 && p < this.totalPages) {
+      this.page = p;
+      this.cargarLotesPage();
+    }
+  }
+
+  onPageSizeChange(value: string): void {
+    const newSize = parseInt(value, 10);
+    if (!isNaN(newSize) && newSize > 0) {
+      this.size = newSize;
+      this.page = 0; // reset page
+      this.cargarLotesPage();
+    }
+  }
+
+  getFirstItemIndex(): number {
+    const itemsFiltrados = this.itemsFiltrados;
+    if (itemsFiltrados.length === 0) return 0;
+    return this.page * this.size + 1;
+  }
+
+  getLastItemIndex(): number {
+    const itemsFiltrados = this.itemsFiltrados;
+    if (itemsFiltrados.length === 0) return 0;
+    return this.page * this.size + itemsFiltrados.length;
+  }
 
     get itemsFiltrados() {
+      // Nota: Los filtros se aplican actualmente sobre la página cargada.
+      // Como mejora futura, pueden moverse al backend para filtrar el universo completo.
       return this.items.filter(item => {
 
         const cumpleNombre = !this.searchText || 
@@ -229,8 +287,14 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
           this.confirmLoading = false;
           this.mostrarConfirmEliminar = false;
           this.loteAEliminar = null;
-          // Actualizar lista localmente
-          this.items = this.items.filter(loteItem => loteItem.id !== loteId);
+          
+          // Si era el último elemento de la página y no es la primera página, retroceder
+          if (this.items.length === 1 && this.page > 0) {
+            this.page--;
+          }
+          
+          // Recargar la página actual para actualizar totalElements y totalPages
+          this.cargarLotesPage();
         },
         error: (err) => {
           console.error('Error eliminando Lote:', err);

@@ -9,6 +9,16 @@ interface ResponseListadoLotes {
   lotes: LoteDto[];
 }
 
+export interface ResponseListadoLotesPage {
+  content: LoteDto[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class LoteService {
   private endpoint: string = '/lote';
@@ -27,6 +37,15 @@ export class LoteService {
     return this.http.get<ResponseListadoLotes>(
       `${this.urlService.baseUrl}${this.endpoint}/listar`
     );
+  }
+
+  listarLotesPage(params: { page?: number; size?: number; sort?: string; direction?: 'ASC' | 'DESC' }): Observable<ResponseListadoLotesPage> {
+    const page = params.page ?? 0;
+    const size = params.size ?? 20;
+    const sort = params.sort ?? 'fechaCreacion';
+    const direction = params.direction ?? 'DESC';
+    const url = `${this.urlService.baseUrl}${this.endpoint}/listar-page?page=${page}&size=${size}&sort=${encodeURIComponent(sort)}&direction=${direction}`;
+    return this.http.get<ResponseListadoLotesPage>(url);
   }
 
   obtenerLote(id: number): Observable<LoteDto> {
