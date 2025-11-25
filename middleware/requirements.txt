@@ -9,6 +9,7 @@ python-multipart>=0.0.6
 
 # Dependencias para Excel
 openpyxl>=3.1.0
+pandas>=2.0.0
 
 # Dependencias adicionales
 pydantic>=2.0.0
@@ -17,3 +18,5 @@ pydantic>=2.0.0
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
 httpx>=0.25.0  # Requerido por TestClient
+pytest-cov>=4.1.0  # Para cobertura de código (opcional)
+requests>=2.31.0  # Para scripts de prueba HTTP

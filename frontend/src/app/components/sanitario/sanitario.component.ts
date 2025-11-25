@@ -9,6 +9,8 @@ import { SanitarioService } from '../../../services/SanitarioService';
 import { HongoService } from '../../../services/HongoService';
 import { HongoDto } from '../../../models/Hongo.dto';
 import { DateService } from '../../../services/DateService';
+import { LogService } from '../../../services/LogService';
+import { AuthService } from '../../../services/AuthService';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -71,6 +73,8 @@ export class SanitarioComponent implements OnInit {
   selectedMetodo: string = '';
   selectedEstado: string = '';
 
+  isAdmin: boolean = false;
+
   // Tabla de hongos seleccionados
   hongosTable: Array<{tipoHongo: string, repeticion: number , valor: number , incidencia: number}> = [];
   hongosCampoTable: Array<{tipoHongo: string, repeticion: number, valor: number , incidencia: number}> = [];
@@ -126,7 +130,9 @@ export class SanitarioComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private sanitarioService: SanitarioService,
-    private hongoService: HongoService
+    private hongoService: HongoService,
+    private logService: LogService,
+    private authService: AuthService
   ) {}
 
   // Getter para determinar si está en modo readonly
@@ -549,6 +555,9 @@ export class SanitarioComponent implements OnInit {
         console.log('Sanitario creado con ID:', sanitarioId);
         // Guardar hongos después de crear el sanitario
         this.guardarHongos(sanitarioId);
+        
+        const loteId = this.route.snapshot.paramMap.get('loteId');
+        this.logService.crearLog(loteId ? parseInt(loteId) : 0, sanitarioId, 'Sanitario', 'creado').subscribe();
       },
       error: (error) => {
         console.error('Error al crear sanitario:', error);
@@ -590,6 +599,9 @@ export class SanitarioComponent implements OnInit {
         console.log('Sanitario editado exitosamente:', response);
         // Guardar hongos después de editar el sanitario
         this.guardarHongos(this.editingId!);
+        
+        const loteId = this.route.snapshot.paramMap.get('loteId');
+        this.logService.crearLog(loteId ? parseInt(loteId) : 0, this.editingId!, 'Sanitario', 'editado').subscribe();
       },
       error: (error) => {
         console.error('Error al actualizar sanitario:', error);
@@ -850,9 +862,6 @@ export class SanitarioComponent implements OnInit {
   manejarProblemas(): boolean {
     this.errores = []; // Reiniciar errores
 
-    const hoy = new Date();
-    const fechaSiembra = this.fechaSiembra ? new Date(this.fechaSiembra) : null;
-
     // Validación: fecha obligatoria
     if (!this.fecha || this.fecha.trim() === '') {
       this.errores.push('Debes ingresar una fecha.');
@@ -878,44 +887,47 @@ export class SanitarioComponent implements OnInit {
       this.errores.push('El número de semillas no puede ser un número negativo.');
     }
 
-    if (this.hongosTable.some(h => h.repeticion != null && h.repeticion < 0) ||
-        this.hongosCampoTable.some(h => h.repeticion != null && h.repeticion < 0) ||
-        this.hongosAlmacenajeTable.some(h => h.repeticion != null && h.repeticion < 0)
+    if (this.hongosTable.some(h => !this.validarNumero(h.repeticion)) ||
+        this.hongosCampoTable.some(h => !this.validarNumero(h.repeticion)) ||
+        this.hongosAlmacenajeTable.some(h => !this.validarNumero(h.repeticion))
       ) {
 
       this.errores.push('Algunos hongos tienen un número de repetición negativo.');
     }
 
-    if (this.hongosTable.some(h => h.valor != null && h.valor < 0) ||
-        this.hongosCampoTable.some(h => h.valor != null && h.valor < 0) ||
-        this.hongosAlmacenajeTable.some(h => h.valor != null && h.valor < 0)
+    if (this.hongosTable.some(h => !this.validarNumero(h.valor)) ||
+        this.hongosCampoTable.some(h => !this.validarNumero(h.valor)) ||
+        this.hongosAlmacenajeTable.some(h => !this.validarNumero(h.valor))
       ) {
           
         this.errores.push('Algunos hongos tienen un número de valor negativo.');
       }
 
-    if (this.hongosTable.some(h => h.incidencia != null && h.incidencia < 0) ||
-        this.hongosCampoTable.some(h => h.incidencia != null && h.incidencia < 0) ||
-        this.hongosAlmacenajeTable.some(h => h.incidencia != null && h.incidencia < 0)
-      ) {
 
-        this.errores.push('Algunos hongos tienen un número de incidencia negativo.');
-      }
+    if (this.validarFecha(this.fecha)) {
+      this.errores.push('La fecha no puede ser futura.');
+    }
 
-    if (fechaSiembra != null && fechaSiembra > hoy) {
-      this.errores.push('La fecha no puede ser mayor a la fecha actual.');
+    if (this.fechaSiembra != null && this.validarFecha(this.fechaSiembra)) {
+      this.errores.push('La fecha no puede ser futura.');
     }
 
     return this.errores.length > 0;
   }
 
   validarFecha(fecha: string | null): boolean {
-    if (!fecha) return false;
-    return new Date(fecha).getTime() > new Date().getTime();
+    if (!fecha || fecha == null) return false;
+    const selectedDate = new Date(fecha);
+    const today = new Date();
+    return selectedDate >= today;
   }
 
   validarTablaHongos(hongo: any): boolean {
     return hongo;
   }
 
+  validarNumero (valor: any): boolean {
+    if (valor === null || valor === undefined) return false;
+    return !isNaN(valor) && valor >= 0;
+  }
 }

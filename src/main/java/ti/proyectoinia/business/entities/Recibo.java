@@ -79,4 +79,7 @@ public class Recibo {
 
     @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Tetrazolio> tetrazolioAnalisis;
+
+    @OneToMany(mappedBy = "recibo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Certificado> certificados;
 }

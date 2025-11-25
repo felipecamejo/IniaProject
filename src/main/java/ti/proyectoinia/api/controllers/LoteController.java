@@ -1,6 +1,7 @@
 package ti.proyectoinia.api.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Generated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,18 +30,10 @@ public class LoteController {
     @Operation(
             description = "Esta Funcion crea un nuevo Lote"
     )
-    public ResponseEntity<String> crearLote(@RequestBody LoteDto loteDto) {
-        if (loteDto.getNombre() != null && !loteDto.getNombre().trim().isEmpty()) {
-            if (loteDto.getNombre().matches(".*\\d.*")) {
-                return new ResponseEntity<>("El nombre del Lote no puede contener números", HttpStatus.BAD_REQUEST);
-            }
-            loteDto.setId(null);
-            String response = this.loteService.crearLote(loteDto);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-
-        } else {
-            return new ResponseEntity<>("El nombre del Lote es obligatorio", HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<Long> crearLote(@RequestBody LoteDto loteDto) {
+        loteDto.setId(null);
+        Long response = this.loteService.crearLote(loteDto);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping({"/listar"})
@@ -74,12 +67,16 @@ public class LoteController {
 
     @PutMapping({"/editar"})
     @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
-    public ResponseEntity<String> editarLote(@RequestBody LoteDto loteDto) {
-        String result = this.loteService.editarLote(loteDto);
+    public ResponseEntity<Long> editarLote(@RequestBody LoteDto loteDto) {
+        if (loteDto.getId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Long result = this.loteService.editarLote(loteDto);
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping({"/eliminar/{id}"})
+    @DeleteMapping({"/eliminar/{id}"})
     @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina un Lote"
@@ -88,6 +85,8 @@ public class LoteController {
         try {
             String mensaje = this.loteService.eliminarLote(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No encontrado");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Lote: " + e.getMessage());
         }

@@ -24,7 +24,8 @@
             <button pButton type="button" label="Listar Malezas" class="btn-secondary" (click)="goToListadoMalezas()">Listar Malezas</button>
             <button pButton type="button" label="Listar Hongos" class="btn-secondary" (click)="goToListadoHongos()">Listar Hongos</button>
             <button pButton type="button" label="Listar Métodos" class="btn-secondary" (click)="goToListadoMetodos()">Listar Métodos</button>
-
+            <button pButton type="button" label="Listar Autocompletados" class="btn-secondary" (click)="goToListadoAutocompletados()">Listar Autocompletados</button>
+            <button pButton type="button" label="Listar Certificados" class="btn-secondary" (click)="goToListadoCertificados()">Listar Certificados</button>
         </div>
 
     </section>
@@ -36,8 +37,25 @@
         </div>
     </section>
 
+    <!-- Sección Excel - Visible para ADMIN y ANALISTA -->
+    <section class="section" *ngIf="canExportImport">
+        <h2 class="section-title">Gestión de Excel</h2>
+        <div class="button-group">
+            <button 
+                pButton 
+                type="button" 
+                label="Gestor Import/Export Excels" 
+                class="btn-primary" 
+                [disabled]="isExporting || isImporting"
+                (click)="goToExcelMiddleware()">
+            </button>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer">
         <p>© Inia 2025</p>
     </footer>
 </div>
+
+<p-toast></p-toast>

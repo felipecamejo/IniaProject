@@ -28,6 +28,12 @@ import { ListadoDepositosComponent } from './components/listado-depositos/listad
 import { ListadoUsuariosComponent } from './components/listado-usuarios/listado-usuarios.component';
 import { UsuarioComponent } from './components/usuario/usuario.component';
 import { ListadoMetodosComponent } from './components/listado-metodos/listado-metodos.component';
+import { ListadoAutocompletadosComponent } from './components/listado-autocompletados/listado-autocompletados.component';
+// import { ListadoLogsComponent } from './components/listado-logs/listado-logs.components';
+import { CertificadoComponent } from './components/certificado/certificado.component';
+import { ListadoCertificadosComponent } from './components/listado-certificados/listado-certificados.component'; 
+import { ListadoLogsComponent } from './components/listado-logs/listado-logs.components';
+import { ExcelMiddlewareComponent } from './components/excel-middleware/excel-middleware.component';
 
 export const routes: Routes = [
     //rutas generales
@@ -35,15 +41,20 @@ export const routes: Routes = [
     { path : 'login', component: LoginComponent },
     { path : '', redirectTo: '/login', pathMatch: 'full' },
     { path : 'perfil', component: PerfilComponent },
+    { path : 'excel-middleware', component: ExcelMiddlewareComponent },
 
     //listados
     { path : 'listado-depositos', component: ListadoDepositosComponent },
     { path : 'listado-metodos', component: ListadoMetodosComponent },
+    { path : 'listado-autocompletados', component: ListadoAutocompletadosComponent },
     { path : 'listado-usuarios', component: ListadoUsuariosComponent },
     { path : 'listado-lotes', component: ListadoLotesComponent }, // para todos los usuarios
     { path : 'listado-malezas', component: ListadoMalezasComponent },
     { path : 'listado-hongos', component: ListadoHongosComponent },
     { path : 'listado-cultivos', component: ListadoCultivosComponent },
+    { path : 'listado-certificados', component: ListadoCertificadosComponent },
+    
+    { path : ':loteId/:reciboId/listado-logs', component: ListadoLogsComponent },
 
     //listados asociados a un recibo
     { path : ':loteId/:reciboId/listado-dosn', component: ListadoDosnComponent },
@@ -88,4 +99,14 @@ export const routes: Routes = [
     { path : ':loteId/:reciboId/germinacion/:id', component: GerminacionComponent }, // Para visualización con query param view=true
     { path : ':loteId/:reciboId/tetrazolio/crear', component: TetrazolioComponent },
     { path : ':loteId/:reciboId/tetrazolio/editar/:id', component: TetrazolioComponent },
+    
+    //formularios de certificados
+    { path : 'certificado/crear', component: CertificadoComponent },
+    { path : 'certificado/editar/:id', component: CertificadoComponent },
+    { path : 'certificado/:id', component: CertificadoComponent }, // Para visualización con query param view=true
+    
+    //formularios de certificados asociados a un recibo
+    { path : ':loteId/:reciboId/certificado/crear', component: CertificadoComponent },
+    { path : ':loteId/:reciboId/certificado/editar/:id', component: CertificadoComponent },
+    { path : ':loteId/:reciboId/certificado/:id', component: CertificadoComponent }, // Para visualización con query param view=true
 ];

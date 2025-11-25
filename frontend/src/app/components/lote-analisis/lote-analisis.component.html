@@ -80,10 +80,63 @@
         <span class="button-text">Sanitario</span>
       </div>
     </div>
+    
+    <!-- Botón de Certificado -->
+    <div class="certificado-button-container">
+      <div class="certificado-main-button">
+        <!-- Botón pequeño para eliminar -->
+        <button *ngIf="tieneCertificado && certificadoId" 
+                class="certificado-delete-button"
+                (click)="eliminarCertificado()"
+                title="Eliminar certificado">
+          🗑️
+        </button>
+        <div class="analisis-button certificado-button" 
+             [class.disabled]="isButtonDisabled('certificado')"
+             (click)="navigateToComponent('certificado')">
+          <div class="button-circle verde">
+            <span class="button-icon-text">CERT</span>
+          </div>
+          <span class="button-text">{{ tieneCertificado ? 'Editar' : 'Certificado' }}</span>
+        </div>
+        <!-- Botón pequeño para visualizar/descargar -->
+        <button *ngIf="tieneCertificado && certificadoId" 
+                class="certificado-view-button"
+                (click)="verCertificado()"
+                title="Ver certificado">  
+        </button>
+      </div>
+
+      <div class="certificado-main-button">
+        <div class="analisis-button certificado-button" 
+             (click)="goToListadoLogs()">
+          <div class="button-circle morado">
+            <span class="button-icon-text">Logs</span>
+          </div>
+          <span class="button-text">Registro</span>
+        </div>
+      </div>
+      
+    </div>
+
   </div>
 
   <!-- Footer -->
   <footer class="footer">
     <p>© Inia 2025</p>
   </footer>
+
+  <!-- Popup de confirmación de eliminación -->
+  <app-confirm-dialog
+      [visible]="mostrarConfirmEliminar"
+      title="Eliminar Certificado"
+      [message]="'¿Estás seguro de que quieres eliminar este Certificado?'"
+      [itemName]="certificadoAEliminar?.numeroCertificado ? 'Certificado: ' + certificadoAEliminar!.numeroCertificado : ''"
+      [itemId]="certificadoAEliminar?.id ?? ''"
+      confirmText="Eliminar"
+      cancelText="Cancelar"
+      [loading]="confirmLoading"
+      (confirm)="confirmarEliminacion()"
+      (cancel)="cancelarEliminacion()">
+  </app-confirm-dialog>
 </div>

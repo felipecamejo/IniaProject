@@ -1,5 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
 import { LoteAnalisisComponent } from './lote-analisis.component';
 
 describe('LoteAnalisisComponent', () => {
@@ -8,7 +12,21 @@ describe('LoteAnalisisComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LoteAnalisisComponent]
+      imports: [LoteAnalisisComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            params: of({ loteId: '1', reciboId: '1' }),
+            snapshot: {
+              params: { loteId: '1', reciboId: '1' }
+            }
+          }
+        }
+      ]
     })
     .compileComponents();
 

@@ -12,18 +12,23 @@ import { MultiSelectModule } from 'primeng/multiselect';
 // import { TabsModule } from 'primeng/tabs';
 import { CultivoService } from '../../../services/CultivoService';
 import { MalezaService } from '../../../services/MalezaService';
+import { LogService } from '../../../services/LogService';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { AuthService } from '../../../services/AuthService';
+
 
 @Component({
   selector: 'app-dosn.component',
   standalone: true,
-  imports: [
+      imports: [
     CommonModule,
     FormsModule,
     CardModule,
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-    MultiSelectModule
+    MultiSelectModule,
+    ConfirmDialogComponent
       ],
       templateUrl: './dosn.component.html',
       styleUrls: ['./dosn.component.scss']
@@ -36,7 +41,7 @@ import { MalezaService } from '../../../services/MalezaService';
       reciboId: number | null = null;
 
       // Todas las propiedades y métodos deben estar dentro de la clase
-  constructor(private dosnService: DOSNService, private cultivoService: CultivoService, private malezaService: MalezaService, private route: ActivatedRoute, private router: Router) {}
+      constructor(private dosnService: DOSNService, private cultivoService: CultivoService, private malezaService: MalezaService, private route: ActivatedRoute, private router: Router, private logService: LogService, private authService: AuthService) {}
 
       brassicaCuscuta = [
         { label: 'Brassica spp.', contiene: false, gramos: 0 },
@@ -105,6 +110,9 @@ import { MalezaService } from '../../../services/MalezaService';
   malezasCeroInaseCounts: Record<number, number> = {};
   cultivosInaseCounts: Record<number, number> = {};
 
+  // Agregar propiedades para manejar errores
+  errores: string[] = [];
+
       // INIA
       fechaInia: string = '';
       gramosInia: number = 0;
@@ -172,6 +180,110 @@ import { MalezaService } from '../../../services/MalezaService';
       malezasOptions: { id: number, label: string }[] = [];
       malezasToleradasOptions: { id: number, label: string }[] = [];
       malezasCeroOptions: { id: number, label: string }[] = [];
+
+      // Campos para estándar
+      fechaEstandar: string = '';
+      estandar: boolean = false;
+      repetido: boolean = false;
+
+      // Variables para el diálogo de confirmación
+      mostrarConfirmEstandar: boolean = false;
+      mostrarConfirmRepetido: boolean = false;
+      estandarPendiente: boolean = false;
+      repetidoPendiente: boolean = false;
+
+      // Variables para controlar si ya está marcado (no se puede cambiar)
+      estandarOriginal: boolean = false;
+      repetidoOriginal: boolean = false;
+
+      // Getters para deshabilitar checkboxes si ya están marcados
+      get estandarDeshabilitado(): boolean {
+        return this.estandarOriginal;
+      }
+
+      get repetidoDeshabilitado(): boolean {
+        return this.repetidoOriginal;
+      }
+
+      // Getter para verificar si el usuario es admin
+      get isAdmin(): boolean {
+        return this.authService.isAdmin();
+      }
+
+      // Métodos para hacer checkboxes mutuamente excluyentes con confirmación
+      onEstandarChange() {
+        // Si ya estaba marcado como estándar, no permitir cambiar
+        if (this.estandarOriginal) {
+          this.estandar = true; // Revertir
+          return;
+        }
+
+        // Si está intentando marcar como estándar y ya está marcado como repetido
+        if (this.estandar && this.repetido) {
+          this.repetido = false;
+          this.repetidoOriginal = false;
+        }
+
+        // Si está intentando marcar como estándar, mostrar confirmación
+        if (this.estandar && !this.mostrarConfirmEstandar) {
+          this.estandarPendiente = true;
+          this.mostrarConfirmEstandar = true;
+          // Revertir el cambio hasta que se confirme
+          this.estandar = false;
+        }
+      }
+
+      onRepetidoChange() {
+        // Si ya estaba marcado como repetido, no permitir cambiar
+        if (this.repetidoOriginal) {
+          this.repetido = true; // Revertir
+          return;
+        }
+
+        // Si está intentando marcar como repetido y ya está marcado como estándar
+        if (this.repetido && this.estandar) {
+          this.estandar = false;
+          this.estandarOriginal = false;
+        }
+
+        // Si está intentando marcar como repetido, mostrar confirmación
+        if (this.repetido && !this.mostrarConfirmRepetido) {
+          this.repetidoPendiente = true;
+          this.mostrarConfirmRepetido = true;
+          // Revertir el cambio hasta que se confirme
+          this.repetido = false;
+        }
+      }
+
+      confirmarEstandar() {
+        this.estandar = true;
+        this.repetido = false;
+        this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
+        this.repetidoOriginal = false;
+        this.mostrarConfirmEstandar = false;
+        this.estandarPendiente = false;
+      }
+
+      cancelarEstandar() {
+        this.estandar = false;
+        this.mostrarConfirmEstandar = false;
+        this.estandarPendiente = false;
+      }
+
+      confirmarRepetido() {
+        this.repetido = true;
+        this.estandar = false;
+        this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
+        this.estandarOriginal = false;
+        this.mostrarConfirmRepetido = false;
+        this.repetidoPendiente = false;
+      }
+
+      cancelarRepetido() {
+        this.repetido = false;
+        this.mostrarConfirmRepetido = false;
+        this.repetidoPendiente = false;
+      }
 
       // Variables para manejar navegación
       isEditing: boolean = false;
@@ -255,38 +367,66 @@ import { MalezaService } from '../../../services/MalezaService';
       }
 
       onSubmit() {
+        // Verificar si hay errores antes de continuar
+        if (this.manejarProblemas()) {
+          console.error('Errores detectados:', this.errores);
+          return;
+        }
+
             const payload = this.buildPayloadFromView();
             this.loading = true;
-            const obs = this.isEditing
-              ? this.dosnService.editar(payload)
-              : this.dosnService.crear(payload);
 
-            obs.subscribe({
-              next: (resp) => {
-                this.loading = false;
-                try {
-                  const texto = typeof resp === 'string' ? resp : '';
-                  const idMatch = texto.match(/ID\s*:?\s*(\d+)/i);
-                  const id = idMatch ? Number(idMatch[1]) : this.editingId ?? null;
-                  const accion = this.isEditing ? 'actualizada' : 'creada';
+            if (this.isEditing) {
+              // Modo edición: editar devuelve Observable<string>
+              this.dosnService.editar(payload).subscribe({
+                next: (resp: string) => {
+                  this.loading = false;
+                  const id = this.editingId ?? null;
+                  
+                  const user = JSON.parse(localStorage.getItem('user') || '{}');
+                  const username = user?.nombre || 'Desconocido';
+                  const rol = this.obtenerRolMasAlto(user?.roles);
+
                   if (id != null) {
-                    console.log(`DOSN ${accion} correctamente. ID: ${id}`);
-                  } else {
-                    console.log(`DOSN ${accion} correctamente.`);
+                    
+                    this.logService.crearLog(this.loteId ?? 0, Number(id), 'DOSN', 'actualizada').subscribe();
                   }
-                } catch (e) {
-                  console.log(`DOSN ${this.isEditing ? 'actualizada' : 'creada'} correctamente.`);
+
+                  console.log(`DOSN actualizada correctamente con ID: ${id}`);
+                  
+                  if (this.loteId != null && this.reciboId != null) {
+                    this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
+                  }
+                },
+                error: (e: any) => {
+                  const detalle = e?.error || e?.message || e;
+                  console.error('Error al editar DOSN:', detalle);
+                  this.loading = false;
                 }
-                if (this.loteId != null && this.reciboId != null) {
-                  this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
+              });
+            } else {
+              // Modo creación: crear devuelve Observable<number>
+              this.dosnService.crear(payload).subscribe({
+                next: (id: number) => {
+                  this.loading = false;
+ 
+                  if (id != null) {
+                    this.logService.crearLog(this.loteId ?? 0, Number(id), 'DOSN', 'creada').subscribe();
+                  }
+
+                  console.log(`DOSN creada correctamente con ID: ${id}`);
+                  
+                  if (this.loteId != null && this.reciboId != null) {
+                    this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);
+                  }
+                },
+                error: (e: any) => {
+                  const detalle = e?.error || e?.message || e;
+                  console.error('Error al crear DOSN:', detalle);
+                  this.loading = false;
                 }
-              },
-              error: (e) => {
-                const detalle = e?.error || e?.message || e;
-                console.error(`Error al ${this.isEditing ? 'editar' : 'crear'} DOSN:`, detalle);
-                this.loading = false;
-              }
-            });
+              });
+            }
       }
 
       onCancel() {
@@ -296,6 +436,20 @@ import { MalezaService } from '../../../services/MalezaService';
         }
       }
 
+      obtenerRolMasAlto(roles: string[] | string | undefined): string {
+        // Si no hay roles, retornar 'Desconocido'
+        if (!roles) return 'Desconocido';
+        
+        // Si es un string, convertir a array
+        const rolesArray = Array.isArray(roles) ? roles : [roles];
+        
+        // Definir jerarquía de roles (de mayor a menor)
+        if (rolesArray.includes('ADMIN')) return 'Administrador';
+        if (rolesArray.includes('ANALISTA')) return 'Analista';
+        if (rolesArray.includes('OBSERVADOR')) return 'Observador';
+        
+        return 'Desconocido';
+      }
 
   selectedMalezasToleradas: number[] = [];
   isMalezasToleradasDropdownOpen: boolean = false;
@@ -445,10 +599,6 @@ import { MalezaService } from '../../../services/MalezaService';
     return item ? item.label : '';
   }
 
-  validarNumeroNegativo(n: any): boolean {
-    return n != null && Number(n) < 0;
-  }
-
   // Helpers de mapeo
   private mapDtoToView(d: DOSNDto): void {
     // INASE
@@ -531,6 +681,14 @@ import { MalezaService } from '../../../services/MalezaService';
       cuscuta.contiene = Boolean(d.determinacionCuscuta);
       cuscuta.gramos = d.determinacionCuscutaGramos ?? 0;
     }
+
+    // Campos estándar
+    this.estandar = d.estandar ?? false;
+    this.repetido = d.repetido ?? false;
+    // Guardar valores originales para deshabilitar checkboxes si ya están marcados
+    this.estandarOriginal = d.estandar ?? false;
+    this.repetidoOriginal = d.repetido ?? false;
+    this.fechaEstandar = this.toDateInput(d.fechaAnalisis);
   }
 
   private toDateInput(value: string | null): string {
@@ -601,9 +759,9 @@ import { MalezaService } from '../../../services/MalezaService';
       determinacionBrassicaGramos: brassica && brassica.contiene ? Number(brassica.gramos) : 0,
       determinacionCuscuta: cuscuta ? Boolean(cuscuta.contiene) : null,
       determinacionCuscutaGramos: cuscuta && cuscuta.contiene ? Number(cuscuta.gramos) : 0,
-      // Estandar y fecha análisis (preservar si existe)
-      estandar: this.dosn?.estandar ?? null,
-      fechaAnalisis: this.dosn?.fechaAnalisis ?? null,
+      // Estandar y fecha análisis
+      estandar: this.estandar ?? false,
+      fechaAnalisis: this.fechaEstandar ? `${this.fechaEstandar}T00:00:00` : null,
       // Colecciones por organismo
       malezasNormalesINIAId: this.selectedMalezasInia ?? [],
       malezasNormalesINASEId: this.selectedMalezasInase ?? [],
@@ -624,9 +782,134 @@ import { MalezaService } from '../../../services/MalezaService';
       cultivosINASE: toCantidadList(this.selectedCultivosInase, this.cultivosInaseCounts),
       // Preservar flags y metadatos
       activo: this.dosn?.activo ?? true,
-      repetido: this.dosn?.repetido ?? false,
+      repetido: this.repetido ?? false,
       fechaCreacion: this.dosn?.fechaCreacion ?? null,
       fechaRepeticion: this.dosn?.fechaRepeticion ?? null
     };
+  }
+
+  manejarProblemas(): boolean {
+      this.errores = []; // Reiniciar errores
+
+      if (this.validarFecha(this.fechaInase)) {
+        this.errores.push('La fecha de análisis INASE no puede ser futura.');
+      }
+    
+      if (this.validarFecha(this.fechaInia)) {
+        this.errores.push('La fecha de análisis INIA no puede ser futura.');
+      }
+
+      if (this.validarFecha(this.fechaEstandar)) {
+        this.errores.push('La fecha estándar no puede ser futura.');
+      }
+
+      if (!this.validarNumero(this.gramosInase)) {
+        this.errores.push('Los gramos analizados INASE no pueden ser negativos.');
+      }
+
+      if (!this.validarNumero(this.gramosInia)) {
+        this.errores.push('Los gramos analizados INIA no pueden ser negativos.');
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INASE
+      if (this.selectedMalezasInase && this.selectedMalezasInase.length > 0) {
+        this.selectedMalezasInase.forEach(id => {
+          const cantidad = this.malezasInaseCounts ? this.malezasInaseCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza "${label || id}" seleccionada en INASE no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INASE
+      if (this.selectedCultivosInase && this.selectedCultivosInase.length > 0) {
+        this.selectedCultivosInase.forEach(id => {
+          const cantidad = this.cultivosInaseCounts ? this.cultivosInaseCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.cultivosOptions, id);
+            this.errores.push(`La cantidad para el cultivo "${label || id}" seleccionado en INASE no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INASE
+      if (this.selectedMalezasToleradasInase && this.selectedMalezasToleradasInase.length > 0) {
+        this.selectedMalezasToleradasInase.forEach(id => {
+          const cantidad = this.malezasToleradasInaseCounts ? this.malezasToleradasInaseCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza "${label || id}" seleccionada en INASE no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INASE
+      if (this.selectedMalezasCeroInase && this.selectedMalezasCeroInase.length > 0) {
+        this.selectedMalezasCeroInase.forEach(id => {
+          const cantidad = this.malezasCeroInaseCounts ? this.malezasCeroInaseCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza cero "${label || id}" seleccionada en INASE no puede ser negativa.`);
+          }
+        });
+      }
+
+       // Validar cantidades por cada maleza seleccionada en INIA
+      if (this.selectedMalezasInia && this.selectedMalezasInia.length > 0) {
+        this.selectedMalezasInia.forEach(id => {
+          const cantidad = this.malezasIniaCounts ? this.malezasIniaCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza "${label || id}" seleccionada en INIA no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INIA
+      if (this.selectedCultivosInia && this.selectedCultivosInia.length > 0) {
+        this.selectedCultivosInia.forEach(id => {
+          const cantidad = this.cultivosIniaCounts ? this.cultivosIniaCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.cultivosOptions, id);
+            this.errores.push(`La cantidad para el cultivo "${label || id}" seleccionado en INIA no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INIA
+      if (this.selectedMalezasToleradasInia && this.selectedMalezasToleradasInia.length > 0) {
+        this.selectedMalezasToleradasInia.forEach(id => {
+          const cantidad = this.malezasToleradasIniaCounts ? this.malezasToleradasIniaCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza "${label || id}" seleccionada en INIA no puede ser negativa.`);
+          }
+        });
+      }
+
+      // Validar cantidades por cada maleza seleccionada en INIA
+      if (this.selectedMalezasCeroInia && this.selectedMalezasCeroInia.length > 0) {
+        this.selectedMalezasCeroInia.forEach(id => {
+          const cantidad = this.malezasCeroIniaCounts ? this.malezasCeroIniaCounts[id] : undefined;
+          if (!this.validarNumero(cantidad as number)) {
+            const label = this.getLabelById(this.malezasOptions, id);
+            this.errores.push(`La cantidad para la maleza cero "${label || id}" seleccionada en INIA no puede ser negativa.`);
+          }
+        });
+      }
+
+      return this.errores.length > 0;
+  }
+
+  validarNumero(numero: number): boolean {
+    return numero != null && Number(numero) >= 0;
+  }
+
+  validarFecha(fecha: string): boolean {
+    if (!fecha) return false;
+    const selectedDate = new Date(fecha);
+    const today = new Date();
+    return selectedDate >= today;
   }
 }

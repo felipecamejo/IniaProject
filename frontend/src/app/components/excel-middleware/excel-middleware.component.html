@@ -1,100 +1,139 @@
-<div class="excel-middleware-container">
-  <p-card>
+<div class="container">
+  <p-card class="card">
     <ng-template pTemplate="header">
-      <div class="p-3">
-        <h2><i class="pi pi-file-excel" style="margin-right: 0.5rem;"></i>Gestión de Excel - Middleware</h2>
-      </div>
+      <h2 class="title">Gestión de Excel - Middleware</h2>
     </ng-template>
 
     <!-- Verificación de permisos -->
-    <div *ngIf="!isAdmin" class="mb-4">
+    <div *ngIf="!canExportImport" class="mb-4">
       <p-message 
         severity="warn" 
-        text="Solo los administradores pueden usar esta funcionalidad">
+        text="Solo los administradores y analistas pueden usar esta funcionalidad">
       </p-message>
     </div>
 
     <!-- Sección de Exportación -->
-    <div class="mb-5">
-      <h3 class="mb-3">
-        <i class="pi pi-download" style="margin-right: 0.5rem;"></i>
+    <div class="section-export">
+      <h3 class="section-title">
+        <i class="pi pi-download"></i>
         Exportar Tablas a Excel
       </h3>
-      <p class="text-muted mb-3">
+      <p class="section-description">
         Exporta todas las tablas de la base de datos a un archivo ZIP con archivos Excel.
         Este proceso puede tomar varios minutos dependiendo de la cantidad de datos.
       </p>
-      <p-button 
-        label="Exportar Tablas" 
-        icon="pi pi-download"
-        [loading]="isExporting"
-        [disabled]="!isAdmin || isExporting"
-        (onClick)="exportarTablas()"
-        styleClass="p-button-success">
-      </p-button>
+      <div class="submit-btn">
+        <p-button 
+          label="Exportar Tablas" 
+          icon="pi pi-download"
+          [loading]="isExporting"
+          [disabled]="!canExportImport || isExporting"
+          (onClick)="exportarTablas()"
+          styleClass="p-button-success">
+        </p-button>
+      </div>
+
+      <!-- Resultado de la exportación -->
+      <div *ngIf="exportResult" class="result-container">
+        <div class="result-panel success-panel">
+          <div class="result-header">
+            <i class="pi pi-check-circle"></i>
+            <strong>Exportación exitosa:</strong>
+          </div>
+          <pre class="result-pre">{{ exportResult }}</pre>
+        </div>
+      </div>
+
+      <!-- Error de la exportación -->
+      <div *ngIf="exportError" class="error-container">
+        <div class="result-panel error-panel">
+          <div class="result-header">
+            <i class="pi pi-times-circle"></i>
+            <strong>Error en la exportación:</strong>
+          </div>
+          <pre class="result-pre">{{ exportError }}</pre>
+        </div>
+      </div>
     </div>
 
     <p-divider></p-divider>
 
     <!-- Sección de Importación -->
-    <div class="mt-5">
-      <h3 class="mb-3">
-        <i class="pi pi-upload" style="margin-right: 0.5rem;"></i>
+    <div class="section-import">
+      <h3 class="section-title">
+        <i class="pi pi-upload"></i>
         Importar Excel
       </h3>
-      <p class="text-muted mb-3">
-        Importa datos desde un archivo Excel. El nombre del archivo determinará automáticamente la tabla destino.
+      <p class="section-description">
+        Importa datos desde uno o varios archivos Excel/CSV. Puedes seleccionar múltiples archivos a la vez. 
+        El nombre del archivo determinará automáticamente la tabla destino.
       </p>
-      <div class="mb-3 p-3" style="background-color: #f8f9fa; border-radius: 0.25rem;">
-        <small class="text-muted">
+      <div class="example-box">
+        <small>
           <strong>Ejemplo:</strong> Si el archivo se llama <code>usuarios.xlsx</code>, 
           los datos se importarán en la tabla <code>usuarios</code>
         </small>
       </div>
 
-      <p-fileUpload
-        mode="basic"
-        accept=".xlsx,.xls"
-        [auto]="false"
-        [disabled]="!isAdmin || isImporting"
-        (onSelect)="onFileSelect($event)"
-        (onRemove)="onFileRemove()"
-        chooseLabel="Seleccionar archivo Excel"
-        [maxFileSize]="10000000">
-      </p-fileUpload>
-
-      <div *ngIf="selectedFile" class="mt-3 mb-3 p-3" style="background-color: #d4edda; border-radius: 0.25rem; border: 1px solid #c3e6cb;">
-        <p class="mb-0">
-          <i class="pi pi-check-circle" style="color: #155724; margin-right: 0.5rem;"></i>
-          <strong>Archivo seleccionado:</strong> {{ selectedFile.name }} 
-          <span class="text-muted">({{ (selectedFile.size / 1024).toFixed(2) }} KB)</span>
-        </p>
+      <div class="file-upload-wrapper">
+        <p-fileUpload
+          mode="basic"
+          accept=".xlsx,.xls,.csv"
+          [multiple]="true"
+          [auto]="false"
+          [disabled]="!canExportImport || isImporting"
+          (onSelect)="onFileSelect($event)"
+          (onRemove)="onFileRemove()"
+          chooseLabel="Seleccionar archivos Excel/CSV"
+          [maxFileSize]="10000000">
+        </p-fileUpload>
       </div>
 
-      <p-button 
-        label="Importar Excel" 
-        icon="pi pi-upload"
-        [loading]="isImporting"
-        [disabled]="!isAdmin || !selectedFile || isImporting"
-        (onClick)="importarExcel()"
-        styleClass="p-button-primary mt-3">
-      </p-button>
+      <div *ngIf="selectedFiles.length > 0" class="files-selected">
+        <p class="files-header">
+          <i class="pi pi-check-circle"></i>
+          <strong>{{ selectedFiles.length === 1 ? 'Archivo seleccionado:' : 'Archivos seleccionados:' }}</strong>
+        </p>
+        <ul class="files-list">
+          <li *ngFor="let file of selectedFiles">
+            <i class="pi pi-file"></i>
+            {{ file.name }} 
+            <span class="file-size">({{ (file.size / 1024).toFixed(2) }} KB)</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="submit-btn">
+        <p-button 
+          [label]="selectedFiles.length === 1 ? 'Importar Excel' : 'Importar Archivos'" 
+          icon="pi pi-upload"
+          [loading]="isImporting"
+          [disabled]="!canExportImport || selectedFiles.length === 0 || isImporting"
+          (onClick)="importarExcel()"
+          styleClass="p-button-success">
+        </p-button>
+      </div>
 
       <!-- Resultado de la importación -->
-      <div *ngIf="importResult" class="mt-3">
-        <p-message severity="success">
-          <ng-template pTemplate>
-            <div>
-              <strong>Importación exitosa:</strong>
-              <pre style="white-space: pre-wrap; margin-top: 0.5rem;">{{ importResult }}</pre>
-            </div>
-          </ng-template>
-        </p-message>
+      <div *ngIf="importResult" class="result-container">
+        <div class="result-panel success-panel">
+          <div class="result-header">
+            <i class="pi pi-check-circle"></i>
+            <strong>Importación exitosa:</strong>
+          </div>
+          <pre class="result-pre">{{ importResult }}</pre>
+        </div>
       </div>
 
       <!-- Error de la importación -->
-      <div *ngIf="importError" class="mt-3">
-        <p-message severity="error" [text]="importError"></p-message>
+      <div *ngIf="importError" class="error-container">
+        <div class="result-panel error-panel">
+          <div class="result-header">
+            <i class="pi pi-times-circle"></i>
+            <strong>Error en la importación:</strong>
+          </div>
+          <pre class="result-pre">{{ importError }}</pre>
+        </div>
       </div>
     </div>
   </p-card>

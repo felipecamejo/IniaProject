@@ -1,6 +1,8 @@
 package ti.proyectoinia.api.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -23,13 +25,24 @@ public class CultivoController {
     @Secured({"ADMIN"})
     @Operation(description = "Esta función crea un nuevo cultivo")
     public ResponseEntity<String> crearCultivo(@RequestBody CultivoDto cultivoDto) {
-        if (cultivoDto.getNombre() != null && !cultivoDto.getNombre().trim().isEmpty()) {
+        if (cultivoDto.getNombre() == null || cultivoDto.getNombre().trim().isEmpty() || cultivoDto.getNombre().matches(".*\\d.*")) {
+            return new ResponseEntity<>("El nombre del cultivo es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
+        }
+
+        if (cultivoDto.getId() != null && cultivoService.obtenerCultivoPorId(cultivoDto.getId()) != null) {
+            return new ResponseEntity<>("Ya existe", HttpStatus.CONFLICT);
+        }
+
+        try{
             cultivoDto.setId(null);
             String response = this.cultivoService.crearCultivo(cultivoDto);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } else {
-            return new ResponseEntity<>("El nombre del cultivo es obligatorio", HttpStatus.BAD_REQUEST);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error interno: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
     }
 
     @GetMapping({"/listar"})
@@ -54,22 +67,27 @@ public class CultivoController {
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
     public ResponseEntity<String> editarCultivo(@RequestBody CultivoDto cultivoDto) {
-        if (cultivoDto.getNombre() != null && !cultivoDto.getNombre().trim().isEmpty()) {
-            String result = this.cultivoService.editarCultivo(cultivoDto);
-            return ResponseEntity.ok(result);
-        } else {
-            return new ResponseEntity<>("El nombre del cultivo es obligatorio", HttpStatus.BAD_REQUEST);
+        if (cultivoDto.getId() == null || cultivoDto.getNombre() == null || cultivoDto.getNombre().trim().isEmpty() || cultivoDto.getNombre().matches(".*\\d.*")) {
+            return new ResponseEntity<>("El nombre es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
+
+        String result = this.cultivoService.editarCultivo(cultivoDto);
+        return ResponseEntity.ok(result);
+
     }
 
-    @PutMapping({"/eliminar/{id}"})
+    @DeleteMapping({"/eliminar/{id}"})
     @Secured({"ADMIN"})
     @Operation(description = "Esta función elimina un cultivo")
     public ResponseEntity<String> eliminarCultivo(@PathVariable Long id) {
         try {
             String mensaje = this.cultivoService.eliminarCultivo(id) + ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
-        } catch (Exception e) {
+        }
+        catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cultivo no encontrado: " + e.getMessage());
+        }
+        catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el cultivo: " + e.getMessage());
         }
     }

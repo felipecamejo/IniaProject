@@ -14,11 +14,10 @@ export class DOSNService {
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
 
-  crear(payload: DOSNDto): Observable<string> {
-    return this.http.post(
+  crear(payload: DOSNDto): Observable<number> {
+    return this.http.post<number>(
       `${this.urlService.baseUrl}${this.endpoint}/crear`,
       payload,
-      { responseType: 'text' }
     );
   }
 

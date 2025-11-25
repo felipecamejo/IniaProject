@@ -28,6 +28,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { AuthService } from '../../../services/AuthService';
+import { LogService } from '../../../services/LogService';
 
 export interface RepeticionTetrazolio {
   numero: number;
@@ -45,7 +48,8 @@ export interface RepeticionTetrazolio {
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-    MultiSelectModule
+    MultiSelectModule,
+    ConfirmDialogComponent
   ],
   templateUrl: './tetrazolio.component.html',
   styleUrl: './tetrazolio.component.scss'
@@ -95,14 +99,120 @@ export class TetrazolioComponent implements OnInit {
 
   // Fecha (yyyy-MM-dd)
   fecha: string | null = null;
-  
+
   // Variables para manejar navegación
   isEditing: boolean = false;
+  isViewing: boolean = false;
   editingId: number | null = null;
+  estandar: boolean = false;
   repetido: boolean = false;
-  
+
   // Prevención de doble envío
   isSubmitting: boolean = false;
+
+  // Variables para el diálogo de confirmación
+  mostrarConfirmEstandar: boolean = false;
+  mostrarConfirmRepetido: boolean = false;
+  estandarPendiente: boolean = false;
+  repetidoPendiente: boolean = false;
+
+  // Variables para controlar si ya está marcado (no se puede cambiar)
+  estandarOriginal: boolean = false;
+  repetidoOriginal: boolean = false;
+
+  // Getters para deshabilitar checkboxes si ya están marcados
+  get estandarDeshabilitado(): boolean {
+    return this.estandarOriginal;
+  }
+
+  get repetidoDeshabilitado(): boolean {
+    return this.repetidoOriginal;
+  }
+
+  // Getter para verificar si el usuario es admin
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  // Métodos para hacer checkboxes mutuamente excluyentes con confirmación
+  onEstandarChange() {
+    // Si ya estaba marcado como estándar, no permitir cambiar
+    if (this.estandarOriginal) {
+      this.estandar = true; // Revertir
+      return;
+    }
+
+    // Si está intentando marcar como estándar y ya está marcado como repetido
+    if (this.estandar && this.repetido) {
+      this.repetido = false;
+      this.repetidoOriginal = false;
+    }
+
+    // Si está intentando marcar como estándar, mostrar confirmación
+    if (this.estandar && !this.mostrarConfirmEstandar) {
+      this.estandarPendiente = true;
+      this.mostrarConfirmEstandar = true;
+      // Revertir el cambio hasta que se confirme
+      this.estandar = false;
+    }
+  }
+
+  onRepetidoChange() {
+    // Si ya estaba marcado como repetido, no permitir cambiar
+    if (this.repetidoOriginal) {
+      this.repetido = true; // Revertir
+      return;
+    }
+
+    // Si está intentando marcar como repetido y ya está marcado como estándar
+    if (this.repetido && this.estandar) {
+      this.estandar = false;
+      this.estandarOriginal = false;
+    }
+
+    // Si está intentando marcar como repetido, mostrar confirmación
+    if (this.repetido && !this.mostrarConfirmRepetido) {
+      this.repetidoPendiente = true;
+      this.mostrarConfirmRepetido = true;
+      // Revertir el cambio hasta que se confirme
+      this.repetido = false;
+    }
+  }
+
+  confirmarEstandar() {
+    this.estandar = true;
+    this.repetido = false;
+    this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
+    this.repetidoOriginal = false;
+    this.mostrarConfirmEstandar = false;
+    this.estandarPendiente = false;
+  }
+
+  cancelarEstandar() {
+    this.estandar = false;
+    this.mostrarConfirmEstandar = false;
+    this.estandarPendiente = false;
+  }
+
+  confirmarRepetido() {
+    this.repetido = true;
+    this.estandar = false;
+    this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
+    this.estandarOriginal = false;
+    this.mostrarConfirmRepetido = false;
+    this.repetidoPendiente = false;
+  }
+
+  cancelarRepetido() {
+    this.repetido = false;
+    this.mostrarConfirmRepetido = false;
+    this.repetidoPendiente = false;
+  }
+
+  // Getter para determinar si está en modo readonly
+  get isReadonly(): boolean {
+    return this.isViewing;
+  }
 
   // IDs de contexto
   loteId: string | null = null;
@@ -136,6 +246,108 @@ export class TetrazolioComponent implements OnInit {
     viabilidad: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
     vigorAcumulado: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } }
   };
+
+  // --- Cálculos de Vigor (promedio de: sin defectos, defectos leves y defectos moderados) ---
+  private getVigorTabla(det: DetalleSemillas): number {
+    const favorables = (det.viablesSinDefectos.total || 0)
+      + (det.viablesLeves.total || 0)
+      + (det.viablesModerados.total || 0);
+    const total = this.getSumaTotal(det);
+    if (!total) return 0;
+    return (favorables / total) * 100;
+  }
+
+  // --- Cálculos por repetición (por índice de tabla) ---
+  getVigorPorTabla(index: number): number {
+    const det = this.detalles[index];
+    if (!det) return 0;
+    return this.getVigorTabla(det);
+  }
+
+  getVigorPorTablaRed(index: number): number {
+    return Math.round(this.getVigorPorTabla(index));
+  }
+
+  getClasificacionVigorPorTabla(index: number): string {
+    const v = this.getVigorPorTabla(index);
+    return this.getClasificacionVigor(v);
+  }
+
+  getNoViablesPorTabla(index: number): number {
+    const det = this.detalles[index];
+    if (!det) return 0;
+    const total = this.getSumaTotal(det);
+    const noV = det.noViables.total || 0;
+    if (!total) return 0;
+    return (noV / total) * 100;
+  }
+
+  getNoViablesClasificadoPorTabla(index: number): string {
+    const pct = this.getNoViablesPorTabla(index);
+    return this.getClasificacionNoViables(pct);
+  }
+
+  // NOTA: Se descontinúan los cálculos GLOBALes (ponderado/promedio) a pedido: solo por repetición
+
+  // Clasificación por vigor
+  getClasificacionVigor(vigorPct: number): string {
+    if (vigorPct == null || isNaN(vigorPct)) return 'Sin clasificación';
+    if (vigorPct >= 85) return 'Lote de muy alto vigor';
+    if (vigorPct >= 75) return 'Lote de vigor alto';
+    if (vigorPct >= 60) return 'Lote de vigor medio';
+    if (vigorPct >= 50) return 'Lote de vigor bajo';
+    return 'Lote de vigor muy bajo';
+  }
+
+
+  // --- Daños de semillas no viables (global, ponderado) ---
+  getPorcentajeNoViablesPonderado(): number {
+    if (!this.detalles || this.detalles.length === 0) return 0;
+    let sumaNoViables = 0;
+    let sumaTotal = 0;
+    for (const det of this.detalles) {
+      const total = this.getSumaTotal(det);
+      const noV = det.noViables.total || 0;
+      sumaNoViables += noV;
+      sumaTotal += total;
+    }
+    if (!sumaTotal) return 0;
+    return (sumaNoViables / sumaTotal) * 100;
+  }
+
+  getClasificacionNoViables(pctNoViables: number): string {
+    if (pctNoViables == null || isNaN(pctNoViables)) return 'Sin clasificación';
+    if (pctNoViables <= 6) return 'Sin problema';
+    if (pctNoViables <= 10) return 'Problema serio';
+    return 'Muy serio';
+  }
+
+  getNoViablesClasificado(): string {
+    const pct = this.getPorcentajeNoViablesPonderado();
+    return this.getClasificacionNoViables(pct);
+  }
+
+  // Cálculos automáticos para Viabilidad y Vigor Acumulado en el reporte
+  getViabilidadReportePct(): number {
+    const a = Number(this.reporte.vigorAlto.porcentaje) || 0;
+    const m = Number(this.reporte.vigorMedio.porcentaje) || 0;
+    const b = Number(this.reporte.vigorBajo.porcentaje) || 0;
+    return a + m + b;
+  }
+
+  getVigorAcumuladoReportePct(): number {
+    const a = Number(this.reporte.vigorAlto.porcentaje) || 0;
+    const m = Number(this.reporte.vigorMedio.porcentaje) || 0;
+    return a + m;
+  }
+
+  // Método para actualizar cálculos automáticos cuando cambian los valores
+  actualizarCalculosReporte() {
+    // Actualizar Viabilidad
+    this.reporte.viabilidad.porcentaje = this.getViabilidadReportePct();
+    // Actualizar Vigor Acumulado
+    this.reporte.vigorAcumulado.porcentaje = this.getVigorAcumuladoReportePct();
+  }
 
   // Suma de N° de semillas (todas las filas)
   getSumaTotal(det: DetalleSemillas): number {
@@ -193,7 +405,7 @@ export class TetrazolioComponent implements OnInit {
       duras: 0
     };
     this.repeticiones.push(nuevaRepeticion);
-    
+
     // Sincronizar con repeticionesEntries
     const nuevaRepeticionDto: RepeticionTetrazolioDto = {
       id: null, // null indica que es una nueva repetición que se creará en el backend
@@ -212,10 +424,10 @@ export class TetrazolioComponent implements OnInit {
       if (this.repeticionesEntries[index] && this.repeticionesEntries[index].id) {
         this.deletedRepeticionesIds.push(this.repeticionesEntries[index].id!);
       }
-      
+
       this.repeticiones.splice(index, 1);
       this.repeticionesEntries.splice(index, 1);
-      
+
       // Re-enumerar
       this.repeticiones.forEach((r, i) => r.numero = i + 1);
       this.repeticionesEntries.forEach((r, i) => r.numero = i + 1);
@@ -264,7 +476,9 @@ export class TetrazolioComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private tetrazolioService: TetrazolioService
+    private tetrazolioService: TetrazolioService,
+    private authService: AuthService,
+    private logService: LogService,
   ) {}
 
   ngOnInit() {
@@ -272,7 +486,7 @@ export class TetrazolioComponent implements OnInit {
     this.route.params.subscribe((params: any) => {
       this.loteId = params['loteId'] ?? null;
       this.reciboId = params['reciboId'] ?? null;
-      
+
       // Verificar si hay un ID en la ruta para determinar modo de edición
       const id = params['id'];
       if (id && !isNaN(parseInt(id))) {
@@ -319,6 +533,7 @@ export class TetrazolioComponent implements OnInit {
       porcentajeFinal: 85,
       daniosPorPorcentajes: 15,
       activo: true,
+      estandar: false,
       repetido: false,
       fechaCreacion: '2023-01-15',
       fechaRepeticion: null,
@@ -330,7 +545,7 @@ export class TetrazolioComponent implements OnInit {
   private cargarDatosParaEdicion(id: number) {
     console.log('=== INICIANDO CARGA DE DATOS PARA EDICIÓN ===');
     console.log('ID del tetrazolio a cargar:', id);
-    
+
     // Cargar datos del Tetrazolio desde el backend
     this.tetrazolioService.obtener(id).subscribe({
       next: (item) => {
@@ -338,7 +553,7 @@ export class TetrazolioComponent implements OnInit {
         console.log('Tipo de fecha recibida:', typeof item.fecha);
         console.log('Valor de fecha:', item.fecha);
         console.log('Fecha como string:', String(item.fecha));
-        
+
         // Verificar que el tetrazolio existe y está activo
         if (!item) {
           console.error('No se encontró el tetrazolio con ID:', id);
@@ -346,14 +561,14 @@ export class TetrazolioComponent implements OnInit {
           this.safeNavigateToListado();
           return;
         }
-        
+
         if (!item.activo) {
           console.error('El tetrazolio no está activo:', item);
           alert('El tetrazolio seleccionado no está disponible para edición');
           this.safeNavigateToListado();
           return;
         }
-        
+
         // Cargar datos básicos
         this.cantidadSemillas = item.nroSemillasPorRepeticion ?? item.nroSemillas ?? null;
 
@@ -398,7 +613,7 @@ export class TetrazolioComponent implements OnInit {
           try {
             // Crear objeto Date desde cualquier formato
             const dateObj = new Date(item.fecha);
-            
+
             // Verificar que la fecha es válida
             if (isNaN(dateObj.getTime())) {
               console.warn('Fecha inválida recibida:', item.fecha);
@@ -416,7 +631,11 @@ export class TetrazolioComponent implements OnInit {
           this.fecha = null;
         }
 
+        this.estandar = item.estandar || false;
         this.repetido = item.repetido || false;
+        // Guardar valores originales para deshabilitar checkboxes si ya están marcados
+        this.estandarOriginal = item.estandar || false;
+        this.repetidoOriginal = item.repetido || false;
 
         // Si hay datos de daños en el DTO, los cargamos en la primera tabla R1
         const d = this.detalles[0];
@@ -447,11 +666,13 @@ export class TetrazolioComponent implements OnInit {
             vigorAcumulado: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } }
           };
         }
+        // Inicializar cálculos automáticos del reporte
+        this.actualizarCalculosReporte();
 
         // Cargar repeticiones y detalles desde el backend
         this.cargarRepeticiones(id);
         this.cargarDetalles(id);
-        
+
         // Log de verificación de datos cargados
         console.log('=== DATOS CARGADOS PARA EDICIÓN ===');
         console.log('Cantidad de semillas:', this.cantidadSemillas);
@@ -483,7 +704,7 @@ export class TetrazolioComponent implements OnInit {
             noViables: rep.noViables,
             duras: rep.duras
           }));
-          
+
           // Mantener las repeticiones del backend para edición
           this.repeticionesEntries = repeticiones.map(rep => ({...rep}));
         } else {
@@ -529,7 +750,10 @@ export class TetrazolioComponent implements OnInit {
   private cargarDatos() {
     console.log('Modo creación - limpiando campos');
     // Limpiar campos para creación
+    this.estandar = false;
     this.repetido = false;
+    this.estandarOriginal = false;
+    this.repetidoOriginal = false;
     this.cantidadSemillas = null;
     this.selectedPretratamiento = null;
     this.pretratamientoCustom = '';
@@ -553,6 +777,8 @@ export class TetrazolioComponent implements OnInit {
       viabilidad: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } },
       vigorAcumulado: { porcentaje: null, danios: { mecanicos: null, ambiente: null, chinches: null, fracturas: null, otros: null, duras: null } }
     };
+    // Inicializar cálculos automáticos del reporte
+    this.actualizarCalculosReporte();
   }
 
   onSubmit() {
@@ -561,11 +787,11 @@ export class TetrazolioComponent implements OnInit {
       console.warn('Ya se está procesando una solicitud, ignorando...');
       return;
     }
-    
+
     this.isSubmitting = true;
     this.erroresValidacion = [];
     console.log('Iniciando envío del formulario...');
-    
+
     // Sincronizar repeticiones a repeticionesEntries antes de enviar
     this.repeticionesEntries = this.repeticiones.map((rep, index) => ({
       id: this.repeticionesEntries[index]?.id || null,
@@ -583,7 +809,8 @@ export class TetrazolioComponent implements OnInit {
       duras: this.getTotalDuras(),
       total: (parseFloat(this.getTotalViables()) + parseFloat(this.getTotalNoViables()) + parseFloat(this.getTotalDuras())).toString(),
       promedio: this.getPromedioViables(false),
-      repetido: this.repetido,
+      estandar: this.estandar || false,
+      repetido: this.repetido || false,
       activo: true,
       reciboId: this.reciboId ? parseInt(this.reciboId) : null
     };
@@ -659,7 +886,7 @@ export class TetrazolioComponent implements OnInit {
       console.log('Repeticiones:', this.repeticiones);
       console.log('Repeticiones entries:', this.repeticionesEntries);
       console.log('Detalles de semillas:', this.detalles);
-      
+
       // Validaciones antes de actualizar
       const validaciones = this.validarDatosCreacion();
       if (!validaciones.esValido) {
@@ -669,16 +896,16 @@ export class TetrazolioComponent implements OnInit {
         this.erroresValidacion = validaciones.errores || [];
         return;
       }
-      
+
       console.log('Validaciones pasadas correctamente');
       console.log('Enviando petición de actualización al backend...');
       console.log('Datos finales a enviar:', JSON.stringify(tetrazolioData, null, 2));
-      
+
       this.tetrazolioService.editar(tetrazolioData as TetrazolioDto).subscribe({
         next: (res) => {
           console.log('Tetrazolio actualizado correctamente en el backend');
           console.log('Respuesta del servidor:', res);
-          
+
           // Procesar repeticiones y detalles
           console.log('Procesando repeticiones y detalles...');
           this.procesarRepeticiones(this.editingId!)
@@ -686,6 +913,12 @@ export class TetrazolioComponent implements OnInit {
             .then(() => {
               console.log('Repeticiones y detalles procesados correctamente');
               this.isSubmitting = false;
+
+              const loteId = this.route.snapshot.paramMap.get('loteId');
+              if (this.editingId != null) {
+                this.logService.crearLog(loteId ? parseInt(loteId) : 0, Number(this.editingId), 'Tetrazolio', 'actualizado').subscribe();
+              }
+
               this.safeNavigateToListado();
             })
             .catch(err => {
@@ -701,9 +934,9 @@ export class TetrazolioComponent implements OnInit {
             message: err.message,
             error: err.error
           });
-          
+
           this.isSubmitting = false;
-          
+
           let errorMessage = 'Error al actualizar el Tetrazolio.';
           if (err.error && err.error.message) {
             errorMessage = err.error.message;
@@ -727,7 +960,7 @@ export class TetrazolioComponent implements OnInit {
       console.log('Repeticiones:', this.repeticiones);
       console.log('Repeticiones entries:', this.repeticionesEntries);
       console.log('Detalles de semillas:', this.detalles);
-      
+
       // Validaciones antes de crear
       const validaciones = this.validarDatosCreacion();
       if (!validaciones.esValido) {
@@ -737,24 +970,25 @@ export class TetrazolioComponent implements OnInit {
         this.erroresValidacion = validaciones.errores || [];
         return;
       }
-      
+
       console.log('Validaciones pasadas correctamente');
-      
+
       (tetrazolioData as any).fechaCreacion = new Date();
+      tetrazolioData.estandar = false;
       tetrazolioData.repetido = false;
       tetrazolioData.reciboId = this.reciboId ? parseInt(this.reciboId) : null;
-      
+
       console.log('Enviando petición de creación al backend...');
       console.log('Datos finales a enviar:', JSON.stringify(tetrazolioData, null, 2));
-      
+
       this.tetrazolioService.crear(tetrazolioData as TetrazolioDto).subscribe({
         next: (res) => {
           console.log('Tetrazolio creado correctamente en el backend');
           console.log('Respuesta del servidor:', res);
-          
+
           const tetrazolioId = parseInt(res.split('ID:')[1]);
           console.log('ID del tetrazolio creado:', tetrazolioId);
-          
+
           // Procesar repeticiones y detalles
           console.log('Procesando repeticiones y detalles...');
           this.procesarRepeticiones(tetrazolioId)
@@ -762,6 +996,12 @@ export class TetrazolioComponent implements OnInit {
             .then(() => {
               console.log('Repeticiones y detalles procesados correctamente');
               this.isSubmitting = false;
+
+              const loteId = this.route.snapshot.paramMap.get('loteId');
+              if (tetrazolioId != null) {
+                this.logService.crearLog(loteId ? parseInt(loteId) : 0, Number(tetrazolioId), 'Tetrazolio', 'creado').subscribe();
+              }
+
               this.safeNavigateToListado();
             })
             .catch(err => {
@@ -777,9 +1017,9 @@ export class TetrazolioComponent implements OnInit {
             message: err.message,
             error: err.error
           });
-          
+
           this.isSubmitting = false;
-          
+
           let errorMessage = 'Error al crear el Tetrazolio.';
           if (err.error && err.error.message) {
             errorMessage = err.error.message;
@@ -794,9 +1034,9 @@ export class TetrazolioComponent implements OnInit {
 
   private validarDatosCreacion(): { esValido: boolean; errores: string[] } {
     const errores: string[] = [];
-    
+
     console.log('Iniciando validaciones de datos...');
-    
+
     // Validar cantidad de semillas
     if (this.cantidadSemillas === null || this.cantidadSemillas === undefined || this.cantidadSemillas <= 0) {
       errores.push('La cantidad de semillas debe ser mayor a 0');
@@ -806,13 +1046,13 @@ export class TetrazolioComponent implements OnInit {
       errores.push('La cantidad de semillas no puede ser menor que cero');
       console.warn('Cantidad de semillas negativa:', this.cantidadSemillas);
     }
-    
+
     // Validar pretratamiento
     if (this.selectedPretratamiento === null || this.selectedPretratamiento === undefined) {
       errores.push('Debe seleccionar un pretratamiento');
       console.warn('Pretratamiento no seleccionado');
     }
-    
+
     // Validar concentración
     const concentracion = this.selectedConcentracion === 'custom' ? this.concentracionCustom : this.selectedConcentracion;
     if (concentracion === null || concentracion === undefined) {
@@ -822,7 +1062,7 @@ export class TetrazolioComponent implements OnInit {
       errores.push('La concentración no puede ser menor que cero');
       console.warn('Concentración negativa:', concentracion);
     }
-    
+
     // Validar tinción horas
     const tincionHoras = this.selectedTincionHs === 'custom' ? this.tincionHsCustom : this.selectedTincionHs;
     if (tincionHoras === null || tincionHoras === undefined || tincionHoras <= 0) {
@@ -833,7 +1073,7 @@ export class TetrazolioComponent implements OnInit {
       errores.push('Las horas de tinción no pueden ser menores que cero');
       console.warn('Tinción horas negativa:', tincionHoras);
     }
-    
+
     // Validar tinción grados
     if (this.tincionC === null || this.tincionC === undefined || this.tincionC <= 0) {
       errores.push('Los grados de tinción deben ser un valor válido mayor a 0');
@@ -843,7 +1083,7 @@ export class TetrazolioComponent implements OnInit {
       errores.push('Los grados de tinción no pueden ser menores que cero');
       console.warn('Tinción grados negativa:', this.tincionC);
     }
-    
+
     // Validar fecha
     if (!this.fecha || this.fecha.trim() === '') {
       errores.push('Debe seleccionar una fecha');
@@ -856,7 +1096,7 @@ export class TetrazolioComponent implements OnInit {
         console.warn('Formato de fecha inválido:', this.fecha);
       }
     }
-    
+
     // Validar repeticiones
     if (!this.repeticiones || this.repeticiones.length === 0) {
       errores.push('Debe tener al menos una repetición');
@@ -868,7 +1108,7 @@ export class TetrazolioComponent implements OnInit {
           errores.push(`La repetición ${index + 1} tiene valores negativos. Los valores no pueden ser menores que cero`);
           console.warn(`Repetición ${index + 1} con valores negativos:`, rep);
         }
-        
+
         const totalRep = rep.viables + rep.noViables + rep.duras;
         if (totalRep === 0) {
           errores.push(`La repetición ${index + 1} no tiene datos ingresados`);
@@ -876,7 +1116,7 @@ export class TetrazolioComponent implements OnInit {
         }
       });
     }
-    
+
     // Validar promedios: deben estar entre 0 y 100
     if (this.repeticiones && this.repeticiones.length > 0) {
       const promedioViables = parseFloat(this.getPromedioViables(false));
@@ -886,7 +1126,7 @@ export class TetrazolioComponent implements OnInit {
           console.warn('Promedio de viables fuera de rango:', promedioViables);
         }
       }
-      
+
       const promedioNoViables = parseFloat(this.getPromedioNoViables(false));
       if (!isNaN(promedioNoViables)) {
         if (promedioNoViables < 0 || promedioNoViables > 100) {
@@ -894,7 +1134,7 @@ export class TetrazolioComponent implements OnInit {
           console.warn('Promedio de no viables fuera de rango:', promedioNoViables);
         }
       }
-      
+
       const promedioDuras = parseFloat(this.getPromedioDuras(false));
       if (!isNaN(promedioDuras)) {
         if (promedioDuras < 0 || promedioDuras > 100) {
@@ -903,7 +1143,7 @@ export class TetrazolioComponent implements OnInit {
         }
       }
     }
-    
+
     // Validar detalles de semillas
     if (!this.detalles || this.detalles.length === 0) {
       errores.push('Debe tener al menos una tabla de detalles de semillas');
@@ -918,11 +1158,11 @@ export class TetrazolioComponent implements OnInit {
           { nombre: 'viables severos', categoria: det.viablesSeveros },
           { nombre: 'no viables', categoria: det.noViables }
         ];
-        
+
         categorias.forEach(cat => {
-          if (cat.categoria.total < 0 || cat.categoria.mecanico < 0 || 
-              cat.categoria.ambiente < 0 || cat.categoria.chinches < 0 || 
-              cat.categoria.fracturas < 0 || cat.categoria.otros < 0 || 
+          if (cat.categoria.total < 0 || cat.categoria.mecanico < 0 ||
+              cat.categoria.ambiente < 0 || cat.categoria.chinches < 0 ||
+              cat.categoria.fracturas < 0 || cat.categoria.otros < 0 ||
               cat.categoria.duras < 0) {
             errores.push(`La tabla ${tablaIndex + 1} en ${cat.nombre} tiene valores negativos. Los valores no pueden ser menores que cero`);
             console.warn(`Tabla ${tablaIndex + 1} - ${cat.nombre} con valores negativos:`, cat.categoria);
@@ -930,36 +1170,36 @@ export class TetrazolioComponent implements OnInit {
         });
       });
     }
-    
+
     const esValido = errores.length === 0;
-    
+
     if (esValido) {
       console.log('Todas las validaciones pasaron correctamente');
     } else {
       console.log('Se encontraron errores de validación:', errores);
     }
-    
+
     return { esValido, errores };
   }
 
   private async procesarRepeticiones(tetrazolioId: number): Promise<void> {
     console.log('Procesando repeticiones para tetrazolio ID:', tetrazolioId);
     console.log('Repeticiones entries antes del mapeo:', this.repeticionesEntries);
-    
+
     const payload: RepeticionTetrazolioDto[] = this.repeticionesEntries.map((r) => ({
       ...r,
       tetrazolioId: tetrazolioId
     }));
-    
+
     console.log('Payload de repeticiones a enviar:', payload);
     console.log('Cantidad de repeticiones:', payload.length);
-    
+
     return new Promise((resolve, reject) => {
       if (!payload || payload.length === 0) {
         console.log('No hay repeticiones para procesar, continuando...');
         return resolve();
       }
-      
+
       console.log('Enviando repeticiones al backend...');
       // Usar el método apropiado según el modo (creación vs edición)
       if (this.isEditing) {
@@ -1069,7 +1309,7 @@ export class TetrazolioComponent implements OnInit {
     console.log('Navegando al listado...');
     console.log('Lote ID:', this.loteId);
     console.log('Recibo ID:', this.reciboId);
-    
+
     if (this.loteId && this.reciboId) {
       const ruta = `/${this.loteId}/${this.reciboId}/listado-tetrazolio`;
       console.log('Navegando a:', ruta);

@@ -2,6 +2,7 @@ package ti.proyectoinia.business.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.Where;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import java.util.List;
     }
 )
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class GerminacionCuradaPlanta extends RepeticionesGerminacion {
     // Navegación a normales por conteo para esta repetición y tratamiento (solo lectura)
     @OneToMany(fetch = FetchType.LAZY)

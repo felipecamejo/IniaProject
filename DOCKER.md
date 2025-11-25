@@ -68,8 +68,8 @@ ls Dockerfile.* docker-compose.yml
 Crear un archivo `.env` en la raíz del proyecto:
 ```env
 # Base de datos
-DB_USER=inia_user
-DB_PASS=inia_password
+DB_USER=postgres
+DB_PASS=897888fg2
 POSTGRES_DB=Inia
 
 # JWT
@@ -295,12 +295,28 @@ docker-compose logs -f middleware
 ```
 
 ### Modo Producción
-Para producción, usa solo `docker-compose.yml`:
+Para producción, usa solo `docker-compose.yml` (sin override):
 
 ```bash
-# Iniciar en modo producción
+# Iniciar en modo producción (sin override de desarrollo)
 docker-compose -f docker-compose.yml up -d
+
+# O construir e iniciar
+docker-compose -f docker-compose.yml build --no-cache
+docker-compose -f docker-compose.yml up -d
+
+# Verificar configuración de producción
+docker-compose -f docker-compose.yml config | grep -A 20 middleware
 ```
+
+**Configuración de Producción:**
+- ✅ **8 workers de Uvicorn** (alta concurrencia)
+- ✅ **200 requests concurrentes** (alta carga)
+- ✅ **50 workers en thread pool** (operaciones pesadas)
+- ✅ **Pool de BD: 30 base + 50 overflow** (80 conexiones máx)
+- ✅ **Rate limiting: 200 req/min** (protección)
+- ✅ **Health check mejorado** con endpoint `/health`
+- ✅ **Timeout: 600 segundos** (10 minutos)
 
 ### Cambiar entre Modos
 ```bash
@@ -380,7 +396,7 @@ docker volume inspect iniaproject_postgres_data
 
 # Acceder a un contenedor
 docker-compose exec backend bash
-docker-compose exec database psql -U inia_user -d Inia
+docker-compose exec database psql -U postgres -d Inia
 ```
 
 ### Limpieza Completa
@@ -417,6 +433,14 @@ docker system prune -a --volumes
 - **Imagen:** Construida desde Dockerfile.middleware
 - **Dependencias:** Database
 - **Volúmenes:** exports/ (para archivos generados)
+- **Optimizaciones de PRODUCCIÓN:**
+  - **8 workers de Uvicorn** (configurable vía `UVICORN_WORKERS`)
+  - **200 requests concurrentes** (configurable vía `MAX_CONCURRENT_REQUESTS`)
+  - **Rate limiting: 200 req/min por IP** (configurable)
+  - **Thread pool: 50 workers** para operaciones pesadas
+  - **Pool de BD: 30 conexiones base + 50 overflow**
+  - **Timeout: 600 segundos** (10 minutos) por request
+  - **Health check mejorado** usando endpoint `/health`
 
 #### 🌐 Frontend (Angular + Nginx)
 - **Puerto:** 80 (producción), 4200 (desarrollo)
@@ -450,6 +474,8 @@ Una vez que todos los servicios estén ejecutándose:
 ### Documentación de APIs
 - **Backend:** http://localhost:8080/Inia/swagger-ui.html
 - **Middleware:** http://localhost:9099/docs
+- **Middleware ReDoc:** http://localhost:9099/redoc
+- **Middleware Health Check:** http://localhost:9099/health
 
 ## 🔐 Seguridad
 
@@ -457,6 +483,23 @@ Una vez que todos los servicios estén ejecutándose:
 - `JWT_SECRET`: Cambiar en producción
 - `DB_PASS`: Usar contraseña segura
 - `POSTGRES_PASSWORD`: Usar contraseña segura
+
+### Variables de Optimización del Middleware
+El middleware FastAPI soporta las siguientes variables de entorno para optimización:
+
+- `UVICORN_WORKERS`: Número de workers (default: **8 en producción**, 1 en desarrollo)
+- `MAX_CONCURRENT_REQUESTS`: Requests simultáneos (default: **200 en producción**, 20 en desarrollo)
+- `MAX_REQUEST_TIMEOUT`: Timeout en segundos (default: 600)
+- `RATE_LIMIT_REQUESTS`: Requests por ventana (default: **200 en producción**, 200 en desarrollo)
+- `RATE_LIMIT_WINDOW`: Ventana en segundos (default: 60)
+- `THREAD_POOL_WORKERS`: Workers del thread pool (default: **50 en producción**, 5 en desarrollo)
+- `DB_POOL_SIZE`: Tamaño del pool de BD (default: **30 en producción**, 5 en desarrollo)
+- `DB_MAX_OVERFLOW`: Conexiones adicionales (default: **50 en producción**, 10 en desarrollo)
+- `DB_POOL_RECYCLE`: Reciclar conexiones cada N segundos (default: 3600)
+- `LOG_LEVEL`: Nivel de logging (default: info)
+
+**Nota:** En desarrollo (docker-compose.override.yml), los valores son más bajos para mejor debugging.  
+**Producción:** Los valores están optimizados para alta carga y rendimiento.
 
 ### Recomendaciones de Producción
 1. Usar secrets de Docker o variables de entorno seguras

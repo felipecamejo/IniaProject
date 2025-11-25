@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false, Position=0)]
     [string]$ProjectRoot = ""
 )
 
@@ -15,9 +15,23 @@ if (-not (Get-Command py -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
+# Auto-detect ProjectRoot if not provided
+if ([string]::IsNullOrEmpty($ProjectRoot)) {
+    # Get script directory (PowerShell/)
+    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    # Navigate to project root (one level up from PowerShell/)
+    $ProjectRoot = Split-Path -Parent $scriptDir
+    Write-Host "Auto-detectando ProjectRoot: $ProjectRoot" -ForegroundColor Gray
+}
+
 # Validate ProjectRoot parameter
-if ([string]::IsNullOrEmpty($ProjectRoot) -or -not (Test-Path $ProjectRoot)) {
+if (-not (Test-Path $ProjectRoot)) {
     Write-Error "ProjectRoot invalido o no existe: $ProjectRoot"
+    Write-Host "`nUso correcto:" -ForegroundColor Yellow
+    Write-Host "  .\SetupMiddleware.ps1                    # Auto-detecta el directorio del proyecto" -ForegroundColor White
+    Write-Host "  .\SetupMiddleware.ps1 D:\IniaProject    # Especifica la ruta manualmente" -ForegroundColor White
+    Write-Host "`nPara ejecutar el servidor, usa:" -ForegroundColor Yellow
+    Write-Host "  .\run_middleware.ps1 server" -ForegroundColor White
     exit 1
 }
 

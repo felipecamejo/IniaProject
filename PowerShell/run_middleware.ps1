@@ -1,110 +1,295 @@
-# Script para ejecutar el middleware INIA
-# Uso: .\run_middleware.ps1 [comando] [opciones]
+# Script to start/restart the Python middleware server
+# Usage: .\run_middleware.ps1 [command]
 
 param(
     [Parameter(Position=0)]
-    [ValidateSet("insert", "export", "import", "server", "test", "help")]
-    [string]$Command = "help",
-    
-    [Parameter(Position=1)]
-    [string]$Options = ""
+    [ValidateSet("server", "stop", "help")]
+    [string]$Command = "help"
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# Obtener directorio del script (PowerShell/)
+# Get script directory (PowerShell/)
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# Navegar a la raíz del proyecto (un nivel arriba)
+# Navigate to project root (one level up)
 $projectRoot = Split-Path -Parent $scriptDir
 Set-Location $projectRoot
 
-# Navegar al directorio middleware
+# Navigate to middleware directory
 Push-Location "middleware"
 
-# Verificar que estamos en el directorio correcto
-if (-not (Test-Path "MassiveInsertFiles.py")) {
-    Write-Error "No se encontró MassiveInsertFiles.py en el directorio middleware/"
+# Verify we're in the correct directory
+if (-not (Test-Path "http_server.py")) {
+    Write-Error "http_server.py not found in middleware/ directory"
     Pop-Location
     exit 1
 }
 
-# Activar entorno virtual si existe
-if (Test-Path ".venv\Scripts\Activate.ps1") {
-    Write-Host "Activando entorno virtual..." -ForegroundColor Cyan
-    . .\.venv\Scripts\Activate.ps1
-} else {
-    Write-Warning "No se encontró entorno virtual. Asegúrate de ejecutar SetupMiddleware.ps1 primero."
+# Function to check if setup is needed
+function Test-SetupNeeded {
+    $needsSetup = $false
+    $reasons = @()
+    
+    # Check if virtual environment exists
+    if (-not (Test-Path ".venv\Scripts\Activate.ps1")) {
+        $needsSetup = $true
+        $reasons += "Virtual environment not found"
+        return @{
+            Needed = $needsSetup
+            Reasons = $reasons
+        }
+    }
+    
+    # Check if requirements.txt exists
+    if (-not (Test-Path "requirements.txt")) {
+        $needsSetup = $true
+        $reasons += "requirements.txt not found"
+    }
+    
+    # Check if key dependencies are installed (if venv exists)
+    # Temporarily activate venv to test dependencies
+    $originalEnv = $env:VIRTUAL_ENV
+    try {
+        . .\.venv\Scripts\Activate.ps1 -ErrorAction SilentlyContinue
+        $testDeps = @'
+import sys
+try:
+    import fastapi
+    import uvicorn
+    import sqlalchemy
+    print("OK")
+except ImportError as e:
+    print(f"ERROR: {e}")
+    sys.exit(1)
+'@
+        $result = $testDeps | python 2>&1
+        if ($LASTEXITCODE -ne 0 -or $result -notmatch "OK") {
+            $needsSetup = $true
+            $reasons += "Dependencies not installed or incomplete"
+        }
+    } catch {
+        $needsSetup = $true
+        $reasons += "Could not verify dependencies: $_"
+    } finally {
+        # Deactivate if we activated it
+        if ($env:VIRTUAL_ENV -and $env:VIRTUAL_ENV -ne $originalEnv) {
+            deactivate -ErrorAction SilentlyContinue
+        }
+    }
+    
+    return @{
+        Needed = $needsSetup
+        Reasons = $reasons
+    }
 }
 
-switch ($Command) {
-    "insert" {
-        Write-Host "Ejecutando inserción masiva de datos..." -ForegroundColor Green
-        python MassiveInsertFiles.py
+# Function to run setup automatically
+function Invoke-SetupMiddleware {
+    Write-Host "`n=== SETUP REQUIRED ===" -ForegroundColor Yellow
+    Write-Host "The middleware environment needs to be set up." -ForegroundColor Yellow
+    Write-Host "Running SetupMiddleware.ps1 automatically...`n" -ForegroundColor Cyan
+    
+    # Save current location (middleware directory)
+    $currentLocation = Get-Location
+    
+    # Navigate back to project root
+    Pop-Location
+    
+    # Get the SetupMiddleware.ps1 script path
+    $setupScript = Join-Path $projectRoot "PowerShell\SetupMiddleware.ps1"
+    
+    if (-not (Test-Path $setupScript)) {
+        Write-Error "SetupMiddleware.ps1 not found at: $setupScript"
+        exit 1
     }
     
-    "export" {
-        if ($Options) {
-            Write-Host "Exportando datos con opciones: $Options" -ForegroundColor Green
-            python ExportExcel.py $Options
-        } else {
-            Write-Host "Exportando todas las tablas a Excel..." -ForegroundColor Green
-            python ExportExcel.py --format xlsx
+    # Run the setup script (it will handle its own directory navigation)
+    try {
+        $originalLocation = Get-Location
+        & $setupScript
+        $setupExitCode = $LASTEXITCODE
+        
+        # SetupMiddleware.ps1 does Pop-Location at the end, so we're back at project root
+        # Navigate back to middleware directory and push it again for consistency
+        Push-Location "middleware"
+        
+        if ($setupExitCode -ne 0) {
+            Write-Error "Setup failed. Please run SetupMiddleware.ps1 manually and fix any issues."
+            Pop-Location
+            exit 1
         }
-    }
-    
-    "import" {
-        if ($Options) {
-            Write-Host "Importando datos con opciones: $Options" -ForegroundColor Green
-            python ImportExcel.py $Options
-        } else {
-            Write-Host "Uso: .\run_middleware.ps1 import --file archivo.xlsx --table lote" -ForegroundColor Yellow
+        
+        Write-Host "`nSetup completed successfully!`n" -ForegroundColor Green
+    } catch {
+        Write-Error "Error running SetupMiddleware.ps1: $_"
+        # Try to restore location
+        if (Test-Path (Join-Path $projectRoot "middleware")) {
+            Push-Location "middleware"
         }
+        exit 1
+    }
+}
+
+# Check if setup is needed
+$setupCheck = Test-SetupNeeded
+if ($setupCheck.Needed) {
+    Write-Host "`nSetup check:" -ForegroundColor Cyan
+    foreach ($reason in $setupCheck.Reasons) {
+        Write-Host "  - $reason" -ForegroundColor Yellow
     }
     
-    "server" {
-        Write-Host "Iniciando servidor API en puerto 9099..." -ForegroundColor Green
-        Write-Host "Endpoints disponibles:" -ForegroundColor Yellow
-        Write-Host "  POST /insertar - Inserción masiva" -ForegroundColor White
-        Write-Host "  POST /exportar - Exportar tablas" -ForegroundColor White
-        Write-Host "  POST /importar - Importar archivos" -ForegroundColor White
-        Write-Host "  http://localhost:9099/docs - Documentación interactiva" -ForegroundColor White
+    # Ask user if they want to run setup automatically (only if not in server command)
+    if ($Command -eq "server") {
+        Write-Host "`nRunning setup automatically before starting server...`n" -ForegroundColor Cyan
+        Invoke-SetupMiddleware
+    } else {
+        Write-Host "`nTo set up the environment, run:" -ForegroundColor Yellow
+        Write-Host "  .\PowerShell\SetupMiddleware.ps1" -ForegroundColor White
+        Write-Host "`nOr run 'server' command to set up automatically." -ForegroundColor Yellow
+        Pop-Location
+        exit 1
+    }
+}
+
+# Activate virtual environment
+if (Test-Path ".venv\Scripts\Activate.ps1") {
+    Write-Host "Activating virtual environment..." -ForegroundColor Cyan
+    . .\.venv\Scripts\Activate.ps1
+} else {
+    Write-Error "Virtual environment not found after setup. Please run SetupMiddleware.ps1 manually."
+    Pop-Location
+    exit 1
+}
+
+# ================================
+# SERVER MANAGEMENT FUNCTIONS
+# ================================
+
+function Test-PortInUse {
+    param([int]$Port)
+    try {
+        $connection = Test-NetConnection -ComputerName localhost -Port $Port -WarningAction SilentlyContinue -InformationLevel Quiet
+        return $connection
+    } catch {
+        return $false
+    }
+}
+
+function Stop-ServerOnPort {
+    param([int]$Port)
+    
+    Write-Host "Checking if server is running on port $Port..." -ForegroundColor Yellow
+    
+    # Find processes using the port
+    $processes = Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue | 
+                 Select-Object -ExpandProperty OwningProcess -Unique
+    
+    if ($processes) {
+        foreach ($processId in $processes) {
+            try {
+                $process = Get-Process -Id $processId -ErrorAction SilentlyContinue
+                if ($process) {
+                    $processName = $process.ProcessName
+                    Write-Host "Stopping process $processName (PID: $processId) on port $Port..." -ForegroundColor Yellow
+                    Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+                    Start-Sleep -Seconds 1
+                    Write-Host "Process stopped successfully" -ForegroundColor Green
+                }
+            } catch {
+                Write-Warning "Could not stop process $processId : $($_.Exception.Message)"
+            }
+        }
+        
+        # Wait a moment for the port to be released
+        Start-Sleep -Seconds 2
+        
+        # Verify the port is free
+        if (Test-PortInUse -Port $Port) {
+            Write-Warning "Port $Port is still in use. Try stopping it manually."
+            return $false
+        } else {
+            Write-Host "Port $Port released successfully" -ForegroundColor Green
+            return $true
+        }
+    } else {
+        Write-Host "No processes using port $Port" -ForegroundColor Green
+        return $true
+    }
+}
+
+function Start-Server {
+    param([int]$Port = 9099)
+    
+    # Check and stop existing server
+    if (Test-PortInUse -Port $Port) {
+        Write-Host "`nServer detected on port $Port. Restarting..." -ForegroundColor Yellow
+        Stop-ServerOnPort -Port $Port
+    }
+    
+    Write-Host "`nStarting middleware API server on port $Port..." -ForegroundColor Green
+    Write-Host "Available endpoints:" -ForegroundColor Yellow
+    Write-Host "  POST /insertar - Mass insertion" -ForegroundColor White
+    Write-Host "  POST /exportar - Export tables" -ForegroundColor White
+    Write-Host "  POST /importar - Import files" -ForegroundColor White
+    Write-Host "  http://localhost:$Port/docs - Interactive API documentation" -ForegroundColor White
+    Write-Host "`nPress Ctrl+C to stop the server`n" -ForegroundColor Cyan
+    
+    # Start the server
+    try {
         python http_server.py
+    } catch {
+        Write-Error "Error starting server: $_"
+        Pop-Location
+        exit 1
+    }
+}
+
+# ================================
+# MAIN COMMANDS
+# ================================
+
+switch ($Command) {
+    "server" {
+        Start-Server -Port 9099
     }
     
-    "test" {
-        Write-Host "Ejecutando pruebas del sistema de inserción masiva..." -ForegroundColor Green
-        Write-Host "⚠️  ADVERTENCIA: Esto insertará ~35,000 registros para pruebas de laboratorio" -ForegroundColor Yellow
-        $confirm = Read-Host "¿Continuar? (s/N)"
-        if ($confirm -eq "s" -or $confirm -eq "S" -or $confirm -eq "si" -or $confirm -eq "Si") {
-            python test_massive_insert.py
+    "stop" {
+        Write-Host "Stopping server on port 9099..." -ForegroundColor Yellow
+        if (Stop-ServerOnPort -Port 9099) {
+            Write-Host "Server stopped successfully" -ForegroundColor Green
         } else {
-            Write-Host "Prueba cancelada por el usuario" -ForegroundColor Yellow
+            Write-Host "Could not stop server completely" -ForegroundColor Red
+            exit 1
         }
     }
     
     "help" {
-        Write-Host "=== MIDDLEWARE INIA - COMANDOS DISPONIBLES ===" -ForegroundColor Cyan
+        Write-Host "=== MIDDLEWARE SERVER - AVAILABLE COMMANDS ===" -ForegroundColor Cyan
         Write-Host ""
-        Write-Host "Uso: .\run_middleware.ps1 [comando] [opciones]" -ForegroundColor White
+        Write-Host "Usage: .\run_middleware.ps1 [command]" -ForegroundColor White
         Write-Host ""
-        Write-Host "Comandos:" -ForegroundColor Yellow
-        Write-Host "  insert                    - Ejecutar inserción masiva de datos" -ForegroundColor White
-        Write-Host "  export [opciones]         - Exportar tablas a Excel/CSV" -ForegroundColor White
-        Write-Host "  import [opciones]         - Importar datos desde archivos" -ForegroundColor White
-        Write-Host "  server                    - Iniciar servidor API FastAPI" -ForegroundColor White
-        Write-Host "  test                      - Ejecutar pruebas de inserción masiva (35K registros)" -ForegroundColor White
-        Write-Host "  help                      - Mostrar esta ayuda" -ForegroundColor White
+        Write-Host "Commands:" -ForegroundColor Yellow
+        Write-Host "  server                    - Start/Restart middleware API server" -ForegroundColor White
+        Write-Host "                            (Automatically runs setup if needed)" -ForegroundColor Gray
+        Write-Host "  stop                      - Stop middleware API server on port 9099" -ForegroundColor White
+        Write-Host "  help                      - Show this help" -ForegroundColor White
         Write-Host ""
-        Write-Host "Ejemplos:" -ForegroundColor Yellow
-        Write-Host "  .\run_middleware.ps1 insert" -ForegroundColor Gray
-        Write-Host "  .\run_middleware.ps1 export --tables lote,recibo --format xlsx" -ForegroundColor Gray
-        Write-Host "  .\run_middleware.ps1 import --file datos.xlsx --table lote" -ForegroundColor Gray
-        Write-Host "  .\run_middleware.ps1 server" -ForegroundColor Gray
-        Write-Host "  .\run_middleware.ps1 test" -ForegroundColor Gray
+        Write-Host "Examples:" -ForegroundColor Yellow
+        Write-Host "  .\run_middleware.ps1 server    # Start or restart the server" -ForegroundColor Gray
+        Write-Host "                                  (Will auto-setup if environment not ready)" -ForegroundColor DarkGray
+        Write-Host "  .\run_middleware.ps1 stop     # Stop the server" -ForegroundColor Gray
+        Write-Host "  .\run_middleware.ps1 help    # Show help" -ForegroundColor Gray
+        Write-Host ""
+        Write-Host "The server will be available at:" -ForegroundColor Yellow
+        Write-Host "  http://localhost:9099" -ForegroundColor White
+        Write-Host "  http://localhost:9099/docs - API documentation" -ForegroundColor White
+        Write-Host ""
+        Write-Host "Note: The 'server' command will automatically check and run" -ForegroundColor Cyan
+        Write-Host "      SetupMiddleware.ps1 if the environment is not configured." -ForegroundColor Cyan
     }
 }
 
-# Restaurar directorio original
+# Restore original directory
 Pop-Location

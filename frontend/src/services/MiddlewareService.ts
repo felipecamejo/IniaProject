@@ -20,16 +20,23 @@ export class MiddlewareService {
   }
 
   /**
-   * Importa un archivo Excel a la base de datos
-   * @param file Archivo Excel (.xlsx o .xls)
+   * Importa uno o varios archivos Excel/CSV a la base de datos
+   * @param files Archivo(s) Excel/CSV (.xlsx, .xls o .csv)
    * @returns Observable con la respuesta del servidor
    */
-  importarExcel(file: File): Observable<string> {
+  importarExcel(files: File | File[]): Observable<any> {
     const formData = new FormData();
-    formData.append('file', file, file.name);
+    
+    // Si es un solo archivo, convertirlo a array
+    const filesArray = Array.isArray(files) ? files : [files];
+    
+    // Agregar todos los archivos con el nombre 'files' (el backend espera un array)
+    filesArray.forEach(file => {
+      formData.append('files', file, file.name);
+    });
 
     return this.http.post(`${this.url.baseUrl}${this.endpoint}/http/importar`, formData, {
-      responseType: 'text'
+      responseType: 'json' // Cambiar a json para recibir respuestas estructuradas
     });
   }
 }

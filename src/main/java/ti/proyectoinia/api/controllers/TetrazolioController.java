@@ -1,6 +1,7 @@
 package ti.proyectoinia.api.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Generated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class TetrazolioController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(
             description = "Esta Funcion crea una nueva Tetrazolio"
     )
@@ -47,15 +48,20 @@ public class TetrazolioController {
         }
     }
 
-    @Secured({"ADMIN"})
     @PutMapping({"/editar"})
-    public ResponseEntity<String> editarTetrazolio(@RequestBody TetrazolioDto tetrazolioDto) {
-        String result = this.tetrazolioService.editarTetrazolio(tetrazolioDto);
+    @Secured({"ADMIN", "ANALISTA"})
+    public ResponseEntity<String> editarTetrazolio(@RequestBody TetrazolioDto dto) {
+        if (dto.getId() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El ID es obligatorio para editar");
+        }
+
+        String result = this.tetrazolioService.editarTetrazolio(dto);
         return ResponseEntity.ok(result);
     }
-    @Secured({"ADMIN"})
 
-    @PutMapping({"/eliminar/{id}"})
+
+    @DeleteMapping({"/eliminar/{id}"})
+    @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina una Tetrazolio"
     )
@@ -63,8 +69,10 @@ public class TetrazolioController {
         try {
             String mensaje = this.tetrazolioService.eliminarTetrazolio(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No encontrado");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar la Tetrazolio: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar: " + e.getMessage());
         }
     }
 
@@ -84,7 +92,7 @@ public class TetrazolioController {
     }
 
     @PutMapping("/actualizar-repeticiones/{tetrazolioId}")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Actualiza las repeticiones asociadas a un Tetrazolio, creando, actualizando y eliminando según la lista recibida")
     public ResponseEntity<String> actualizarRepeticionesCompleto(
             @PathVariable Long tetrazolioId,
@@ -107,7 +115,7 @@ public class TetrazolioController {
     }
 
     @PutMapping("/actualizar-detalles/{tetrazolioId}")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Actualiza los detalles de semillas asociados a un Tetrazolio, creando, actualizando y eliminando según la lista recibida")
     public ResponseEntity<String> actualizarDetallesCompleto(
             @PathVariable Long tetrazolioId,

@@ -9,8 +9,11 @@ import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TabsModule } from 'primeng/tabs';
 import { PurezaPNotatumService } from '../../../services/PurezaPNotatumService';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { PurezaPNotatumDto } from '../../../models/PurezaPNotatum.dto';
 import { RepeticionPPN } from '../../../models/RepeticionPPN.dto';
+import { LogService } from '../../../services/LogService';
+import { AuthService } from '../../../services/AuthService';
 
 @Component({
   selector: 'app-pureza-p-notatum',
@@ -23,7 +26,8 @@ import { RepeticionPPN } from '../../../models/RepeticionPPN.dto';
     InputNumberModule,
     ButtonModule,
     MultiSelectModule,
-    TabsModule
+    TabsModule,
+    ConfirmDialogComponent
   ],
   templateUrl: './pureza-p-notatum.component.html',
   styleUrl: './pureza-p-notatum.component.scss'
@@ -43,6 +47,105 @@ export class PurezaPNotatumComponent implements OnInit {
   // Propiedades para checkboxes
   repetido: boolean = false;
   estandar: boolean = false;
+
+  // Variables para el diálogo de confirmación
+  mostrarConfirmEstandar: boolean = false;
+  mostrarConfirmRepetido: boolean = false;
+  estandarPendiente: boolean = false;
+  repetidoPendiente: boolean = false;
+
+  // Variables para controlar si ya está marcado (no se puede cambiar)
+  estandarOriginal: boolean = false;
+  repetidoOriginal: boolean = false;
+
+  // Getters para deshabilitar checkboxes si ya están marcados
+  get estandarDeshabilitado(): boolean {
+    return this.estandarOriginal;
+  }
+
+  get repetidoDeshabilitado(): boolean {
+    return this.repetidoOriginal;
+  }
+
+  // Getter para verificar si el usuario es admin
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  // Métodos para hacer checkboxes mutuamente excluyentes con confirmación
+  onEstandarChange() {
+    // Si ya estaba marcado como estándar, no permitir cambiar
+    if (this.estandarOriginal) {
+      this.estandar = true; // Revertir
+      return;
+    }
+
+    // Si está intentando marcar como estándar y ya está marcado como repetido
+    if (this.estandar && this.repetido) {
+      this.repetido = false;
+      this.repetidoOriginal = false;
+    }
+
+    // Si está intentando marcar como estándar, mostrar confirmación
+    if (this.estandar && !this.mostrarConfirmEstandar) {
+      this.estandarPendiente = true;
+      this.mostrarConfirmEstandar = true;
+      // Revertir el cambio hasta que se confirme
+      this.estandar = false;
+    }
+  }
+
+  onRepetidoChange() {
+    // Si ya estaba marcado como repetido, no permitir cambiar
+    if (this.repetidoOriginal) {
+      this.repetido = true; // Revertir
+      return;
+    }
+
+    // Si está intentando marcar como repetido y ya está marcado como estándar
+    if (this.repetido && this.estandar) {
+      this.estandar = false;
+      this.estandarOriginal = false;
+    }
+
+    // Si está intentando marcar como repetido, mostrar confirmación
+    if (this.repetido && !this.mostrarConfirmRepetido) {
+      this.repetidoPendiente = true;
+      this.mostrarConfirmRepetido = true;
+      // Revertir el cambio hasta que se confirme
+      this.repetido = false;
+    }
+  }
+
+  confirmarEstandar() {
+    this.estandar = true;
+    this.repetido = false;
+    this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
+    this.repetidoOriginal = false;
+    this.mostrarConfirmEstandar = false;
+    this.estandarPendiente = false;
+  }
+
+  cancelarEstandar() {
+    this.estandar = false;
+    this.mostrarConfirmEstandar = false;
+    this.estandarPendiente = false;
+  }
+
+  confirmarRepetido() {
+    this.repetido = true;
+    this.estandar = false;
+    this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
+    this.estandarOriginal = false;
+    this.mostrarConfirmRepetido = false;
+    this.repetidoPendiente = false;
+  }
+
+  cancelarRepetido() {
+    this.repetido = false;
+    this.mostrarConfirmRepetido = false;
+    this.repetidoPendiente = false;
+  }
 
   // Campos del formulario
   semillaPuraGr: number = 0;
@@ -73,10 +176,51 @@ export class PurezaPNotatumComponent implements OnInit {
     return this.repeticiones.reduce((acc, rep) => acc + (rep.gramosContaminadasYVanas || 0), 0);
   }
 
+  // Cálculos automáticos según planilla Excel
+  // Pi: peso total de semillas analizadas (suma de peso por repetición)
+  get totalPesoAnalizado(): number {
+    return this.repeticiones.reduce((acc, rep) => acc + (rep.peso || 0), 0);
+  }
+
+  // At: peso total de semillas contaminadas y vanas
+  get totalPesoContaminadasYVanas(): number {
+    return this.repeticiones.reduce((acc, rep) => acc + (rep.gramosContaminadasYVanas || 0), 0);
+  }
+
+  // A% = (At / Pi) * Pu%  (Pu% proviene del bloque superior ISTA)
+  get aPct(): number | null {
+    const pi = this.totalPesoAnalizado;
+    const at = this.totalPesoContaminadasYVanas;
+    const pu = this.semillaPuraPct; // porcentaje de semilla pura (Pu%)
+    if (!pi || pu == null) return null;
+    return (at / pi) * pu;
+  }
+
+  // Alias para compatibilidad con el template si usa A% total
+  get aPctTotal(): number | null {
+    const a = this.aPct;
+    const mi = this.materiaInertePct; // porcentaje de materia inerte del bloque ISTA
+    if (a == null || mi == null) return null;
+    const total = a + mi;
+    if (total < 0) return 0;
+    return total > 100 ? 100 : total;
+  }
+
+  // % semillas llenas y sanas = Pu% - A%
+  get pctSemillasLlenasYSanas(): number | null {
+    const atotal = this.aPctTotal;
+    const pu = this.semillaPuraPct;
+    if (atotal == null || pu == null) return null;
+    const value = pu - atotal;
+    return value < 0 ? 0 : value;
+  }
+
   constructor(
     private route: ActivatedRoute, 
     private router: Router,
-    private purezaPNotatumService: PurezaPNotatumService
+    private purezaPNotatumService: PurezaPNotatumService,
+    private logService: LogService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -115,7 +259,11 @@ export class PurezaPNotatumComponent implements OnInit {
         this.materiaInerteGr = data.gramosMateriaInerte || 0;
         this.comentarios = data.observaciones || '';
         this.activo = data.activo ?? true;
+        this.estandar = data.estandar ?? false;
         this.repetido = data.repetido ?? false;
+        // Guardar valores originales para deshabilitar checkboxes si ya están marcados
+        this.estandarOriginal = data.estandar ?? false;
+        this.repetidoOriginal = data.repetido ?? false;
         this.fechaCreacion = data.fechaCreacion || null;
         this.fechaRepeticion = data.fechaRepeticion || null;
         this.reciboId = this.route.snapshot.params['reciboId'];
@@ -171,7 +319,10 @@ export class PurezaPNotatumComponent implements OnInit {
     this.materiaInertePct = 0;
     this.comentarios = '';
     this.activo = true;
+    this.estandar = false;
     this.repetido = false;
+    this.estandarOriginal = false;
+    this.repetidoOriginal = false;
     this.fechaCreacion = null;
     this.fechaRepeticion = null;
   }
@@ -241,7 +392,8 @@ export class PurezaPNotatumComponent implements OnInit {
       gramosSemillasMalezas: this.semillaMalezasGr,
       gramosMateriaInerte: this.materiaInerteGr,
       activo: this.activo,
-      repetido: this.repetido,
+      estandar: this.estandar ?? false,
+      repetido: this.repetido ?? false,
       reciboId: reciboIdNum,
       fechaCreacion: this.fechaCreacion,
       fechaRepeticion: this.fechaRepeticion,
@@ -260,6 +412,12 @@ export class PurezaPNotatumComponent implements OnInit {
           console.log('Pureza P. notatum actualizado correctamente:', res);
           // Procesar repeticiones
           this.procesarRepeticiones(this.editingId!).then(() => {
+
+
+            if (res != null) {
+              this.logService.crearLog(Number(this.loteId), Number(res), 'Pureza P. notatum', 'actualizada').subscribe();
+            }
+
             this.safeNavigateToListado();
           }).catch(err => {
             console.error('Error procesando repeticiones después de editar:', err);
@@ -282,6 +440,12 @@ export class PurezaPNotatumComponent implements OnInit {
           console.log('Pureza P. notatum creado correctamente:', res);
           // Procesar repeticiones
           this.procesarRepeticiones(res).then(() => {
+            
+
+            if (res != null) { 
+              this.logService.crearLog(Number(this.loteId), Number(res), 'Pureza P. notatum', 'creada').subscribe();
+            }
+
             this.safeNavigateToListado();
           }).catch(err => {
             console.error('Error procesando repeticiones después de crear:', err);

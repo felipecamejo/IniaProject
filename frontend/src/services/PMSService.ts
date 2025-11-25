@@ -39,11 +39,10 @@ export class PMSService {
     );
   }
 
-  editar(payload: PMSDto): Observable<string> {
-    return this.http.put(
+  editar(payload: PMSDto): Observable<number> {
+    return this.http.put<number>(
       `${this.urlService.baseUrl}${this.endpoint}/editar`,
-      payload,
-      { responseType: 'text' }
+      payload
     );
   }
 

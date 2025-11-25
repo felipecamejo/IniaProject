@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Params, UrlSegment } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { UsuarioDto } from '../../../models/Usuario.dto';
 import { UserRole } from '../../../models/enums';
 import { UsuarioService } from '../../../services/UsuarioService';
@@ -48,7 +49,7 @@ export class UsuarioComponent implements OnInit {
     showConfirmPassword: boolean = false;
 
     // Opciones para el dropdown de roles
-    rolesOptions = [
+    rolesOptions: Array<{ label: string; value: UserRole }> = [
         { label: 'Analista', value: UserRole.ANALISTA }, 
         { label: 'Observador', value: UserRole.OBSERVADOR },
         { label: 'Administrador', value: UserRole.ADMIN }
@@ -61,17 +62,32 @@ export class UsuarioComponent implements OnInit {
         private messageService: MessageService
     ) {}
 
-    ngOnInit() {
+    ngOnInit(): void {
         // Escuchar cambios en los parámetros de la ruta
-        this.route.params.subscribe(params => {
+        this.route.params.subscribe((params: Params) => {
             console.log('Parámetros de ruta:', params);
             
-            if (params['id']) {
+            const rawId = params['id'];
+
+            if (rawId !== undefined && rawId !== null) {
                 // Modo edición: /usuario/editar/:id
-                console.log('Modo edición detectado, ID:', params['id']);
+                console.log('Modo edición detectado, ID:', rawId);
                 this.isEditing = true;
-                this.editingId = parseInt(params['id']);
-                this.cargarUsuario(this.editingId);
+                const parsedId = Number.parseInt(String(rawId), 10);
+
+                if (Number.isNaN(parsedId)) {
+                    console.warn('ID de usuario inválido en parámetros:', rawId);
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Identificador de usuario inválido.'
+                    });
+                    this.router.navigate(['/listado-usuarios']);
+                    return;
+                }
+
+                this.editingId = parsedId;
+                this.cargarUsuario(parsedId);
             } else {
                 // Modo creación: /usuario/crear
                 console.log('Modo creación detectado');
@@ -82,24 +98,24 @@ export class UsuarioComponent implements OnInit {
         });
 
         // También escuchar cambios en la URL para debug
-        this.route.url.subscribe(url => {
-            const currentPath = url.map(segment => segment.path).join('/');
+        this.route.url.subscribe((url: UrlSegment[]) => {
+            const currentPath = url.map((segment: UrlSegment) => segment.path).join('/');
             console.log('URL actual:', currentPath);
         });
     }
 
-    cargarUsuario(id: number) {
+    cargarUsuario(id: number): void {
         console.log('Cargando usuario con ID:', id);
         
         this.usuarioService.obtenerUsuarioPorId(id).subscribe({
-            next: (usuario) => {
+            next: (usuario: UsuarioDto) => {
                 this.nombre = usuario.nombre;
                 this.email = usuario.email;
                 this.telefono = usuario.telefono || '';
                 this.rol = usuario.rol;
                 console.log('Usuario cargado:', usuario);
             },
-            error: (error) => {
+            error: (error: HttpErrorResponse) => {
                 console.error('Error al cargar usuario:', error);
                 alert('Error al cargar el usuario. Verifique que el usuario existe.');
                 this.limpiarCampos();
@@ -110,7 +126,7 @@ export class UsuarioComponent implements OnInit {
 
 
 
-    limpiarCampos() {
+    limpiarCampos(): void {
       console.log('Limpiando campos del formulario');
       this.nombre = '';
       this.email = '';
@@ -122,11 +138,11 @@ export class UsuarioComponent implements OnInit {
       this.showConfirmPassword = false;
     }
 
-    togglePasswordVisibility() {
+    togglePasswordVisibility(): void {
       this.showPassword = !this.showPassword;
     }
 
-    toggleConfirmPasswordVisibility() {
+    toggleConfirmPasswordVisibility(): void {
       this.showConfirmPassword = !this.showConfirmPassword;
     }
 
@@ -143,7 +159,7 @@ export class UsuarioComponent implements OnInit {
         }
     }
 
-    onSubmit() {
+    onSubmit(): void {
       // Validaciones básicas
       if (!this.nombre.trim()) {
         alert('El nombre es requerido');
@@ -156,7 +172,7 @@ export class UsuarioComponent implements OnInit {
       }
 
       // Validación de email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(this.email)) {
         alert('Por favor ingrese un email válido');
         return;
@@ -189,16 +205,16 @@ export class UsuarioComponent implements OnInit {
         password: this.password // Siempre incluir contraseña
       };
 
-      if (this.isEditing && this.editingId) {
+      if (this.isEditing && this.editingId !== null) {
         // Actualizar usuario existente
         console.log('Actualizando Usuario ID:', this.editingId, 'con datos:', usuarioData);
         this.usuarioService.actualizarUsuarioPorId(this.editingId, usuarioData).subscribe({
-          next: (usuarioActualizado) => {
+          next: (usuarioActualizado: UsuarioDto) => {
             console.log('Usuario actualizado exitosamente:', usuarioActualizado);
             alert('Usuario actualizado exitosamente');
             this.router.navigate(['/listado-usuarios']);
           },
-          error: (error) => {
+          error: (error: HttpErrorResponse) => {
             console.error('Error al actualizar usuario:', error);
             alert('Error al actualizar el usuario. Verifique los datos e intente nuevamente.');
           }
@@ -210,9 +226,9 @@ export class UsuarioComponent implements OnInit {
           next: () => {
             // Mostrar toast de éxito y redirigir tras breve delay
             this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Usuario creado correctamente' });
-            setTimeout(() => this.router.navigate(['/listado-usuarios']), 800);
+            window.setTimeout(() => this.router.navigate(['/listado-usuarios']), 800);
           },
-          error: (error) => {
+          error: (error: HttpErrorResponse) => {
             // Manejo de errores reales
             if (error.status === 409) {
               alert('Ya existe un usuario con ese email. Por favor use un email diferente.');

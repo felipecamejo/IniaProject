@@ -5,6 +5,7 @@ export interface PurezaPNotatumDto {
   gramosSemillasMalezas: number | null;
   gramosMateriaInerte: number | null;
   activo: boolean | null;
+  estandar: boolean | null;
   repetido: boolean | null;
   reciboId: number | null;
   fechaCreacion: string | null;

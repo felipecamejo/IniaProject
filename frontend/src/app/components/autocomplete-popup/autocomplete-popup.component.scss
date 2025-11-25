@@ -1,0 +1,111 @@
+.autocomplete-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.autocomplete-popup {
+  position: fixed;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 250px;
+  max-width: 400px;
+  max-height: 300px;
+  overflow: hidden;
+  z-index: 10000;
+  // Asegurar que el popup aparezca exactamente debajo del campo
+  margin-top: 0;
+  // El ancho se establece dinámicamente desde el componente
+}
+
+.autocomplete-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--azul, #0b2340);
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+
+  .close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+.autocomplete-content {
+  max-height: 200px;
+  overflow-y: auto;
+
+  .opciones-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-bottom: 1px solid #e5e7eb;
+
+      &:hover,
+      &.selected {
+        background: var(--celeste, #3b82f6);
+        color: white;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+}
+
+.autocomplete-footer {
+  padding: 0.5rem 1rem;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+// Scrollbar personalizado
+.autocomplete-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.autocomplete-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.autocomplete-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+
+  &:hover {
+    background: #555;
+  }
+}
+

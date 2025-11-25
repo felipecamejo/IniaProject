@@ -1,5 +1,5 @@
-# Dockerfile para el backend Spring Boot
-FROM eclipse-temurin:21-jdk-jammy
+# Etapa 1: Construcción con JDK y Maven
+FROM eclipse-temurin:21-jdk-jammy AS builder
 
 # Instalar Maven
 RUN apt-get update && \
@@ -12,24 +12,52 @@ WORKDIR /app
 # Copiar archivos de configuración de Maven primero (para cache de dependencias)
 COPY pom.xml .
 
-# Descargar dependencias (esto se cachea si pom.xml no cambia)
-RUN mvn dependency:go-offline -B
+# Descargar dependencias con reintentos (esto se cachea si pom.xml no cambia)
+# Reintentar hasta 3 veces con espera entre intentos para manejar errores temporales de red
+RUN for i in 1 2 3; do \
+        echo "Intento $i de descarga de dependencias Maven..." && \
+        mvn dependency:go-offline -B && break || \
+        (echo "Intento $i falló, reintentando en 15 segundos..." && sleep 15); \
+    done || (echo "ERROR: No se pudieron descargar las dependencias después de 3 intentos" && exit 1)
 
 # Copiar código fuente
 COPY src ./src
 
-# Construir la aplicación
-RUN mvn clean package -DskipTests
+# Construir la aplicación (deshabilitando el plugin del frontend ya que se construye por separado)
+RUN mvn clean package -DskipTests -DskipFrontend=true
+
+# Etapa 2: Imagen de producción con JRE solamente
+FROM eclipse-temurin:21-jre-jammy
+
+# Instalar curl para healthchecks
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Crear usuario no root para seguridad
+RUN groupadd -r spring && useradd -r -g spring spring
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar el JAR desde la etapa de construcción
+COPY --from=builder /app/target/proyectoInia-0.0.1-SNAPSHOT.jar app.jar
+
+# Cambiar propietario al usuario spring
+RUN chown spring:spring app.jar
+
+# Cambiar a usuario no root
+USER spring
 
 # Exponer el puerto
 EXPOSE 8080
 
 # Variables de entorno por defecto
-ENV DB_USER=inia_user
-ENV DB_PASS=inia_password
+ENV DB_USER=postgres
+ENV DB_PASS=897888fg2
 ENV JWT_SECRET=your_jwt_secret_here_change_in_production
 ENV JWT_EXPIRATION=86400000
 ENV SPRING_PROFILES_ACTIVE=docker
 
 # Comando para ejecutar la aplicación
-CMD ["java", "-jar", "target/proyectoInia-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

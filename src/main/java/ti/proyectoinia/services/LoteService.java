@@ -28,8 +28,8 @@ public class LoteService {
         this.reciboRepository = reciboRepository;
     }
 
-    public String crearLote(LoteDto loteDto) {
-        return "Lote creado correctamente ID:" + this.loteRepository.save(mapsDtoEntityService.mapToEntityLote(loteDto)).getId();
+    public Long crearLote(LoteDto loteDto) {
+        return this.loteRepository.save(mapsDtoEntityService.mapToEntityLote(loteDto)).getId();
     }
 
     public LoteDto obtenerLotePorId(Long id) {
@@ -50,9 +50,8 @@ public class LoteService {
         return "Lote eliminado correctamente ID:" + id;
     }
 
-    public String editarLote(LoteDto loteDto) {
-        this.loteRepository.save(mapsDtoEntityService.mapToEntityLote(loteDto));
-        return "Lote actualizado correctamente ID:" + loteDto.getId();
+    public Long editarLote(LoteDto loteDto) {
+        return this.loteRepository.save(mapsDtoEntityService.mapToEntityLote(loteDto)).getId();
     }
 
     public ResponseEntity<ResponseListadoLotes> listadoLotes() {

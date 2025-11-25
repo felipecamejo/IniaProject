@@ -13,6 +13,7 @@ import { HumedadReciboDto } from '../../../models/HumedadRecibo.dto';
 import { HumedadReciboService } from '../../../services/HumedadReciboService';
 import { AuthService } from '../../../services/AuthService';
 import { DateService } from '../../../services/DateService';
+import { LogService } from '../../../services/LogService';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -115,7 +116,8 @@ export class ReciboComponent implements OnInit {
     private humedadReciboService: HumedadReciboService,
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private logService: LogService
   ) {}
 
   ngOnInit(): void {
@@ -336,6 +338,8 @@ export class ReciboComponent implements OnInit {
             this.reciboId = reciboId;
             this.isEditing = true;
 
+
+            this.logService.crearLog(Number(reciboCreado.loteId) ,reciboId, 'Recibo', 'creado').subscribe();
             console.log('Navegando a lote-analisis con loteId:', this.lote2, 'reciboId:', reciboId);
             this.router.navigate([`/${this.lote2}/${reciboId}/lote-analisis`]);
         },
@@ -410,6 +414,8 @@ export class ReciboComponent implements OnInit {
         console.log('Recibo editado exitosamente:', msg);
         // Guardar las humedades actualizadas
         this.guardarHumedades(this.reciboId);
+
+        this.logService.crearLog(Number(finalPayload.loteId), this.reciboId, 'Recibo', 'editado').subscribe();
 
         // Navegar de vuelta a lote-analisis
         console.log('Navegando a lote-analisis con loteId:', this.lote2, 'reciboId:', this.reciboId);

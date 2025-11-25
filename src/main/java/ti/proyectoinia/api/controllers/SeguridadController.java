@@ -24,6 +24,7 @@ import ti.proyectoinia.services.UsuarioService;
 import java.lang.System;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,10 +199,71 @@ public class SeguridadController {
         }
     }
     
+    @PostMapping("/ensure-admin")
+    @Operation(
+        summary = "Asegurar usuario admin", 
+        description = "Verifica si existe un usuario ADMIN activo. Si no existe, crea automáticamente un usuario admin por defecto (admin@inia.com / password123)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Operación exitosa"),
+        @ApiResponse(responseCode = "201", description = "Usuario admin creado"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<?> asegurarUsuarioAdmin() {
+        try {
+            logger.info("Verificando existencia de usuario admin...");
+            
+            // Verificar si existe al menos un admin activo
+            boolean existeAdmin = usuarioService.existeAdminActivo();
+            
+            if (existeAdmin) {
+                logger.info("Ya existe al menos un usuario admin activo en el sistema");
+                return ResponseEntity.ok(Map.of(
+                    "mensaje", "Ya existe al menos un usuario admin activo en el sistema",
+                    "adminExiste", true
+                ));
+            }
+            
+            // No existe ningún admin, crear uno por defecto
+            logger.warn("No se encontró ningún usuario admin activo. Creando usuario admin por defecto...");
+            
+            UsuarioDto adminDto = crearUsuarioDto("admin@inia.com", "Administrador", RolUsuario.ADMIN);
+            
+            try {
+                usuarioService.crearUsuario(adminDto);
+                logger.info("Usuario admin por defecto creado exitosamente: admin@inia.com");
+                return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "mensaje", "Usuario admin creado exitosamente",
+                    "email", "admin@inia.com",
+                    "password", "password123",
+                    "adminExiste", true,
+                    "creado", true
+                ));
+            } catch (IllegalArgumentException e) {
+                // El usuario ya existe pero puede estar inactivo
+                logger.warn("El usuario admin@inia.com ya existe pero puede estar inactivo: {}", e.getMessage());
+                return ResponseEntity.ok(Map.of(
+                    "mensaje", "El usuario admin@inia.com ya existe en el sistema",
+                    "adminExiste", true,
+                    "creado", false
+                ));
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error al asegurar usuario admin: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "error", "Error al asegurar usuario admin: " + e.getMessage(),
+                    "adminExiste", false
+                ));
+        }
+    }
+    
     private UsuarioDto crearUsuarioDto(String email, String nombre, RolUsuario rol) {
         UsuarioDto usuarioDto = new UsuarioDto();
         usuarioDto.setEmail(email);
         usuarioDto.setNombre(nombre);
+        // Para el admin por defecto, usar password123; para otros usuarios usar password123 también
         usuarioDto.setPassword("password123"); // El servicio se encargará de encriptarla
         // Asignar un teléfono de demostración
         // Formato simple; ajusta a tu regla de negocio si aplica

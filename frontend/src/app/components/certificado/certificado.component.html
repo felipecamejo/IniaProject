@@ -1,0 +1,277 @@
+<div class="container">
+  <button class="back-button" (click)="onCancel()">
+    <i class="pi pi-arrow-left"></i>
+  </button>
+
+  <div class="certificado-container">
+    <!-- Header del Certificado -->
+    <div class="certificado-header">
+      <div class="header-left">
+        <div class="logo-placeholder">INASE</div>
+      </div>
+      <div class="header-center">
+        <h1 class="instituto-title">INSTITUTO NACIONAL DE SEMILLAS</h1>
+        <h2 class="certificado-title">CERTIFICADO DE ANÁLISIS NACIONAL</h2>
+        <p class="contact-info">laboratorio@inase.uy | www.inase.uy</p>
+      </div>
+      <div class="header-right">
+        <div class="logo-placeholder-small">INASE URUGUAY</div>
+      </div>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" (input)="manejarProblemas()">
+      
+      <!-- INFORMACIÓN DEL SOLICITANTE -->
+      <div class="section-certificado">
+        <h3 class="section-title-certificado">INFORMACIÓN DEL SOLICITANTE</h3>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="nombreSolicitante">Nombre</label>
+            <input id="nombreSolicitante" type="text" [(ngModel)]="nombreSolicitante" name="nombreSolicitante" pInputText [readonly]="true" />
+          </div>
+
+          <div class="form-field">
+            <label for="especie">Especie</label>
+            <input id="especie" type="text" [(ngModel)]="especie" name="especie" pInputText [readonly]="true" />
+          </div>
+
+          <div class="form-field">
+            <label for="cultivar">Cultivar</label>
+            <input id="cultivar" type="text" [(ngModel)]="cultivar" name="cultivar" pInputText [readonly]="true" />
+          </div>
+
+          <div class="form-field">
+            <label for="categoria">Categoría</label>
+            <input id="categoria" type="text" [(ngModel)]="categoria" name="categoria" pInputText [readonly]="true" />
+          </div>
+        </div>
+      </div>
+
+      <!-- INFORMACIÓN GENERAL -->
+      <div class="section-certificado">
+        <h3 class="section-title-certificado">INFORMACIÓN GENERAL</h3>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="responsableMuestreo">Responsable del muestreo</label>
+            <input id="responsableMuestreo" type="text" [(ngModel)]="responsableMuestreo" name="responsableMuestreo" pInputText [readonly]="isViewing" />
+          </div>
+
+          <div class="form-field">
+            <label for="fechaMuestreo">Fecha muestreo</label>
+            <span *ngIf="isFechaMuestreoInvalida" class="error-message">La fecha no puede ser futura.</span>
+            <input id="fechaMuestreo" type="date" [(ngModel)]="fechaMuestreo" name="fechaMuestreo" 
+                   [ngClass]="{ 'input-error': isFechaMuestreoInvalida }" [readonly]="isViewing" />
+          </div>
+
+          <div class="form-field">
+            <label for="numeroLote">Número de lote</label>
+            <input id="numeroLote" type="text" [(ngModel)]="numeroLote" name="numeroLote" pInputText [readonly]="true" />
+          </div>
+
+          <div class="form-field">
+            <label for="pesoKg">Peso (kg)</label>
+            <span *ngIf="pesoKg != null && pesoKg < 0" class="error-message">El peso no puede ser negativo.</span>
+            <input id="pesoKg" type="number" [(ngModel)]="pesoKg" name="pesoKg" pInputText 
+                   [ngClass]="{ 'input-error': pesoKg != null && pesoKg < 0 }" [readonly]="isViewing" />
+          </div>
+
+          <div class="form-field">
+            <label for="numeroEnvases">N° de envases</label>
+            <span *ngIf="numeroEnvases != null && numeroEnvases < 0" class="error-message">El número de envases no puede ser negativo.</span>
+            <input id="numeroEnvases" type="number" [(ngModel)]="numeroEnvases" name="numeroEnvases" pInputText 
+                   [ngClass]="{ 'input-error': numeroEnvases != null && numeroEnvases < 0 }" [readonly]="isViewing" />
+          </div>
+
+          <div class="form-field">
+            <label for="fechaIngresoLaboratorio">Ingreso Laboratorio</label>
+            <span *ngIf="isFechaIngresoInvalida" class="error-message">La fecha no puede ser futura.</span>
+            <input id="fechaIngresoLaboratorio" type="date" [(ngModel)]="fechaIngresoLaboratorio" name="fechaIngresoLaboratorio" 
+                   [ngClass]="{ 'input-error': isFechaIngresoInvalida }" [readonly]="isViewing" />
+          </div>
+
+          <div class="form-field">
+            <label for="fechaFinalizacionAnalisis">Finalización análisis</label>
+            <span *ngIf="isFechaFinalizacionInvalida" class="error-message">La fecha no puede ser futura.</span>
+            <input id="fechaFinalizacionAnalisis" type="date" [(ngModel)]="fechaFinalizacionAnalisis" name="fechaFinalizacionAnalisis" 
+                   [ngClass]="{ 'input-error': isFechaFinalizacionInvalida }" [readonly]="isViewing" />
+          </div>
+
+          <div class="form-field">
+            <label for="numeroMuestra">N° de muestra</label>
+            <input id="numeroMuestra" type="text" [(ngModel)]="numeroMuestra" name="numeroMuestra" pInputText [readonly]="isViewing" />
+          </div>
+
+          <div class="form-field">
+            <label for="tipoCertificado">Certificado</label>
+            <select id="tipoCertificado" [(ngModel)]="tipoCertificado" name="tipoCertificado" [disabled]="isViewing">
+              <option *ngFor="let opt of tipoCertificadoOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULTADOS DE ANÁLISIS -->
+      <div class="section-certificado">
+        <h3 class="section-title-certificado">RESULTADOS DE ANÁLISIS</h3>
+        
+        <!-- Leyenda de análisis solicitados -->
+        <div class="analisis-solicitados-leyenda" *ngIf="analisisSolicitados">
+          <h4 class="leyenda-title">Análisis solicitados:</h4>
+          <p class="leyenda-text">{{ analisisSolicitados }}</p>
+          <div class="leyenda-detalle">
+            <span *ngIf="debeRealizarPureza" class="analisis-item">✓ Pureza</span>
+            <span *ngIf="debeRealizarDOSN" class="analisis-item">✓ DOSN (Determinación de otras semillas)</span>
+            <span *ngIf="debeRealizarGerminacion" class="analisis-item">✓ Germinación</span>
+          </div>
+        </div>
+        
+        <div class="form-field">
+          <label for="especieCientifica">Especie (nombre científico)</label>
+          <input id="especieCientifica" type="text" [(ngModel)]="especie" name="especieCientifica" pInputText [readonly]="isViewing" />
+        </div>
+
+        <!-- Tabla de Pureza -->
+        <div class="table-section">
+          <h4 class="table-title">Pureza (% en peso)</h4>
+          <table class="certificado-table">
+            <thead>
+              <tr>
+                <th>Semilla pura</th>
+                <th>Materia inerte</th>
+                <th>Otras semillas</th>
+                <th>Otros cultivos</th>
+                <th>Malezas</th>
+                <th>Malezas toleradas</th>
+                <th>Peso de 1000 semillas (g)</th>
+                <th>Humedad (%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaSemillaPura ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaMateriaInerte ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaOtrasSemillas ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaOtrosCultivos ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaMalezas ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaMalezasToleradas || 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaPeso1000Semillas || 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaHumedad || 'N' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="form-field">
+          <label for="purezaClaseMateriaInerte">Clase de materia inerte</label>
+          <input id="purezaClaseMateriaInerte" type="text" [(ngModel)]="purezaClaseMateriaInerte" name="purezaClaseMateriaInerte" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tienePureza }" [value]="purezaClaseMateriaInerte || ''" />
+        </div>
+
+        <div class="form-field">
+          <label for="purezaOtrasSemillasDescripcion">Otras semillas</label>
+          <input id="purezaOtrasSemillasDescripcion" type="text" [(ngModel)]="purezaOtrasSemillasDescripcion" name="purezaOtrasSemillasDescripcion" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tienePureza }" [value]="purezaOtrasSemillasDescripcion || ''" />
+        </div>
+
+        <!-- Determinación de otras semillas por número -->
+        <div class="table-section">
+          <h4 class="table-title">Determinación de otras semillas en número en {{ dosnGramosAnalizados ?? 'N' }} g (análisis limitado)</h4>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Nº de semillas de malezas con tolerancia cero</label>
+              <input type="number" [(ngModel)]="dosnMalezasToleranciaCero" name="dosnMalezasToleranciaCero" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnMalezasToleranciaCero ?? ''" />
+            </div>
+            <div class="form-field">
+              <label>Nº de semillas de malezas con tolerancia</label>
+              <input type="number" [(ngModel)]="dosnMalezasTolerancia" name="dosnMalezasTolerancia" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnMalezasTolerancia ?? ''" />
+            </div>
+            <div class="form-field">
+              <label>Nº de semillas de otros cultivos</label>
+              <input type="number" [(ngModel)]="dosnOtrosCultivos" name="dosnOtrosCultivos" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnOtrosCultivos ?? ''" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="dosnBrassicaSpp">Determinación de Brassica spp. en {{ dosnGramosAnalizados ?? 'N' }} g</label>
+          <input id="dosnBrassicaSpp" type="text" [(ngModel)]="dosnBrassicaSpp" name="dosnBrassicaSpp" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnBrassicaSpp || ''" />
+        </div>
+
+        <!-- Tabla de Germinación -->
+        <div class="table-section">
+          <h4 class="table-title">Germinación (% en número)</h4>
+          <table class="certificado-table">
+            <thead>
+              <tr>
+                <th>Nº de días</th>
+                <th>Plántulas normales</th>
+                <th>Plántulas anormales</th>
+                <th>Semillas duras</th>
+                <th>Semillas frescas</th>
+                <th>Semillas muertas</th>
+                <th>Sustrato</th>
+                <th>T (°C)</th>
+                <th>Pre-tratamiento</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionNumeroDias ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionPlantulasNormales ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionPlantulasAnormales ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionSemillasDuras ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionSemillasFrescas ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionSemillasMuertas ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionSustrato || 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionTemperatura ?? 'N' }}</td>
+                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionPreTratamiento || 'N' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- INFORMACIÓN DEL CERTIFICADO -->
+      <div class="section-certificado">
+        <h3 class="section-title-certificado">INFORMACIÓN DEL CERTIFICADO</h3>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="numeroCertificado">Número de Certificado</label>
+            <input id="numeroCertificado" type="text" [(ngModel)]="numeroCertificado" name="numeroCertificado" pInputText [readonly]="isViewing" />
+          </div>
+
+          <div class="form-field">
+            <label for="fechaEmision">Fecha de Emisión</label>
+            <span *ngIf="isFechaEmisionInvalida" class="error-message">La fecha no puede ser futura.</span>
+            <input id="fechaEmision" type="date" [(ngModel)]="fechaEmision" name="fechaEmision" 
+                   [ngClass]="{ 'input-error': isFechaEmisionInvalida }" [readonly]="isViewing" />
+          </div>
+
+          <div class="form-field">
+            <label for="firmante">Firmante</label>
+            <input id="firmante" type="text" [(ngModel)]="firmante" name="firmante" pInputText [readonly]="isViewing" />
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="errores.length > 0" class="error-container">
+        <p class="error-message">
+          {{ errores.length === 1 ? '1 error encontrado' : errores.length + ' errores encontrados' }}
+        </p>
+        <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
+      </div>
+
+      <div class="submit-btn" *ngIf="!isViewing">
+        <button pButton type="submit" [disabled]="errores.length > 0" 
+                [label]="isEditing ? 'Actualizar' : 'Crear Certificado'" 
+                class="p-button-success"></button>
+      </div>
+    </form>
+
+    <!-- Footer del Certificado -->
+    <div class="certificado-footer">
+      <p class="footer-date">{{ fechaEmision ? formatearFecha(fechaEmision) : '' }}</p>
+      <p class="footer-text">Fecha de emisión</p>
+      <p class="footer-notice">ESTE CERTIFICADO AMPARA A UN LOTE DE SEMILLAS</p>
+      <p class="footer-note">N=no analizado|TR=&lt;0,05%</p>
+    </div>
+  </div>
+</div>

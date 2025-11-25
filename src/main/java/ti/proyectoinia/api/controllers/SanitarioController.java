@@ -1,6 +1,7 @@
 package ti.proyectoinia.api.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Generated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class SanitarioController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(
             description = "Esta Funcion crea un nuevo MalezaS"
     )
@@ -49,13 +50,17 @@ public class SanitarioController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
-    public ResponseEntity<String> editarSanitario(@RequestBody SanitarioDto sanitarioDto) {
-        String result = this.sanitarioService.editarSanitario(sanitarioDto);
+    @Secured({"ADMIN", "ANALISTA"})
+    public ResponseEntity<Long> editarSanitario(@RequestBody SanitarioDto dto) {
+        if (dto.getId() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(-1L);
+        }
+
+        Long result = this.sanitarioService.editarSanitario(dto);
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping({"/eliminar/{id}"})
+    @DeleteMapping({"/eliminar/{id}"})
     @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina un sanitario"
@@ -64,8 +69,10 @@ public class SanitarioController {
         try {
             String mensaje = this.sanitarioService.eliminarSanitario(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No encontrado");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el Sanitario: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar: " + e.getMessage());
         }
     }
 
@@ -77,7 +84,7 @@ public class SanitarioController {
     }
 
     @PutMapping("/actualizar-hongos/{sanitarioId}")
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Actualiza los hongos asociados a un sanitario, creando, actualizando y eliminando según la lista recibida")
     public ResponseEntity<String> actualizarHongosCompleto(
             @PathVariable Long sanitarioId,

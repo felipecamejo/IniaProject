@@ -1,13 +1,18 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { ReciboService } from '../../../services/ReciboService';
 import { LoteService } from '../../../services/LoteService';
+import { CertificadoService } from '../../../services/CertificadoService';
 import { LoteDto } from '../../../models/Lote.dto';
+import { ReciboDto } from '../../../models/Recibo.dto';
+import { CertificadoDto } from '../../../models/Certificado.dto';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-lote-analisis.component',
-  imports: [],
+  imports: [CommonModule, ConfirmDialogComponent],
   templateUrl: './lote-analisis.component.html',
   styleUrl: './lote-analisis.component.scss'
 })
@@ -15,15 +20,27 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   loteId: number | null = null;
   reciboId: number | null = null;
   tieneRecibo: boolean = false;
+  tieneAnalisis: boolean = false; // Verificar si hay análisis disponibles
+  tieneCertificado: boolean = false; // Verificar si hay certificado creado
+  certificadoId: number | null = null; // ID del certificado si existe
   lote: LoteDto | null = null; // Agregar para mantener info del lote
+  recibo: ReciboDto | null = null; // Agregar para mantener info del recibo
   private navigationSubscription: any;
   private currentUrl: string = '';
+
+  // Propiedades para el popup de confirmación de eliminación
+  mostrarConfirmEliminar: boolean = false;
+  certificadoAEliminar: CertificadoDto | null = null;
+  confirmLoading: boolean = false;
+
+  isAdmin: boolean = true;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private reciboService: ReciboService,
-    private loteService: LoteService
+    private loteService: LoteService,
+    private certificadoService: CertificadoService
   ) {}
 
   ngOnInit(): void {
@@ -63,6 +80,9 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
       // Si se especificó reciboId, verificar ese recibo específico
       if (this.reciboId) {
         this.verificarRecibo();
+      } else {
+        // Si no hay reciboId pero hay recibo del lote, verificar después de obtenerlo
+        // Esto se maneja en verificarRecibosDelLote
       }
     });
   }
@@ -110,6 +130,11 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
             }
             
             console.log('Recibo del lote encontrado:', reciboId);
+            
+            // Verificar el recibo y sus análisis
+            if (this.reciboId) {
+              this.verificarRecibo();
+            }
           } else {
             this.tieneRecibo = false;
             console.log('El lote no tiene recibo asociado');
@@ -127,14 +152,112 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
     if (this.reciboId) {
       this.reciboService.obtenerRecibo(this.reciboId).subscribe({
         next: (recibo) => {
+          this.recibo = recibo;
           this.tieneRecibo = recibo && recibo.activo;
+          // Verificar si hay análisis disponibles
+          this.verificarAnalisisDisponibles(recibo);
+          // Verificar si hay certificado creado
+          this.verificarCertificado();
         },
         error: (error) => {
           console.error('Error al verificar recibo:', error);
           this.tieneRecibo = false;
+          this.tieneAnalisis = false;
+          this.tieneCertificado = false;
         }
       });
     }
+  }
+
+  verificarCertificado(): void {
+    if (this.reciboId) {
+      this.certificadoService.listarPorRecibo(this.reciboId).subscribe({
+        next: (certificados: CertificadoDto[]) => {
+          if (certificados && certificados.length > 0) {
+            // Tomar el primer certificado activo
+            const certificadoActivo = certificados.find(c => c.activo);
+            if (certificadoActivo && certificadoActivo.id) {
+              this.tieneCertificado = true;
+              this.certificadoId = certificadoActivo.id;
+            } else {
+              this.tieneCertificado = false;
+              this.certificadoId = null;
+            }
+          } else {
+            this.tieneCertificado = false;
+            this.certificadoId = null;
+          }
+        },
+        error: (error) => {
+          console.error('Error al verificar certificado:', error);
+          this.tieneCertificado = false;
+          this.certificadoId = null;
+        }
+      });
+    }
+  }
+
+  verificarCertificadoAntesDeCrear(): void {
+    if (!this.reciboId) {
+      this.router.navigate([`/${this.loteId}/${this.reciboId}/certificado/crear`]);
+      return;
+    }
+
+    this.certificadoService.listarPorRecibo(this.reciboId).subscribe({
+      next: (certificados: CertificadoDto[]) => {
+        if (certificados && certificados.length > 0) {
+          const certificadoActivo = certificados.find(c => c.activo);
+          if (certificadoActivo && certificadoActivo.id) {
+            // Ya existe un certificado, redirigir a editar
+            this.tieneCertificado = true;
+            this.certificadoId = certificadoActivo.id;
+            this.router.navigate([`/${this.loteId}/${this.reciboId}/certificado/editar/${certificadoActivo.id}`]);
+          } else {
+            // No hay certificado activo, permitir crear
+            this.router.navigate([`/${this.loteId}/${this.reciboId}/certificado/crear`]);
+          }
+        } else {
+          // No hay certificados, permitir crear
+          this.router.navigate([`/${this.loteId}/${this.reciboId}/certificado/crear`]);
+        }
+      },
+      error: (error) => {
+        console.error('Error verificando certificado antes de crear:', error);
+        // En caso de error, permitir crear
+        this.router.navigate([`/${this.loteId}/${this.reciboId}/certificado/crear`]);
+      }
+    });
+  }
+
+  verificarAnalisisDisponibles(recibo: ReciboDto): void {
+    if (!recibo) {
+      this.tieneAnalisis = false;
+      return;
+    }
+
+    // Verificar si hay algún análisis disponible
+    const tieneDosn = !!(recibo.dosnAnalisisId && recibo.dosnAnalisisId.length > 0);
+    const tienePms = !!(recibo.pmsAnalisisId && recibo.pmsAnalisisId.length > 0);
+    const tienePureza = !!(recibo.purezaAnalisisId && recibo.purezaAnalisisId.length > 0);
+    const tieneGerminacion = !!(recibo.germinacionAnalisisId && recibo.germinacionAnalisisId.length > 0);
+    const tienePurezaPNotatum = !!(recibo.purezaPNotatumAnalisisId && recibo.purezaPNotatumAnalisisId.length > 0);
+    const tieneSanitario = !!(recibo.sanitarioAnalisisId && recibo.sanitarioAnalisisId.length > 0);
+    const tieneTetrazolio = !!(recibo.tetrazolioAnalisisId && recibo.tetrazolioAnalisisId.length > 0);
+
+    // Si hay al menos un análisis disponible, habilitar el botón de certificado
+    this.tieneAnalisis = tieneDosn || tienePms || tienePureza || tieneGerminacion || 
+                         tienePurezaPNotatum || tieneSanitario || tieneTetrazolio;
+
+    console.log('Análisis disponibles:', {
+      dosn: tieneDosn,
+      pms: tienePms,
+      pureza: tienePureza,
+      germinacion: tieneGerminacion,
+      purezaPNotatum: tienePurezaPNotatum,
+      sanitario: tieneSanitario,
+      tetrazolio: tieneTetrazolio,
+      tieneAnalisis: this.tieneAnalisis
+    });
   }
 
   navigateToComponent(component: string): void {
@@ -189,13 +312,112 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
           this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-pureza-p-notatum`]);
         }
         break;
+      case 'certificado':
+        if (this.reciboId && this.tieneAnalisis) {
+          // Si ya existe certificado, ir a editar; si no, crear nuevo
+          if (this.tieneCertificado && this.certificadoId) {
+            this.router.navigate([`/${this.loteId}/${this.reciboId}/certificado/editar/${this.certificadoId}`]);
+          } else {
+            // Verificar si ya existe un certificado antes de crear
+            this.verificarCertificadoAntesDeCrear();
+          }
+        } else if (!this.tieneAnalisis) {
+          alert('Debe tener al menos un análisis disponible para crear un certificado.');
+        }
+        break;
       default:
         console.log(`Navegación no implementada para: ${component}`);
     }
   }
 
+  verCertificado(): void {
+    if (this.reciboId && this.tieneCertificado && this.certificadoId) {
+      // Navegar a visualización del certificado
+      this.router.navigate([`/${this.loteId}/${this.reciboId}/certificado/${this.certificadoId}`], {
+        queryParams: { view: 'true' }
+      });
+    } else {
+      alert('No hay certificado disponible para visualizar.');
+    }
+  }
+
+  descargarCertificado(): void {
+    if (this.reciboId && this.tieneCertificado && this.certificadoId) {
+      // Por ahora, navegar a visualización. La descarga PDF se implementará después
+      this.verCertificado();
+      // TODO: Implementar descarga PDF del certificado
+      // this.certificadoService.descargarPDF(this.certificadoId).subscribe(...)
+    } else {
+      alert('No hay certificado disponible para descargar.');
+    }
+  }
+
+  eliminarCertificado(): void {
+    if (!this.reciboId || !this.tieneCertificado || !this.certificadoId) {
+      alert('No hay certificado disponible para eliminar.');
+      return;
+    }
+
+    // Cargar el certificado para mostrar en el popup
+    this.certificadoService.obtenerCertificado(this.certificadoId).subscribe({
+      next: (certificado: CertificadoDto) => {
+        this.certificadoAEliminar = certificado;
+        this.mostrarConfirmEliminar = true;
+      },
+      error: (error) => {
+        console.error('Error cargando certificado:', error);
+        alert('Error al cargar el certificado. Por favor, intente nuevamente.');
+      }
+    });
+  }
+
+  confirmarEliminacion(): void {
+    if (!this.certificadoAEliminar || !this.certificadoAEliminar.id) return;
+    
+    this.confirmLoading = true;
+    const certificadoId = this.certificadoAEliminar.id;
+
+    this.certificadoService.eliminarCertificado(certificadoId).subscribe({
+      next: (mensaje: string) => {
+        console.log('Certificado eliminado:', mensaje);
+        this.confirmLoading = false;
+        this.mostrarConfirmEliminar = false;
+        this.certificadoAEliminar = null;
+        // Actualizar estado local
+        this.tieneCertificado = false;
+        this.certificadoId = null;
+        // Recargar datos para actualizar la UI
+        this.verificarCertificado();
+      },
+      error: (error) => {
+        console.error('Error eliminando certificado:', error);
+        this.confirmLoading = false;
+        this.mostrarConfirmEliminar = false;
+        this.certificadoAEliminar = null;
+        alert('Error al eliminar el certificado. Por favor, intente nuevamente.');
+      }
+    });
+  }
+
+  cancelarEliminacion(): void {
+    this.mostrarConfirmEliminar = false;
+    this.certificadoAEliminar = null;
+    this.confirmLoading = false;
+  }
+
   isButtonDisabled(component: string): boolean {
-    return !this.tieneRecibo && component !== 'recibo';
+    if (component === 'recibo') {
+      return false; // El botón de recibo nunca está deshabilitado
+    }
+    if (component === 'certificado') {
+      // El botón de certificado está deshabilitado si:
+      // - No hay recibo
+      // - No hay análisis
+      // NOTA: No se deshabilita si ya existe certificado, porque permite editar
+      return !this.tieneRecibo || !this.tieneAnalisis;
+    }
+    // Para los demás análisis, solo se requiere tener recibo
+    return !this.tieneRecibo;
   }
 
   // Método para obtener información del lote actual
@@ -222,6 +444,12 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
       console.log('Recargando datos para lote:', this.loteId);
       this.cargarLote();
       this.verificarRecibosDelLote();
+      // Si hay reciboId, verificar el recibo y sus análisis
+      if (this.reciboId) {
+        this.verificarRecibo();
+        // Verificar certificado también
+        this.verificarCertificado();
+      }
     } else {
       console.warn('No se puede recargar datos: loteId no disponible');
     }
@@ -247,5 +475,9 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   onPopState(): void {
     console.log('Evento popstate detectado, recargando datos...');
     this.recargarDatos();
+  }
+
+  goToListadoLogs() {
+    this.router.navigate([`${this.loteId}/${this.reciboId}/listado-logs`]);
   }
 }

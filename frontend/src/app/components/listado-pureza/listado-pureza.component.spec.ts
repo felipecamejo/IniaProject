@@ -1,14 +1,27 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
+import { AuthService } from '../../../services/AuthService';
+import { createMockAuthService } from '../../testing/auth-service.helper';
 import { ListadoPurezaComponent } from './listado-pureza.component';
 
 describe('ListadoPurezaComponent', () => {
   let component: ListadoPurezaComponent;
   let fixture: ComponentFixture<ListadoPurezaComponent>;
+  let mockAuthService: any;
 
   beforeEach(async () => {
+    mockAuthService = createMockAuthService();
+
     await TestBed.configureTestingModule({
-      imports: [ListadoPurezaComponent]
+      imports: [ListadoPurezaComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: AuthService, useValue: mockAuthService }
+      ]
     })
     .compileComponents();
 

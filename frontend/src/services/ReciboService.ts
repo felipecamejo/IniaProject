@@ -37,14 +37,6 @@ export class ReciboService {
     );
   }
 
-  eliminarRecibo(id: number): Observable<string> {
-    return this.http.put(
-      `${this.urlService.baseUrl}${this.endpoint}/eliminar/${id}`,
-      {},
-      { responseType: 'text' }
-    );
-  }
-
   listarPorLote(loteId: number): Observable<ReciboDto[]> {
     return this.http.get<ResponseListadoRecibos>(
       `${this.urlService.baseUrl}${this.endpoint}/listar-por-lote/${loteId}`

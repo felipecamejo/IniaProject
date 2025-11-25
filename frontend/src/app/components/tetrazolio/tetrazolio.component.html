@@ -111,17 +111,17 @@
                             <td></td>
                         </tr>
                         <tr>
-                            <td class="footer-label">Prom. redondeado</td>
-                            <td><input type="number" [value]="getPromedioViables(true)" readonly /></td>
-                            <td><input type="number" [value]="getPromedioNoViables(true)" readonly /></td>
-                            <td><input type="number" [value]="getPromedioDuras(true)" readonly /></td>
-                            <td></td>
-                        </tr>
-                        <tr>
                             <td class="footer-label">Prom. sin redondeo</td>
                             <td><input type="number" [value]="getPromedioViables(false)" readonly /></td>
                             <td><input type="number" [value]="getPromedioNoViables(false)" readonly /></td>
                             <td><input type="number" [value]="getPromedioDuras(false)" readonly /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="footer-label">Prom. redondeado</td>
+                            <td><input type="number" [value]="getPromedioViables(true)" readonly /></td>
+                            <td><input type="number" [value]="getPromedioNoViables(true)" readonly /></td>
+                            <td><input type="number" [value]="getPromedioDuras(true)" readonly /></td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -130,6 +130,9 @@
             </div>
             <!-- Separador discreto entre secciones -->
             <hr class="section-divider" />
+
+            <!-- Resumen por repetición (por tabla) -->
+            <!-- Eliminado el resumen global; se muestra por cada Rn -->
 
 
             <!-- Nueva tabla de detalles de semillas -->
@@ -143,6 +146,11 @@
             <div class="table-wrapper">
                 <div class="tabla-header-row">
                     <h4 class="tabla-titulo">R{{ $index + 1 }}</h4>
+                    <div style="display:flex; gap:1rem; align-items:center; font-size:0.95rem;">
+                      <span><strong>Vigor:</strong> {{ getVigorPorTabla($index) | number:'1.2-2' }} % (red: {{ getVigorPorTablaRed($index) }}%)</span>
+                      <span><strong>Clasificación:</strong> {{ getClasificacionVigorPorTabla($index) }}</span>
+                      <span><strong>No viables:</strong> {{ getNoViablesPorTabla($index) | number:'1.2-2' }} % {{ getNoViablesClasificadoPorTabla($index) }}</span>
+                    </div>
                     @if ($index > 0) {
                     <button pButton type="button" class="btn-eliminar-tabla" icon="pi pi-trash" (click)="eliminarTablaDetalle($index)" title="Eliminar esta tabla"></button> }
                 </div>
@@ -267,98 +275,119 @@
                     <tbody>
                         <tr>
                             <td class="footer-label">Vigor Alto</td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.porcentaje" name="reporte_vigorAlto_porcentaje" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.mecanicos" name="reporte_vigorAlto_mecanicos" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.ambiente" name="reporte_vigorAlto_ambiente" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.chinches" name="reporte_vigorAlto_chinches" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.fracturas" name="reporte_vigorAlto_fracturas" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.otros" name="reporte_vigorAlto_otros" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAlto.danios.duras" name="reporte_vigorAlto_duras" readonly /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorAlto.porcentaje" (ngModelChange)="actualizarCalculosReporte()" name="reporte_vigorAlto_porcentaje" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorAlto.porcentaje != null && (reporte.vigorAlto.porcentaje < 0 || reporte.vigorAlto.porcentaje > 100) }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorAlto.danios.mecanicos" name="reporte_vigorAlto_mecanicos" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorAlto.danios.mecanicos != null && reporte.vigorAlto.danios.mecanicos < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorAlto.danios.ambiente" name="reporte_vigorAlto_ambiente" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorAlto.danios.ambiente != null && reporte.vigorAlto.danios.ambiente < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorAlto.danios.chinches" name="reporte_vigorAlto_chinches" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorAlto.danios.chinches != null && reporte.vigorAlto.danios.chinches < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorAlto.danios.fracturas" name="reporte_vigorAlto_fracturas" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorAlto.danios.fracturas != null && reporte.vigorAlto.danios.fracturas < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorAlto.danios.otros" name="reporte_vigorAlto_otros" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorAlto.danios.otros != null && reporte.vigorAlto.danios.otros < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorAlto.danios.duras" name="reporte_vigorAlto_duras" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorAlto.danios.duras != null && reporte.vigorAlto.danios.duras < 0 }" /></td>
                             <td></td>
                         </tr>
                         <tr>
                             <td class="footer-label">Vigor Medio</td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.porcentaje" name="reporte_vigorMedio_porcentaje" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.mecanicos" name="reporte_vigorMedio_mecanicos" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.ambiente" name="reporte_vigorMedio_ambiente" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.chinches" name="reporte_vigorMedio_chinches" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.fracturas" name="reporte_vigorMedio_fracturas" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.otros" name="reporte_vigorMedio_otros" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorMedio.danios.duras" name="reporte_vigorMedio_duras" readonly /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorMedio.porcentaje" (ngModelChange)="actualizarCalculosReporte()" name="reporte_vigorMedio_porcentaje" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorMedio.porcentaje != null && (reporte.vigorMedio.porcentaje < 0 || reporte.vigorMedio.porcentaje > 100) }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorMedio.danios.mecanicos" name="reporte_vigorMedio_mecanicos" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorMedio.danios.mecanicos != null && reporte.vigorMedio.danios.mecanicos < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorMedio.danios.ambiente" name="reporte_vigorMedio_ambiente" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorMedio.danios.ambiente != null && reporte.vigorMedio.danios.ambiente < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorMedio.danios.chinches" name="reporte_vigorMedio_chinches" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorMedio.danios.chinches != null && reporte.vigorMedio.danios.chinches < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorMedio.danios.fracturas" name="reporte_vigorMedio_fracturas" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorMedio.danios.fracturas != null && reporte.vigorMedio.danios.fracturas < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorMedio.danios.otros" name="reporte_vigorMedio_otros" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorMedio.danios.otros != null && reporte.vigorMedio.danios.otros < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorMedio.danios.duras" name="reporte_vigorMedio_duras" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorMedio.danios.duras != null && reporte.vigorMedio.danios.duras < 0 }" /></td>
                             <td></td>
                         </tr>
                         <tr>
                             <td class="footer-label">Vigor Bajo</td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.porcentaje" name="reporte_vigorBajo_porcentaje" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.mecanicos" name="reporte_vigorBajo_mecanicos" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.ambiente" name="reporte_vigorBajo_ambiente" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.chinches" name="reporte_vigorBajo_chinches" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.fracturas" name="reporte_vigorBajo_fracturas" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.otros" name="reporte_vigorBajo_otros" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorBajo.danios.duras" name="reporte_vigorBajo_duras" readonly /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorBajo.porcentaje" (ngModelChange)="actualizarCalculosReporte()" name="reporte_vigorBajo_porcentaje" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorBajo.porcentaje != null && (reporte.vigorBajo.porcentaje < 0 || reporte.vigorBajo.porcentaje > 100) }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorBajo.danios.mecanicos" name="reporte_vigorBajo_mecanicos" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorBajo.danios.mecanicos != null && reporte.vigorBajo.danios.mecanicos < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorBajo.danios.ambiente" name="reporte_vigorBajo_ambiente" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorBajo.danios.ambiente != null && reporte.vigorBajo.danios.ambiente < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorBajo.danios.chinches" name="reporte_vigorBajo_chinches" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorBajo.danios.chinches != null && reporte.vigorBajo.danios.chinches < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorBajo.danios.fracturas" name="reporte_vigorBajo_fracturas" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorBajo.danios.fracturas != null && reporte.vigorBajo.danios.fracturas < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorBajo.danios.otros" name="reporte_vigorBajo_otros" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorBajo.danios.otros != null && reporte.vigorBajo.danios.otros < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorBajo.danios.duras" name="reporte_vigorBajo_duras" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorBajo.danios.duras != null && reporte.vigorBajo.danios.duras < 0 }" /></td>
                             <td></td>
                         </tr>
                         <tr>
                             <td class="footer-label">Limite Crítico</td>
-                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.porcentaje" name="reporte_limiteCritico_porcentaje" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.mecanicos" name="reporte_limiteCritico_mecanicos" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.ambiente" name="reporte_limiteCritico_ambiente" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.chinches" name="reporte_limiteCritico_chinches" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.fracturas" name="reporte_limiteCritico_fracturas" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.otros" name="reporte_limiteCritico_otros" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.limiteCritico.danios.duras" name="reporte_limiteCritico_duras" readonly /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.limiteCritico.porcentaje" name="reporte_limiteCritico_porcentaje" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.limiteCritico.porcentaje != null && (reporte.limiteCritico.porcentaje < 0 || reporte.limiteCritico.porcentaje > 100) }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.limiteCritico.danios.mecanicos" name="reporte_limiteCritico_mecanicos" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.limiteCritico.danios.mecanicos != null && reporte.limiteCritico.danios.mecanicos < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.limiteCritico.danios.ambiente" name="reporte_limiteCritico_ambiente" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.limiteCritico.danios.ambiente != null && reporte.limiteCritico.danios.ambiente < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.limiteCritico.danios.chinches" name="reporte_limiteCritico_chinches" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.limiteCritico.danios.chinches != null && reporte.limiteCritico.danios.chinches < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.limiteCritico.danios.fracturas" name="reporte_limiteCritico_fracturas" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.limiteCritico.danios.fracturas != null && reporte.limiteCritico.danios.fracturas < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.limiteCritico.danios.otros" name="reporte_limiteCritico_otros" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.limiteCritico.danios.otros != null && reporte.limiteCritico.danios.otros < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.limiteCritico.danios.duras" name="reporte_limiteCritico_duras" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.limiteCritico.danios.duras != null && reporte.limiteCritico.danios.duras < 0 }" /></td>
                             <td></td>
                         </tr>
                         <tr>
                             <td class="footer-label">No viables</td>
-                            <td><input type="number" step="0.1" [value]="reporte.noViables.porcentaje" name="reporte_noViables_porcentaje" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.mecanicos" name="reporte_noViables_mecanicos" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.ambiente" name="reporte_noViables_ambiente" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.chinches" name="reporte_noViables_chinches" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.fracturas" name="reporte_noViables_fracturas" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.otros" name="reporte_noViables_otros" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.noViables.danios.duras" name="reporte_noViables_duras" readonly /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.noViables.porcentaje" name="reporte_noViables_porcentaje" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.noViables.porcentaje != null && (reporte.noViables.porcentaje < 0 || reporte.noViables.porcentaje > 100) }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.noViables.danios.mecanicos" name="reporte_noViables_mecanicos" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.noViables.danios.mecanicos != null && reporte.noViables.danios.mecanicos < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.noViables.danios.ambiente" name="reporte_noViables_ambiente" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.noViables.danios.ambiente != null && reporte.noViables.danios.ambiente < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.noViables.danios.chinches" name="reporte_noViables_chinches" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.noViables.danios.chinches != null && reporte.noViables.danios.chinches < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.noViables.danios.fracturas" name="reporte_noViables_fracturas" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.noViables.danios.fracturas != null && reporte.noViables.danios.fracturas < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.noViables.danios.otros" name="reporte_noViables_otros" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.noViables.danios.otros != null && reporte.noViables.danios.otros < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.noViables.danios.duras" name="reporte_noViables_duras" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.noViables.danios.duras != null && reporte.noViables.danios.duras < 0 }" /></td>
                             <td></td>
                         </tr>
                         <tr>
                             <td class="footer-label">Viabilidad</td>
-                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.porcentaje" name="reporte_viabilidad_porcentaje" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.mecanicos" name="reporte_viabilidad_mecanicos" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.ambiente" name="reporte_viabilidad_ambiente" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.chinches" name="reporte_viabilidad_chinches" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.fracturas" name="reporte_viabilidad_fracturas" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.otros" name="reporte_viabilidad_otros" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.viabilidad.danios.duras" name="reporte_viabilidad_duras" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="getViabilidadReportePct()" name="reporte_viabilidad_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.viabilidad.danios.mecanicos" name="reporte_viabilidad_mecanicos" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.viabilidad.danios.mecanicos != null && reporte.viabilidad.danios.mecanicos < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.viabilidad.danios.ambiente" name="reporte_viabilidad_ambiente" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.viabilidad.danios.ambiente != null && reporte.viabilidad.danios.ambiente < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.viabilidad.danios.chinches" name="reporte_viabilidad_chinches" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.viabilidad.danios.chinches != null && reporte.viabilidad.danios.chinches < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.viabilidad.danios.fracturas" name="reporte_viabilidad_fracturas" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.viabilidad.danios.fracturas != null && reporte.viabilidad.danios.fracturas < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.viabilidad.danios.otros" name="reporte_viabilidad_otros" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.viabilidad.danios.otros != null && reporte.viabilidad.danios.otros < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.viabilidad.danios.duras" name="reporte_viabilidad_duras" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.viabilidad.danios.duras != null && reporte.viabilidad.danios.duras < 0 }" /></td>
                             <td></td>
                         </tr>
                         <tr>
                             <td class="footer-label">Vigor Acumulado</td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.porcentaje" name="reporte_vigorAcumulado_porcentaje" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.mecanicos" name="reporte_vigorAcumulado_mecanicos" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.ambiente" name="reporte_vigorAcumulado_ambiente" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.chinches" name="reporte_vigorAcumulado_chinches" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.fracturas" name="reporte_vigorAcumulado_fracturas" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.otros" name="reporte_vigorAcumulado_otros" readonly /></td>
-                            <td><input type="number" step="0.1" [value]="reporte.vigorAcumulado.danios.duras" name="reporte_vigorAcumulado_duras" readonly /></td>
+                            <td><input type="number" step="0.1" [value]="getVigorAcumuladoReportePct()" name="reporte_vigorAcumulado_porcentaje" readonly /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorAcumulado.danios.mecanicos" name="reporte_vigorAcumulado_mecanicos" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorAcumulado.danios.mecanicos != null && reporte.vigorAcumulado.danios.mecanicos < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorAcumulado.danios.ambiente" name="reporte_vigorAcumulado_ambiente" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorAcumulado.danios.ambiente != null && reporte.vigorAcumulado.danios.ambiente < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorAcumulado.danios.chinches" name="reporte_vigorAcumulado_chinches" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorAcumulado.danios.chinches != null && reporte.vigorAcumulado.danios.chinches < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorAcumulado.danios.fracturas" name="reporte_vigorAcumulado_fracturas" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorAcumulado.danios.fracturas != null && reporte.vigorAcumulado.danios.fracturas < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorAcumulado.danios.otros" name="reporte_vigorAcumulado_otros" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorAcumulado.danios.otros != null && reporte.vigorAcumulado.danios.otros < 0 }" /></td>
+                            <td><input type="number" step="0.1" [(ngModel)]="reporte.vigorAcumulado.danios.duras" name="reporte_vigorAcumulado_duras" [readonly]="isReadonly" [ngClass]="{ 'input-error': reporte.vigorAcumulado.danios.duras != null && reporte.vigorAcumulado.danios.duras < 0 }" /></td>
                             <td></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Checkbox Repetido - solo visible al editar -->
-            @if (isEditing) {
-            <div class="form-field">
-                <label>
-            <span>Repetir</span>
+            <!-- Checkboxes Estándar y Repetido (mutuamente excluyentes) - Solo visible para admin al editar -->
+            <div class="form-field" style="display: flex; gap: 2rem;" *ngIf="isEditing && isAdmin">
+                <div class="checkbox-item">
             <input 
-              type="checkbox" 
-              [(ngModel)]="repetido" 
-              name="repetido"
+                type="checkbox" 
+                id="estandar-checkbox"
+                [(ngModel)]="estandar" 
+                (change)="onEstandarChange()"
+                name="estandar"
+                class="custom-checkbox"
+                [disabled]="isReadonly || estandarDeshabilitado"
             />
-          </label>
+                    <label for="estandar-checkbox" class="checkbox-label">
+                        <span class="checkmark"></span>
+                        <span class="checkbox-text">Estándar</span>
+                    </label>
+                </div>
+                
+                <div class="checkbox-item">
+            <input 
+                type="checkbox" 
+                id="repetido-checkbox"
+                [(ngModel)]="repetido" 
+                (change)="onRepetidoChange()"
+                name="repetido"
+                class="custom-checkbox"
+                [disabled]="isReadonly || repetidoDeshabilitado"
+            />
+                    <label for="repetido-checkbox" class="checkbox-label">
+                        <span class="checkmark"></span>
+                        <span class="checkbox-text">Repetido</span>
+                    </label>
+                </div>
             </div>
-            }
 
             <div class="submit-btn" style="margin-top: 1.2rem;">
                 <button pButton type="button" (click)="onSubmit()" [label]="isEditing ? 'Actualizar Tetrazolio' : 'Crear Tetrazolio'" class="p-button-success" [disabled]="isSubmitting">
@@ -368,6 +397,28 @@
 
                 <button pButton type="button" (click)="onCancel()" label="Cancelar" class="p-button-secondary" style="margin-left: 10px;" [disabled]="isSubmitting"></button>
             </div>
+
+            <!-- Diálogo de confirmación para Estándar -->
+            <app-confirm-dialog
+              [visible]="mostrarConfirmEstandar"
+              title="Confirmar análisis estándar"
+              message="¿Estás seguro de que deseas marcar este análisis como estándar? Una vez marcado, no podrás cambiarlo."
+              confirmText="Confirmar"
+              cancelText="Cancelar"
+              (confirm)="confirmarEstandar()"
+              (cancel)="cancelarEstandar()">
+            </app-confirm-dialog>
+
+            <!-- Diálogo de confirmación para Repetido -->
+            <app-confirm-dialog
+              [visible]="mostrarConfirmRepetido"
+              title="Confirmar análisis repetido"
+              message="¿Estás seguro de que deseas marcar este análisis como repetido? Una vez marcado, no podrás cambiarlo."
+              confirmText="Confirmar"
+              cancelText="Cancelar"
+              (confirm)="confirmarRepetido()"
+              (cancel)="cancelarRepetido()">
+            </app-confirm-dialog>
 
             <!-- Mensajes de error -->
             <div *ngIf="erroresValidacion && erroresValidacion.length > 0" class="error-container">

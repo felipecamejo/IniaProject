@@ -1,6 +1,7 @@
 package ti.proyectoinia.api.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Generated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +24,13 @@ public class PurezaController {
     }
 
     @PostMapping({"/crear"})
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "ANALISTA"})
     @Operation(
             description = "Esta Funcion crea un nuevo registro de Pureza"
     )
-    public ResponseEntity<String> crearPureza(@RequestBody PurezaDto dto) {
+    public ResponseEntity<Long> crearPureza(@RequestBody PurezaDto dto) {
         dto.setId((Long) null);
-        String response = this.purezaService.crearPureza(dto);
+        Long response = this.purezaService.crearPureza(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -45,13 +46,17 @@ public class PurezaController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN"})
-    public ResponseEntity<String> editarPureza(@RequestBody PurezaDto dto) {
-        String result = this.purezaService.editarPureza(dto);
+    @Secured({"ADMIN", "ANALISTA"})
+    public ResponseEntity<Long> editarPureza(@RequestBody PurezaDto dto) {
+        if (dto.getId() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(-1L);
+        }
+
+        Long result = this.purezaService.editarPureza(dto);
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping({"/eliminar/{id}"})
+    @DeleteMapping({"/eliminar/{id}"})
     @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion elimina un registro de Pureza"
@@ -60,8 +65,10 @@ public class PurezaController {
         try {
             String mensaje = this.purezaService.eliminarPureza(id)+ ". ID:" + id.toString();
             return ResponseEntity.ok(mensaje);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No encontrado");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar la Pureza: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar: " + e.getMessage());
         }
     }
 

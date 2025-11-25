@@ -1,10 +1,18 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 import { App } from './app';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([])
+      ]
     }).compileComponents();
   });
 
@@ -18,6 +26,9 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, inia-frontend');
+    // Verificar que el router-outlet existe (elemento principal del template)
+    expect(compiled.querySelector('router-outlet')).toBeTruthy();
+    // Verificar que el header component existe
+    expect(compiled.querySelector('app-header')).toBeTruthy();
   });
 });

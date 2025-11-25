@@ -8,7 +8,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PMSDto } from '../../../models/PMS.dto';
 import { PMSService } from '../../../services/PMSService';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-
+import { LogService } from '../../../services/LogService';
 
 @Component({
   selector: 'app-listado-pms.component',
@@ -18,7 +18,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
   styleUrl: './listado-pms.component.scss'
 })
 export class ListadoPmsComponent implements OnInit {
-  constructor(private router: Router, private route: ActivatedRoute, private pmsService: PMSService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private pmsService: PMSService, private logService: LogService) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
@@ -249,6 +249,8 @@ export class ListadoPmsComponent implements OnInit {
           this.confirmLoading = false;
           this.mostrarConfirmEliminar = false;
           this.pmsAEliminar = null;
+
+          this.logService.crearLog(Number(this.loteId), Number(pms.id), 'PMS', 'eliminado').subscribe();
           // Actualizar lista localmente
           this.items = this.items.filter(pmsItem => pmsItem.id !== pms.id);
         },

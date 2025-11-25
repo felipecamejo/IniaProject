@@ -25,7 +25,7 @@ Content-Type: application/json
 ```json
 {
   "email": "admin@inia.com",
-  "password": "admin123"
+  "password": "password123"
 }
 ```
 

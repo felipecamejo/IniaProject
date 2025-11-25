@@ -8,7 +8,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PurezaDto } from '../../../models/Pureza.dto';
 import { PurezaService } from '../../../services/PurezaService';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-
+import { LogService } from '../../../services/LogService';
 
 @Component({
   selector: 'app-listado-pureza.component',
@@ -21,7 +21,8 @@ export class ListadoPurezaComponent implements OnInit {
     constructor(
         private router: Router, 
         private route: ActivatedRoute,
-        private purezaService: PurezaService
+        private purezaService: PurezaService,
+        private logService: LogService
     ) {}
 
     selectedMes: string = '';
@@ -225,6 +226,8 @@ export class ListadoPurezaComponent implements OnInit {
                     this.confirmLoading = false;
                     this.mostrarConfirmEliminar = false;
                     this.purezaAEliminar = null;
+                    this.logService.crearLog(Number(this.loteId), Number(pureza.id), 'Pureza', 'eliminada').subscribe();
+
                     // Recargar la lista después de eliminar
                     this.cargarPurezas();
                 },

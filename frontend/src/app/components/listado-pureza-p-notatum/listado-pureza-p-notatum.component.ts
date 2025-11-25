@@ -8,6 +8,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PurezaPNotatumDto } from '../../../models/PurezaPNotatum.dto';
 import { PurezaPNotatumService } from '../../../services/PurezaPNotatumService';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { LogService } from '../../../services/LogService';
 
 @Component({
   selector: 'app-listado-pureza-p-notatum',
@@ -17,7 +18,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
   styleUrl: './listado-pureza-p-notatum.component.scss'
 })
 export class ListadoPurezaPNotatumComponent implements OnInit {
-    constructor(private router: Router, private route: ActivatedRoute, private purezaPNotatumService: PurezaPNotatumService) {}
+    constructor(private router: Router, private route: ActivatedRoute, private purezaPNotatumService: PurezaPNotatumService, private logService: LogService) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
@@ -222,6 +223,8 @@ export class ListadoPurezaPNotatumComponent implements OnInit {
           this.purezaPNotatumAEliminar = null;
           // Actualizar lista localmente
           this.items = this.items.filter(pn => pn.id !== purezaPNotatum.id);
+          
+          this.logService.crearLog(Number(this.loteId), Number(purezaPNotatum.id), 'Pureza P. notatum', 'eliminada').subscribe();
         },
         error: (err) => {
           console.error('Error eliminando Pureza P. notatum:', err);
