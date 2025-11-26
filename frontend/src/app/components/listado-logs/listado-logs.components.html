@@ -36,34 +36,52 @@
             </div>
         </div>
 
-        <!-- Lista de elementos filtrados -->
+        <!-- Lista de elementos paginados -->
         <div class="blue-rectangle" 
-             *ngFor="let item of itemsFiltrados"
+             *ngFor="let item of items"
              >
             <div class="item-header">
-                    <div class="item-info">
-                        <h3 class="item-title">Cambio #{{ item.id }}</h3>
-                    </div>
-                    <div class="item-status">
-                        
-                    </div>
+                <div class="item-info">
+                    <h3 class="item-title">Cambio #{{ item.id }}</h3>
                 </div>
-                <div class="divider-line"></div>
-                <div class="item-content">
-                    <div class="item-description">
-                        <p>{{ item.texto }}</p>
-                    </div>
-                    <div class="item-actions">
-                        
-                    
-                    </div>
-                    <div class="item-date">
-                        <span class="fecha">{{ getFechaFormateada(item) }} </span>
-                    </div>
+                <div class="item-status">
                 </div>
+            </div>
+            <div class="divider-line"></div>
+            <div class="item-content">
+                <div class="item-description">
+                    <p>{{ item.texto }}</p>
+                </div>
+                <div class="item-actions">
+                </div>
+                <div class="item-date">
+                    <span class="fecha">{{ getFechaFormateada(item) }} </span>
+                </div>
+            </div>
         </div>
-    
-    </p-card>
 
-    
+        <!-- Paginación -->
+        <div class="pagination" *ngIf="totalPages > 1">
+            <div class="pagination-info">
+                <span>
+                    Mostrando {{ page * size + (items.length ? 1 : 0) }} - {{ page * size + items.length }} de {{ totalElements }}
+                </span>
+            </div>
+            <div class="pagination-controls">
+                <button class="page-btn" (click)="prevPage()" [disabled]="page === 0 || loading">
+                    <i class="pi pi-angle-left"></i>
+                </button>
+                <span class="page-indicator">Página {{ page + 1 }} / {{ totalPages }}</span>
+                <button class="page-btn" (click)="nextPage()" [disabled]="page >= totalPages - 1 || loading">
+                    <i class="pi pi-angle-right"></i>
+                </button>
+                <select class="size-select" [ngModel]="size" (ngModelChange)="onPageSizeChange($event)">
+                    <option [value]="10">10</option>
+                    <option [value]="12">12</option>
+                    <option [value]="20">20</option>
+                    <option [value]="50">50</option>
+                </select>
+            </div>
+        </div>
+    </p-card>
 </div>

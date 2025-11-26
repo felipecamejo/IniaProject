@@ -9,7 +9,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { LogDto } from '../../../models/Log.dto';
-import { LogService } from '../../../services/LogService';
+import { LogService, ResponseListadoLogsPage } from '../../../services/LogService';
 
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
@@ -26,73 +26,112 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
   templateUrl: './listado-logs.components.html',
   styleUrls: ['./listado-logs.components.scss']
 })
-export class ListadoLogsComponent {
+export class ListadoLogsComponent implements OnInit {
   constructor(private router: Router, private route: ActivatedRoute, private authService: AuthService, private logService: LogService) {}
-  
+
   selectedMes: string = '';
-      selectedAnio: string = '';
-      searchText: string = '';
-  
-      loteId: string = '';
-      private _reciboId: string = '';
-      
-      get reciboId(): string {
-          return this._reciboId;
-      }
-      
-      set reciboId(value: string) {
-          this._reciboId = value;
-      }
-  
-      meses = [
-        { label: 'Enero', id: 1 },
-        { label: 'Febrero', id: 2 },
-        { label: 'Marzo', id: 3 },
-        { label: 'Abril', id: 4 },
-        { label: 'Mayo', id: 5 },
-        { label: 'Junio', id: 6 },
-        { label: 'Julio', id: 7 },
-        { label: 'Agosto', id: 8 },
-        { label: 'Septiembre', id: 9 },
-        { label: 'Octubre', id: 10 },
-        { label: 'Noviembre', id: 11 },
-        { label: 'Diciembre', id: 12 }
-      ];
-  
-      anios: { label: string, id: number }[] = [];
-  
-      items: LogDto[] = [];
-  
-      // Propiedades para el popup de confirmación
-      mostrarConfirmEliminar: boolean = false;
-      logAEliminar: LogDto | null = null;
-      confirmLoading: boolean = false;
-  
-      navegarAVer(item: LogDto) {
-        console.log('Navegando para ver Log:', item);
-        this.router.navigate([this.loteId, this.reciboId, 'logs', 'ver', item.id], { queryParams: { view: 'true' } });
-      }  
-  
-      ngOnInit() {
-        this.cargarLogs();
-      }
+  selectedAnio: string = '';
+  searchText: string = '';
 
-      cargarLogs() {
-        const loteId = this.route.snapshot.params['loteId'];
+  loteId: string = '';
+  private _reciboId: string = '';
+  get reciboId(): string {
+    return this._reciboId;
+  }
+  set reciboId(value: string) {
+    this._reciboId = value;
+  }
 
-          this.logService.listarLogs(loteId).subscribe({
-              next: (response) => {
-                  this.items = response.logs;
-                  console.log('Logs cargados:', this.items);
-                  // Actualizar años disponibles después de cargar los items
-                  this.actualizarAniosDisponibles();
-              },
-              error: (error) => {
-                  console.error('Error al cargar logs:', error);
-                  // Aquí puedes agregar manejo de errores, como mostrar un mensaje al usuario
-              }
-          });
+  meses = [
+    { label: 'Enero', id: 1 },
+    { label: 'Febrero', id: 2 },
+    { label: 'Marzo', id: 3 },
+    { label: 'Abril', id: 4 },
+    { label: 'Mayo', id: 5 },
+    { label: 'Junio', id: 6 },
+    { label: 'Julio', id: 7 },
+    { label: 'Agosto', id: 8 },
+    { label: 'Septiembre', id: 9 },
+    { label: 'Octubre', id: 10 },
+    { label: 'Noviembre', id: 11 },
+    { label: 'Diciembre', id: 12 }
+  ];
+
+  anios: { label: string, id: number }[] = [];
+
+  // Paginación
+  items: LogDto[] = [];
+  page = 0; // 0-based
+  size = 12;
+  totalElements = 0;
+  totalPages = 0;
+  loading = false;
+
+  // Propiedades para el popup de confirmación
+  mostrarConfirmEliminar: boolean = false;
+  logAEliminar: LogDto | null = null;
+  confirmLoading: boolean = false;
+
+  navegarAVer(item: LogDto) {
+    this.router.navigate([this.loteId, this.reciboId, 'logs', 'ver', item.id], { queryParams: { view: 'true' } });
+  }
+
+  ngOnInit() {
+    this.loteId = this.route.snapshot.params['loteId'];
+    this.cargarLogsPage();
+  }
+
+  cargarLogsPage(): void {
+    this.loading = true;
+    const loteId = this.loteId;
+    this.logService.listarLogsPage(Number(loteId), { page: this.page, size: this.size, sort: 'fechaCreacion', direction: 'DESC' }).subscribe({
+      next: (response: ResponseListadoLogsPage) => {
+        this.items = response.content ?? [];
+        this.totalElements = response.totalElements ?? 0;
+        this.totalPages = response.totalPages ?? 0;
+        this.actualizarAniosDisponibles();
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error al listar logs paginados', error);
+        this.items = [];
+        this.totalElements = 0;
+        this.totalPages = 0;
+        this.loading = false;
       }
+    });
+  }
+
+  // Navegación de páginas
+  nextPage(): void {
+    if (this.page < this.totalPages - 1) {
+      this.page++;
+      this.cargarLogsPage();
+    }
+  }
+
+  prevPage(): void {
+    if (this.page > 0) {
+      this.page--;
+      this.cargarLogsPage();
+    }
+  }
+
+  goToPage(p: number): void {
+    if (p >= 0 && p < this.totalPages) {
+      this.page = p;
+      this.cargarLogsPage();
+    }
+  }
+
+  onPageSizeChange(value: string): void {
+    const newSize = parseInt(value, 10);
+    if (!isNaN(newSize) && newSize > 0) {
+      this.size = newSize;
+      this.page = 0; // reset page
+      this.cargarLogsPage();
+    }
+  }
   
       /**
        * Genera la lista de años disponibles basándose en los items cargados

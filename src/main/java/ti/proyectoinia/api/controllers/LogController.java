@@ -13,6 +13,7 @@ import ti.proyectoinia.dtos.CultivoDto;
 
 import ti.proyectoinia.dtos.LogDto;
 import ti.proyectoinia.services.LogService;
+import ti.proyectoinia.api.responses.ResponseListadoLogsPage;
 
 @RestController
 @RequestMapping({"api/v1/log"})
@@ -22,6 +23,20 @@ public class LogController {
 
     public LogController(LogService logService) {
         this.logService = logService;
+    }
+
+    // Endpoint paginado para logs por loteId
+    @GetMapping({"/listar-page/{loteId}"})
+    @Secured({"ADMIN"})
+    @Operation(description = "Lista paginada de Logs por loteId")
+    public ResponseEntity<ResponseListadoLogsPage> listarLogPage(
+            @PathVariable Long loteId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @RequestParam(name = "sort", defaultValue = "fechaCreacion") String sort,
+            @RequestParam(name = "direction", defaultValue = "DESC") String direction
+    ) {
+        return this.logService.listadoPage(loteId, page, size, sort, direction);
     }
 
     @PostMapping({"/crear"})

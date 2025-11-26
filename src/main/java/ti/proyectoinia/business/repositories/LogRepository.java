@@ -10,4 +10,7 @@ import java.util.List;
 @Repository
 public interface LogRepository  extends JpaRepository<Log, Long> {
     List<Log> findByLoteId(Long loteId);
+
+    // Método paginado para logs por loteId
+    org.springframework.data.domain.Page<Log> findByLoteId(Long loteId, org.springframework.data.domain.Pageable pageable);
 }
