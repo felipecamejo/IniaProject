@@ -1,17 +1,21 @@
-# Docker Compose para Simulación ECS Local
-# Uso: docker-compose -f docker-compose.ecs.yml up
+# Docker Compose para Configuración ECS - Proyecto INIA
+# Uso: docker-compose -f docker-compose.ecs.yml up -d
 # 
+# NOTA: Este archivo replica la configuración exacta de ECS en AWS
+# para pruebas locales. En AWS, ECS usa las Task Definitions creadas por Terraform.
+#
 # Características:
-# - Configuración similar a ECS (producción)
-# - Frontend con Nginx (puerto 80) sin proxy (como en ECS)
-# - Sin hot reload
-# - Variables de entorno de producción
-# - Configuración optimizada para producción
+# - Configuración idéntica a ECS Task Definitions en Terraform
+# - Variables de entorno coinciden con ECS
+# - Health checks iguales a ECS
+# - Frontend con Nginx ECS (sin proxy)
+
+version: '3.8'
 
 services:
-  # Base de datos PostgreSQL
+  # Base de datos PostgreSQL (simula RDS)
   database:
-    image: postgres:15-alpine  # Misma versión que RDS en ECS
+    image: postgres:15-alpine  # Misma versión que RDS en ECS (PostgreSQL 15.15)
     container_name: inia-database-ecs
     environment:
       POSTGRES_DB: Inia
@@ -64,9 +68,10 @@ services:
       - inia-network-ecs
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      # Health check idéntico a ECS Task Definition
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/Inia/actuator/health || exit 1"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
       start_period: 60s
 
@@ -110,9 +115,10 @@ services:
       - inia-network-ecs
     restart: unless-stopped
     healthcheck:
+      # Health check idéntico a ECS Task Definition
       test: ["CMD-SHELL", "python -c 'import requests; r=requests.get(\"http://localhost:9099/health\", timeout=2); exit(0 if r.status_code==200 else 1)' || exit 1"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
       start_period: 60s
 
@@ -136,9 +142,10 @@ services:
       - inia-network-ecs
     restart: unless-stopped
     healthcheck:
+      # Health check idéntico a ECS Task Definition
       test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost/health || exit 1"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
       start_period: 30s
 
