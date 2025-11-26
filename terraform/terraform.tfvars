@@ -37,8 +37,9 @@ memory_middleware = 1024
 # Nota: Si tienes un certificado SSL en ACM, actualiza el ARN aquí
 domain_name = "zimmzimmgames.com"
 ssl_certificate_arn = "" # ⚠️ Actualizar con el ARN del certificado ACM si existe
-create_route53_record = false
-route53_zone_id = ""
+# Para obtener el ARN: aws acm list-certificates --region us-east-1 --query "CertificateSummaryList[?DomainName=='zimmzimmgames.com'].CertificateArn" --output text
+create_route53_record = true
+route53_zone_id = "Z038254635T8HIPT0Z245" # Zone ID de zimmzimmgames.com (mismo que GateKeep)
 
 # IAM Roles (existing roles - NO se crearán nuevos roles)
 # ⚠️ IMPORTANTE: Usar roles existentes que puedan ser asumidos por ecs-tasks.amazonaws.com

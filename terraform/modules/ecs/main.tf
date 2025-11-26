@@ -85,7 +85,7 @@ resource "aws_lb_target_group" "backend" {
     unhealthy_threshold = 3
     timeout             = 5
     interval            = 30
-    path                = "/actuator/health"
+    path                = "/Inia/actuator/health"
     matcher             = "200"
     protocol            = "HTTP"
   }
@@ -195,7 +195,26 @@ resource "aws_lb_listener" "https" {
   }
 }
 
+# ALB Listener Rule for Swagger (HTTPS if SSL, otherwise HTTP)
+# Prioridad 90 - Mayor prioridad para rutas específicas de Swagger
+resource "aws_lb_listener_rule" "swagger" {
+  listener_arn = var.ssl_certificate_arn != "" ? aws_lb_listener.https[0].arn : aws_lb_listener.http_forward[0].arn
+  priority     = 90
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/Inia/swagger*", "/Inia/swagger/*", "/Inia/v3/api-docs*", "/Inia/v3/api-docs/*", "/Inia/swagger-resources*", "/Inia/swagger-resources/*", "/Inia/webjars*", "/Inia/webjars/*"]
+    }
+  }
+}
+
 # ALB Listener Rule for Backend (HTTPS if SSL, otherwise HTTP)
+# Prioridad 100 - Rutas generales del backend
 resource "aws_lb_listener_rule" "backend" {
   listener_arn = var.ssl_certificate_arn != "" ? aws_lb_listener.https[0].arn : aws_lb_listener.http_forward[0].arn
   priority     = 100
@@ -212,7 +231,26 @@ resource "aws_lb_listener_rule" "backend" {
   }
 }
 
+# ALB Listener Rule for Health Check (HTTPS if SSL, otherwise HTTP)
+# Prioridad 110 - Health check específico del backend
+resource "aws_lb_listener_rule" "backend_health" {
+  listener_arn = var.ssl_certificate_arn != "" ? aws_lb_listener.https[0].arn : aws_lb_listener.http_forward[0].arn
+  priority     = 110
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/Inia/actuator/health*"]
+    }
+  }
+}
+
 # ALB Listener Rule for Middleware (HTTPS if SSL, otherwise HTTP)
+# Prioridad 200 - Rutas del middleware
 resource "aws_lb_listener_rule" "middleware" {
   listener_arn = var.ssl_certificate_arn != "" ? aws_lb_listener.https[0].arn : aws_lb_listener.http_forward[0].arn
   priority     = 200
@@ -522,7 +560,9 @@ resource "aws_ecs_service" "backend" {
   }
 
   depends_on = [
+    aws_lb_listener_rule.swagger,
     aws_lb_listener_rule.backend,
+    aws_lb_listener_rule.backend_health,
     aws_lb_listener.http_redirect,
     aws_lb_listener.http_forward,
     aws_lb_listener.https
