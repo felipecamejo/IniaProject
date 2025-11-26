@@ -1,3 +1,16 @@
+# Local values for URL construction
+locals {
+  # Determine the hostname (domain or ALB DNS)
+  hostname = var.domain_name != "" ? var.domain_name : aws_lb.main.dns_name
+  
+  # Determine the protocol (HTTPS if SSL cert exists, otherwise HTTP)
+  protocol = var.ssl_certificate_arn != "" ? "https" : "http"
+  
+  # Construct base URLs
+  backend_base_url    = "${local.protocol}://${local.hostname}/Inia"
+  middleware_base_url = "${local.protocol}://${local.hostname}/middleware"
+}
+
 # CloudWatch Log Groups
 resource "aws_cloudwatch_log_group" "backend" {
   name              = "/ecs/${var.project_name}-${var.environment}-backend"
@@ -30,10 +43,11 @@ resource "aws_cloudwatch_log_group" "middleware" {
 resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-${var.environment}-cluster"
 
-  setting {
-    name  = "containerInsights"
-    value = "enabled"
-  }
+  # Container Insights deshabilitado para configuración mínima (reduce costos)
+  # setting {
+  #   name  = "containerInsights"
+  #   value = "enabled"
+  # }
 
   tags = {
     Name = "${var.project_name}-${var.environment}-cluster"
@@ -279,7 +293,7 @@ resource "aws_ecs_task_definition" "backend" {
       },
       {
         name  = "PYTHON_MIDDLEWARE_BASE_URL"
-        value = "http://${aws_lb.main.dns_name}/middleware"
+        value = local.middleware_base_url
       }
     ]
 
@@ -327,12 +341,16 @@ resource "aws_ecs_task_definition" "frontend" {
 
     environment = [
       {
+        name  = "USE_ECS_NGINX"
+        value = "true"
+      },
+      {
         name  = "BACKEND_URL"
-        value = "http://${aws_lb.main.dns_name}/Inia"
+        value = local.backend_base_url
       },
       {
         name  = "MIDDLEWARE_URL"
-        value = "http://${aws_lb.main.dns_name}/middleware"
+        value = local.middleware_base_url
       }
     ]
 
