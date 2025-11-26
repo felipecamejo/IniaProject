@@ -97,7 +97,7 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
         const year = partes[0];
         const month = partes[1];
         const day = partes[2];
-        return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+        return `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
       }
       // Intentar parsear con Date como fallback
       const d = new Date(fecha);
@@ -105,7 +105,7 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
       const dd = String(d.getDate()).padStart(2, '0');
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const yyyy = d.getFullYear();
-      return `${dd}/${mm}/${yyyy}`;
+      return `${dd}-${mm}-${yyyy}`;
     }
 
     getFechaConTipo(item: LoteDto): { fecha: string, tipo: string } {
@@ -186,18 +186,6 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
       this.page = 0; // reset page
       this.cargarLotesPage();
     }
-  }
-
-  getFirstItemIndex(): number {
-    const itemsFiltrados = this.itemsFiltrados;
-    if (itemsFiltrados.length === 0) return 0;
-    return this.page * this.size + 1;
-  }
-
-  getLastItemIndex(): number {
-    const itemsFiltrados = this.itemsFiltrados;
-    if (itemsFiltrados.length === 0) return 0;
-    return this.page * this.size + itemsFiltrados.length;
   }
 
     get itemsFiltrados() {
@@ -287,14 +275,8 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
           this.confirmLoading = false;
           this.mostrarConfirmEliminar = false;
           this.loteAEliminar = null;
-          
-          // Si era el último elemento de la página y no es la primera página, retroceder
-          if (this.items.length === 1 && this.page > 0) {
-            this.page--;
-          }
-          
-          // Recargar la página actual para actualizar totalElements y totalPages
-          this.cargarLotesPage();
+          // Actualizar lista localmente
+          this.items = this.items.filter(loteItem => loteItem.id !== loteId);
         },
         error: (err) => {
           console.error('Error eliminando Lote:', err);

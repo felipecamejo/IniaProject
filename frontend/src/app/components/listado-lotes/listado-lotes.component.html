@@ -76,10 +76,7 @@
         <div class="pagination" *ngIf="totalPages > 1">
             <div class="pagination-info">
                 <span>
-                    Mostrando {{ getFirstItemIndex() }} - {{ getLastItemIndex() }} de {{ totalElements }}
-                    <span *ngIf="itemsFiltrados.length < items.length" class="filter-note">
-                        ({{ itemsFiltrados.length }} en esta página después de filtros)
-                    </span>
+                    Mostrando {{ page * size + (items.length ? 1 : 0) }} - {{ page * size + items.length }} de {{ totalElements }}
                 </span>
             </div>
             <div class="pagination-controls">

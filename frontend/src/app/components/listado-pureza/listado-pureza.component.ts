@@ -58,6 +58,12 @@ export class ListadoPurezaComponent implements OnInit {
 
     items: PurezaDto[] = [];
 
+    // Propiedades de paginación
+    page = 0; // 0-based
+    size = 12;
+    totalElements = 0;
+    totalPages = 0;
+
     navegarAVer(item: PurezaDto) {
           console.log('Navegando para ver Pureza:', item);
           this.router.navigate([this.loteId, this.reciboId, 'pureza', item.id], { queryParams: { view: 'true' } });
@@ -76,6 +82,7 @@ export class ListadoPurezaComponent implements OnInit {
                 console.log('Purezas cargadas:', this.items);
                 // Actualizar años disponibles después de cargar los items
                 this.actualizarAniosDisponibles();
+                this.page = 0; // Reset a primera página cuando se cargan nuevos datos
             },
             error: (error) => {
                 console.error('Error al cargar purezas:', error);
@@ -113,7 +120,7 @@ export class ListadoPurezaComponent implements OnInit {
     }
 
     get itemsFiltrados() {
-      return this.items.filter(item => {
+      const filtrados = this.items.filter(item => {
 
         const cumpleId = !this.searchText ||
           item.id?.toString().includes(this.searchText);
@@ -131,6 +138,15 @@ export class ListadoPurezaComponent implements OnInit {
         }
         return a.repetido ? 1 : -1; // Pendientes (false) van primero
       });
+
+      // Calcular paginación
+      this.totalElements = filtrados.length;
+      this.totalPages = Math.ceil(this.totalElements / this.size);
+
+      // Paginar los resultados
+      const startIndex = this.page * this.size;
+      const endIndex = startIndex + this.size;
+      return filtrados.slice(startIndex, endIndex);
     }
 
 
@@ -221,5 +237,37 @@ export class ListadoPurezaComponent implements OnInit {
                 alert('Error al eliminar la pureza. Por favor, inténtalo de nuevo.');
             }
         });
+    }
+
+    // Métodos de paginación
+    nextPage(): void {
+      if (this.page < this.totalPages - 1) {
+        this.page++;
+      }
+    }
+
+    prevPage(): void {
+      if (this.page > 0) {
+        this.page--;
+      }
+    }
+
+    onPageSizeChange(value: string): void {
+      const newSize = parseInt(value, 10);
+      if (!isNaN(newSize) && newSize > 0) {
+        this.size = newSize;
+        this.page = 0; // Reset a primera página
+      }
+    }
+
+    getFirstItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      return this.page * this.size + 1;
+    }
+
+    getLastItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      const endIndex = this.page * this.size + this.itemsFiltrados.length;
+      return endIndex;
     }
 }

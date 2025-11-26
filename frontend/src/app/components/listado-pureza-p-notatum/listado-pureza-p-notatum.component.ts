@@ -51,6 +51,12 @@ export class ListadoPurezaPNotatumComponent implements OnInit {
 
     items: PurezaPNotatumDto[] = [];
 
+    // Propiedades de paginación
+    page = 0; // 0-based
+    size = 12;
+    totalElements = 0;
+    totalPages = 0;
+
     cargarItems() {
       if (this.reciboId == null || isNaN(this.reciboId)) {
         console.warn('No hay reciboId para listar Pureza P. notatum');
@@ -75,6 +81,7 @@ export class ListadoPurezaPNotatumComponent implements OnInit {
           }
           console.log('Pureza P. notatum cargados:', this.items);
           this.actualizarAniosDisponibles();
+          this.page = 0; // Reset a primera página cuando se cargan nuevos datos
         },
         error: (err) => {
           console.error('Error cargando Pureza P. notatum:', err);
@@ -84,7 +91,7 @@ export class ListadoPurezaPNotatumComponent implements OnInit {
     }
 
     get itemsFiltrados() {
-      return this.items.filter(item => {
+      const filtrados = this.items.filter(item => {
         const cumpleId = !this.searchText || item.id?.toString().includes(this.searchText);
         const fechaParaFiltro = this.getFechaConTipo(item).fecha;
         const cumpleMes = !this.selectedMes || this.getMesFromFecha(fechaParaFiltro) === parseInt(this.selectedMes);
@@ -96,6 +103,15 @@ export class ListadoPurezaPNotatumComponent implements OnInit {
         }
         return a.repetido ? 1 : -1;
       });
+
+      // Calcular paginación
+      this.totalElements = filtrados.length;
+      this.totalPages = Math.ceil(this.totalElements / this.size);
+
+      // Paginar los resultados
+      const startIndex = this.page * this.size;
+      const endIndex = startIndex + this.size;
+      return filtrados.slice(startIndex, endIndex);
     }
 
     getFechaConTipo(item: PurezaPNotatumDto): { fecha: string, tipo: string } {
@@ -210,6 +226,38 @@ export class ListadoPurezaPNotatumComponent implements OnInit {
           alert('Error al eliminar la Pureza P. notatum. Por favor, inténtalo de nuevo.');
         }
       });
+    }
+
+    // Métodos de paginación
+    nextPage(): void {
+      if (this.page < this.totalPages - 1) {
+        this.page++;
+      }
+    }
+
+    prevPage(): void {
+      if (this.page > 0) {
+        this.page--;
+      }
+    }
+
+    onPageSizeChange(value: string): void {
+      const newSize = parseInt(value, 10);
+      if (!isNaN(newSize) && newSize > 0) {
+        this.size = newSize;
+        this.page = 0; // Reset a primera página
+      }
+    }
+
+    getFirstItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      return this.page * this.size + 1;
+    }
+
+    getLastItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      const endIndex = this.page * this.size + this.itemsFiltrados.length;
+      return endIndex;
     }
 }
 

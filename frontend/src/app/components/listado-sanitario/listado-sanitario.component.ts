@@ -59,6 +59,12 @@ export class ListadoSanitarioComponent implements OnInit {
 
     items: SanitarioDto[] = [];
 
+    // Propiedades de paginación
+    page = 0; // 0-based
+    size = 12;
+    totalElements = 0;
+    totalPages = 0;
+
     isLoading: boolean = false;
 
 
@@ -88,7 +94,7 @@ export class ListadoSanitarioComponent implements OnInit {
 
 
     get itemsFiltrados() {
-      return this.items.filter(item => {
+      const filtrados = this.items.filter(item => {
 
         const cumpleId = !this.searchText ||
           item.id?.toString().includes(this.searchText);
@@ -106,6 +112,15 @@ export class ListadoSanitarioComponent implements OnInit {
         }
         return a.repetido ? 1 : -1; // Pendientes (false) van primero
       });
+
+      // Calcular paginación
+      this.totalElements = filtrados.length;
+      this.totalPages = Math.ceil(this.totalElements / this.size);
+
+      // Paginar los resultados
+      const startIndex = this.page * this.size;
+      const endIndex = startIndex + this.size;
+      return filtrados.slice(startIndex, endIndex);
     }
 
     ngOnInit() {
@@ -127,6 +142,7 @@ export class ListadoSanitarioComponent implements OnInit {
             next: (response) => {
                 this.items = response.sanitario || [];
                 this.actualizarAniosDisponibles(); // Actualizar años disponibles basados en los datos cargados
+                this.page = 0; // Reset a primera página cuando se cargan nuevos datos
                 this.isLoading = false;
                 console.log('Sanitarios cargados:', this.items);
             },
@@ -240,5 +256,37 @@ export class ListadoSanitarioComponent implements OnInit {
         }
 
         console.log('Años disponibles:', this.anios);
+    }
+
+    // Métodos de paginación
+    nextPage(): void {
+      if (this.page < this.totalPages - 1) {
+        this.page++;
+      }
+    }
+
+    prevPage(): void {
+      if (this.page > 0) {
+        this.page--;
+      }
+    }
+
+    onPageSizeChange(value: string): void {
+      const newSize = parseInt(value, 10);
+      if (!isNaN(newSize) && newSize > 0) {
+        this.size = newSize;
+        this.page = 0; // Reset a primera página
+      }
+    }
+
+    getFirstItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      return this.page * this.size + 1;
+    }
+
+    getLastItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      const endIndex = this.page * this.size + this.itemsFiltrados.length;
+      return endIndex;
     }
 }

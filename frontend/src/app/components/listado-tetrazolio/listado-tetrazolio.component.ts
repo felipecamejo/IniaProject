@@ -55,6 +55,12 @@ export class ListadoTetrazolioComponent implements OnInit {
     loading: boolean = false;
     error: string | null = null;
 
+    // Propiedades de paginación
+    page = 0; // 0-based
+    size = 12;
+    totalElements = 0;
+    totalPages = 0;
+
     ngOnInit() {
         this.cargarDatos();
     }
@@ -71,6 +77,7 @@ export class ListadoTetrazolioComponent implements OnInit {
             this.tetrazolioService.listarPorRecibo(parseInt(reciboId)).subscribe({
                 next: (response) => {
                     this.items = response.tetrazolio || [];
+                    this.page = 0; // Reset a primera página cuando se cargan nuevos datos
                     this.loading = false;
                     console.log('Tetrazolios cargados:', this.items);
                 },
@@ -85,6 +92,7 @@ export class ListadoTetrazolioComponent implements OnInit {
             this.tetrazolioService.listar().subscribe({
                 next: (response) => {
                     this.items = response.tetrazolio || [];
+                    this.page = 0; // Reset a primera página cuando se cargan nuevos datos
                     this.loading = false;
                     console.log('Tetrazolios cargados:', this.items);
                 },
@@ -98,7 +106,7 @@ export class ListadoTetrazolioComponent implements OnInit {
     }
 
     get itemsFiltrados() {
-      return this.items.filter(item => {
+      const filtrados = this.items.filter(item => {
 
         const cumpleId = !this.searchText || 
           item.id?.toString().includes(this.searchText);
@@ -116,6 +124,15 @@ export class ListadoTetrazolioComponent implements OnInit {
         }
         return a.repetido ? 1 : -1; // Pendientes (false) van primero
       });
+
+      // Calcular paginación
+      this.totalElements = filtrados.length;
+      this.totalPages = Math.ceil(this.totalElements / this.size);
+
+      // Paginar los resultados
+      const startIndex = this.page * this.size;
+      const endIndex = startIndex + this.size;
+      return filtrados.slice(startIndex, endIndex);
     }
 
 
@@ -204,5 +221,37 @@ export class ListadoTetrazolioComponent implements OnInit {
 
     recargarDatos() {
         this.cargarDatos();
+    }
+
+    // Métodos de paginación
+    nextPage(): void {
+      if (this.page < this.totalPages - 1) {
+        this.page++;
+      }
+    }
+
+    prevPage(): void {
+      if (this.page > 0) {
+        this.page--;
+      }
+    }
+
+    onPageSizeChange(value: string): void {
+      const newSize = parseInt(value, 10);
+      if (!isNaN(newSize) && newSize > 0) {
+        this.size = newSize;
+        this.page = 0; // Reset a primera página
+      }
+    }
+
+    getFirstItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      return this.page * this.size + 1;
+    }
+
+    getLastItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      const endIndex = this.page * this.size + this.itemsFiltrados.length;
+      return endIndex;
     }
 }
