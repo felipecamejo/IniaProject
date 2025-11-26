@@ -208,7 +208,7 @@ resource "aws_lb_listener_rule" "swagger" {
 
   condition {
     path_pattern {
-      values = ["/Inia/swagger*", "/Inia/swagger/*", "/Inia/v3/api-docs*", "/Inia/v3/api-docs/*", "/Inia/swagger-resources*", "/Inia/swagger-resources/*", "/Inia/webjars*", "/Inia/webjars/*"]
+      values = ["/Inia/swagger*", "/Inia/swagger/*", "/Inia/v3/api-docs*", "/Inia/v3/api-docs/*", "/Inia/swagger-resources*"]
     }
   }
 }
@@ -267,10 +267,26 @@ resource "aws_lb_listener_rule" "middleware" {
   }
 }
 
+# Route53 Hosted Zone (created if route53_zone_id is empty and create_route53_record is true)
+resource "aws_route53_zone" "main" {
+  count = var.create_route53_record && var.domain_name != "" && var.route53_zone_id == "" ? 1 : 0
+  name  = var.domain_name
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-route53-zone"
+  }
+}
+
+# Data source to get existing Route53 zone if zone_id is provided
+data "aws_route53_zone" "existing" {
+  count   = var.create_route53_record && var.domain_name != "" && var.route53_zone_id != "" ? 1 : 0
+  zone_id = var.route53_zone_id
+}
+
 # Route53 Record (optional, only if create_route53_record is true)
 resource "aws_route53_record" "main" {
   count   = var.create_route53_record && var.domain_name != "" ? 1 : 0
-  zone_id = var.route53_zone_id
+  zone_id = var.route53_zone_id != "" ? var.route53_zone_id : aws_route53_zone.main[0].zone_id
   name    = var.domain_name
   type    = "A"
 

@@ -64,3 +64,13 @@ output "domain_name" {
   value       = module.ecs.domain_name
 }
 
+output "route53_zone_id" {
+  description = "Route53 hosted zone ID (created or existing)"
+  value       = module.ecs.route53_zone_id
+}
+
+output "route53_name_servers" {
+  description = "Route53 name servers for the hosted zone (if created). Update your domain registrar with these nameservers."
+  value       = module.ecs.route53_name_servers
+}
+
