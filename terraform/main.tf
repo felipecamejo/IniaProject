@@ -7,13 +7,6 @@ terraform {
       version = "~> 5.0"
     }
   }
-
-  # Opcional: Backend para almacenar el estado
-  # backend "s3" {
-  #   bucket = "inia-terraform-state"
-  #   key    = "ecs/terraform.tfstate"
-  #   region = "us-east-1"
-  # }
 }
 
 provider "aws" {
@@ -29,8 +22,13 @@ provider "aws" {
 }
 
 # Data sources
+# Limitar a 2 AZs para configuración mínima (reduce costos de NAT Gateway)
 data "aws_availability_zones" "available" {
   state = "available"
+  filter {
+    name   = "region-name"
+    values = [var.aws_region]
+  }
 }
 
 data "aws_caller_identity" "current" {}
@@ -63,9 +61,11 @@ module "ecr" {
 module "iam" {
   source = "./modules/iam"
 
-  project_name = var.project_name
-  environment  = var.environment
-  account_id   = data.aws_caller_identity.current.account_id
+  project_name                = var.project_name
+  environment                 = var.environment
+  account_id                  = data.aws_caller_identity.current.account_id
+  ecs_task_execution_role_name = var.ecs_task_execution_role_name
+  ecs_task_role_name          = var.ecs_task_role_name
 }
 
 module "rds" {
@@ -81,6 +81,7 @@ module "rds" {
   db_name                = var.db_name
   db_username            = var.db_username
   db_password            = var.db_password
+  rds_monitoring_role_name = var.rds_monitoring_role_name
 }
 
 module "ecs" {

@@ -1,0 +1,17 @@
+{
+    "/Inia": {
+        "target": "http://backend:8080",
+        "secure": false,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    },
+    "/middleware/*": {
+        "target": "http://middleware:9099",
+        "secure": false,
+        "changeOrigin": true,
+        "logLevel": "debug",
+        "pathRewrite": {
+            "^/middleware": ""
+        }
+    }
+}

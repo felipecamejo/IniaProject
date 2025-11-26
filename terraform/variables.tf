@@ -148,3 +148,20 @@ variable "route53_zone_id" {
   default     = ""
 }
 
+# IAM Roles (existing roles to use)
+variable "ecs_task_execution_role_name" {
+  description = "Name of existing IAM role for ECS task execution (must exist)"
+  type        = string
+}
+
+variable "ecs_task_role_name" {
+  description = "Name of existing IAM role for ECS tasks (must exist)"
+  type        = string
+}
+
+variable "rds_monitoring_role_name" {
+  description = "Name of existing IAM role for RDS enhanced monitoring (leave empty to disable monitoring)"
+  type        = string
+  default     = ""
+}
+

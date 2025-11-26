@@ -1,3 +1,16 @@
+# Local values for URL construction
+locals {
+  # Determine the hostname (domain or ALB DNS)
+  hostname = var.domain_name != "" ? var.domain_name : aws_lb.main.dns_name
+  
+  # Determine the protocol (HTTPS if SSL cert exists, otherwise HTTP)
+  protocol = var.ssl_certificate_arn != "" ? "https" : "http"
+  
+  # Construct base URLs
+  backend_base_url    = "${local.protocol}://${local.hostname}/Inia"
+  middleware_base_url = "${local.protocol}://${local.hostname}/middleware"
+}
+
 # CloudWatch Log Groups
 resource "aws_cloudwatch_log_group" "backend" {
   name              = "/ecs/${var.project_name}-${var.environment}-backend"
@@ -30,10 +43,11 @@ resource "aws_cloudwatch_log_group" "middleware" {
 resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-${var.environment}-cluster"
 
-  setting {
-    name  = "containerInsights"
-    value = "enabled"
-  }
+  # Container Insights deshabilitado para configuración mínima (reduce costos)
+  # setting {
+  #   name  = "containerInsights"
+  #   value = "enabled"
+  # }
 
   tags = {
     Name = "${var.project_name}-${var.environment}-cluster"
@@ -71,7 +85,7 @@ resource "aws_lb_target_group" "backend" {
     unhealthy_threshold = 3
     timeout             = 5
     interval            = 30
-    path                = "/actuator/health"
+    path                = "/Inia/actuator/health"
     matcher             = "200"
     protocol            = "HTTP"
   }
@@ -181,7 +195,26 @@ resource "aws_lb_listener" "https" {
   }
 }
 
+# ALB Listener Rule for Swagger (HTTPS if SSL, otherwise HTTP)
+# Prioridad 90 - Mayor prioridad para rutas específicas de Swagger
+resource "aws_lb_listener_rule" "swagger" {
+  listener_arn = var.ssl_certificate_arn != "" ? aws_lb_listener.https[0].arn : aws_lb_listener.http_forward[0].arn
+  priority     = 90
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/Inia/swagger*", "/Inia/swagger/*", "/Inia/v3/api-docs*", "/Inia/v3/api-docs/*", "/Inia/swagger-resources*", "/Inia/swagger-resources/*", "/Inia/webjars*", "/Inia/webjars/*"]
+    }
+  }
+}
+
 # ALB Listener Rule for Backend (HTTPS if SSL, otherwise HTTP)
+# Prioridad 100 - Rutas generales del backend
 resource "aws_lb_listener_rule" "backend" {
   listener_arn = var.ssl_certificate_arn != "" ? aws_lb_listener.https[0].arn : aws_lb_listener.http_forward[0].arn
   priority     = 100
@@ -198,7 +231,26 @@ resource "aws_lb_listener_rule" "backend" {
   }
 }
 
+# ALB Listener Rule for Health Check (HTTPS if SSL, otherwise HTTP)
+# Prioridad 110 - Health check específico del backend
+resource "aws_lb_listener_rule" "backend_health" {
+  listener_arn = var.ssl_certificate_arn != "" ? aws_lb_listener.https[0].arn : aws_lb_listener.http_forward[0].arn
+  priority     = 110
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/Inia/actuator/health*"]
+    }
+  }
+}
+
 # ALB Listener Rule for Middleware (HTTPS if SSL, otherwise HTTP)
+# Prioridad 200 - Rutas del middleware
 resource "aws_lb_listener_rule" "middleware" {
   listener_arn = var.ssl_certificate_arn != "" ? aws_lb_listener.https[0].arn : aws_lb_listener.http_forward[0].arn
   priority     = 200
@@ -279,7 +331,7 @@ resource "aws_ecs_task_definition" "backend" {
       },
       {
         name  = "PYTHON_MIDDLEWARE_BASE_URL"
-        value = "http://${aws_lb.main.dns_name}/middleware"
+        value = local.middleware_base_url
       }
     ]
 
@@ -327,12 +379,16 @@ resource "aws_ecs_task_definition" "frontend" {
 
     environment = [
       {
+        name  = "USE_ECS_NGINX"
+        value = "true"
+      },
+      {
         name  = "BACKEND_URL"
-        value = "http://${aws_lb.main.dns_name}/Inia"
+        value = local.backend_base_url
       },
       {
         name  = "MIDDLEWARE_URL"
-        value = "http://${aws_lb.main.dns_name}/middleware"
+        value = local.middleware_base_url
       }
     ]
 
@@ -504,7 +560,9 @@ resource "aws_ecs_service" "backend" {
   }
 
   depends_on = [
+    aws_lb_listener_rule.swagger,
     aws_lb_listener_rule.backend,
+    aws_lb_listener_rule.backend_health,
     aws_lb_listener.http_redirect,
     aws_lb_listener.http_forward,
     aws_lb_listener.https
