@@ -23,8 +23,8 @@ RUN for i in 1 2 3; do \
 # Copiar código fuente
 COPY src ./src
 
-# Construir la aplicación (deshabilitando el plugin del frontend ya que se construye por separado)
-RUN mvn clean package -DskipTests -DskipFrontend=true
+# Construir la aplicación (deshabilitando el plugin del frontend y saltando compilación de tests)
+RUN mvn clean package -DskipTests -Dmaven.test.skip=true -DskipFrontend=true
 
 # Etapa 2: Imagen de producción con JRE solamente
 FROM eclipse-temurin:21-jre-jammy
