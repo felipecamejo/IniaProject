@@ -1,32 +1,30 @@
-# Docker Compose para Producción - Proyecto INIA
-# Uso: docker-compose -f docker-compose.prod.yml up -d
+# Docker Compose para Simulación ECS Local
+# Uso: docker-compose -f docker-compose.ecs.yml up
 # 
 # Características:
-# - Configuración optimizada para producción
-# - Health checks configurados
-# - Restart policies
+# - Configuración similar a ECS (producción)
+# - Frontend con Nginx (puerto 80) sin proxy (como en ECS)
+# - Sin hot reload
 # - Variables de entorno de producción
-# - Red aislada
-
-version: '3.8'
+# - Configuración optimizada para producción
 
 services:
   # Base de datos PostgreSQL
   database:
-    image: postgres:16-alpine
-    container_name: inia-database-prod
+    image: postgres:15-alpine  # Misma versión que RDS en ECS
+    container_name: inia-database-ecs
     environment:
       POSTGRES_DB: Inia
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Inia2024SecurePass!
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     volumes:
-      - postgres_data_prod:/var/lib/postgresql/data
+      - postgres_data_ecs:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
       - "5432:5432"
     networks:
-      - inia-network-prod
+      - inia-network-ecs
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d Inia"]
@@ -35,14 +33,12 @@ services:
       retries: 3
       start_period: 30s
 
-  # Backend Spring Boot
+  # Backend Spring Boot - Configuración ECS
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
-      args:
-        - BUILDKIT_INLINE_CACHE=1
-    container_name: inia-backend-prod
+    container_name: inia-backend-ecs
     environment:
       # Variables de base de datos
       DB_USER: postgres
@@ -57,7 +53,7 @@ services:
       SPRING_PROFILES_ACTIVE: prod
       SERVER_PORT: 8080
       
-      # URL del middleware
+      # URL del middleware (en ECS sería la URL del ALB, en Docker Compose usamos nombre de servicio)
       PYTHON_MIDDLEWARE_BASE_URL: http://middleware:9099
     depends_on:
       database:
@@ -65,23 +61,21 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - inia-network-prod
+      - inia-network-ecs
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/Inia/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 90s
+      start_period: 60s
 
-  # Middleware Python/FastAPI
+  # Middleware Python/FastAPI - Configuración ECS
   middleware:
     build:
       context: .
       dockerfile: Dockerfile.middleware
-      args:
-        - BUILDKIT_INLINE_CACHE=1
-    container_name: inia-middleware-prod
+    container_name: inia-middleware-ecs
     environment:
       # Variables de base de datos
       DB_USER: postgres
@@ -93,7 +87,7 @@ services:
       PYTHONPATH: /app
       PYTHONUNBUFFERED: 1
       
-      # Configuración de producción
+      # Configuración de producción (igual que ECS)
       UVICORN_WORKERS: 8
       MAX_CONCURRENT_REQUESTS: 200
       MAX_REQUEST_TIMEOUT: 600
@@ -113,7 +107,7 @@ services:
     volumes:
       - ./middleware/exports:/app/exports
     networks:
-      - inia-network-prod
+      - inia-network-ecs
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "python -c 'import requests; r=requests.get(\"http://localhost:9099/health\", timeout=2); exit(0 if r.status_code==200 else 1)' || exit 1"]
@@ -122,27 +116,24 @@ services:
       retries: 3
       start_period: 60s
 
-  # Frontend Angular + Nginx
+  # Frontend Angular + Nginx - Configuración ECS (sin proxy)
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-      args:
-        - BUILDKIT_INLINE_CACHE=1
-    container_name: inia-frontend-prod
+    container_name: inia-frontend-ecs
     environment:
-      USE_ECS_NGINX: "true"
+      USE_ECS_NGINX: "true"  # Usar nginx.conf.ecs (sin proxy, como en ECS)
+      # En ECS estas URLs serían del ALB, en Docker Compose usamos nombres de servicio
       BACKEND_URL: http://backend:8080/Inia
       MIDDLEWARE_URL: http://middleware:9099
     depends_on:
-      backend:
-        condition: service_healthy
-      middleware:
-        condition: service_healthy
+      - backend
+      - middleware
     ports:
       - "80:80"
     networks:
-      - inia-network-prod
+      - inia-network-ecs
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost/health || exit 1"]
@@ -153,14 +144,14 @@ services:
 
 # Volúmenes persistentes
 volumes:
-  postgres_data_prod:
+  postgres_data_ecs:
     driver: local
 
 # Red personalizada
 networks:
-  inia-network-prod:
+  inia-network-ecs:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.22.0.0/16
+        - subnet: 172.21.0.0/16
 

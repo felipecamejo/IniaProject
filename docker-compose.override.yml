@@ -1,0 +1,66 @@
+# Archivo de override para desarrollo
+# Este archivo se carga automáticamente en desarrollo
+# y permite configuraciones específicas para desarrollo
+
+services:
+  # Backend con hot reload para desarrollo
+  backend:
+    environment:
+      SPRING_PROFILES_ACTIVE: development
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "true"
+    volumes:
+      # Montar código fuente para hot reload (opcional)
+      - ./src:/app/src:ro
+    command: ["java", "-jar", "app.jar", "--spring.profiles.active=development"]
+
+  # Middleware con hot reload para desarrollo
+  middleware:
+    volumes:
+      # Montar código fuente para hot reload
+      - ./middleware:/app
+    # En desarrollo, usar uvicorn con reload para hot reload
+    # En producción, usar python http_server.py (definido en docker-compose.yml)
+    command: ["uvicorn", "http_server:app", "--host", "0.0.0.0", "--port", "9099", "--reload", "--workers", "1"]
+    environment:
+      PYTHONPATH: /app
+      # Optimizaciones para desarrollo (valores más bajos)
+      UVICORN_WORKERS: 1
+      MAX_CONCURRENT_REQUESTS: 20
+      MAX_REQUEST_TIMEOUT: 300
+      RATE_LIMIT_REQUESTS: 200
+      RATE_LIMIT_WINDOW: 60
+      THREAD_POOL_WORKERS: 5
+      DB_POOL_SIZE: 5
+      DB_MAX_OVERFLOW: 10
+      DB_POOL_RECYCLE: 3600
+      PY_MIDDLEWARE_PORT: 9099
+
+  # Frontend con hot reload para desarrollo
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend.dev
+    volumes:
+      # Montar código fuente para hot reload
+      - ./frontend/src:/app/src
+      - ./frontend/angular.json:/app/angular.json
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+      # Montar proxy.conf.json para que use nombres de Docker
+      - ./frontend/proxy.conf.json:/app/proxy.conf.json
+    command: ["npm", "run", "start", "--", "--host", "0.0.0.0", "--port", "4200"]
+    ports:
+      - "4200:4200"  # Puerto de desarrollo de Angular
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:4200 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Base de datos con configuración de desarrollo
+  database:
+    environment:
+      POSTGRES_LOG_STATEMENT: "all"
+      POSTGRES_LOG_MIN_DURATION_STATEMENT: "0"
