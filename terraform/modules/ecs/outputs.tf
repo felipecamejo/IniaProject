@@ -48,3 +48,13 @@ output "application_url" {
   value       = var.domain_name != "" ? (var.ssl_certificate_arn != "" ? "https://${var.domain_name}" : "http://${var.domain_name}") : "http://${aws_lb.main.dns_name}"
 }
 
+output "route53_zone_id" {
+  description = "Route53 hosted zone ID (created or existing)"
+  value       = var.create_route53_record && var.domain_name != "" ? (var.route53_zone_id != "" ? var.route53_zone_id : aws_route53_zone.main[0].zone_id) : null
+}
+
+output "route53_name_servers" {
+  description = "Route53 name servers for the hosted zone (if created)"
+  value       = var.create_route53_record && var.domain_name != "" && var.route53_zone_id == "" ? aws_route53_zone.main[0].name_servers : null
+}
+
