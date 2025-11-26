@@ -1,0 +1,41 @@
+# Copia este archivo a terraform.tfvars y completa los valores
+
+aws_region = "us-east-1"
+project_name = "inia"
+environment = "prod"
+
+# VPC Configuration
+vpc_cidr = "10.0.0.0/16"
+
+# Database Configuration
+db_instance_class = "db.t3.micro"
+db_allocated_storage = 20
+db_name = "Inia"
+db_username = "postgres"
+db_password = "CHANGE_THIS_PASSWORD_IN_PRODUCTION"
+
+# Application Configuration
+jwt_secret = "CHANGE_THIS_JWT_SECRET_IN_PRODUCTION"
+image_tag = "latest"
+
+# ECS Service Scaling
+desired_count_backend = 2
+desired_count_frontend = 2
+desired_count_middleware = 2
+
+# ECS Task Resources
+cpu_backend = 512
+memory_backend = 1024
+
+cpu_frontend = 256
+memory_frontend = 512
+
+cpu_middleware = 512
+memory_middleware = 1024
+
+# Domain and SSL Configuration
+domain_name = "zimmzimmgames.com"
+ssl_certificate_arn = "arn:aws:acm:us-east-1:ACCOUNT_ID:certificate/CERTIFICATE_ID"
+create_route53_record = false
+route53_zone_id = ""
+
