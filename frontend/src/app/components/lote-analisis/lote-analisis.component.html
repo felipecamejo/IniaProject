@@ -95,7 +95,7 @@
              [class.disabled]="isButtonDisabled('certificado')"
              (click)="navigateToComponent('certificado')">
           <div class="button-circle verde">
-            <span class="button-icon-text">CERT</span>
+            <img src="assets/Certificado.svg" alt="Certificado" class="button-icon" />
           </div>
           <span class="button-text">{{ tieneCertificado ? 'Editar' : 'Certificado' }}</span>
         </div>
@@ -111,9 +111,9 @@
         <div class="analisis-button certificado-button" 
              (click)="goToListadoLogs()">
           <div class="button-circle morado">
-            <span class="button-icon-text">Historial</span>
+            <img src="assets/Historial.svg" alt="Historial" class="button-icon" />
           </div>
-          <span class="button-text">Registro</span>
+          <span class="button-text">Historial</span>
         </div>
       </div>
       
