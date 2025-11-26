@@ -35,7 +35,14 @@ export class ListadoMalezasComponent implements OnInit, OnDestroy {
     itemEditando: any = null;
     itemEditandoId: number | null = null;
 
+
     items: MalezaDto[] = [];
+
+    // Paginación
+    page = 0; // 0-based
+    size = 12;
+    totalElements = 0;
+    totalPages = 0;
 
     // Popup de confirmación de eliminación
     mostrarConfirmEliminar: boolean = false;
@@ -73,15 +80,53 @@ export class ListadoMalezasComponent implements OnInit, OnDestroy {
         });
     }
 
-    get itemsFiltrados() {
-      return this.items.filter(item => {
 
+    get itemsFiltrados() {
+      const filtrados = this.items.filter(item => {
         const cumpleNombre = !this.searchText || 
           item.nombre.toLowerCase().includes(this.searchText.toLowerCase());
-        
-       
         return cumpleNombre;
       });
+
+      // Calcular paginación
+      this.totalElements = filtrados.length;
+      this.totalPages = Math.ceil(this.totalElements / this.size);
+
+      // Paginar los resultados
+      const startIndex = this.page * this.size;
+      const endIndex = startIndex + this.size;
+      return filtrados.slice(startIndex, endIndex);
+    }
+
+    nextPage(): void {
+      if (this.page < this.totalPages - 1) {
+        this.page++;
+      }
+    }
+
+    prevPage(): void {
+      if (this.page > 0) {
+        this.page--;
+      }
+    }
+
+    onPageSizeChange(value: string): void {
+      const newSize = parseInt(value, 10);
+      if (!isNaN(newSize) && newSize > 0) {
+        this.size = newSize;
+        this.page = 0; // Reset a primera página
+      }
+    }
+
+    getFirstItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      return this.page * this.size + 1;
+    }
+
+    getLastItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      const endIndex = this.page * this.size + this.itemsFiltrados.length;
+      return endIndex;
     }
 
     crearMaleza() {
