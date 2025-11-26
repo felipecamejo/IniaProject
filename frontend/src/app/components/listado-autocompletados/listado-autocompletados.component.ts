@@ -141,17 +141,63 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
         });
     }
 
+
+    // Paginación
+    page = 0; // 0-based
+    size = 12;
+    totalElements = 0;
+    totalPages = 0;
+
     get itemsFiltrados() {
-      return this.items.filter(item => {
+      const filtrados = this.items.filter(item => {
         const cumpleParametro = !this.searchText || 
           item.parametro.toLowerCase().includes(this.searchText.toLowerCase());
         const cumpleValor = !this.searchText || 
           item.valor.toLowerCase().includes(this.searchText.toLowerCase());
         const cumpleTipoDato = !this.searchText || 
           item.tipoDato.toLowerCase().includes(this.searchText.toLowerCase());
-        
         return cumpleParametro || cumpleValor || cumpleTipoDato;
       });
+
+      // Calcular paginación
+      this.totalElements = filtrados.length;
+      this.totalPages = Math.ceil(this.totalElements / this.size);
+
+      // Paginar los resultados
+      const startIndex = this.page * this.size;
+      const endIndex = startIndex + this.size;
+      return filtrados.slice(startIndex, endIndex);
+    }
+
+    nextPage(): void {
+      if (this.page < this.totalPages - 1) {
+        this.page++;
+      }
+    }
+
+    prevPage(): void {
+      if (this.page > 0) {
+        this.page--;
+      }
+    }
+
+    onPageSizeChange(value: string): void {
+      const newSize = parseInt(value, 10);
+      if (!isNaN(newSize) && newSize > 0) {
+        this.size = newSize;
+        this.page = 0; // Reset a primera página
+      }
+    }
+
+    getFirstItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      return this.page * this.size + 1;
+    }
+
+    getLastItemIndex(): number {
+      if (this.totalElements === 0) return 0;
+      const endIndex = this.page * this.size + this.itemsFiltrados.length;
+      return endIndex;
     }
 
     // Método que se ejecuta cuando cambia el parámetro para actualizar automáticamente el tipo de dato
