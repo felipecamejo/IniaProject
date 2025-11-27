@@ -132,7 +132,7 @@ services:
     container_name: inia-frontend-ecs
     environment:
       USE_ECS_NGINX: "true"  # Usar nginx.conf.ecs (sin proxy, como en ECS)
-      # En ECS estas URLs serían del ALB (ej: http://zimmzimmgames.com/Inia)
+      # En ECS estas URLs serían del ALB (ej: http://inia-prod-alb-XXXXX.us-east-1.elb.amazonaws.com/Inia)
       # En Docker Compose usamos localhost con puertos expuestos (accesibles desde el navegador)
       BACKEND_URL: http://localhost:8080/Inia
       MIDDLEWARE_URL: http://localhost:9099
