@@ -8,7 +8,6 @@ import { GramosPmsDto } from '../../../models/GramosPms.dto';
 import { PMSDto } from '../../../models/PMS.dto';
 import { DateService } from '../../../services/DateService';
 import { LogService } from '../../../services/LogService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { AuthService } from '../../../services/AuthService';
 
 // PrimeNG
@@ -34,7 +33,6 @@ export interface RepeticionPMS {
       ButtonModule,
       InputNumberModule,
       TableModule,
-      ConfirmDialogComponent
   ],
   templateUrl: './pms.component.html',
   styleUrls: ['./pms.component.scss']
@@ -78,11 +76,6 @@ export class PmsComponent implements OnInit {
     estandar: boolean = false;
     fechaCreacion: string | null = null;
 
-    // Variables para el diálogo de confirmación
-    mostrarConfirmEstandar: boolean = false;
-    mostrarConfirmRepetido: boolean = false;
-    estandarPendiente: boolean = false;
-    repetidoPendiente: boolean = false;
 
     // Variables para controlar si ya está marcado (no se puede cambiar)
     estandarOriginal: boolean = false;
@@ -116,12 +109,18 @@ export class PmsComponent implements OnInit {
         this.repetidoOriginal = false;
       }
 
-      // Si está intentando marcar como estándar, mostrar confirmación
-      if (this.estandar && !this.mostrarConfirmEstandar) {
-        this.estandarPendiente = true;
-        this.mostrarConfirmEstandar = true;
-        // Revertir el cambio hasta que se confirme
-        this.estandar = false;
+      // Si está intentando marcar como estándar, mostrar confirmación con alert
+      if (this.estandar) {
+        const confirmar = confirm('¿Estás seguro de que deseas marcar este análisis como estándar? Una vez marcado, no podrás cambiarlo.');
+        if (!confirmar) {
+          // Revertir el cambio si no se confirma
+          this.estandar = false;
+          return;
+        }
+        // Confirmar el cambio
+        this.repetido = false;
+        this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
+        this.repetidoOriginal = false;
       }
     }
 
@@ -138,43 +137,19 @@ export class PmsComponent implements OnInit {
         this.estandarOriginal = false;
       }
 
-      // Si está intentando marcar como repetido, mostrar confirmación
-      if (this.repetido && !this.mostrarConfirmRepetido) {
-        this.repetidoPendiente = true;
-        this.mostrarConfirmRepetido = true;
-        // Revertir el cambio hasta que se confirme
-        this.repetido = false;
+      // Si está intentando marcar como repetido, mostrar confirmación con alert
+      if (this.repetido) {
+        const confirmar = confirm('¿Estás seguro de que deseas marcar este análisis como repetido? Una vez marcado, no podrás cambiarlo.');
+        if (!confirmar) {
+          // Revertir el cambio si no se confirma
+          this.repetido = false;
+          return;
+        }
+        // Confirmar el cambio
+        this.estandar = false;
+        this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
+        this.estandarOriginal = false;
       }
-    }
-
-    confirmarEstandar() {
-      this.estandar = true;
-      this.repetido = false;
-      this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
-      this.repetidoOriginal = false;
-      this.mostrarConfirmEstandar = false;
-      this.estandarPendiente = false;
-    }
-
-    cancelarEstandar() {
-      this.estandar = false;
-      this.mostrarConfirmEstandar = false;
-      this.estandarPendiente = false;
-    }
-
-    confirmarRepetido() {
-      this.repetido = true;
-      this.estandar = false;
-      this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
-      this.estandarOriginal = false;
-      this.mostrarConfirmRepetido = false;
-      this.repetidoPendiente = false;
-    }
-
-    cancelarRepetido() {
-      this.repetido = false;
-      this.mostrarConfirmRepetido = false;
-      this.repetidoPendiente = false;
     }
     fechaRepeticion: string | null = null;
 

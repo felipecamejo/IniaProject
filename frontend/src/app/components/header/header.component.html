@@ -14,25 +14,28 @@
 
         <!-- Navegación -->
         <nav class="app-header__nav" [class.nav--mobile-open]="isMobileMenuOpen" role="navigation" aria-label="Menú principal">
-            <a [routerLink]="['/home']" class="nav__item" aria-label="Inicio" (click)="navigateTo('/home')">
-                <i class="pi pi-home"></i>
-                <span class="nav__label">Inicio</span>
-            </a>
+            <!-- Botones visibles cuando el usuario está autenticado -->
+            <ng-container *ngIf="isAuthenticated">
+                <a [routerLink]="['/home']" class="nav__item" aria-label="Inicio" (click)="navigateTo('/home')">
+                    <i class="pi pi-home"></i>
+                    <span class="nav__label">Inicio</span>
+                </a>
 
-            <a [routerLink]="['/perfil']" class="nav__item" aria-label="Perfil" (click)="navigateTo('/perfil')">
-                <i class="pi pi-user"></i>
-                <span class="nav__label">Perfil</span>
-            </a>
+                <a [routerLink]="['/perfil']" class="nav__item" aria-label="Perfil" (click)="navigateTo('/perfil')">
+                    <i class="pi pi-user"></i>
+                    <span class="nav__label">Perfil</span>
+                </a>
 
-            <a [routerLink]="['/listado-lotes']" class="nav__item" aria-label="Documentación" (click)="navigateTo('/listado-lotes')">
-                <i class="pi pi-file"></i>
-                <span class="nav__label">Documentos</span>
-            </a>
+                <a [routerLink]="['/listado-lotes']" class="nav__item" aria-label="Documentación" (click)="navigateTo('/listado-lotes')">
+                    <i class="pi pi-file"></i>
+                    <span class="nav__label">Documentos</span>
+                </a>
 
-            <a class="nav__item" aria-label="Cerrar sesión" (click)="logout()" style="cursor: pointer;">
-                <i class="pi pi-sign-out"></i>
-                <span class="nav__label">Salir</span>
-            </a>
+                <a class="nav__item" aria-label="Cerrar sesión" (click)="logout()" style="cursor: pointer;">
+                    <i class="pi pi-sign-out"></i>
+                    <span class="nav__label">Salir</span>
+                </a>
+            </ng-container>
         </nav>
 
         <!-- Overlay para móviles -->

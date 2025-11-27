@@ -1,0 +1,6 @@
+[
+  {
+    "Type": "forward",
+    "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:089491951360:targetgroup/inia-prod-frontend-tg/eb90065efe9e129c"
+  }
+]

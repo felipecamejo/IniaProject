@@ -1,0 +1,17 @@
+{
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "_A33BDC11F97DDED711E79CD3E13E62EE.zimmzimmgames.com",
+        "Type": "CNAME",
+        "TTL": 3600,
+        "ResourceRecords": [
+          {
+            "Value": "5C4203DDDFB7099D0B93B516BE10BD84.5DB90F857FF96349378983CC67D98BFA.9078f0a8bcedc1e.comodoca.com"
+          }
+        ]
+      }
+    }
+  ]
+}

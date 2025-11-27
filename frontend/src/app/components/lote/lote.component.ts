@@ -63,13 +63,33 @@ export class LoteComponent {
       };
 
       this.loteService.crearLote(lote).subscribe({
-        next: (loteId) => {
-          console.log(loteId);
-
-          // Navegar a lote-analisis sin reciboId (se creará uno nuevo)
-          this.router.navigate([`/${loteId}/lote-analisis`]);
+        next: (response) => {
+          console.log('Respuesta del backend:', response);
+          
+          // Extraer el ID del mensaje del backend
+          // El backend retorna: "Lote creado correctamente ID:123"
+          let loteId: number | null = null;
+          if (response) {
+            const match = response.match(/ID:(\d+)/);
+            if (match && match[1]) {
+              loteId = parseInt(match[1], 10);
+            }
+          }
+          
+          if (loteId) {
+            console.log('Lote ID extraído:', loteId);
+            // Navegar a lote-analisis sin reciboId (se creará uno nuevo)
+            this.router.navigate([`/${loteId}/lote-analisis`]);
+          } else {
+            console.error('No se pudo extraer el ID del lote de la respuesta:', response);
+            alert('Error: No se pudo obtener el ID del lote creado. Por favor, verifica el listado de lotes.');
+            this.router.navigate(['/listado-lotes']);
+          }
         },
-        error: (err) => console.error('Error creando lote', err)
+        error: (err) => {
+          console.error('Error creando lote', err);
+          alert('Error al crear el lote. Por favor, intenta nuevamente.');
+        }
       });
     }
   }

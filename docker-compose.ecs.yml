@@ -69,7 +69,9 @@ services:
     restart: unless-stopped
     healthcheck:
       # Health check idéntico a ECS Task Definition
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/Inia/actuator/health || exit 1"]
+      # Nota: El health check interno usa /actuator/health (sin /Inia)
+      # El ALB Target Group usa /Inia/actuator/health, pero el contenedor expone /actuator/health
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -130,9 +132,10 @@ services:
     container_name: inia-frontend-ecs
     environment:
       USE_ECS_NGINX: "true"  # Usar nginx.conf.ecs (sin proxy, como en ECS)
-      # En ECS estas URLs serían del ALB, en Docker Compose usamos nombres de servicio
-      BACKEND_URL: http://backend:8080/Inia
-      MIDDLEWARE_URL: http://middleware:9099
+      # En ECS estas URLs serían del ALB (ej: http://zimmzimmgames.com/Inia)
+      # En Docker Compose usamos localhost con puertos expuestos (accesibles desde el navegador)
+      BACKEND_URL: http://localhost:8080/Inia
+      MIDDLEWARE_URL: http://localhost:9099
     depends_on:
       - backend
       - middleware

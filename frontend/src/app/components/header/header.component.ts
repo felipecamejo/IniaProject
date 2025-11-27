@@ -1,4 +1,5 @@
 import { Component, HostListener } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/AuthService';
@@ -6,12 +7,17 @@ import { AuthService } from '../../../services/AuthService';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent {
   constructor(private router: Router, private auth: AuthService) {}
+
+  get isAuthenticated(): boolean {
+    return this.auth.isAuthenticated();
+  }
+
 
   navigateTo(route: string): void {
     this.router.navigate([route]);

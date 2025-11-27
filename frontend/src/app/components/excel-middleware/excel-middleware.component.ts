@@ -239,7 +239,7 @@ export class ExcelMiddlewareComponent {
           // Error genérico
           if (error.status === 0) {
             errorMessage = 'Error de conexión. Verifique que el servidor esté ejecutándose.';
-            errorDetails = 'No se pudo conectar al servidor. Asegúrese de que el servidor Python esté ejecutándose en http://localhost:9099.';
+            errorDetails = 'No se pudo conectar al servidor middleware. Verifique que el servicio esté disponible.';
           } else if (error.status === 500) {
             errorMessage = 'Error interno del servidor durante la exportación.';
             errorDetails = error.message || 'Error desconocido del servidor.';
@@ -377,7 +377,7 @@ export class ExcelMiddlewareComponent {
           // Error genérico
           if (error.status === 0) {
             errorMessage = 'Error de conexión. Verifique que el servidor esté ejecutándose.';
-            errorDetails = 'No se pudo conectar al servidor. Asegúrese de que el servidor Python esté ejecutándose en http://localhost:9099.';
+            errorDetails = 'No se pudo conectar al servidor middleware. Verifique que el servicio esté disponible.';
           } else if (error.status === 400) {
             errorMessage = 'Error en la solicitud. Verifique los archivos seleccionados.';
             errorDetails = error.message || 'Los archivos pueden tener un formato incorrecto o datos inválidos.';

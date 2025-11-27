@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from '../guards/auth.guard';
 import { HeaderComponent } from './components/header/header.component';
 import { HomeComponent } from './components/home/home.component';
 import { ReciboComponent } from './components/recibo/recibo.component';
@@ -36,77 +37,79 @@ import { ListadoLogsComponent } from './components/listado-logs/listado-logs.com
 import { ExcelMiddlewareComponent } from './components/excel-middleware/excel-middleware.component';
 
 export const routes: Routes = [
-    //rutas generales
-    { path : 'home', component: HomeComponent },
+    // Ruta pública (sin autenticación)
     { path : 'login', component: LoginComponent },
     { path : '', redirectTo: '/login', pathMatch: 'full' },
-    { path : 'perfil', component: PerfilComponent },
-    { path : 'excel-middleware', component: ExcelMiddlewareComponent },
-
-    //listados
-    { path : 'listado-depositos', component: ListadoDepositosComponent },
-    { path : 'listado-metodos', component: ListadoMetodosComponent },
-    { path : 'listado-autocompletados', component: ListadoAutocompletadosComponent },
-    { path : 'listado-usuarios', component: ListadoUsuariosComponent },
-    { path : 'listado-lotes', component: ListadoLotesComponent }, // para todos los usuarios
-    { path : 'listado-malezas', component: ListadoMalezasComponent },
-    { path : 'listado-hongos', component: ListadoHongosComponent },
-    { path : 'listado-cultivos', component: ListadoCultivosComponent },
-    { path : 'listado-certificados', component: ListadoCertificadosComponent },
     
-    { path : ':loteId/:reciboId/listado-logs', component: ListadoLogsComponent },
+    // Rutas protegidas (requieren autenticación)
+    { path : 'home', component: HomeComponent, canActivate: [authGuard] },
+    { path : 'perfil', component: PerfilComponent, canActivate: [authGuard] },
+    { path : 'excel-middleware', component: ExcelMiddlewareComponent, canActivate: [authGuard] },
 
-    //listados asociados a un recibo
-    { path : ':loteId/:reciboId/listado-dosn', component: ListadoDosnComponent },
-    { path : ':loteId/:reciboId/listado-pms', component: ListadoPmsComponent },
-    { path : ':loteId/:reciboId/listado-pureza', component: ListadoPurezaComponent },
-    { path : ':loteId/:reciboId/listado-pureza-p-notatum', component: ListadoPurezaPNotatumComponent },
-    { path : ':loteId/:reciboId/listado-tetrazolio', component: ListadoTetrazolioComponent },
-    { path : ':loteId/:reciboId/listado-germinacion', component: ListadoGerminacionComponent },
-    { path : ':loteId/:reciboId/listado-sanitario', component: ListadoSanitarioComponent },
-
-    //home asociado a un lote
-    { path : ':loteId/lote-analisis', component: LoteAnalisisComponent },
-    { path : ':loteId/:reciboId/lote-analisis', component: LoteAnalisisComponent },
-
-    //formularios de creación y edición
-    { path : 'usuario/crear', component: UsuarioComponent },
-    { path : 'usuario/editar/:id', component: UsuarioComponent },
-    { path : 'lote/crear', component: LoteComponent },
-
-    //formularios asociados a un lote
-    { path : ':loteId/recibo/crear', component: ReciboComponent },
-    { path : ':loteId/:reciboId/recibo/editar', component: ReciboComponent },
-
-    //formularios asociados a un recibo
-    { path : ':loteId/:reciboId/pms/crear', component: PmsComponent },
-    { path : ':loteId/:reciboId/pms/editar/:id', component: PmsComponent },
-    { path : ':loteId/:reciboId/pms/:id', component: PmsComponent }, // Para visualización con query param view=true
-    { path : ':loteId/:reciboId/sanitario/crear', component: SanitarioComponent },
-    { path : ':loteId/:reciboId/sanitario/editar/:id', component: SanitarioComponent },
-    { path : ':loteId/:reciboId/sanitario/:id', component: SanitarioComponent }, // Para visualización con query param view=true
-    { path : ':loteId/:reciboId/pureza/crear', component: PurezaComponent },
-    { path : ':loteId/:reciboId/pureza/editar/:id', component: PurezaComponent },
-    { path : ':loteId/:reciboId/pureza/:id', component: PurezaComponent }, // Para visualización con query param view=true
-    { path : ':loteId/:reciboId/dosn/crear', component: DOSNComponent },
-    { path : ':loteId/:reciboId/dosn/editar/:id', component: DOSNComponent },
-    { path : ':loteId/:reciboId/dosn/:id', component: DOSNComponent }, // Para visualización con query param view=true
-    { path : ':loteId/:reciboId/pureza-p-notatum/crear', component: PurezaPNotatumComponent },
-    { path : ':loteId/:reciboId/pureza-p-notatum/editar/:id', component: PurezaPNotatumComponent },
-    { path : ':loteId/:reciboId/pureza-p-notatum/:id', component: PurezaPNotatumComponent }, // Para visualización con query param view=true
-    { path : ':loteId/:reciboId/germinacion/crear', component: GerminacionComponent },
-    { path : ':loteId/:reciboId/germinacion/editar/:id', component: GerminacionComponent },
-    { path : ':loteId/:reciboId/germinacion/:id', component: GerminacionComponent }, // Para visualización con query param view=true
-    { path : ':loteId/:reciboId/tetrazolio/crear', component: TetrazolioComponent },
-    { path : ':loteId/:reciboId/tetrazolio/editar/:id', component: TetrazolioComponent },
+    //listados (protegidos)
+    { path : 'listado-depositos', component: ListadoDepositosComponent, canActivate: [authGuard] },
+    { path : 'listado-metodos', component: ListadoMetodosComponent, canActivate: [authGuard] },
+    { path : 'listado-autocompletados', component: ListadoAutocompletadosComponent, canActivate: [authGuard] },
+    { path : 'listado-usuarios', component: ListadoUsuariosComponent, canActivate: [authGuard] },
+    { path : 'listado-lotes', component: ListadoLotesComponent, canActivate: [authGuard] }, // para todos los usuarios
+    { path : 'listado-malezas', component: ListadoMalezasComponent, canActivate: [authGuard] },
+    { path : 'listado-hongos', component: ListadoHongosComponent, canActivate: [authGuard] },
+    { path : 'listado-cultivos', component: ListadoCultivosComponent, canActivate: [authGuard] },
+    { path : 'listado-certificados', component: ListadoCertificadosComponent, canActivate: [authGuard] },
     
-    //formularios de certificados
-    { path : 'certificado/crear', component: CertificadoComponent },
-    { path : 'certificado/editar/:id', component: CertificadoComponent },
-    { path : 'certificado/:id', component: CertificadoComponent }, // Para visualización con query param view=true
+    { path : ':loteId/:reciboId/listado-logs', component: ListadoLogsComponent, canActivate: [authGuard] },
+
+    //listados asociados a un recibo (protegidos)
+    { path : ':loteId/:reciboId/listado-dosn', component: ListadoDosnComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/listado-pms', component: ListadoPmsComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/listado-pureza', component: ListadoPurezaComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/listado-pureza-p-notatum', component: ListadoPurezaPNotatumComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/listado-tetrazolio', component: ListadoTetrazolioComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/listado-germinacion', component: ListadoGerminacionComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/listado-sanitario', component: ListadoSanitarioComponent, canActivate: [authGuard] },
+
+    //home asociado a un lote (protegido)
+    { path : ':loteId/lote-analisis', component: LoteAnalisisComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/lote-analisis', component: LoteAnalisisComponent, canActivate: [authGuard] },
+
+    //formularios de creación y edición (protegidos)
+    { path : 'usuario/crear', component: UsuarioComponent, canActivate: [authGuard] },
+    { path : 'usuario/editar/:id', component: UsuarioComponent, canActivate: [authGuard] },
+    { path : 'lote/crear', component: LoteComponent, canActivate: [authGuard] },
+
+    //formularios asociados a un lote (protegidos)
+    { path : ':loteId/recibo/crear', component: ReciboComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/recibo/editar', component: ReciboComponent, canActivate: [authGuard] },
+
+    //formularios asociados a un recibo (protegidos)
+    { path : ':loteId/:reciboId/pms/crear', component: PmsComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/pms/editar/:id', component: PmsComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/pms/:id', component: PmsComponent, canActivate: [authGuard] }, // Para visualización con query param view=true
+    { path : ':loteId/:reciboId/sanitario/crear', component: SanitarioComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/sanitario/editar/:id', component: SanitarioComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/sanitario/:id', component: SanitarioComponent, canActivate: [authGuard] }, // Para visualización con query param view=true
+    { path : ':loteId/:reciboId/pureza/crear', component: PurezaComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/pureza/editar/:id', component: PurezaComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/pureza/:id', component: PurezaComponent, canActivate: [authGuard] }, // Para visualización con query param view=true
+    { path : ':loteId/:reciboId/dosn/crear', component: DOSNComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/dosn/editar/:id', component: DOSNComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/dosn/:id', component: DOSNComponent, canActivate: [authGuard] }, // Para visualización con query param view=true
+    { path : ':loteId/:reciboId/pureza-p-notatum/crear', component: PurezaPNotatumComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/pureza-p-notatum/editar/:id', component: PurezaPNotatumComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/pureza-p-notatum/:id', component: PurezaPNotatumComponent, canActivate: [authGuard] }, // Para visualización con query param view=true
+    { path : ':loteId/:reciboId/germinacion/crear', component: GerminacionComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/germinacion/editar/:id', component: GerminacionComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/germinacion/:id', component: GerminacionComponent, canActivate: [authGuard] }, // Para visualización con query param view=true
+    { path : ':loteId/:reciboId/tetrazolio/crear', component: TetrazolioComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/tetrazolio/editar/:id', component: TetrazolioComponent, canActivate: [authGuard] },
     
-    //formularios de certificados asociados a un recibo
-    { path : ':loteId/:reciboId/certificado/crear', component: CertificadoComponent },
-    { path : ':loteId/:reciboId/certificado/editar/:id', component: CertificadoComponent },
-    { path : ':loteId/:reciboId/certificado/:id', component: CertificadoComponent }, // Para visualización con query param view=true
+    //formularios de certificados (protegidos)
+    { path : 'certificado/crear', component: CertificadoComponent, canActivate: [authGuard] },
+    { path : 'certificado/editar/:id', component: CertificadoComponent, canActivate: [authGuard] },
+    { path : 'certificado/:id', component: CertificadoComponent, canActivate: [authGuard] }, // Para visualización con query param view=true
+    
+    //formularios de certificados asociados a un recibo (protegidos)
+    { path : ':loteId/:reciboId/certificado/crear', component: CertificadoComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/certificado/editar/:id', component: CertificadoComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/certificado/:id', component: CertificadoComponent, canActivate: [authGuard] }, // Para visualización con query param view=true
 ];
