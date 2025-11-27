@@ -50,3 +50,9 @@ variable "db_password" {
   sensitive   = true
 }
 
+variable "rds_monitoring_role_name" {
+  description = "Name of existing IAM role for RDS enhanced monitoring (leave empty to disable monitoring)"
+  type        = string
+  default     = ""
+}
+

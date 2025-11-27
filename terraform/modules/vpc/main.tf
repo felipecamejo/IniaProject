@@ -44,9 +44,9 @@ resource "aws_subnet" "private" {
   }
 }
 
-# Elastic IPs for NAT Gateways
+# Elastic IPs for NAT Gateways (1 NAT Gateway para configuración mínima - reduce costos)
 resource "aws_eip" "nat" {
-  count  = length(var.availability_zones)
+  count  = 1  # Solo 1 NAT Gateway para configuración mínima
   domain = "vpc"
 
   tags = {
@@ -56,11 +56,11 @@ resource "aws_eip" "nat" {
   depends_on = [aws_internet_gateway.main]
 }
 
-# NAT Gateways
+# NAT Gateways (1 NAT Gateway para configuración mínima - reduce costos)
 resource "aws_nat_gateway" "main" {
-  count         = length(var.availability_zones)
+  count         = 1  # Solo 1 NAT Gateway para configuración mínima
   allocation_id = aws_eip.nat[count.index].id
-  subnet_id     = aws_subnet.public[count.index].id
+  subnet_id     = aws_subnet.public[0].id  # Usar primera subnet pública
 
   tags = {
     Name = "${var.project_name}-${var.environment}-nat-${count.index + 1}"
@@ -91,13 +91,14 @@ resource "aws_route_table_association" "public" {
 }
 
 # Route Tables for Private Subnets
+# Todas las subnets privadas usan el mismo NAT Gateway (configuración mínima)
 resource "aws_route_table" "private" {
   count  = length(var.availability_zones)
   vpc_id = aws_vpc.main.id
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.main[count.index].id
+    nat_gateway_id = aws_nat_gateway.main[0].id  # Todas usan el mismo NAT Gateway
   }
 
   tags = {

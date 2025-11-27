@@ -13,3 +13,13 @@ variable "account_id" {
   type        = string
 }
 
+variable "ecs_task_execution_role_name" {
+  description = "Name of existing IAM role for ECS task execution"
+  type        = string
+}
+
+variable "ecs_task_role_name" {
+  description = "Name of existing IAM role for ECS tasks"
+  type        = string
+}
+
