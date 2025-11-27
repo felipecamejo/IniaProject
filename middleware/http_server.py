@@ -277,12 +277,18 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # Incluir router con prefijo /middleware para compatibilidad con ALB (reglas de path)
 app.include_router(middleware_router)
 
-# Middleware para Request ID y Logging
+# Middleware para Request ID y reescritura de paths del ALB
 @app.middleware("http")
 async def request_id_middleware(request: Request, call_next):
-    """Agrega un ID único a cada request para tracking y logging."""
+    """Agrega un ID único a cada request y reescribe paths del ALB."""
     request_id = str(uuid.uuid4())
     request.state.request_id = request_id
+    
+    # Reescribir paths cuando vienen del ALB con prefijo /middleware/
+    # Esto es necesario porque el ALB reenvía el path completo /middleware/health
+    # y el router con prefix="/middleware" necesita que el path sea exactamente /middleware/health
+    # Pero si el path ya tiene /middleware/, el router debería manejarlo automáticamente
+    # Sin embargo, para asegurar compatibilidad, mantenemos ambos endpoints
     
     # Agregar request ID a los headers de respuesta
     response = await call_next(request)
@@ -594,6 +600,8 @@ class InsertRequest(BaseModel):
 # Endpoint de health check (disponible en /health y /middleware/health)
 @app.get("/health", tags=["Health"], summary="Health Check", 
          description="Endpoint para verificar el estado del middleware")
+@app.get("/middleware/health", tags=["Health"], summary="Health Check", 
+         description="Endpoint para verificar el estado del middleware (desde ALB)")
 @middleware_router.get("/health", tags=["Health"], summary="Health Check", 
          description="Endpoint para verificar el estado del middleware")
 async def health_check(request: Request):
@@ -636,6 +644,7 @@ async def health_check(request: Request):
 
 
 @app.post("/insertar")
+@app.post("/middleware/insertar")
 @middleware_router.post("/insertar")
 async def insertar(request: Request):
     """Endpoint para insertar datos masivos. Retorna respuesta estructurada con validaciones."""
@@ -726,6 +735,7 @@ async def insertar(request: Request):
 
 
 @app.post("/exportar")
+@app.post("/middleware/exportar")
 @middleware_router.post("/exportar")
 async def exportar(
     request: Request,
@@ -1250,6 +1260,7 @@ async def procesar_un_archivo(
 
 
 @app.post("/importar")
+@app.post("/middleware/importar")
 @middleware_router.post("/importar")
 async def importar(
     request: Request,
@@ -1492,6 +1503,9 @@ async def importar(
 
 
 @app.post("/analizar", tags=["Análisis"], summary="Analizar archivo Excel", 
+          description="Analiza un archivo Excel y genera un mapeo de datos que muestra qué datos contiene y a qué entidades pertenecen. Identifica automáticamente las columnas, las asocia con entidades del sistema y contrasta con la base de datos para identificar tablas reales.",
+          response_description="Mapeo de datos del Excel analizado y contrastado con la base de datos")
+@app.post("/middleware/analizar", tags=["Análisis"], summary="Analizar archivo Excel", 
           description="Analiza un archivo Excel y genera un mapeo de datos que muestra qué datos contiene y a qué entidades pertenecen. Identifica automáticamente las columnas, las asocia con entidades del sistema y contrasta con la base de datos para identificar tablas reales.",
           response_description="Mapeo de datos del Excel analizado y contrastado con la base de datos")
 @middleware_router.post("/analizar", tags=["Análisis"], summary="Analizar archivo Excel", 
