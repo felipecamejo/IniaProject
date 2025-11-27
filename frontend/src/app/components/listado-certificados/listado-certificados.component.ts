@@ -64,21 +64,68 @@ export class ListadoCertificadosComponent implements OnInit, OnDestroy {
         });
     }
 
-    get itemsFiltrados() {
-        return this.items.filter(item => {
-            const cumpleBusqueda = !this.searchText || 
-                (item.numeroCertificado && item.numeroCertificado.toLowerCase().includes(this.searchText.toLowerCase())) ||
-                (item.nombreSolicitante && item.nombreSolicitante.toLowerCase().includes(this.searchText.toLowerCase())) ||
-                (item.especie && item.especie.toLowerCase().includes(this.searchText.toLowerCase())) ||
-                (item.cultivar && item.cultivar.toLowerCase().includes(this.searchText.toLowerCase())) ||
-                (item.numeroLote && item.numeroLote.toLowerCase().includes(this.searchText.toLowerCase()));
+
+        // Paginación
+        page = 0; // 0-based
+        size = 12;
+        totalElements = 0;
+        totalPages = 0;
+
+        get itemsFiltrados() {
+                const filtrados = this.items.filter(item => {
+                        const cumpleBusqueda = !this.searchText || 
+                                (item.numeroCertificado && item.numeroCertificado.toLowerCase().includes(this.searchText.toLowerCase())) ||
+                                (item.nombreSolicitante && item.nombreSolicitante.toLowerCase().includes(this.searchText.toLowerCase())) ||
+                                (item.especie && item.especie.toLowerCase().includes(this.searchText.toLowerCase())) ||
+                                (item.cultivar && item.cultivar.toLowerCase().includes(this.searchText.toLowerCase())) ||
+                                (item.numeroLote && item.numeroLote.toLowerCase().includes(this.searchText.toLowerCase()));
             
-            const cumpleTipo = !this.selectedTipo || 
-                item.tipoCertificado === this.selectedTipo;
+                        const cumpleTipo = !this.selectedTipo || 
+                                item.tipoCertificado === this.selectedTipo;
             
-            return cumpleBusqueda && cumpleTipo;
-        });
-    }
+                        return cumpleBusqueda && cumpleTipo;
+                });
+
+                // Calcular paginación
+                this.totalElements = filtrados.length;
+                this.totalPages = Math.ceil(this.totalElements / this.size);
+
+                // Paginar los resultados
+                const startIndex = this.page * this.size;
+                const endIndex = startIndex + this.size;
+                return filtrados.slice(startIndex, endIndex);
+        }
+
+        nextPage(): void {
+            if (this.page < this.totalPages - 1) {
+                this.page++;
+            }
+        }
+
+        prevPage(): void {
+            if (this.page > 0) {
+                this.page--;
+            }
+        }
+
+        onPageSizeChange(value: string): void {
+            const newSize = parseInt(value, 10);
+            if (!isNaN(newSize) && newSize > 0) {
+                this.size = newSize;
+                this.page = 0; // Reset a primera página
+            }
+        }
+
+        getFirstItemIndex(): number {
+            if (this.totalElements === 0) return 0;
+            return this.page * this.size + 1;
+        }
+
+        getLastItemIndex(): number {
+            if (this.totalElements === 0) return 0;
+            const endIndex = this.page * this.size + this.itemsFiltrados.length;
+            return endIndex;
+        }
 
     getTipoLabel(tipo: TipoCertificado | null): string {
         if (!tipo) return 'Sin tipo';
