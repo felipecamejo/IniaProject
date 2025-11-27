@@ -34,12 +34,13 @@ cpu_middleware = 512
 memory_middleware = 1024
 
 # Domain and SSL Configuration
-# Nota: Si tienes un certificado SSL en ACM, actualiza el ARN aquí
-domain_name = "zimmzimmgames.com"
-ssl_certificate_arn = "" # ⚠️ Actualizar con el ARN del certificado ACM si existe
-# Para obtener el ARN: aws acm list-certificates --region us-east-1 --query "CertificateSummaryList[?DomainName=='zimmzimmgames.com'].CertificateArn" --output text
-create_route53_record = true
-route53_zone_id = "" # Se creará automáticamente si está vacío, o usar el ID existente si ya tienes la zona
+# Usando DNS del ALB directamente (sin dominio personalizado)
+domain_name = "" # Vacío para usar DNS del ALB directamente
+ssl_certificate_arn = "" # Sin certificado SSL - usando HTTP solamente
+# El ALB funcionará con HTTP solamente usando su DNS name
+# Ejemplo: http://inia-prod-alb-1531354287.us-east-1.elb.amazonaws.com
+create_route53_record = false # No crear registros DNS
+route53_zone_id = "" # No aplica
 
 # IAM Roles (existing roles - NO se crearán nuevos roles)
 # ⚠️ IMPORTANTE: Usar roles existentes que puedan ser asumidos por ecs-tasks.amazonaws.com

@@ -1,6 +1,5 @@
-
 <div appAutocompleteGlobal>
-  <app-header></app-header>
-  <router-outlet />
-  <app-autocomplete-popup></app-autocomplete-popup>
+    <app-header *ngIf="showHeader()"></app-header>
+    <router-outlet />
+    <app-autocomplete-popup></app-autocomplete-popup>
 </div>

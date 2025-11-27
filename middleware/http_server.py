@@ -247,6 +247,10 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# Router con prefijo /middleware para compatibilidad con ALB (reglas de path)
+from fastapi import APIRouter
+middleware_router = APIRouter(prefix="/middleware")
+
 # ================================
 # CONFIGURACIÓN DE MIDDLEWARE
 # ================================
@@ -269,6 +273,9 @@ app.add_middleware(
 
 # Middleware de compresión GZip
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Incluir router con prefijo /middleware para compatibilidad con ALB (reglas de path)
+app.include_router(middleware_router)
 
 # Middleware para Request ID y Logging
 @app.middleware("http")
@@ -584,7 +591,10 @@ class InsertRequest(BaseModel):
     pass
 
 
+# Endpoint de health check (disponible en /health y /middleware/health)
 @app.get("/health", tags=["Health"], summary="Health Check", 
+         description="Endpoint para verificar el estado del middleware")
+@middleware_router.get("/health", tags=["Health"], summary="Health Check", 
          description="Endpoint para verificar el estado del middleware")
 async def health_check(request: Request):
     """Endpoint de health check para monitoreo del servicio."""
@@ -626,6 +636,7 @@ async def health_check(request: Request):
 
 
 @app.post("/insertar")
+@middleware_router.post("/insertar")
 async def insertar(request: Request):
     """Endpoint para insertar datos masivos. Retorna respuesta estructurada con validaciones."""
     request_id = getattr(request.state, "request_id", "unknown")
@@ -715,6 +726,7 @@ async def insertar(request: Request):
 
 
 @app.post("/exportar")
+@middleware_router.post("/exportar")
 async def exportar(
     request: Request,
     tablas: str = Query(default="", description="Lista separada por comas de tablas a exportar"),
@@ -1238,6 +1250,7 @@ async def procesar_un_archivo(
 
 
 @app.post("/importar")
+@middleware_router.post("/importar")
 async def importar(
     request: Request,
     table: Optional[str] = Form(None, description="Tabla destino (opcional, se detecta automáticamente)"),
@@ -1479,6 +1492,9 @@ async def importar(
 
 
 @app.post("/analizar", tags=["Análisis"], summary="Analizar archivo Excel", 
+          description="Analiza un archivo Excel y genera un mapeo de datos que muestra qué datos contiene y a qué entidades pertenecen. Identifica automáticamente las columnas, las asocia con entidades del sistema y contrasta con la base de datos para identificar tablas reales.",
+          response_description="Mapeo de datos del Excel analizado y contrastado con la base de datos")
+@middleware_router.post("/analizar", tags=["Análisis"], summary="Analizar archivo Excel", 
           description="Analiza un archivo Excel y genera un mapeo de datos que muestra qué datos contiene y a qué entidades pertenecen. Identifica automáticamente las columnas, las asocia con entidades del sistema y contrasta con la base de datos para identificar tablas reales.",
           response_description="Mapeo de datos del Excel analizado y contrastado con la base de datos")
 async def analizar(

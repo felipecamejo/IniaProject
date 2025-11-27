@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { HeaderComponent } from "./components/header/header.component";
 import { AutocompletePopupComponent } from './components/autocomplete-popup/autocomplete-popup.component';
 import { AutocompleteKeyboardDirective } from '../directives/autocomplete-keyboard.directive';
@@ -7,6 +9,7 @@ import { AutocompleteKeyboardDirective } from '../directives/autocomplete-keyboa
 @Component({
   selector: 'app-root',
   imports: [
+    CommonModule,
     RouterOutlet, 
     HeaderComponent,
     AutocompletePopupComponent,
@@ -17,4 +20,19 @@ import { AutocompleteKeyboardDirective } from '../directives/autocomplete-keyboa
 })
 export class App {
   protected title = 'inia-frontend';
+  currentRoute: string = '';
+
+  constructor(private router: Router) {
+    // Suscribirse a cambios de ruta para ocultar header en login
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.currentRoute = event.url;
+      });
+  }
+
+  showHeader(): boolean {
+    // Ocultar header en la página de login
+    return this.currentRoute !== '/login' && this.currentRoute !== '';
+  }
 }

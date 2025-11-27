@@ -5,8 +5,6 @@ import { UrlService } from './url.service';
 
 @Injectable({ providedIn: 'root' })
 export class MiddlewareService {
-  private endpoint = '/pandmiddleware';
-
   constructor(private http: HttpClient, private url: UrlService) {}
 
   /**
@@ -14,7 +12,8 @@ export class MiddlewareService {
    * @returns Observable con el archivo ZIP como blob
    */
   exportarTablas(): Observable<Blob> {
-    return this.http.post(`${this.url.baseUrl}${this.endpoint}/http/exportar`, {}, {
+    // Usar /middleware directamente (no /Inia/api/v1) para que el proxy funcione
+    return this.http.post(`/middleware/exportar`, {}, {
       responseType: 'blob'
     });
   }
@@ -35,7 +34,8 @@ export class MiddlewareService {
       formData.append('files', file, file.name);
     });
 
-    return this.http.post(`${this.url.baseUrl}${this.endpoint}/http/importar`, formData, {
+    // Usar /middleware directamente (no /Inia/api/v1) para que el proxy funcione
+    return this.http.post(`/middleware/importar`, formData, {
       responseType: 'json' // Cambiar a json para recibir respuestas estructuradas
     });
   }

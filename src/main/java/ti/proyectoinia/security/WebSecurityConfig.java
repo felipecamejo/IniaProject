@@ -40,6 +40,7 @@ public class WebSecurityConfig {
                 .addFilterBefore(new FiltroJWTAutorizacion(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas (no requieren autenticación ni token)
+                        .requestMatchers(antMatcher("/actuator/**")).permitAll() // Health checks y métricas
                         .requestMatchers(antMatcher("/api/seguridad/**")).permitAll()
                         .requestMatchers(antMatcher("/v3/api-docs/**")).permitAll() // Documentación Swagger
                         .requestMatchers(antMatcher("/swagger-ui/**")).permitAll() // UI de Swagger

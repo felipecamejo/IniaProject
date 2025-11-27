@@ -8,7 +8,6 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { CertificadoService } from '../../../services/CertificadoService';
 import { CertificadoDto, TipoCertificado } from '../../../models/Certificado.dto';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-listado-certificados',
@@ -18,7 +17,6 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     CardModule, 
     ButtonModule, 
     InputTextModule,
-    ConfirmDialogComponent
   ],
   templateUrl: './listado-certificados.component.html',
   styleUrls: ['./listado-certificados.component.scss']
@@ -34,10 +32,6 @@ export class ListadoCertificadosComponent implements OnInit, OnDestroy {
     items: CertificadoDto[] = [];
     private navigationSubscription: any;
 
-    // Popup de confirmación de eliminación
-    mostrarConfirmEliminar: boolean = false;
-    certificadoAEliminar: CertificadoDto | null = null;
-    confirmLoading: boolean = false;
 
     ngOnInit(): void {
         this.cargarCertificados();
@@ -129,39 +123,31 @@ export class ListadoCertificadosComponent implements OnInit, OnDestroy {
     }
 
     eliminarItem(certificado: CertificadoDto) {
-        this.certificadoAEliminar = certificado;
-        this.mostrarConfirmEliminar = true;
-    }
+        if (!certificado.id) {
+            alert('Error: El certificado no tiene un ID válido.');
+            return;
+        }
 
-    confirmarEliminacion() {
-        if (!this.certificadoAEliminar || !this.certificadoAEliminar.id) return;
-        this.confirmLoading = true;
-        const certificado = this.certificadoAEliminar;
+        const numeroCertificado = certificado.numeroCertificado || 'este certificado';
+        const confirmar = confirm(`¿Estás seguro de que quieres eliminar el certificado "${numeroCertificado}"?`);
+        
+        if (!confirmar) {
+            return;
+        }
+
         const certificadoId = certificado.id;
-
-        if (!certificadoId) return;
 
         this.certificadoService.eliminarCertificado(certificadoId).subscribe({
             next: (response: string) => {
                 console.log('Certificado eliminado:', response);
+                alert('Certificado eliminado correctamente.');
                 this.items = this.items.filter(i => i.id !== certificado.id);
-                this.confirmLoading = false;
-                this.mostrarConfirmEliminar = false;
-                this.certificadoAEliminar = null;
             },
             error: (error: any) => {
                 console.error('Error al eliminar certificado:', error);
-                this.confirmLoading = false;
-                this.mostrarConfirmEliminar = false;
-                this.certificadoAEliminar = null;
                 alert('Error al eliminar el certificado. Por favor, inténtalo de nuevo.');
             }
         });
-    }
-
-    cancelarEliminacion() {
-        this.mostrarConfirmEliminar = false;
-        this.certificadoAEliminar = null;
     }
 }
 

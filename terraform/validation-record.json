@@ -1,0 +1,18 @@
+{
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "_bea63e9bc6f1c8d25e01107dde364e1b.zimmzimmgames.com.",
+        "Type": "CNAME",
+        "TTL": 300,
+        "ResourceRecords": [
+          {
+            "Value": "_6588ca975aa60bf92e4bc7c328a17201.jkddzztszm.acm-validations.aws."
+          }
+        ]
+      }
+    }
+  ]
+}
+
