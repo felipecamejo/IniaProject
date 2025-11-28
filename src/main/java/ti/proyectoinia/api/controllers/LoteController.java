@@ -17,6 +17,13 @@ import java.util.Optional;
 @RequestMapping({"api/v1/lote"})
 public class LoteController {
 
+    @GetMapping("/anios-disponibles")
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Operation(description = "Devuelve todos los años únicos de los lotes activos")
+    public ResponseEntity<java.util.List<Integer>> getAniosDisponibles() {
+        return ResponseEntity.ok(loteService.obtenerAniosLotesActivos());
+    }
+
     @Generated
     private final LoteService loteService;
 

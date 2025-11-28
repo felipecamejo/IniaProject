@@ -62,6 +62,20 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
 
   anios: { label: string, id: number }[] = [];
 
+  cargarAniosDisponibles(): void {
+    this.loteService.obtenerAniosDisponibles().subscribe({
+      next: (anios: number[]) => {
+        this.anios = (anios || [])
+          .filter(anio => anio !== null && !isNaN(Number(anio)))
+          .map(anio => ({ label: anio.toString(), id: anio }));
+      },
+      error: (err) => {
+        console.error('Error al cargar años disponibles:', err);
+        this.anios = [];
+      }
+    });
+  }
+
   items: LoteDto[] = [];
   page = 0;
   size = 12;
@@ -73,6 +87,7 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
   confirmLoading: boolean = false;
 
   ngOnInit(): void {
+    this.cargarAniosDisponibles();
     this.cargarLotesPage();
     this.navigationSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -117,7 +132,6 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
         this.items = response.content ?? [];
         this.totalElements = response.totalElements ?? 0;
         this.totalPages = response.totalPages ?? 0;
-        this.actualizarAniosDisponibles();
         this.loading = false;
       },
       error: (error: any) => {
@@ -130,20 +144,7 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
     });
   }
 
-  actualizarAniosDisponibles() {
-    const aniosSet = new Set<number>();
-    this.items.forEach(item => {
-      const fechaConTipo = this.getFechaConTipo(item);
-      if (fechaConTipo.fecha) {
-        const anio = this.getAnioFromFecha(fechaConTipo.fecha);
-        if (!isNaN(anio)) {
-          aniosSet.add(anio);
-        }
-      }
-    });
-    const aniosArray = Array.from(aniosSet).sort((a, b) => a - b);
-    this.anios = aniosArray.map(anio => ({ label: anio.toString(), id: anio }));
-  }
+  // actualizarAniosDisponibles eliminado: ahora se usa cargarAniosDisponibles()
 
   onSearchTextChange(): void {
     this.page = 0;

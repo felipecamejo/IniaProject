@@ -27,6 +27,83 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
   styleUrls: ['./listado-logs.components.scss']
 })
 export class ListadoLogsComponent implements OnInit {
+    // --- Métodos utilitarios y de filtrado ---
+    actualizarAniosDisponibles() {
+      const aniosSet = new Set<number>();
+      this.items.forEach((item: LogDto) => {
+        const fechaConTipo = this.getFechaConTipo(item);
+        if (fechaConTipo.fecha) {
+          const anio = this.getAnioFromFecha(fechaConTipo.fecha);
+          if (!isNaN(anio)) {
+            aniosSet.add(anio);
+          }
+        }
+      });
+      // Convertir Set a array y ordenar de menor a mayor (más antiguos primero)
+      const aniosArray = Array.from(aniosSet).sort((a, b) => (a as number) - (b as number));
+      // Crear el array de objetos con label e id
+      this.anios = aniosArray.map((anio: number) => ({
+        label: anio.toString(),
+        id: anio
+      }));
+      console.log('Años disponibles:', this.anios);
+    }
+
+    get itemsFiltrados() {
+      return this.items.filter((item: LogDto) => {
+        const searchLower = this.searchText.toLowerCase();
+        const cumpleBusqueda = !this.searchText ||
+          item.id?.toString().includes(this.searchText) ||
+          item.texto.toLowerCase().includes(searchLower);
+        const fechaParaFiltro = this.getFechaConTipo(item).fecha;
+        const cumpleMes = !this.selectedMes || this.getMesFromFecha(fechaParaFiltro) === parseInt(this.selectedMes);
+        const cumpleAnio = !this.selectedAnio || this.getAnioFromFecha(fechaParaFiltro) === parseInt(this.selectedAnio);
+        return cumpleBusqueda && cumpleMes && cumpleAnio;
+      }).sort((a, b) => {
+        // Ordenar por fecha de creación descendente (más reciente primero)
+        const fechaA = new Date(a.fechaCreacion || 0).getTime();
+        const fechaB = new Date(b.fechaCreacion || 0).getTime();
+        return fechaB - fechaA;
+      });
+    }
+
+    getFechaConTipo(item: LogDto): { fecha: string, tipo: string } {
+      return { fecha: item.fechaCreacion || '', tipo: 'Creación' };
+    }
+
+    getFechaFormateada(item: LogDto): string {
+      const fechaConTipo = this.getFechaConTipo(item);
+      return this.formatFecha(fechaConTipo.fecha);
+    }
+
+    getMesFromFecha(fecha: string): number {
+      const partes = fecha.split('-');
+      return parseInt(partes[1]); // El mes está en la posición 1 (YYYY-MM-DD)
+    }
+
+    getAnioFromFecha(fecha: string): number {
+      const partes = fecha.split('-');
+      return parseInt(partes[0]); // El año está en la posición 0 (YYYY-MM-DD)
+    }
+
+    formatFecha(fecha: string | null | undefined): string {
+      if (!fecha) return '';
+      // Intentar parsear con Date
+      const d = new Date(fecha);
+      if (isNaN(d.getTime())) return '';
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      const hh = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      return `${dd}-${mm}-${yyyy}  ${hh}:${min}`;
+    }
+
+    goToHome() {
+      const loteId = this.route.snapshot.params['loteId'];
+      const reciboId = this.route.snapshot.params['reciboId'];
+      this.router.navigate([loteId, reciboId, 'lote-analisis']);
+    }
   constructor(private router: Router, private route: ActivatedRoute, private authService: AuthService, private logService: LogService) {}
 
   selectedMes: string = '';
@@ -84,7 +161,16 @@ export class ListadoLogsComponent implements OnInit {
   cargarLogsPage(): void {
     this.loading = true;
     const loteId = this.loteId;
-    this.logService.listarLogsPage(Number(loteId), { page: this.page, size: this.size, sort: 'fechaCreacion', direction: 'DESC' }).subscribe({
+    const params: any = {
+      page: this.page,
+      size: this.size,
+      sort: 'fechaCreacion',
+      direction: 'DESC',
+      searchText: this.searchText || '',
+      mes: this.selectedMes || '',
+      anio: this.selectedAnio || ''
+    };
+    this.logService.listarLogsPage(Number(loteId), params).subscribe({
       next: (response: ResponseListadoLogsPage) => {
         this.items = response.content ?? [];
         this.totalElements = response.totalElements ?? 0;
@@ -132,107 +218,19 @@ export class ListadoLogsComponent implements OnInit {
       this.cargarLogsPage();
     }
   }
-  
-      /**
-       * Genera la lista de años disponibles basándose en los items cargados
-       */
-      actualizarAniosDisponibles() {
-          const aniosSet = new Set<number>();
-          
-          this.items.forEach(item => {
-              const fechaConTipo = this.getFechaConTipo(item);
-              if (fechaConTipo.fecha) {
-                  const anio = this.getAnioFromFecha(fechaConTipo.fecha);
-                  if (!isNaN(anio)) {
-                      aniosSet.add(anio);
-                  }
-              }
-          });
-  
-          // Convertir Set a array y ordenar de menor a mayor (más antiguos primero)
-          const aniosArray = Array.from(aniosSet).sort((a, b) => a - b);
-          
-          // Crear el array de objetos con label e id
-          this.anios = aniosArray.map(anio => ({
-              label: anio.toString(),
-              id: anio
-          }));
-  
-          console.log('Años disponibles:', this.anios);
-      }
-  
-      get itemsFiltrados() {
-        return this.items.filter(item => {
-  
-          const searchLower = this.searchText.toLowerCase();
-          const cumpleBusqueda = !this.searchText ||
-            item.id?.toString().includes(this.searchText) ||
-            item.texto.toLowerCase().includes(searchLower);
-  
-          const fechaParaFiltro = this.getFechaConTipo(item).fecha;
-          const cumpleMes = !this.selectedMes || this.getMesFromFecha(fechaParaFiltro) === parseInt(this.selectedMes);
-  
-          const cumpleAnio = !this.selectedAnio || this.getAnioFromFecha(fechaParaFiltro) === parseInt(this.selectedAnio);
-  
-          return cumpleBusqueda && cumpleMes && cumpleAnio;
-        }).sort((a, b) => {
-          // Ordenar por fecha de creación descendente (más reciente primero)
-          const fechaA = new Date(a.fechaCreacion || 0).getTime();
-          const fechaB = new Date(b.fechaCreacion || 0).getTime();
-          return fechaB - fechaA;
-        });
-      }
-  
-      getFechaConTipo(item: LogDto): { fecha: string, tipo: string } {
-        return { fecha: item.fechaCreacion || '', tipo: 'Creación' };
-      }
-  
-      /**
-       * Obtiene la fecha formateada según si es pendiente (fechaCreacion) o repetido (fechaRepeticion)
-       */
-      getFechaFormateada(item: LogDto): string {
-        const fechaConTipo = this.getFechaConTipo(item);
-        return this.formatFecha(fechaConTipo.fecha);
-      }
-  
-      getMesFromFecha(fecha: string): number {
-        const partes = fecha.split('-');
-        return parseInt(partes[1]); // El mes está en la posición 1 (YYYY-MM-DD)
-      }
-  
-      getAnioFromFecha(fecha: string): number {
-        const partes = fecha.split('-');
-        return parseInt(partes[0]); // El año está en la posición 0 (YYYY-MM-DD)
-      }
-  
-      /**
-       * Formatea una fecha (posiblemente en ISO o YYYY-MM-DD[T...] ) a DD/MM/YYYY HH:mm.
-       * Devuelve cadena vacía si la fecha es inválida o no está presente.
-       */
-      formatFecha(fecha: string | null | undefined): string {
-        if (!fecha) return '';
-        
-        // Intentar parsear con Date
-        const d = new Date(fecha);
-        if (isNaN(d.getTime())) return '';
-        
-        const dd = String(d.getDate()).padStart(2, '0');
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const yyyy = d.getFullYear();
-        const hh = String(d.getHours()).padStart(2, '0');
-        const min = String(d.getMinutes()).padStart(2, '0');
-        
-        return `${dd}-${mm}-${yyyy}  ${hh}:${min}`;
-      }
-  
-      onAnioChange() {
-        this.selectedMes = '';
-      }
-  
-      goToHome() {
-        const loteId = this.route.snapshot.params['loteId'];
-        const reciboId = this.route.snapshot.params['reciboId'];
-        this.router.navigate([loteId, reciboId, 'lote-analisis']);
-      }
-  
+
+  // Filtros: recargar al cambiar
+  onSearchTextChange(): void {
+    this.page = 0;
+    this.cargarLogsPage();
+  }
+  onMesChange(): void {
+    this.page = 0;
+    this.cargarLogsPage();
+  }
+  onAnioChange(): void {
+    this.selectedMes = '';
+    this.page = 0;
+    this.cargarLogsPage();
+  }
 }
