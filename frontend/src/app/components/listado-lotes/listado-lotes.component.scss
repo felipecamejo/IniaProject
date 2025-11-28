@@ -1,3 +1,114 @@
+// Sección de filtros alineados en un solo renglón
+
+.search-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.search-bar {
+  flex: 1 1 0;
+  min-width: 140px;
+  max-width: 300px;
+}
+
+.filter-dropdown {
+  flex: 1 1 0;
+  min-width: 120px;
+  max-width: 180px;
+}
+// Asegura que los selects no se superpongan y ocupen el 100% del contenedor padre
+.search-bar input,
+.filter-dropdown select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.categoria-select {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--gris);
+  border-radius: 8px;
+  font-family: var(--font-main);
+  font-size: 0.9rem;
+  background-color: white;
+  color: var(--azul);
+  outline: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-width: 120px;
+  font-weight: 500;
+
+  &:focus {
+    border-color: var(--azul);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul) 25%, transparent);
+  }
+
+  &:hover {
+    border-color: var(--celeste);
+  }
+
+  option {
+    padding: 0.5rem;
+    background-color: white;
+    color: var(--azul);
+  }
+}
+
+@media (max-width: 900px) {
+  .search-section {
+    gap: 0.5rem;
+  }
+  .filter-dropdown, .search-bar {
+    min-width: 100px;
+    flex-basis: 100px;
+  }
+}
+
+@media (max-width: 600px) {
+  .search-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .filter-dropdown, .search-bar {
+    min-width: 0;
+    flex-basis: 100%;
+  }
+}
+// Ajuste visual para el filtro de categoría para que coincida con los otros filtros
+.categoria-select {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--gris);
+  border-radius: 8px;
+  font-family: var(--font-main);
+  font-size: 0.9rem;
+  background-color: white;
+  color: var(--azul);
+  outline: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-width: 120px;
+  font-weight: 500;
+
+  &:focus {
+    border-color: var(--azul);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul) 25%, transparent);
+  }
+
+  &:hover {
+    border-color: var(--celeste);
+  }
+
+  option {
+    padding: 0.5rem;
+    background-color: white;
+    color: var(--azul);
+  }
+}
 
 // Estilos para hacer la card más ancha
 .container {
