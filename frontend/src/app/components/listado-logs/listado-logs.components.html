@@ -11,10 +11,10 @@
 
         <div class="search-section">
             <div class="search-bar">
-                <input type="text" placeholder="Buscar por ID o Por Descripción..." class="search-input" [(ngModel)]="searchText" name="search" />
+                <input type="text" placeholder="Buscar por ID o Por Descripción..." class="search-input" [(ngModel)]="searchText" name="search" (keyup.enter)="onSearchTextChange()" (blur)="onSearchTextChange()" />
             </div>
             <div class="filter-dropdown">
-                <select class="mes-select" [(ngModel)]="selectedMes" name="mes">
+                <select class="mes-select" [(ngModel)]="selectedMes" name="mes" (change)="onMesChange()">
                     <option value="">Todos los meses</option>
                     <option *ngFor="let mes of meses" [value]="mes.id">{{ mes.label }}</option>
                 </select>
@@ -36,10 +36,10 @@
             </div>
         </div>
 
-        <!-- Lista de elementos paginados -->
-        <div class="blue-rectangle" 
-             *ngFor="let item of items"
-             >
+           <!-- Lista de elementos paginados -->
+           <div class="blue-rectangle" 
+               *ngFor="let item of itemsFiltrados"
+               >
             <div class="item-header">
                 <div class="item-info">
                     <h3 class="item-title">Cambio #{{ item.id }}</h3>

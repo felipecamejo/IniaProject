@@ -18,6 +18,13 @@ import java.util.Optional;
 @Service
 public class LoteService {
 
+    /**
+     * Devuelve todos los años únicos de los lotes activos, ordenados ascendentemente
+     */
+    public java.util.List<Integer> obtenerAniosLotesActivos() {
+        return loteRepository.findDistinctAniosByActivoTrue();
+    }
+
     private final LoteRepository loteRepository;
     private final MapsDtoEntityService mapsDtoEntityService;
     private final ReciboRepository reciboRepository;

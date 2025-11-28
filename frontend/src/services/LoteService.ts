@@ -21,6 +21,13 @@ export interface ResponseListadoLotesPage {
 
 @Injectable({ providedIn: 'root' })
 export class LoteService {
+
+    /**
+     * Obtiene todos los años únicos de los lotes activos
+     */
+    obtenerAniosDisponibles(): Observable<number[]> {
+      return this.http.get<number[]>(`${this.urlService.baseUrl}${this.endpoint}/anios-disponibles`);
+    }
   private endpoint: string = '/lote';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}

@@ -25,18 +25,29 @@ public class LogController {
         this.logService = logService;
     }
 
-    // Endpoint paginado para logs por loteId
+    // Endpoint paginado para logs por loteId y filtros
     @GetMapping({"/listar-page/{loteId}"})
     @Secured({"ADMIN"})
-    @Operation(description = "Lista paginada de Logs por loteId")
+    @Operation(description = "Lista paginada de Logs por loteId y filtros")
     public ResponseEntity<ResponseListadoLogsPage> listarLogPage(
             @PathVariable Long loteId,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size,
             @RequestParam(name = "sort", defaultValue = "fechaCreacion") String sort,
-            @RequestParam(name = "direction", defaultValue = "DESC") String direction
+            @RequestParam(name = "direction", defaultValue = "DESC") String direction,
+            @RequestParam(name = "searchText", required = false) String searchText,
+            @RequestParam(name = "mes", required = false) String mesParam,
+            @RequestParam(name = "anio", required = false) String anioParam
     ) {
-        return this.logService.listadoPage(loteId, page, size, sort, direction);
+        Integer mes = null;
+        if (mesParam != null && !mesParam.isBlank()) {
+            try { mes = Integer.parseInt(mesParam); } catch (Exception ignored) {}
+        }
+        Integer anio = null;
+        if (anioParam != null && !anioParam.isBlank()) {
+            try { anio = Integer.parseInt(anioParam); } catch (Exception ignored) {}
+        }
+        return this.logService.listadoPage(loteId, page, size, sort, direction, searchText, mes, anio);
     }
 
     @PostMapping({"/crear"})
