@@ -37,6 +37,13 @@ import { ButtonModule } from 'primeng/button';
   ]
 })
 export class ReciboComponent implements OnInit {
+    /**
+     * Devuelve true si el usuario tiene únicamente el rol OBSERVADOR (según localStorage)
+     */
+    isObservador(): boolean {
+      const roles = this.authService.userRoles;
+      return Array.isArray(roles) && roles.length === 1 && roles[0] === 'OBSERVADOR';
+    }
   // Dropdown options
   cultivares: Array<{label: string, value: string}> = [
     { label: 'Cultivar A', value: '1' },

@@ -33,8 +33,6 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   certificadoAEliminar: CertificadoDto | null = null;
   confirmLoading: boolean = false;
 
-  isAdmin: boolean = true;
-
   constructor(
     private router: Router,
     private route: ActivatedRoute,
