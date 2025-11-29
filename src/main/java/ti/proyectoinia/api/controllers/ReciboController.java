@@ -51,7 +51,7 @@ public class ReciboController {
     }
 
     @PutMapping({"/editar"})
-    @Secured({"ADMIN", "ANALISTA"})
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
     public ResponseEntity<String> editarRecibo(@RequestBody ReciboDto reciboDto) {
         if (reciboDto.getId() == null) {
             return new ResponseEntity<>("El ID del recibo es obligatorio para editar", HttpStatus.BAD_REQUEST);
