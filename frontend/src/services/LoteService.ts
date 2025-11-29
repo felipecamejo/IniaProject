@@ -21,6 +21,13 @@ export interface ResponseListadoLotesPage {
 
 @Injectable({ providedIn: 'root' })
 export class LoteService {
+
+    /**
+     * Obtiene todos los años únicos de los lotes activos
+     */
+    obtenerAniosDisponibles(): Observable<number[]> {
+      return this.http.get<number[]>(`${this.urlService.baseUrl}${this.endpoint}/anios-disponibles`);
+    }
   private endpoint: string = '/lote';
 
   constructor(private http: HttpClient, private urlService: UrlService) {}
@@ -39,12 +46,32 @@ export class LoteService {
     );
   }
 
-  listarLotesPage(params: { page?: number; size?: number; sort?: string; direction?: 'ASC' | 'DESC' }): Observable<ResponseListadoLotesPage> {
+  listarLotesPage(params: {
+    page?: number;
+    size?: number;
+    sort?: string;
+    direction?: 'ASC' | 'DESC';
+    searchText?: string;
+    estado?: string;
+    mes?: number;
+    anio?: number;
+    categoria?: string;
+  }): Observable<ResponseListadoLotesPage> {
     const page = params.page ?? 0;
     const size = params.size ?? 20;
     const sort = params.sort ?? 'fechaCreacion';
     const direction = params.direction ?? 'DESC';
-    const url = `${this.urlService.baseUrl}${this.endpoint}/listar-page?page=${page}&size=${size}&sort=${encodeURIComponent(sort)}&direction=${direction}`;
+    const searchText = params.searchText ?? '';
+    const estado = params.estado ?? '';
+    const mes = params.mes != null ? params.mes : '';
+    const anio = params.anio != null ? params.anio : '';
+    const categoria = params.categoria != null ? params.categoria : '';
+    const url = `${this.urlService.baseUrl}${this.endpoint}/listar-page?page=${page}&size=${size}&sort=${encodeURIComponent(sort)}&direction=${direction}` +
+      `&searchText=${encodeURIComponent(searchText)}` +
+      `&estado=${encodeURIComponent(estado)}` +
+      `&mes=${mes}` +
+      `&anio=${anio}` +
+      `&categoria=${encodeURIComponent(categoria)}`;
     return this.http.get<ResponseListadoLotesPage>(url);
   }
 

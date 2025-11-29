@@ -17,6 +17,13 @@ import java.util.Optional;
 @RequestMapping({"api/v1/lote"})
 public class LoteController {
 
+    @GetMapping("/anios-disponibles")
+    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Operation(description = "Devuelve todos los años únicos de los lotes activos")
+    public ResponseEntity<java.util.List<Integer>> getAniosDisponibles() {
+        return ResponseEntity.ok(loteService.obtenerAniosLotesActivos());
+    }
+
     @Generated
     private final LoteService loteService;
 
@@ -51,14 +58,31 @@ public class LoteController {
 
     @GetMapping({"/listar-page"})
     @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
-    @Operation(description = "Listado paginado de lotes activos")
+    @Operation(description = "Listado paginado de lotes activos con filtros")
     public ResponseEntity<ResponseListadoLotesPage> getLotesPage(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size,
             @RequestParam(name = "sort", defaultValue = "fechaCreacion") String sort,
-            @RequestParam(name = "direction", defaultValue = "DESC") String direction
+            @RequestParam(name = "direction", defaultValue = "DESC") String direction,
+            @RequestParam(name = "searchText", required = false) String searchText,
+            @RequestParam(name = "estado", required = false) String estado,
+            @RequestParam(name = "mes", required = false) String mesParam,
+            @RequestParam(name = "anio", required = false) String anioParam,
+            @RequestParam(name = "categoria", required = false) String categoriaParam
     ) {
-        return this.loteService.listadoLotesPage(page, size, sort, direction);
+        // Convertir strings vacíos a null
+        String search = (searchText == null || searchText.isBlank()) ? null : searchText;
+        String estadoFiltro = (estado == null || estado.isBlank()) ? null : estado;
+        Integer mes = null;
+        if (mesParam != null && !mesParam.isBlank()) {
+            try { mes = Integer.parseInt(mesParam); } catch (Exception ignored) {}
+        }
+        Integer anio = null;
+        if (anioParam != null && !anioParam.isBlank()) {
+            try { anio = Integer.parseInt(anioParam); } catch (Exception ignored) {}
+        }
+        String categoriaFiltro = (categoriaParam == null || categoriaParam.isBlank()) ? null : categoriaParam;
+        return this.loteService.listadoLotesPage(page, size, sort, direction, search, estadoFiltro, mes, anio, categoriaFiltro);
     }
 
     @GetMapping({"/{id}"})

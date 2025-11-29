@@ -11,16 +11,16 @@
 
         <div class="search-section">
             <div class="search-bar">
-                <input type="text" placeholder="Buscar lotes..." class="search-input" [(ngModel)]="searchText" name="search" />
+                <input type="text" placeholder="Buscar lotes..." class="search-input" [(ngModel)]="searchText" name="search" (keyup.enter)="onSearchTextChange()" (blur)="onSearchTextChange()" />
             </div>
             <div class="filter-dropdown">
-                <select class="estado-select" [(ngModel)]="selectedMetodo" name="estado">
+                <select class="estado-select" [(ngModel)]="selectedMetodo" name="estado" (change)="onEstadoChange()">
                     <option value="">Todos los estados</option>
                     <option *ngFor="let metodo of metodos" [value]="metodo.id">{{ metodo.label }}</option>
                 </select>
             </div>
             <div class="filter-dropdown">
-                <select class="mes-select" [(ngModel)]="selectedMes" name="mes">
+                <select class="mes-select" [(ngModel)]="selectedMes" name="mes" (change)="onMesChange()">
                     <option value="">Todos los meses</option>
                     <option *ngFor="let mes of meses" [value]="mes.id">{{ mes.label }}</option>
                 </select>
@@ -29,6 +29,12 @@
                 <select class="anio-select" [(ngModel)]="selectedAnio" name="anio" (change)="onAnioChange()">
                     <option value="">Todos los años</option>
                     <option *ngFor="let anio of anios" [value]="anio.id">{{ anio.label }}</option>
+                </select>
+            </div>
+            <div class="filter-dropdown">
+                <select class="categoria-select" [(ngModel)]="selectedCategoria" name="categoria" (change)="onCategoriaChange()">
+                    <option value="">Todas las categorías</option>
+                    <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.label }}</option>
                 </select>
             </div>
         </div>
@@ -62,8 +68,8 @@
                 </div>
                 <div class="item-date">
                     <span class="fecha">
-                        {{ formatFecha(getFechaConTipo(item).fecha) }}
-                        <span class="tipo-fecha">({{ getFechaConTipo(item).tipo }})</span>
+                        {{ formatFecha(item.fechaCreacion) }}
+                        <span class="tipo-fecha">(Creación)</span>
                     </span>
                 </div>
             </div>

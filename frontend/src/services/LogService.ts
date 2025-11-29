@@ -30,12 +30,18 @@ export class LogService {
   /**
    * Listar logs paginados por loteId
    */
-  listarLogsPage(loteId: number, params: { page?: number; size?: number; sort?: string; direction?: 'ASC' | 'DESC' }): Observable<ResponseListadoLogsPage> {
+  listarLogsPage(loteId: number, params: { page?: number; size?: number; sort?: string; direction?: 'ASC' | 'DESC'; searchText?: string; mes?: number | string; anio?: number | string }): Observable<ResponseListadoLogsPage> {
     const page = params.page ?? 0;
     const size = params.size ?? 20;
     const sort = params.sort ?? 'fechaCreacion';
     const direction = params.direction ?? 'DESC';
-    const url = `${this.urlService.baseUrl}${this.endpoint}/listar-page/${loteId}?page=${page}&size=${size}&sort=${encodeURIComponent(sort)}&direction=${direction}`;
+    const searchText = params.searchText ?? '';
+    const mes = params.mes != null ? params.mes : '';
+    const anio = params.anio != null ? params.anio : '';
+    const url = `${this.urlService.baseUrl}${this.endpoint}/listar-page/${loteId}?page=${page}&size=${size}&sort=${encodeURIComponent(sort)}&direction=${direction}` +
+      `&searchText=${encodeURIComponent(searchText)}` +
+      `&mes=${mes}` +
+      `&anio=${anio}`;
     return this.http.get<ResponseListadoLogsPage>(url);
   }
 
