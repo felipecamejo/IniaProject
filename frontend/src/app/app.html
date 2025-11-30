@@ -1,5 +1,5 @@
 <div appAutocompleteGlobal>
     <app-header *ngIf="showHeader()"></app-header>
-    <router-outlet />
+    <router-outlet *ngIf="currentRoute === '/login' || currentRoute === '' ? true : showHeader()" />
     <app-autocomplete-popup></app-autocomplete-popup>
 </div>
