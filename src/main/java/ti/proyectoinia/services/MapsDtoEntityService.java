@@ -1547,30 +1547,6 @@ public class MapsDtoEntityService {
         return entity;
     }
 
-    public SemillaDto mapToDtoSemilla(Semilla entity) {
-        if (entity == null) return null;
-
-        SemillaDto dto = new SemillaDto();
-        dto.setId(entity.getId());
-        dto.setNroSemillasPura(entity.getNroSemillasPura());
-        dto.setActivo(entity.isActivo());
-        dto.setDescripcion(entity.getDescripcion());
-
-        return dto;
-    }
-
-    public Semilla mapToEntitySemilla(SemillaDto dto) {
-        if (dto == null) return null;
-
-        Semilla entity = new Semilla();
-        entity.setId(dto.getId());
-        entity.setNroSemillasPura(dto.getNroSemillasPura());
-        entity.setActivo(dto.isActivo());
-        entity.setDescripcion(dto.getDescripcion());
-
-        return entity;
-    }
-
     public HumedadReciboDto mapToDtoHumedadRecibo(HumedadRecibo humedadRecibo) {
         if (humedadRecibo == null) {
             return null;
