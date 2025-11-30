@@ -102,6 +102,7 @@ export const routes: Routes = [
     { path : ':loteId/:reciboId/germinacion/:id', component: GerminacionComponent, canActivate: [authGuard] }, // Para visualización con query param view=true
     { path : ':loteId/:reciboId/tetrazolio/crear', component: TetrazolioComponent, canActivate: [authGuard] },
     { path : ':loteId/:reciboId/tetrazolio/editar/:id', component: TetrazolioComponent, canActivate: [authGuard] },
+    { path : ':loteId/:reciboId/tetrazolio/:id', component: TetrazolioComponent, canActivate: [authGuard] }, // Para visualización con query param view=true
     
     //formularios de certificados (protegidos)
     { path : 'certificado/crear', component: CertificadoComponent, canActivate: [authGuard] },

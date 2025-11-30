@@ -435,17 +435,26 @@ export class TetrazolioComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Verificar si estamos en modo edición basado en la ruta
+    // Verificar si estamos en modo edición o solo lectura basado en la ruta y query params
     this.route.params.subscribe((params: any) => {
       this.loteId = params['loteId'] ?? null;
       this.reciboId = params['reciboId'] ?? null;
 
-      // Verificar si hay un ID en la ruta para determinar modo de edición
+      // Revisar si hay query param view=true para modo solo lectura
+      this.route.queryParams.subscribe((query) => {
+        this.isViewing = query['view'] === 'true';
+      });
+
+      // Verificar si hay un ID en la ruta para determinar modo de edición o solo lectura
       const id = params['id'];
       if (id && !isNaN(parseInt(id))) {
-        this.isEditing = true;
+        this.isEditing = !this.isViewing;
         this.editingId = parseInt(id);
-        console.log('Modo edición detectado, ID:', this.editingId);
+        if (this.isViewing) {
+          console.log('Modo solo lectura detectado, ID:', this.editingId);
+        } else {
+          console.log('Modo edición detectado, ID:', this.editingId);
+        }
         this.cargarDatosParaEdicion(this.editingId);
       } else {
         this.isEditing = false;
@@ -988,38 +997,53 @@ export class TetrazolioComponent implements OnInit {
     }
   }
 
+  validarFecha(fecha: string | null): boolean {
+    if (!fecha || fecha.trim() === '') {
+      return false; // Fecha vacía
+    }
+    // Normalizar fechas a solo año-mes-día para evitar problemas de hora
+    const selectedDate = new Date(fecha + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    // Solo permitir fechas de hoy o anteriores (no futuras)
+    return selectedDate <= today;
+  }
+
   manejarProblemas(): boolean {
     this.errores = []; // Reiniciar errores
 
-    // Validar cantidad de semillas
-    if (this.cantidadSemillas === null || this.cantidadSemillas === undefined || this.cantidadSemillas <= 0) {
-      this.errores.push('La cantidad de semillas debe ser mayor a 0');
-    }
-    if (this.cantidadSemillas !== null && this.cantidadSemillas < 0) {
+    // Validar cantidadSemillas
+    if (
+      this.cantidadSemillas === null ||
+      this.cantidadSemillas === undefined 
+    ) {
+      this.errores.push('Debe seleccionar una cantidad de semillas válida');
+    } else if (this.cantidadSemillas < 0) {
       this.errores.push('La cantidad de semillas no puede ser menor que cero');
     }
 
     // Validar pretratamiento
-    if (this.selectedPretratamiento === null || this.selectedPretratamiento === undefined) {
-      this.errores.push('Debe seleccionar un pretratamiento');
+    if (
+      this.selectedPretratamiento === null ||
+      this.selectedPretratamiento === undefined ||
+      this.selectedPretratamiento === '' ||
+      this.selectedPretratamiento === 'Seleccione...'
+    ) {
+      this.errores.push('Debe seleccionar un pretratamiento válido');
     }
 
     // Validar concentración
     const concentracion = this.selectedConcentracion === 'custom' ? this.concentracionCustom : this.selectedConcentracion;
     if (concentracion === null || concentracion === undefined) {
-      this.errores.push('La concentración es requerida');
-    } else if (concentracion < 0) {
-      this.errores.push('La concentración no puede ser menor que cero');
+      this.errores.push('Debe seleccionar una concentración válida');
     }
 
     // Validar tinción horas
     const tincionHoras = this.selectedTincionHs === 'custom' ? this.tincionHsCustom : this.selectedTincionHs;
-    if (tincionHoras === null || tincionHoras === undefined || tincionHoras <= 0) {
-      this.errores.push('Las horas de tinción deben ser un valor válido mayor a 0');
+    if (tincionHoras === null || tincionHoras === undefined ) {
+      this.errores.push('Debe seleccionar un valor válido para tinción horas');
     }
-    if (tincionHoras !== null && tincionHoras !== undefined && tincionHoras < 0) {
-      this.errores.push('Las horas de tinción no pueden ser menores que cero');
-    }
+  
 
     // Validar tinción grados
     if (this.tincionC === null || this.tincionC === undefined || this.tincionC <= 0) {
@@ -1030,15 +1054,10 @@ export class TetrazolioComponent implements OnInit {
     }
 
     // Validar fecha
-    if (!this.fecha || this.fecha.trim() === '') {
-      this.errores.push('Debe seleccionar una fecha');
-    } else {
-      // Validar formato de fecha
-      const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
-      if (!fechaRegex.test(this.fecha)) {
-        this.errores.push('El formato de fecha debe ser YYYY-MM-DD');
-      }
+    if (!this.validarFecha(this.fecha)) {
+      this.errores.push('La fecha debe estar completa y no puede ser futura a hoy.');
     }
+
 
     // Validar repeticiones
     if (!this.repeticiones || this.repeticiones.length === 0) {
@@ -1250,4 +1269,6 @@ export class TetrazolioComponent implements OnInit {
   onCancel() {
     this.safeNavigateToListado();
   }
+
+  
 }

@@ -34,9 +34,9 @@
 
                 <div class="form-field">
                     <label for="articulo">Artículo</label>
-                    <span *ngIf="articulo != null && articulo < 0" class="error-message">El artículo no puede ser negativo.</span>
                           <input id="articulo" type="number" [(ngModel)]="articulo" name="articulo" pInputText
                               [ngClass]="{ 'input-error': articulo != null && articulo < 0 }" [readonly]="isEditing && isObservador()"/>
+                              <span *ngIf="articulo != null && articulo < 0" class="error-message">El artículo no puede ser negativo.</span>
                 </div>
 
                 <div class="form-field">
@@ -69,9 +69,9 @@
 
                 <div class="form-field">
                     <label for="kilos">Kilos Limpios</label>
-                    <span *ngIf="kilos != null && kilos < 0" class="error-message">Los kilos no pueden ser negativos.</span>
                           <input id="kilos" type="number" [(ngModel)]="kilos" name="kilos" pInputText
                               [ngClass]="{ 'input-error': kilos != null && kilos < 0 }" [readonly]="isEditing && isObservador()"/>
+                          <span *ngIf="kilos != null && kilos < 0" class="error-message">Los kilos no pueden ser negativos.</span>
                 </div>
 
                 <div class="form-field">
@@ -138,7 +138,6 @@
                                         placeholder="Número"
                                         [ngClass]="{ 'input-error': humedad.numero != null && humedad.numero < 0 }"
                                         [readonly]="isEditing && isObservador()"/>
-                                <span *ngIf="humedad.numero != null && humedad.numero < 0" class="error-message">El número no puede ser negativo.</span>
                             </td>
                         </tr>
                     </tbody>

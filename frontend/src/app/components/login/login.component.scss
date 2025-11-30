@@ -1,3 +1,42 @@
+// Estilo para el wrapper de la contraseña y el botón de ojito
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input[type="password"],
+  input[type="text"] {
+    width: 100%;
+    padding-right: 2.5rem;
+    box-sizing: border-box;
+  }
+
+  .toggle-password-btn {
+    position: absolute;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    color: #888;
+    font-size: 1.5rem;
+    z-index: 2;
+  }
+
+  .toggle-password-btn:active {
+    color: #333;
+  }
+
+  .pi {
+    font-size: 1rem;
+    user-select: none;
+    line-height: 1;
+  }
+}
 // Los estilos de .form-grid y .submit-btn se importan desde styles.scss
 
 .submit-btn {

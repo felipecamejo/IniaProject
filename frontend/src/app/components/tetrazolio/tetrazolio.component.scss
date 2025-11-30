@@ -6,6 +6,30 @@
   table-layout: auto;
 }
 
+// Estilos específicos para el checkbox en el formulario 
+.form-field {
+  label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    
+    input[type="checkbox"] {
+      margin-right: 12px;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--verde);
+      cursor: pointer;
+    }
+    
+    span {
+      font-size: 14px;
+      color: #333;
+      user-select: none;
+      font-weight: 500;
+    }
+  }
+}
+
 .tetrazolio-table th,
 .tetrazolio-table td {
   text-align: center;

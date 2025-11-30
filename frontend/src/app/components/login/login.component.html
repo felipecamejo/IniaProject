@@ -22,16 +22,40 @@
                 </div>
 
                 <div class="form-field">
-                    <label for="password">Contraseña</label>
-                    <input id="password" type="password" [(ngModel)]="password" name="password" pInputText required />
+                                        <label for="password">Contraseña</label>
+                                        <div class="password-wrapper">
+                                            <input
+                                                id="password"
+                                                [type]="showPassword ? 'text' : 'password'"
+                                                [(ngModel)]="password"
+                                                name="password"
+                                                pInputText
+                                                required
+                                                autocomplete="current-password"
+                                            />
+                                            <button
+                                                *ngIf="password && password.length > 0"
+                                                type="button"
+                                                class="toggle-password-btn"
+                                                (click)="togglePasswordVisibility()"
+                                                tabindex="-1"
+                                                aria-label="Mostrar/ocultar contraseña"
+                                            >
+                                                <i *ngIf="!showPassword" class="pi pi-eye"></i>
+                                                <i *ngIf="showPassword" class="pi pi-eye-slash"></i>
+                                            </button>
+                                        </div>
                 </div>
             </div>
 
+            <div *ngIf="error" class="error-container">
+                <p class="error-message">{{ error }}</p>
+            </div>
+ 
             <div class="submit-btn">
                 <button pButton type="submit" [disabled]="loading || form.invalid" label="{{ loading ? 'Ingresando...' : 'Iniciar Sesión' }}" class="p-button-primary"></button>
             </div>
-
-            <div *ngIf="error" class="error-message">{{ error }}</div>
+            
         </form>
     </p-card>
 </div>

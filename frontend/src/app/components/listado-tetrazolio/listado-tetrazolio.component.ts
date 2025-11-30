@@ -65,6 +65,13 @@ export class ListadoTetrazolioComponent implements OnInit {
         this.cargarDatos();
     }
 
+    navegarAVer(item: TetrazolioDto) {
+      const loteId = this.route.snapshot.paramMap.get('loteId');
+      const reciboId = this.route.snapshot.paramMap.get('reciboId');
+      console.log('Navegando para ver Tetrazolio:', item);
+      this.router.navigate([loteId, reciboId, 'tetrazolio', item.id], { queryParams: { view: 'true' } });
+    }
+
     private cargarDatos() {
         this.loading = true;
         this.error = null;
