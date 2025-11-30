@@ -586,10 +586,6 @@ export class PmsComponent implements OnInit {
         this.errores.push('El peso promedio de mil semillas no puede ser un número negativo.');
       }
 
-      if (this.pesoPromedioCienSemillas != null && this.pesoPromedioCienSemillas < 0) {
-        this.errores.push('El peso promedio de cien semillas no puede ser un número negativo.');
-      }
-
       if (this.desvioEstandar != null && this.desvioEstandar < 0) {
         this.errores.push('El desvío estándar no puede ser un número negativo.');
       }

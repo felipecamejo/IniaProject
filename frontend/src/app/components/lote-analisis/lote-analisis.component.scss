@@ -80,6 +80,8 @@
     width: 50px;
     height: 50px;
     object-fit: contain;
+    /* Para SVG como <img>, usar filter para forzar blanco */
+    filter: invert(1) brightness(2);
   }
 
   // Colores específicos para cada botón
@@ -167,6 +169,7 @@
     .button-icon {
       width: 65px;
       height: 65px;
+      filter: invert(1) brightness(2);
     }
   }
   
@@ -201,6 +204,7 @@
     .button-icon {
       width: 80px;
       height: 80px;
+      filter: invert(1) brightness(2);
     }
   }
   
@@ -231,6 +235,7 @@
     .button-icon {
       width: 85px;
       height: 85px;
+      filter: invert(1) brightness(2);
     }
   }
 }

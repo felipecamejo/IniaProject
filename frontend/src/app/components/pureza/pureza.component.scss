@@ -1,4 +1,10 @@
 // Los estilos de .form-grid y .submit-btn se importan desde styles.scss
+:root .input-error,
+body .input-error,
+.p-table .input-error {
+  border: 1.5px solid #e53935 !important;
+  box-shadow: 0 0 0 2px rgba(229,57,53,0.08) !important;
+}
 
 .container {
   max-width: 800px !important;

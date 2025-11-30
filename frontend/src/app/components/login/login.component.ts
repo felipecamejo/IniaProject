@@ -22,12 +22,18 @@ import { AuthService } from '../../../services/AuthService';
 export class LoginComponent {
 
     // Campos de texto simples
+
     email: string = '';
     password: string = '';
     loading: boolean = false;
     error: string = '';
+    showPassword: boolean = false;
 
     constructor(private auth: AuthService, private router: Router) {}
+
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
+    }
 
     onSubmit(form: any) {
       if (form.invalid || this.loading) return;

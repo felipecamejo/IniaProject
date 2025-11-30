@@ -4,8 +4,6 @@
       <h2 class="title">{{ isViewing ? 'Ver DOSN' : (isEditing ? 'Editar DOSN' : 'Crear DOSN') }}</h2>
     </ng-template>
 
-    <!-- Se eliminó la sección de listado de DOSN, este componente solo carga y muestra un DOSN específico -->
-
     <form (ngSubmit)="onSubmit()" (input)="manejarProblemas();" >
   <!-- INASE Section -->
   <div class="section-title inase-title">INASE</div>
@@ -15,12 +13,14 @@
           <input id="fechaInase" type="date" [(ngModel)]="fechaInase" name="fechaInase" pInputText [readonly]="isReadonly" 
           [ngClass]="{ 'input-error': validarFecha(fechaInase) }"
           />
+           <span *ngIf="validarFecha(fechaInase)" class="error-message">La fecha no puede ser futura.</span>
         </div>
         <div class="form-field">
           <label for="gramosInase">Gramos analizados</label>
           <input id="gramosInase" type="number" [(ngModel)]="gramosInase" name="gramosInase" pInputText [readonly]="isReadonly" 
           [ngClass]="{ 'input-error': !validarNumero(gramosInase) }"
           />
+          <span *ngIf="!validarNumero(gramosInase)" class="error-message">El valor debe ser un número válido.</span>
         </div>
         <div class="form-field">
           <label for="tipoAnalisisInase">Tipo de análisis</label>
@@ -166,12 +166,14 @@
           <input id="fechaInia" type="date" [(ngModel)]="fechaInia" name="fechaInia" pInputText [readonly]="isReadonly" 
           [ngClass]="{ 'input-error': validarFecha(fechaInia) }"
           />
+          <span *ngIf="validarFecha(fechaInia)" class="error-message">La fecha no puede ser futura.</span>
         </div>
         <div class="form-field">
           <label for="gramosInia">Gramos analizados</label>
           <input id="gramosInia" type="number" [(ngModel)]="gramosInia" name="gramosInia" pInputText [readonly]="isReadonly" 
           [ngClass]="{ 'input-error': !validarNumero(gramosInia) }"
           />
+          <span *ngIf="!validarNumero(gramosInia)" class="error-message">El valor debe ser un número válido.</span>
         </div>
         <div class="form-field">
           <label for="tipoAnalisisInia">Tipo de análisis</label>
@@ -334,11 +336,12 @@
       </div>
 
       <!-- Fecha estándar -->
-      <div class="form-field">
-        <label for="fechaEstandar">Fecha estándar</label>
-        <input id="fechaEstandar" type="date" [(ngModel)]="fechaEstandar" name="fechaEstandar" pInputText [readonly]="isReadonly" 
-          [ngClass]="{ 'input-error': validarFecha(fechaEstandar) }"/>
-        <span *ngIf="validarFecha(fechaEstandar)" class="error-message">La fecha no puede ser futura.</span>
+      <div class="form-field" style="display: flex; flex-direction: column; align-items: flex-start;">
+          <label for="fechaEstandar" style="margin-bottom: 0.25rem;">Fecha estándar</label>
+          <input id="fechaEstandar" type="date" [(ngModel)]="fechaEstandar" name="fechaEstandar" pInputText [readonly]="isReadonly"
+            [ngClass]="{ 'input-error': validarFecha(fechaEstandar) }"
+            style="width: 100%; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 0.25rem;" />
+          <span *ngIf="validarFecha(fechaEstandar)" class="error-message">La fecha no puede ser futura.</span>
       </div>
 
       <!-- Checkboxes estándar y repetido (mutuamente excluyentes) - Solo visible para admin al editar -->

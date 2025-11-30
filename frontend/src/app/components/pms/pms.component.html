@@ -34,7 +34,6 @@
                                     <div class="gramos-cell">
                                         <input type="number" [value]="rep.gramos" (input)="onGramosChange(i, $event.target.value)" [name]="'gramos' + i" step="0.0001" [readonly]="isReadonly" [ngClass]="{ 'input-error': repeticiones[i].gramos != null && repeticiones[i].gramos < 0 }" />
 
-                                        <span *ngIf="repeticiones[i].gramos != null && repeticiones[i].gramos < 0" class="error-message">La incidencia debe ser mayor a 0.</span>
                                     </div>
                                 </td>
                             </tr>
@@ -54,8 +53,7 @@
 
                 <div class="form-field">
                     <label for="pesoPromedioCienSemillas">Peso Promedio Cien Semillas</label>
-                    <input id="pesoPromedioCienSemillas" type="number" [value]="promedioCienSemillas()" name="pesoPromedioCienSemillas" pInputText step="0.0001" [readonly]="true" [ngClass]="{ 'input-error': (promedioCienSemillas() ?? 0) < 0 }" />
-                    <span *ngIf="(promedioCienSemillas() ?? 0) < 0" class="error-message">El valor no puede ser negativo.</span>
+                    <input id="pesoPromedioCienSemillas" type="number" [value]="promedioCienSemillas()" name="pesoPromedioCienSemillas" pInputText step="0.0001" [readonly]="true" />
                 </div>
 
 
@@ -103,21 +101,20 @@
                         <div class="checkbox-item">
                             <input type="checkbox" id="repetido-checkbox" [(ngModel)]="repetido" (change)="onRepetidoChange()" name="repetido" class="custom-checkbox" [disabled]="isReadonly || repetidoDeshabilitado" />
                             <label for="repetido-checkbox" class="checkbox-label">
-                <span class="checkmark"></span>
-                <span class="checkbox-text">Repetir</span>
-              </label>
+                                <span class="checkmark"></span>
+                                <span class="checkbox-text">Repetir</span>
+                            </label>
                         </div>
 
                         <div class="checkbox-item">
                             <input type="checkbox" id="estandar-checkbox" [(ngModel)]="estandar" (change)="onEstandarChange()" name="estandar" class="custom-checkbox" [disabled]="isReadonly || estandarDeshabilitado" />
                             <label for="estandar-checkbox" class="checkbox-label">
-                <span class="checkmark"></span>
-                <span class="checkbox-text">Estándar</span>
-              </label>
+                                <span class="checkmark"></span>
+                                <span class="checkbox-text">Estándar</span>
+                            </label>
                         </div>
                     </div>
                 </div>
-
             </div>
 
 

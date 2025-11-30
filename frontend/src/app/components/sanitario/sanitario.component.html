@@ -25,6 +25,7 @@
             [ngClass]="{ 'input-error': validarFecha(fechaSiembra) }"
             
           />
+          <span *ngIf="validarFecha(fechaSiembra)" class="error-message">La fecha no puede ser futura.</span>
         </div>
 
         <div class="form-field">
@@ -32,6 +33,7 @@
           <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" pInputText [readonly]="isReadonly"
             [ngClass]="{ 'input-error': validarFecha(fecha) }"
           />
+          <span *ngIf="validarFecha(fecha)" class="error-message">La fecha no puede ser futura.</span>
         </div>
 
         <div class="form-field">
@@ -51,6 +53,7 @@
             [ngClass]="{ 'input-error': !validarNumero(temperatura) }" 
 
           />
+          <span *ngIf="!validarNumero(temperatura)" class="error-message">La temperatura no puede ser un número negativo.</span>
         </div>
 
         <div class="form-field">
@@ -65,6 +68,7 @@
             [ngClass]="{ 'input-error': !validarNumero(horasOscuridad) }" 
             
           />
+          <span *ngIf="!validarNumero(horasOscuridad)" class="error-message">Las horas de oscuridad no pueden ser un número negativo.</span>
         </div>
 
         <div class="form-field">
@@ -79,6 +83,7 @@
             [ngClass]="{ 'input-error': !validarNumero(horasLuz) }" 
 
           />
+          <span *ngIf="!validarNumero(horasLuz)" class="error-message">Las horas de luz no pueden ser un número negativo.</span>
         </div>
 
         <div class="form-field">
@@ -93,6 +98,7 @@
             [ngClass]="{ 'input-error': !validarNumero(nroDias) }" 
             
           />
+          <span *ngIf="!validarNumero(nroDias)" class="error-message">El número de días no puede ser un número negativo.</span>
         </div>
 
         <div class="form-field">
@@ -117,6 +123,7 @@
             (ngModelChange)="onNroSemillasRepeticionChange()"
             [ngClass]="{ 'input-error': !validarNumero(nroSemillasRepeticion) }"
           />
+          <span *ngIf="!validarNumero(nroSemillasRepeticion)" class="error-message">El número de semillas por repetición no puede ser un número negativo.</span>
         </div>
 
         <div class="form-field">

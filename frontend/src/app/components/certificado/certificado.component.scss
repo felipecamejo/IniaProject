@@ -245,21 +245,6 @@
   }
 }
 
-.back-button {
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--azul);
-  cursor: pointer;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-  transition: color 0.2s;
-
-  &:hover {
-    color: var(--celeste);
-  }
-}
-
 // Leyenda de análisis solicitados
 .analisis-solicitados-leyenda {
   background: #f0f8ff;
