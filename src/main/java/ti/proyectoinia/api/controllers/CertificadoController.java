@@ -41,7 +41,7 @@ public class CertificadoController {
     }
 
     @GetMapping({"/{id}"})
-    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion obtiene un Certificado por ID"
     )
@@ -91,7 +91,7 @@ public class CertificadoController {
     }
 
     @GetMapping({"/listar"})
-    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion lista todos los Certificados activos"
     )
@@ -100,7 +100,7 @@ public class CertificadoController {
     }
 
     @GetMapping({"/recibo/{reciboId}"})
-    @Secured({"ADMIN", "ANALISTA", "OBSERVADOR"})
+    @Secured({"ADMIN"})
     @Operation(
             description = "Esta Funcion lista todos los Certificados activos de un recibo"
     )
