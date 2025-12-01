@@ -5,6 +5,7 @@
     <option name="pendingSessionIds">
       <option value="03f4bbfa-f3d5-49de-b149-254b62b7535b" />
       <option value="09150c0e-48af-4ad6-a43c-0d6f7f8dcea6" />
+      <option value="5178dd9a-68fc-4d9e-8f41-d80c7d53686b" />
       <option value="58032276-61ae-4669-a578-325f549c18c5" />
       <option value="5ffb51d2-587b-4ad8-912b-7f75f42df6ef" />
       <option value="614cc146-4334-48b5-bf6f-9602f9d9a2f7" />
@@ -19,6 +20,7 @@
       <option value="a2e5c49a-6607-4726-8c07-8d921ca54805" />
       <option value="a9a7b44f-7ad4-4f16-8487-c7d1c2d14fed" />
       <option value="b0b00b00-7023-4d65-9aae-7c67b9598c98" />
+      <option value="bb9cb6c8-9d6b-4cb4-9095-bc543472f1ac" />
       <option value="bd77f7f6-730c-443a-9385-f850aba977a5" />
       <option value="c31684c1-2dc2-41da-82e2-5042b4c7a33e" />
       <option value="c4c9fc6f-c3ad-4306-8e86-674a4422301a" />
@@ -174,8 +176,8 @@
           <value>
             <set>
               <option value="34c7db2f-d139-4b9e-9cb4-4d3054e127d2" />
-              <option value="63f07797-d96b-4dbc-ab58-925a7067aaaf" />
               <option value="5ac44bf4-e1cb-414b-80f8-1cdce75b41bc" />
+              <option value="63f07797-d96b-4dbc-ab58-925a7067aaaf" />
             </set>
           </value>
         </entry>
@@ -341,17 +343,9 @@
       <entry key="804a4f57-6653-41f4-ab52-2f3d27a831e9" />
       <entry key="855a24fe-6eda-4655-b13e-61eb5c01fa24" />
       <entry key="a2109dd4-0bf9-4d51-9ad9-95e9c93ed20d" />
-      <entry key="a2e5c49a-6607-4726-8c07-8d921ca54805">
-        <set>
-          <option value="file://$PROJECT_DIR$/src/test/java/ti/proyectoinia/api/controllers/integration/GerminacionTablasControllerTest.java" />
-        </set>
-      </entry>
+      <entry key="a2e5c49a-6607-4726-8c07-8d921ca54805" />
       <entry key="a3d5327a-aca6-4aa0-a617-46c57f3d0c65" />
-      <entry key="a5fb2554-7f79-4f44-811c-d395203f4524">
-        <set>
-          <option value="file://$PROJECT_DIR$/src/test/java/ti/proyectoinia/api/controllers/integration/GerminacionTablasControllerTest.java" />
-        </set>
-      </entry>
+      <entry key="a5fb2554-7f79-4f44-811c-d395203f4524" />
       <entry key="a9a7b44f-7ad4-4f16-8487-c7d1c2d14fed" />
       <entry key="b0b00b00-7023-4d65-9aae-7c67b9598c98" />
       <entry key="bd77f7f6-730c-443a-9385-f850aba977a5" />

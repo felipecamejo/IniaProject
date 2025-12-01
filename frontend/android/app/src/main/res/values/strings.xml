@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">INIA App</string>
+    <string name="title_activity_main">INIA App</string>
+    <string name="package_name">com.inia.app</string>
+    <string name="custom_url_scheme">com.inia.app</string>
+</resources>
