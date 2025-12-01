@@ -58,18 +58,25 @@ public class WebSecurityConfig {
                         // Endpoints del middleware: solo ADMIN puede acceder
                         .requestMatchers(antMatcher("/api/pandmiddleware/**")).hasAuthority("ADMIN")
                         
-                        // Endpoints de gestión de datos: solo ADMIN puede acceder
-                        .requestMatchers(antMatcher("/api/v1/pms/**")).hasAuthority("ADMIN")
-                        .requestMatchers(antMatcher("/api/v1/hongo/**")).hasAuthority("ADMIN")
-                        .requestMatchers(antMatcher("/api/v1/germinacion/**")).hasAuthority("ADMIN")
-                        .requestMatchers(antMatcher("/api/v1/DOSN/**")).hasAuthority("ADMIN")
-                        .requestMatchers(antMatcher("/api/v1/pureza/**")).hasAuthority("ADMIN")
-                        .requestMatchers(antMatcher("/api/v1/maleza/**")).hasAuthority("ADMIN")
-                        .requestMatchers(antMatcher("/api/v1/PurezaPNotatum/**")).hasAuthority("ADMIN")
-                        .requestMatchers(antMatcher("/api/v1/Tetrazolio/**")).hasAuthority("ADMIN")
-                        .requestMatchers(antMatcher("/api/v1/Sanitario/**")).hasAuthority("ADMIN")
-                        .requestMatchers(antMatcher("/api/v1/recibo/**")).hasAuthority("ADMIN")
-                        .requestMatchers(antMatcher("/api/v1/deposito/**")).hasAuthority("ADMIN")
+                        // Endpoints de gestión de datos:
+                        // - Los listados ya están protegidos a nivel de método con @Secured para permitir
+                        //   ADMIN, ANALISTA y OBSERVADOR.
+                        // - Operaciones de creación/edición/eliminación siguen restringidas por @Secured a ADMIN.
+                        // Por eso, a nivel de filtro web permitimos ADMIN, ANALISTA y OBSERVADOR en estos recursos.
+                        .requestMatchers(antMatcher("/api/v1/pms/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")
+                        .requestMatchers(antMatcher("/api/v1/hongo/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")
+                        .requestMatchers(antMatcher("/api/v1/germinacion/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")
+                        .requestMatchers(antMatcher("/api/v1/DOSN/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")
+                        .requestMatchers(antMatcher("/api/v1/pureza/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")
+                        .requestMatchers(antMatcher("/api/v1/maleza/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")
+                        .requestMatchers(antMatcher("/api/v1/PurezaPNotatum/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")
+                        .requestMatchers(antMatcher("/api/v1/Tetrazolio/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")
+                        .requestMatchers(antMatcher("/api/v1/Sanitario/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")
+                        .requestMatchers(antMatcher("/api/v1/recibo/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")
+                        .requestMatchers(antMatcher("/api/v1/deposito/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")
+
+                        // Endpoints de certificados: solo ADMIN puede acceder (crear, editar y consultar)
+                        .requestMatchers(antMatcher("/api/v1/certificado/**")).hasAuthority("ADMIN")
                         
                         // Endpoints de lotes: ADMIN, ANALISTA y OBSERVADOR pueden acceder
                         .requestMatchers(antMatcher("/api/v1/lote/**")).hasAnyAuthority("ADMIN", "ANALISTA", "OBSERVADOR")

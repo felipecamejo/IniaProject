@@ -90,7 +90,7 @@ public class CertificadoSecurityTest {
     }
 
     // ============================================================================
-    //  GET /listar → ADMIN, ANALISTA, OBSERVADOR
+    //  GET /listar → solo ADMIN
     // ============================================================================
 
     @Test
@@ -106,7 +106,7 @@ public class CertificadoSecurityTest {
     }
 
     @Test
-    @WithMockUser(authorities = "GUEST")
+    @WithMockUser(authorities = "OBSERVADOR")
     void userNoPuedeListar() throws Exception {
         mockMvc.perform(get(apiUrl + "/listar"))
                 .andExpect(status().isForbidden());
@@ -119,12 +119,12 @@ public class CertificadoSecurityTest {
     }
 
     // ============================================================================
-    //  GET /{id} → ADMIN, ANALISTA, OBSERVADOR
+    //  GET /{id} → solo ADMIN
     // ============================================================================
 
     @Test
-    @WithMockUser(authorities = "ANALISTA")
-    void analistaPuedeVerPorId() throws Exception {
+    @WithMockUser(authorities = "ADMIN")
+    void adminPuedeVerPorId() throws Exception {
         CertificadoDto dto = new CertificadoDto();
         dto.setId(1L);
         dto.setCategoria("Soja");
@@ -136,7 +136,7 @@ public class CertificadoSecurityTest {
     }
 
     @Test
-    @WithMockUser(authorities = "GUEST")
+    @WithMockUser(authorities = "OBSERVADOR")
     void userNoPuedeVerPorId() throws Exception {
         mockMvc.perform(get(apiUrl + "/1"))
                 .andExpect(status().isForbidden());
@@ -203,7 +203,7 @@ public class CertificadoSecurityTest {
     }
 
     // ============================================================================
-    //  GET por Recibo /listar → ADMIN, ANALISTA, OBSERVADOR
+    //  GET por Recibo /listar → solo ADMIN
     // ============================================================================
 
     @Test
@@ -221,7 +221,7 @@ public class CertificadoSecurityTest {
     }
 
     @Test
-    @WithMockUser(authorities = "GUEST")
+    @WithMockUser(authorities = "OBSERVADOR")
     void userNoPuedeListarPorRecibo() throws Exception {
         mockMvc.perform(get(apiUrl + "/recibo/1"))
                 .andExpect(status().isForbidden());
