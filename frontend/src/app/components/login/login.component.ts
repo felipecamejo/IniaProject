@@ -29,7 +29,11 @@ export class LoginComponent {
     error: string = '';
     showPassword: boolean = false;
 
-    constructor(private auth: AuthService, private router: Router) {}
+    constructor(private auth: AuthService, private router: Router) {
+      // Limpieza de datos sensibles al entrar al login
+      localStorage.clear();
+      sessionStorage.clear();
+    }
 
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword;
