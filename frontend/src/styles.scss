@@ -636,16 +636,20 @@ html, body {
   .filter-dropdown {
     .estado-select,
     .mes-select,
-    .anio-select {
+    .anio-select,
+    .categoria-select{
       padding: 0.75rem 1rem;
       border: 1px solid #d1d5db;
       border-radius: 8px;
-      font-size: 1rem;
+      font-size: 0.83rem;
       font-family: var(--font-main);
       background-color: white;
       cursor: pointer;
       transition: all 0.2s ease;
       min-width: 150px;
+      min-height: 44px;
+      height: 44px;
+      box-sizing: border-box;
       
       // Responsive
       @media (max-width: 768px) {

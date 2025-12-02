@@ -8,6 +8,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PurezaDto } from '../../../models/Pureza.dto';
 import { PurezaService } from '../../../services/PurezaService';
 import { LogService } from '../../../services/LogService';
+import { AuthService } from '../../../services/AuthService';
 
 @Component({
   selector: 'app-listado-pureza.component',
@@ -21,7 +22,8 @@ export class ListadoPurezaComponent implements OnInit {
         private router: Router, 
         private route: ActivatedRoute,
         private purezaService: PurezaService,
-        private logService: LogService
+        private logService: LogService,
+        private authservice: AuthService
     ) {}
 
     selectedMes: string = '';
@@ -31,6 +33,8 @@ export class ListadoPurezaComponent implements OnInit {
     loteId: string = '';
     private _reciboId: string = '';
     
+    isObserver: boolean = false;
+
     get reciboId(): string {
         return this._reciboId;
     }
@@ -76,6 +80,7 @@ export class ListadoPurezaComponent implements OnInit {
     }
 
     cargarPurezas() {
+      this.isObserver = this.authservice.isObservador();
         this.purezaService.listar(this.route.snapshot.params['reciboId']).subscribe({
             next: (response) => {
                 this.items = response.purezas;

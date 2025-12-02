@@ -9,6 +9,7 @@ import { PMSDto } from '../../../models/PMS.dto';
 import { DOSNDto } from '../../../models/DOSN.dto';
 import { DOSNService } from '../../../services/DOSNService';
 import { LogService } from '../../../services/LogService';
+import { AuthService } from '../../../services/AuthService';
 
 @Component({
   selector: 'app-listado-dosn.component',
@@ -22,7 +23,8 @@ export class ListadoDosnComponent implements OnInit {
         private router: Router, 
         private route: ActivatedRoute,
         private dosnService: DOSNService,
-        private logService: LogService
+        private logService: LogService,
+        private authService: AuthService
     ) {}
 
     selectedMes: string = '';
@@ -32,6 +34,8 @@ export class ListadoDosnComponent implements OnInit {
     loteId: string = '';
     private _reciboId: string = '';
     
+    isObserver: boolean = false;
+
     get reciboId(): string {
         return this._reciboId;
     }
@@ -77,6 +81,7 @@ export class ListadoDosnComponent implements OnInit {
     }
 
     cargarDosn() {
+      this.isObserver = this.authService.isObservador();
         this.dosnService.listarPorRecibo(parseInt(this.reciboId)).subscribe({
             next: (response: any) => {
                 const lista = response?.DOSN ?? response?.dosn ?? response?.dtos ?? [];
