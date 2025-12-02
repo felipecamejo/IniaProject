@@ -5,13 +5,10 @@
         "changeOrigin": true,
         "logLevel": "debug"
     },
-    "/middleware/*": {
-        "target": "http://middleware:9099",
+    "/middleware": {
+        "target": "http://localhost:9099",
         "secure": false,
         "changeOrigin": true,
-        "logLevel": "debug",
-        "pathRewrite": {
-            "^/middleware": ""
-        }
+        "logLevel": "debug"
     }
 }

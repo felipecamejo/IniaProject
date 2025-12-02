@@ -229,11 +229,14 @@ function Start-Server {
     }
     
     Write-Host "`nStarting middleware API server on port $Port..." -ForegroundColor Green
-    Write-Host "Available endpoints:" -ForegroundColor Yellow
-    Write-Host "  POST /insertar - Mass insertion" -ForegroundColor White
-    Write-Host "  POST /exportar - Export tables" -ForegroundColor White
-    Write-Host "  POST /importar - Import files" -ForegroundColor White
+    Write-Host "Available endpoints (both with and without /middleware/ prefix):" -ForegroundColor Yellow
+    Write-Host "  GET  /health or /middleware/health - Health check" -ForegroundColor White
+    Write-Host "  POST /insertar or /middleware/insertar - Mass insertion" -ForegroundColor White
+    Write-Host "  POST /exportar or /middleware/exportar - Export tables" -ForegroundColor White
+    Write-Host "  POST /importar or /middleware/importar - Import files" -ForegroundColor White
+    Write-Host "  POST /analizar or /middleware/analizar - Analyze Excel files" -ForegroundColor White
     Write-Host "  http://localhost:$Port/docs - Interactive API documentation" -ForegroundColor White
+    Write-Host "  http://localhost:$Port/redoc - ReDoc API documentation" -ForegroundColor White
     Write-Host "`nPress Ctrl+C to stop the server`n" -ForegroundColor Cyan
     
     # Start the server
