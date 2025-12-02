@@ -58,15 +58,17 @@ except ModuleNotFoundError:
         print("Faltan paquetes de FastAPI. Instálalos con: pip install fastapi uvicorn pydantic")
         raise
 
+# Importar configuración centralizada de base de datos
+from database_config import build_connection_string
+
 # Importar lógica existente
 from MassiveInsertFiles import insertar_1000_registros_principales, create_engine, sessionmaker
-from ExportExcel import export_selected_tables
+from ExportExcel import export_selected_tables, export_analisis_filtrados, parsear_analisis_ids
 from ImportExcel import (
     import_one_file as py_import_one_file,
     MODELS as IMPORT_MODELS, 
     inicializar_automap,
     obtener_nombre_tabla_seguro,
-    build_connection_string,
     detect_format_from_path,
     asegurar_autoincrementos,
     detectar_tabla_por_columnas,
@@ -262,8 +264,7 @@ app.add_middleware(
         "http://localhost:4200",
         "http://localhost:80",
         "http://localhost:8080",
-        "https://solfuentes-prueba.netlify.app",
-        "http://localhost:*"
+        "https://solfuentes-prueba.netlify.app"
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -742,6 +743,22 @@ async def exportar(
     tablas: str = Query(default="", description="Lista separada por comas de tablas a exportar"),
     formato: str = Query(default="xlsx", pattern="^(xlsx|csv)$"),
     incluir_sin_pk: bool = Query(default=True, description="Incluir tablas sin Primary Key"),
+    analisis_ids: Optional[str] = Query(
+        default=None,
+        description="IDs de análisis a exportar. Formato: 'tipo:id1,id2;tipo2:id3,id4' (ej: 'dosn:1,2,3;pureza:5,6')"
+    ),
+    fecha_desde: Optional[str] = Query(
+        default=None,
+        description="Fecha de inicio del rango (formato: YYYY-MM-DD)"
+    ),
+    fecha_hasta: Optional[str] = Query(
+        default=None,
+        description="Fecha de fin del rango (formato: YYYY-MM-DD)"
+    ),
+    campo_fecha: Optional[str] = Query(
+        default="auto",
+        description="Campo de fecha a usar para filtrado: 'fecha_inia', 'fecha_inase', 'fecha_analisis', 'fecha_germinacion', 'auto'"
+    ),
 ):
     """Endpoint para exportar tablas a Excel. Retorna archivo ZIP con validaciones y mensajes estructurados."""
     request_id = getattr(request.state, "request_id", "unknown")
@@ -751,6 +768,43 @@ async def exportar(
         
         # Nota: El formato ya está validado por FastAPI mediante pattern="^(xlsx|csv)$" en Query
         # FastAPI retornará 422 automáticamente si el formato no coincide
+        
+        # Validar parámetros de fecha ANTES de conectar a BD (validación rápida)
+        if fecha_desde or fecha_hasta:
+            from datetime import datetime as dt
+            fecha_desde_obj = None
+            fecha_hasta_obj = None
+            
+            if fecha_desde:
+                try:
+                    fecha_desde_obj = dt.strptime(fecha_desde, "%Y-%m-%d").date()
+                except ValueError:
+                    respuesta_error = crear_respuesta_error(
+                        mensaje="Formato de fecha inválido",
+                        codigo=400,
+                        detalles=f"fecha_desde debe estar en formato YYYY-MM-DD. Valor recibido: {fecha_desde}"
+                    )
+                    raise HTTPException(status_code=400, detail=respuesta_error)
+            
+            if fecha_hasta:
+                try:
+                    fecha_hasta_obj = dt.strptime(fecha_hasta, "%Y-%m-%d").date()
+                except ValueError:
+                    respuesta_error = crear_respuesta_error(
+                        mensaje="Formato de fecha inválido",
+                        codigo=400,
+                        detalles=f"fecha_hasta debe estar en formato YYYY-MM-DD. Valor recibido: {fecha_hasta}"
+                    )
+                    raise HTTPException(status_code=400, detail=respuesta_error)
+            
+            # Validar rango de fechas
+            if fecha_desde_obj and fecha_hasta_obj and fecha_desde_obj > fecha_hasta_obj:
+                respuesta_error = crear_respuesta_error(
+                    mensaje="Rango de fechas inválido",
+                    codigo=400,
+                    detalles="fecha_desde debe ser anterior o igual a fecha_hasta"
+                )
+                raise HTTPException(status_code=400, detail=respuesta_error)
         
         # Validar conexión a base de datos con circuit breaker
         try:
@@ -769,7 +823,8 @@ async def exportar(
                 codigo=503,
                 detalles="El servicio de base de datos está temporalmente no disponible. Intente más tarde."
             )
-            shutil.rmtree(tmp_dir, ignore_errors=True)
+            if tmp_dir:
+                shutil.rmtree(tmp_dir, ignore_errors=True)
             raise HTTPException(status_code=503, detail=respuesta_error)
         except Exception as db_error:
             logger.error(f"[{request_id}] Error validando conexión a base de datos: {db_error}", exc_info=True)
@@ -778,19 +833,10 @@ async def exportar(
                 codigo=500,
                 detalles=obtener_mensaje_error_seguro(db_error, "Error de conexión")
             )
-            shutil.rmtree(tmp_dir, ignore_errors=True)
+            if tmp_dir:
+                shutil.rmtree(tmp_dir, ignore_errors=True)
             raise HTTPException(status_code=500, detail=respuesta_error)
         
-        # Procesar lista de tablas
-        tablas_list = [t.strip() for t in tablas.split(",") if t.strip()] if tablas else []
-        if not tablas_list:
-            # por defecto exportar todas las tablas definidas en ExportExcel.MODELS
-            from ExportExcel import MODELS
-            tablas_list = list(MODELS.keys())
-            logger.info(f"[{request_id}] No se especificaron tablas, exportando todas las disponibles: {len(tablas_list)} tablas")
-        else:
-            logger.info(f"[{request_id}] Exportando {len(tablas_list)} tabla(s) especificada(s): {', '.join(tablas_list)}")
-
         # Crear directorio temporal
         try:
             tmp_dir = tempfile.mkdtemp(prefix="inia_export_")
@@ -803,18 +849,130 @@ async def exportar(
             )
             raise HTTPException(status_code=500, detail=respuesta_error)
         
-        # Ejecutar exportación (incluyendo tablas sin PK por defecto)
-        try:
-            export_selected_tables(tablas_list, tmp_dir, formato, incluir_sin_pk=incluir_sin_pk)
-        except Exception as export_error:
-            logger.error(f"[{request_id}] Error durante la exportación: {export_error}", exc_info=True)
-            respuesta_error = crear_respuesta_error(
-                mensaje="Error durante la exportación de tablas",
-                codigo=500,
-                detalles=obtener_mensaje_error_seguro(export_error, "Error durante la exportación")
-            )
-            shutil.rmtree(tmp_dir, ignore_errors=True)
-            raise HTTPException(status_code=500, detail=respuesta_error)
+        # Determinar si usar exportación con filtros o exportación tradicional
+        usar_filtros = analisis_ids or fecha_desde or fecha_hasta
+        
+        if usar_filtros:
+            # Exportación con filtros (análisis individuales)
+            try:
+                from datetime import datetime as dt
+                from ExportExcel import obtener_engine, inicializar_automap, MODELS
+                from sqlalchemy.orm import sessionmaker
+                
+                # Parsear IDs de análisis si se proporcionan
+                analisis_ids_dict = None
+                if analisis_ids:
+                    analisis_ids_dict = parsear_analisis_ids(analisis_ids)
+                    logger.info(f"[{request_id}] IDs de análisis parseados: {analisis_ids_dict}")
+                
+                # Parsear fechas si se proporcionan (ya validadas arriba, solo convertir)
+                fecha_desde_obj = None
+                fecha_hasta_obj = None
+                if fecha_desde:
+                    from datetime import datetime as dt
+                    fecha_desde_obj = dt.strptime(fecha_desde, "%Y-%m-%d").date()
+                
+                if fecha_hasta:
+                    from datetime import datetime as dt
+                    fecha_hasta_obj = dt.strptime(fecha_hasta, "%Y-%m-%d").date()
+                
+                # Determinar tipos de análisis a exportar
+                if analisis_ids_dict:
+                    tipos_analisis = list(analisis_ids_dict.keys())
+                elif tablas:
+                    tipos_analisis = [t.strip().lower() for t in tablas.split(",") if t.strip()]
+                else:
+                    # Si no se especifica, usar todos los tipos disponibles
+                    from ExportExcel import MODELS
+                    tipos_analisis = ['dosn', 'pureza', 'germinacion', 'pms', 'sanitario', 'tetrazolio', 'pureza_pnotatum']
+                    # Filtrar solo los que existen en MODELS
+                    tipos_analisis = [t for t in tipos_analisis if t in MODELS or f"{t}_id" in str(MODELS)]
+                
+                logger.info(f"[{request_id}] Exportando análisis con filtros. Tipos: {tipos_analisis}")
+                
+                # Inicializar engine y sesión
+                from ExportExcel import obtener_engine
+                engine = obtener_engine()
+                inicializar_automap(engine)
+                Session = sessionmaker(bind=engine)
+                session = Session()
+                
+                try:
+                    # Ejecutar exportación con filtros
+                    archivos_generados = export_analisis_filtrados(
+                        session=session,
+                        tipos_analisis=tipos_analisis,
+                        analisis_ids=analisis_ids_dict,
+                        fecha_desde=fecha_desde_obj,
+                        fecha_hasta=fecha_hasta_obj,
+                        campo_fecha=campo_fecha if campo_fecha != "auto" else None,
+                        output_dir=tmp_dir,
+                        fmt=formato
+                    )
+                    
+                    if not archivos_generados:
+                        respuesta_error = crear_respuesta_error(
+                            mensaje="No se generaron archivos de exportación",
+                            codigo=500,
+                            detalles="No se encontraron análisis que cumplan los criterios especificados"
+                        )
+                        shutil.rmtree(tmp_dir, ignore_errors=True)
+                        raise HTTPException(status_code=500, detail=respuesta_error)
+                    
+                    files_generated = [os.path.basename(f) for f in archivos_generados]
+                    logger.info(f"[{request_id}] Se generaron {len(archivos_generados)} archivo(s) con filtros")
+                    
+                finally:
+                    session.close()
+                    
+            except HTTPException:
+                raise
+            except Exception as export_error:
+                logger.error(f"[{request_id}] Error durante la exportación con filtros: {export_error}", exc_info=True)
+                respuesta_error = crear_respuesta_error(
+                    mensaje="Error durante la exportación de análisis",
+                    codigo=500,
+                    detalles=obtener_mensaje_error_seguro(export_error, "Error durante la exportación")
+                )
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+                raise HTTPException(status_code=500, detail=respuesta_error)
+        else:
+            # Exportación tradicional (sin filtros)
+            # Procesar lista de tablas
+            tablas_list = [t.strip() for t in tablas.split(",") if t.strip()] if tablas else []
+            if not tablas_list:
+                # por defecto exportar todas las tablas definidas en ExportExcel.MODELS
+                from ExportExcel import MODELS
+                tablas_list = list(MODELS.keys())
+                logger.info(f"[{request_id}] No se especificaron tablas, exportando todas las disponibles: {len(tablas_list)} tablas")
+            else:
+                logger.info(f"[{request_id}] Exportando {len(tablas_list)} tabla(s) especificada(s): {', '.join(tablas_list)}")
+            
+            # Ejecutar exportación (incluyendo tablas sin PK por defecto)
+            try:
+                export_selected_tables(tablas_list, tmp_dir, formato, incluir_sin_pk=incluir_sin_pk)
+            except Exception as export_error:
+                logger.error(f"[{request_id}] Error durante la exportación: {export_error}", exc_info=True)
+                respuesta_error = crear_respuesta_error(
+                    mensaje="Error durante la exportación de tablas",
+                    codigo=500,
+                    detalles=obtener_mensaje_error_seguro(export_error, "Error durante la exportación")
+                )
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+                raise HTTPException(status_code=500, detail=respuesta_error)
+            
+            # Verificar que se generaron archivos
+            files_generated = [f for f in os.listdir(tmp_dir) if f.endswith(('.xlsx', '.csv'))]
+            if not files_generated:
+                respuesta_error = crear_respuesta_error(
+                    mensaje="No se generaron archivos de exportación",
+                    codigo=500,
+                    detalles=f"No se generaron archivos en el directorio temporal. Tablas solicitadas: {', '.join(tablas_list)}"
+                )
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+                raise HTTPException(status_code=500, detail=respuesta_error)
+            
+            logger.info(f"[{request_id}] Se generaron {len(files_generated)} archivo(s) de exportación")
 
         # Verificar que se generaron archivos
         files_generated = [f for f in os.listdir(tmp_dir) if f.endswith(('.xlsx', '.csv'))]
@@ -827,8 +985,6 @@ async def exportar(
             shutil.rmtree(tmp_dir, ignore_errors=True)
             raise HTTPException(status_code=500, detail=respuesta_error)
         
-        logger.info(f"[{request_id}] Se generaron {len(files_generated)} archivo(s) de exportación")
-
         # Empaquetar en zip
         zip_path = os.path.join(tmp_dir, "export.zip")
         try:

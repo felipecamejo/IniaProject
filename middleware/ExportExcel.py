@@ -3,6 +3,7 @@ import csv
 import argparse
 import logging
 from datetime import date, datetime
+from typing import Optional, Dict, Any, List
 from urllib.parse import quote_plus
 
 # Intentar importar módulo de instalación de dependencias
@@ -64,40 +65,8 @@ except Exception:
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Configuración de conexión a la base de datos
-DEFAULT_CONFIG = {
-    'DB_USER': 'postgres',
-    'DB_PASSWORD': '897888fg2',
-    'DB_HOST': 'localhost',
-    'DB_PORT': '5432',
-    'DB_NAME': 'Inia',
-}
-
-DB_USER = os.getenv('DB_USER', os.getenv('POSTGRES_USER', DEFAULT_CONFIG['DB_USER']))
-DB_PASSWORD = os.getenv('DB_PASSWORD', os.getenv('POSTGRES_PASSWORD', DEFAULT_CONFIG['DB_PASSWORD']))
-DB_HOST = os.getenv('DB_HOST', os.getenv('POSTGRES_HOST', DEFAULT_CONFIG['DB_HOST']))
-DB_PORT = os.getenv('DB_PORT', os.getenv('POSTGRES_PORT', DEFAULT_CONFIG['DB_PORT']))
-DB_NAME = os.getenv('DB_NAME', os.getenv('POSTGRES_DB', DEFAULT_CONFIG['DB_NAME']))
-
-# ================================
-# MÓDULO: CONEXIÓN A BASE DE DATOS
-# ================================
-def build_connection_string() -> str:
-    """Construye la cadena de conexión escapando credenciales."""
-    database_url = os.getenv('DATABASE_URL')
-    if database_url:
-        if database_url.startswith('postgresql://'):
-            return database_url.replace('postgresql://', 'postgresql+psycopg2://', 1)
-        elif database_url.startswith('postgres://'):
-            return database_url.replace('postgres://', 'postgresql+psycopg2://', 1)
-        return database_url
-    
-    user_esc = quote_plus(DB_USER or '')
-    pass_esc = quote_plus(DB_PASSWORD or '')
-    host = DB_HOST or 'localhost'
-    port = DB_PORT or '5432'
-    db = DB_NAME or ''
-    return f'postgresql+psycopg2://{user_esc}:{pass_esc}@{host}:{port}/{db}'
+# Importar configuración centralizada de base de datos
+from database_config import build_connection_string
 
 def obtener_engine():
     """Obtiene un engine de SQLAlchemy configurado."""
@@ -408,11 +377,153 @@ def obtener_columnas_validas(session, model) -> tuple:
     columnas_analisis = filtrar_columnas_analisis(columnas_validas, table)
     return columnas_validas, columnas_analisis
 
-def obtener_datos_tabla(session, tabla_nombre: str, columnas: list) -> list:
-    """Obtiene los datos de una tabla usando SQL directo."""
-    query = text(f"SELECT {', '.join(columnas)} FROM {tabla_nombre}")
-    result = session.execute(query)
+def obtener_datos_tabla(session, tabla_nombre: str, columnas: list, filtro_where: Optional[str] = None, filtro_params: Optional[Dict[str, Any]] = None) -> list:
+    """
+    Obtiene los datos de una tabla usando SQL directo con filtros opcionales.
+    
+    Args:
+        session: Sesión de SQLAlchemy
+        tabla_nombre: Nombre de la tabla
+        columnas: Lista de columnas a seleccionar
+        filtro_where: Cláusula WHERE adicional (opcional)
+        filtro_params: Parámetros para la cláusula WHERE (opcional)
+    
+    Returns:
+        Lista de filas de resultados
+    """
+    query_str = f"SELECT {', '.join(columnas)} FROM {tabla_nombre}"
+    if filtro_where:
+        query_str += f" WHERE {filtro_where}"
+    
+    query = text(query_str)
+    if filtro_params:
+        result = session.execute(query, filtro_params)
+    else:
+        result = session.execute(query)
     return result.fetchall()
+
+# ================================
+# MÓDULO: MAPEO DE CAMPOS DE FECHA
+# ================================
+def obtener_campo_fecha_analisis(tipo_analisis: str, campo_fecha: Optional[str] = None) -> Optional[str]:
+    """
+    Obtiene el campo de fecha de análisis apropiado para un tipo de análisis.
+    
+    Args:
+        tipo_analisis: Tipo de análisis ('dosn', 'pureza', 'germinacion', 'pms', 'sanitario', 'tetrazolio', 'pureza_pnotatum')
+        campo_fecha: Campo de fecha específico solicitado. Si es 'auto' o None, usa detección automática.
+    
+    Returns:
+        Nombre del campo de fecha a usar, o None si no hay fecha de análisis disponible
+    """
+    tipo_analisis_lower = tipo_analisis.lower()
+    
+    # Mapeo de tipos de análisis a campos de fecha disponibles
+    campos_fecha_por_tipo = {
+        'dosn': {
+            'campos': ['dosn_fecha_analisis', 'dosn_fecha_inia', 'dosn_fecha_inase'],
+            'default': 'dosn_fecha_analisis'
+        },
+        'pureza': {
+            'campos': ['fecha_inia', 'fecha_inase'],
+            'default': 'fecha_inia'
+        },
+        'germinacion': {
+            'campos': ['fecha_germinacion'],
+            'default': 'fecha_germinacion'
+        },
+        'pms': {
+            'campos': ['fecha_creacion'],  # Fallback
+            'default': 'fecha_creacion'
+        },
+        'sanitario': {
+            'campos': ['fechacreacion'],  # Fallback
+            'default': 'fechacreacion'
+        },
+        'tetrazolio': {
+            'campos': ['fecha_creacion'],  # Fallback
+            'default': 'fecha_creacion'
+        },
+        'pureza_pnotatum': {
+            'campos': ['fecha_creacion'],  # Fallback
+            'default': 'fecha_creacion'
+        }
+    }
+    
+    # Si no se conoce el tipo, retornar None
+    if tipo_analisis_lower not in campos_fecha_por_tipo:
+        return None
+    
+    tipo_info = campos_fecha_por_tipo[tipo_analisis_lower]
+    
+    # Si se especifica un campo específico
+    if campo_fecha and campo_fecha.lower() != 'auto':
+        campo_solicitado = campo_fecha.lower()
+        # Verificar si el campo solicitado está disponible para este tipo
+        if campo_solicitado in tipo_info['campos']:
+            return campo_solicitado
+        # Si no está disponible, usar el default
+        logger.warning(f"Campo de fecha '{campo_fecha}' no disponible para '{tipo_analisis}', usando '{tipo_info['default']}'")
+        return tipo_info['default']
+    
+    # Detección automática: usar el campo default
+    return tipo_info['default']
+
+# ================================
+# MÓDULO: PARSING DE IDs DE ANÁLISIS
+# ================================
+def parsear_analisis_ids(analisis_ids_str: str) -> Dict[str, List[int]]:
+    """
+    Parsea un string de IDs de análisis a un diccionario.
+    
+    Formato soportado:
+    - 'dosn:1,2,3;pureza:5,6' → {'dosn': [1,2,3], 'pureza': [5,6]}
+    - '1,2,3' → {} (requiere tabla para detección automática, no soportado aún)
+    
+    Args:
+        analisis_ids_str: String con IDs en formato 'tipo:id1,id2;tipo2:id3'
+    
+    Returns:
+        Diccionario mapeando tipo de análisis a lista de IDs
+    """
+    resultado = {}
+    
+    if not analisis_ids_str or not analisis_ids_str.strip():
+        return resultado
+    
+    # Dividir por punto y coma para obtener cada tipo
+    partes = analisis_ids_str.split(';')
+    
+    for parte in partes:
+        parte = parte.strip()
+        if not parte:
+            continue
+        
+        # Buscar dos puntos para separar tipo de IDs
+        if ':' in parte:
+            tipo, ids_str = parte.split(':', 1)
+            tipo = tipo.strip().lower()
+            ids_str = ids_str.strip()
+            
+            if tipo and ids_str:
+                # Parsear IDs como enteros, filtrando los inválidos
+                ids = []
+                for id_str in ids_str.split(','):
+                    id_str = id_str.strip()
+                    if id_str:
+                        try:
+                            ids.append(int(id_str))
+                        except ValueError:
+                            logger.warning(f"ID inválido ignorado: '{id_str}' para tipo '{tipo}'")
+                            continue
+                
+                if ids:
+                    resultado[tipo] = ids
+        else:
+            # Formato simple sin tipo (no soportado aún, requiere tabla)
+            logger.warning(f"Formato de IDs sin tipo no soportado: '{parte}'. Use formato 'tipo:id1,id2'")
+    
+    return resultado
 
 # ================================
 # MÓDULO: FUNCIONES AUXILIARES EXCEL
@@ -592,8 +703,20 @@ def guardar_workbook_excel(wb, xlsx_path: str) -> bool:
 # ================================
 # MÓDULO: EXPORTACIÓN EXCEL GENÉRICA
 # ================================
-def export_analisis_generico(session, model, xlsx_path: str) -> str:
-    """Exporta otros análisis con formato genérico."""
+def export_analisis_generico(session, model, xlsx_path: str, filtro_where: Optional[str] = None, filtro_params: Optional[Dict[str, Any]] = None) -> str:
+    """
+    Exporta otros análisis con formato genérico.
+    
+    Args:
+        session: Sesión de SQLAlchemy
+        model: Modelo de la tabla
+        xlsx_path: Ruta del archivo Excel a generar
+        filtro_where: Cláusula WHERE adicional (opcional)
+        filtro_params: Parámetros para la cláusula WHERE (opcional)
+    
+    Returns:
+        Ruta del archivo generado o cadena vacía si falla
+    """
     try:
         if not OPENPYXL_AVAILABLE:
             log_fail("openpyxl no está instalado")
@@ -607,8 +730,8 @@ def export_analisis_generico(session, model, xlsx_path: str) -> str:
         # Obtener nombre de tabla
         tabla_nombre = obtener_nombre_tabla(model)
         
-        # Obtener datos
-        rows = obtener_datos_tabla(session, tabla_nombre, columnas_analisis)
+        # Obtener datos con filtros opcionales
+        rows = obtener_datos_tabla(session, tabla_nombre, columnas_analisis, filtro_where, filtro_params)
         
         # Crear workbook
         wb, ws = crear_workbook_excel(tabla_nombre)
@@ -648,6 +771,141 @@ def export_table_xlsx(session, model, output_dir: str) -> str:
     except Exception as e:
         log_fail(f"No se pudo exportar {table} a Excel: {e}")
         return ""
+
+# ================================
+# MÓDULO: EXPORTACIÓN CON FILTROS
+# ================================
+def export_analisis_filtrados(
+    session,
+    tipos_analisis: List[str],
+    analisis_ids: Optional[Dict[str, List[int]]] = None,
+    fecha_desde: Optional[date] = None,
+    fecha_hasta: Optional[date] = None,
+    campo_fecha: Optional[str] = None,
+    output_dir: str = "exports",
+    fmt: str = "xlsx"
+) -> List[str]:
+    """
+    Exporta análisis con filtros avanzados (IDs y fechas).
+    
+    Args:
+        session: Sesión de SQLAlchemy
+        tipos_analisis: Lista de tipos de análisis a exportar (ej: ['dosn', 'pureza'])
+        analisis_ids: Diccionario mapeando tipo de análisis a lista de IDs
+                     (ej: {'dosn': [1, 2, 3], 'pureza': [5, 6]})
+        fecha_desde: Fecha de inicio del rango (opcional)
+        fecha_hasta: Fecha de fin del rango (opcional)
+        campo_fecha: Campo de fecha específico a usar ('auto' para detección automática)
+        output_dir: Directorio de salida
+        fmt: Formato de exportación ('xlsx' o 'csv')
+    
+    Returns:
+        Lista de rutas de archivos generados
+    """
+    archivos_generados = []
+    
+    try:
+        if not OPENPYXL_AVAILABLE:
+            log_fail("openpyxl no está instalado")
+            return archivos_generados
+        
+        # Mapeo de nombres de tipos a nombres de tablas
+        tipo_a_tabla = {
+            'dosn': 'dosn',
+            'pureza': 'pureza',
+            'germinacion': 'germinacion',
+            'pms': 'pms',
+            'sanitario': 'sanitario',
+            'tetrazolio': 'tetrazolio',
+            'pureza_pnotatum': 'pureza_pnotatum'
+        }
+        
+        # Mapeo de tipos a nombres de columna ID
+        tipo_a_id_col = {
+            'dosn': 'dosn_id',
+            'pureza': 'pureza_id',
+            'germinacion': 'germinacion_id',
+            'pms': 'pms_id',
+            'sanitario': 'sanitario_id',
+            'tetrazolio': 'tetrazolio_id',
+            'pureza_pnotatum': 'pureza_pnotatum_id'
+        }
+        
+        for tipo_analisis in tipos_analisis:
+            tipo_lower = tipo_analisis.lower()
+            
+            # Obtener nombre de tabla
+            tabla_nombre = tipo_a_tabla.get(tipo_lower)
+            if not tabla_nombre:
+                log_fail(f"Tipo de análisis desconocido: {tipo_analisis}")
+                continue
+            
+            # Intentar obtener el modelo
+            try:
+                model = obtener_modelo(tabla_nombre)
+            except (AttributeError, KeyError) as e:
+                log_fail(f"No se pudo obtener modelo para {tabla_nombre}: {e}")
+                continue
+            
+            # Construir filtros WHERE
+            condiciones_where = []
+            params = {}
+            
+            # Filtro por IDs si se proporciona
+            if analisis_ids and tipo_lower in analisis_ids:
+                ids = analisis_ids[tipo_lower]
+                if ids:
+                    id_col = tipo_a_id_col.get(tipo_lower, f"{tipo_lower}_id")
+                    # Verificar que la columna existe
+                    columnas_validas, _ = obtener_columnas_validas(session, model)
+                    if id_col in columnas_validas:
+                        placeholders = ','.join([f':id_{i}' for i in range(len(ids))])
+                        condiciones_where.append(f"{id_col} IN ({placeholders})")
+                        for i, id_val in enumerate(ids):
+                            params[f'id_{i}'] = id_val
+            
+            # Filtro por fechas si se proporciona
+            campo_fecha_analisis = obtener_campo_fecha_analisis(tipo_lower, campo_fecha)
+            if campo_fecha_analisis and (fecha_desde or fecha_hasta):
+                # Verificar que el campo existe
+                columnas_validas, _ = obtener_columnas_validas(session, model)
+                if campo_fecha_analisis in columnas_validas:
+                    if fecha_desde:
+                        condiciones_where.append(f"{campo_fecha_analisis} >= :fecha_desde")
+                        params['fecha_desde'] = fecha_desde
+                    if fecha_hasta:
+                        condiciones_where.append(f"{campo_fecha_analisis} <= :fecha_hasta")
+                        params['fecha_hasta'] = fecha_hasta
+            
+            # Construir cláusula WHERE completa
+            filtro_where = None
+            filtro_params = None
+            if condiciones_where:
+                filtro_where = " AND ".join(condiciones_where)
+                filtro_params = params
+            
+            # Generar nombre de archivo
+            tabla_normalized = tabla_nombre.lower()
+            xlsx_path = os.path.join(output_dir, f"{tabla_normalized}.xlsx")
+            
+            # Exportar con filtros
+            log_step(f"Exportando {tabla_nombre} con filtros...")
+            archivo_generado = export_analisis_generico(
+                session, 
+                model, 
+                xlsx_path, 
+                filtro_where=filtro_where,
+                filtro_params=filtro_params
+            )
+            
+            if archivo_generado:
+                archivos_generados.append(archivo_generado)
+        
+        return archivos_generados
+        
+    except Exception as e:
+        log_fail(f"Error en export_analisis_filtrados: {e}")
+        return archivos_generados
 
 # ================================
 # MÓDULO: EXPORTACIÓN PRINCIPAL

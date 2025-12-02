@@ -20,8 +20,89 @@
       </h3>
       <p class="section-description">
         Exporta todas las tablas de la base de datos a un archivo ZIP con archivos Excel.
-        Este proceso puede tomar varios minutos dependiendo de la cantidad de datos.
+        Puedes filtrar por análisis específicos o por rango de fechas.
       </p>
+
+      <!-- Filtros de exportación -->
+      <div class="filters-section">
+        <h4 class="filters-title">Filtros de Exportación (Opcional)</h4>
+        
+        <div class="filter-row">
+          <div class="filter-item">
+            <label for="analisis-ids">IDs de Análisis</label>
+            <input 
+              type="text" 
+              id="analisis-ids"
+              pInputText
+              [(ngModel)]="analisisIds" 
+              placeholder="Ej: dosn:1,2,3;pureza:5,6"
+              class="filter-input"
+            />
+            <small class="filter-help">Formato: tipo:id1,id2;tipo2:id3</small>
+          </div>
+        </div>
+
+        <div class="filter-row">
+          <div class="filter-item">
+            <label for="fecha-desde">Fecha Desde</label>
+            <input 
+              type="date" 
+              id="fecha-desde"
+              [(ngModel)]="fechaDesde" 
+              class="filter-input"
+            />
+          </div>
+          <div class="filter-item">
+            <label for="fecha-hasta">Fecha Hasta</label>
+            <input 
+              type="date" 
+              id="fecha-hasta"
+              [(ngModel)]="fechaHasta" 
+              class="filter-input"
+            />
+          </div>
+        </div>
+
+        <div class="filter-row">
+          <div class="filter-item">
+            <label for="campo-fecha">Campo de Fecha</label>
+            <select 
+              id="campo-fecha"
+              [(ngModel)]="campoFecha" 
+              class="filter-select"
+            >
+              <option *ngFor="let campo of camposFecha" [value]="campo.value">
+                {{ campo.label }}
+              </option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label for="formato">Formato</label>
+            <select 
+              id="formato"
+              [(ngModel)]="formato" 
+              class="filter-select"
+            >
+              <option *ngFor="let fmt of formatos" [value]="fmt.value">
+                {{ fmt.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filter-actions">
+          <button 
+            pButton 
+            type="button" 
+            label="Limpiar Filtros" 
+            icon="pi pi-times"
+            (click)="limpiarFiltros()"
+            [disabled]="!tieneFiltros"
+            class="p-button-secondary p-button-sm">
+          </button>
+        </div>
+      </div>
+
       <div class="submit-btn">
         <p-button 
           label="Exportar Tablas" 
