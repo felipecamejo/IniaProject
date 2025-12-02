@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,13 +58,24 @@ public class PandMiddlewareController {
   
     @PostMapping("/http/exportar")
     @Secured({"ADMIN", "ANALISTA"})
-    @Operation(summary = "Exportar tablas (HTTP Python)", description = "Exporta todas las tablas a Excel y descarga automáticamente el archivo ZIP - Solo ADMIN y ANALISTA")
-    public ResponseEntity<?> httpExportar() {
+    @Operation(summary = "Exportar tablas (HTTP Python)", 
+              description = "Exporta tablas a Excel con filtros opcionales (IDs de análisis, fechas, campo de fecha) y descarga automáticamente el archivo ZIP - Solo ADMIN y ANALISTA")
+    public ResponseEntity<?> httpExportar(
+            @RequestParam(value = "tablas", required = false) String tablas,
+            @RequestParam(value = "formato", required = false, defaultValue = "xlsx") String formato,
+            @RequestParam(value = "analisis_ids", required = false) String analisisIds,
+            @RequestParam(value = "fecha_desde", required = false) String fechaDesde,
+            @RequestParam(value = "fecha_hasta", required = false) String fechaHasta,
+            @RequestParam(value = "campo_fecha", required = false, defaultValue = "auto") String campoFecha) {
         try {
             logger.info("Iniciando exportación de tablas desde el backend");
+            if (analisisIds != null || fechaDesde != null || fechaHasta != null) {
+                logger.info("Filtros de exportación - IDs: {}, Fecha desde: {}, Fecha hasta: {}, Campo fecha: {}", 
+                           analisisIds, fechaDesde, fechaHasta, campoFecha);
+            }
             
-            // Exportar todas las tablas sin especificar tabla específica
-            byte[] zip = pythonHttpService.descargarExportZip(null, "xlsx");
+            // Exportar tablas con filtros opcionales
+            byte[] zip = pythonHttpService.descargarExportZip(tablas, formato, analisisIds, fechaDesde, fechaHasta, campoFecha);
             
             if (zip == null) {
                 logger.error("El servicio Python no respondió o retornó null");

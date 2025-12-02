@@ -18,6 +18,8 @@ import org.springframework.util.MultiValueMap;
 import ti.proyectoinia.api.responses.MiddlewareResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class PythonMiddlewareHttpService {
@@ -94,37 +96,206 @@ public class PythonMiddlewareHttpService {
      * 
      * @param tablasCsv Lista de tablas separadas por comas (null para todas)
      * @param formato Formato de exportación (xlsx o csv)
+     * @param analisisIds IDs de análisis a exportar (formato: "tipo:id1,id2;tipo2:id3,id4")
+     * @param fechaDesde Fecha de inicio del rango (formato: YYYY-MM-DD)
+     * @param fechaHasta Fecha de fin del rango (formato: YYYY-MM-DD)
+     * @param campoFecha Campo de fecha a usar para filtrado (fecha_inia, fecha_inase, fecha_analisis, fecha_germinacion, auto)
+     * @return byte[] con el contenido del ZIP, o null si hubo error
+     */
+    public byte[] descargarExportZip(String tablasCsv, String formato, 
+                                     String analisisIds, String fechaDesde, 
+                                     String fechaHasta, String campoFecha) {
+        StringBuilder urlBuilder = new StringBuilder(baseUrl + "/exportar");
+        java.util.List<String> params = new java.util.ArrayList<>();
+        
+        // Formato (requerido, default xlsx)
+        if (formato != null && !formato.isBlank()) {
+            params.add("formato=" + URLEncoder.encode(formato, StandardCharsets.UTF_8));
+        } else {
+            params.add("formato=xlsx");
+        }
+        
+        // Tablas específicas (opcional)
+        if (tablasCsv != null && !tablasCsv.isBlank()) {
+            params.add("tablas=" + URLEncoder.encode(tablasCsv, StandardCharsets.UTF_8));
+        }
+        
+        // IDs de análisis (opcional) - puede contener caracteres especiales como : y ;
+        if (analisisIds != null && !analisisIds.isBlank()) {
+            params.add("analisis_ids=" + URLEncoder.encode(analisisIds, StandardCharsets.UTF_8));
+        }
+        
+        // Fecha desde (opcional)
+        if (fechaDesde != null && !fechaDesde.isBlank()) {
+            params.add("fecha_desde=" + URLEncoder.encode(fechaDesde, StandardCharsets.UTF_8));
+        }
+        
+        // Fecha hasta (opcional)
+        if (fechaHasta != null && !fechaHasta.isBlank()) {
+            params.add("fecha_hasta=" + URLEncoder.encode(fechaHasta, StandardCharsets.UTF_8));
+        }
+        
+        // Campo de fecha (opcional, default auto)
+        if (campoFecha != null && !campoFecha.isBlank() && !campoFecha.equals("auto")) {
+            params.add("campo_fecha=" + URLEncoder.encode(campoFecha, StandardCharsets.UTF_8));
+        }
+        
+        String url = urlBuilder.toString();
+        if (!params.isEmpty()) {
+            url += "?" + String.join("&", params);
+        }
+        
+        try {
+            logger.info("═══════════════════════════════════════════════════════════════");
+            logger.info("INICIANDO EXPORTACIÓN DESDE SERVIDOR PYTHON");
+            logger.info("═══════════════════════════════════════════════════════════════");
+            logger.info("URL: {}", url);
+            logger.info("Parámetros de exportación:");
+            logger.info("  - Tablas: {}", tablasCsv != null && !tablasCsv.isBlank() ? tablasCsv : "TODAS (no especificadas)");
+            logger.info("  - Formato: {}", formato != null && !formato.isBlank() ? formato : "xlsx (default)");
+            
+            if (analisisIds != null || fechaDesde != null || fechaHasta != null) {
+                logger.info("FILTROS APLICADOS:");
+                if (analisisIds != null && !analisisIds.isBlank()) {
+                    logger.info("  ✓ IDs de análisis: {}", analisisIds);
+                }
+                if (fechaDesde != null && !fechaDesde.isBlank()) {
+                    logger.info("  ✓ Fecha desde: {}", fechaDesde);
+                }
+                if (fechaHasta != null && !fechaHasta.isBlank()) {
+                    logger.info("  ✓ Fecha hasta: {}", fechaHasta);
+                }
+                if (campoFecha != null && !campoFecha.isBlank() && !campoFecha.equals("auto")) {
+                    logger.info("  ✓ Campo de fecha: {}", campoFecha);
+                } else {
+                    logger.info("  ✓ Campo de fecha: auto (detección automática)");
+                }
+            } else {
+                logger.info("Filtros: NINGUNO (exportación completa)");
+            }
+            
+            logger.info("Realizando petición POST al servidor Python...");
+            ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.POST, null, byte[].class);
+            byte[] body = response.getBody();
+            
+            logger.info("Respuesta recibida del servidor Python:");
+            logger.info("  - Status HTTP: {}", response.getStatusCode());
+            logger.info("  - Body presente: {}", body != null ? "SÍ" : "NO");
+            
+            if (response.getStatusCode().is2xxSuccessful() && body != null) {
+                logger.info("═══════════════════════════════════════════════════════════════");
+                logger.info("✓ EXPORTACIÓN COMPLETADA EXITOSAMENTE");
+                logger.info("═══════════════════════════════════════════════════════════════");
+                logger.info("Tamaño del archivo ZIP: {} bytes ({} MB)", 
+                           body.length, 
+                           String.format("%.2f", body.length / (1024.0 * 1024.0)));
+                return body;
+            }
+            
+            logger.error("═══════════════════════════════════════════════════════════════");
+            logger.error("✗ ERROR EN EXPORTACIÓN");
+            logger.error("═══════════════════════════════════════════════════════════════");
+            logger.error("Status HTTP: {}", response.getStatusCode());
+            logger.error("Body null: {}", body == null);
+            logger.error("URL utilizada: {}", url);
+            if (body == null) {
+                logger.error("PROBLEMA: El servidor Python no retornó datos en el body de la respuesta");
+            } else {
+                logger.error("PROBLEMA: El servidor Python retornó un status no exitoso: {}", response.getStatusCode());
+            }
+            return null;
+        } catch (HttpClientErrorException ex) {
+            logger.error("═══════════════════════════════════════════════════════════════");
+            logger.error("✗ ERROR HTTP 4xx (CLIENTE) EN EXPORTACIÓN");
+            logger.error("═══════════════════════════════════════════════════════════════");
+            logger.error("Status HTTP: {}", ex.getStatusCode());
+            logger.error("Mensaje: {}", ex.getMessage());
+            logger.error("URL utilizada: {}", url);
+            String responseBody = ex.getResponseBodyAsString();
+            if (responseBody != null && !responseBody.isBlank()) {
+                logger.error("Respuesta del servidor Python:");
+                logger.error("{}", responseBody);
+                if (responseBody.contains("exitoso") || responseBody.contains("mensaje")) {
+                    logger.error("NOTA: El servidor Python retornó un error estructurado. Revisa el mensaje arriba.");
+                }
+            } else {
+                logger.error("PROBLEMA: El servidor Python no retornó detalles del error");
+            }
+            logger.error("POSIBLES CAUSAS:");
+            logger.error("  - Parámetros inválidos (fechas mal formateadas, IDs incorrectos)");
+            logger.error("  - Validación fallida en el servidor Python");
+            logger.error("  - Formato de parámetros incorrecto");
+            return null;
+        } catch (HttpServerErrorException ex) {
+            logger.error("═══════════════════════════════════════════════════════════════");
+            logger.error("✗ ERROR HTTP 5xx (SERVIDOR) EN EXPORTACIÓN");
+            logger.error("═══════════════════════════════════════════════════════════════");
+            logger.error("Status HTTP: {}", ex.getStatusCode());
+            logger.error("Mensaje: {}", ex.getMessage());
+            logger.error("URL utilizada: {}", url);
+            String responseBody = ex.getResponseBodyAsString();
+            if (responseBody != null && !responseBody.isBlank()) {
+                logger.error("Respuesta del servidor Python:");
+                logger.error("{}", responseBody);
+            } else {
+                logger.error("PROBLEMA: El servidor Python no retornó detalles del error");
+            }
+            logger.error("POSIBLES CAUSAS:");
+            logger.error("  - Error en la base de datos (conexión, consulta, timeout)");
+            logger.error("  - Error interno del servidor Python");
+            logger.error("  - Problemas de memoria o recursos");
+            logger.error("  - Circuit breaker activado");
+            return null;
+        } catch (RestClientException ex) {
+            logger.error("═══════════════════════════════════════════════════════════════");
+            logger.error("✗ ERROR DE CONEXIÓN CON SERVIDOR PYTHON");
+            logger.error("═══════════════════════════════════════════════════════════════");
+            logger.error("Mensaje: {}", ex.getMessage());
+            logger.error("URL intentada: {}", url);
+            logger.error("Base URL configurada: {}", baseUrl);
+            
+            if (ex.getMessage() != null && ex.getMessage().contains("Connection refused")) {
+                logger.error("PROBLEMA DETECTADO: El servidor Python no está ejecutándose");
+                logger.error("SOLUCIÓN:");
+                logger.error("  1. Verifica que el servidor Python esté corriendo en: {}", baseUrl);
+                logger.error("  2. Inicia el servidor con uno de estos comandos:");
+                logger.error("     - python middleware/http_server.py");
+                logger.error("     - .\\run_middleware.ps1 server");
+                logger.error("  3. Verifica que el puerto {} esté disponible", baseUrl.contains(":") ? baseUrl.split(":")[2] : "9099");
+            } else if (ex.getMessage() != null && ex.getMessage().contains("timeout")) {
+                logger.error("PROBLEMA DETECTADO: Timeout al conectar con el servidor Python");
+                logger.error("SOLUCIÓN:");
+                logger.error("  - Verifica que el servidor Python esté respondiendo");
+                logger.error("  - Aumenta el timeout si la exportación es muy grande");
+            } else {
+                logger.error("PROBLEMA DETECTADO: No se pudo establecer conexión con el servidor Python");
+                logger.error("SOLUCIÓN:");
+                logger.error("  - Verifica la conectividad de red");
+                logger.error("  - Verifica que el servidor Python esté ejecutándose");
+                logger.error("  - Verifica la configuración de baseUrl: {}", baseUrl);
+            }
+            return null;
+        } catch (Exception ex) {
+            logger.error("═══════════════════════════════════════════════════════════════");
+            logger.error("✗ ERROR INESPERADO EN EXPORTACIÓN");
+            logger.error("═══════════════════════════════════════════════════════════════");
+            logger.error("Tipo de error: {}", ex.getClass().getName());
+            logger.error("Mensaje: {}", ex.getMessage());
+            logger.error("URL utilizada: {}", url);
+            logger.error("Stack trace:", ex);
+            return null;
+        }
+    }
+    
+    /**
+     * Descarga un archivo ZIP con las tablas exportadas (método sobrecargado para compatibilidad hacia atrás).
+     * 
+     * @param tablasCsv Lista de tablas separadas por comas (null para todas)
+     * @param formato Formato de exportación (xlsx o csv)
      * @return byte[] con el contenido del ZIP, o null si hubo error
      */
     public byte[] descargarExportZip(String tablasCsv, String formato) {
-        String url = baseUrl + "/exportar?formato=" + (formato == null ? "xlsx" : formato);
-        if (tablasCsv != null && !tablasCsv.isBlank()) {
-            url += "&tablas=" + tablasCsv;
-        }
-        try {
-            logger.info("Exportando tablas desde servidor Python: {}", url);
-            ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.POST, null, byte[].class);
-            byte[] body = response.getBody();
-            if (response.getStatusCode().is2xxSuccessful() && body != null) {
-                logger.info("Exportación completada. Tamaño del ZIP: {} bytes", body.length);
-                return body;
-            }
-            logger.error("Error en exportación: Status={}, Body null={}", 
-                        response.getStatusCode(), 
-                        body == null);
-            return null;
-        } catch (HttpClientErrorException | HttpServerErrorException ex) {
-            logger.error("Error HTTP en exportación: {} - {}", ex.getStatusCode(), ex.getMessage());
-            logger.error("Respuesta del servidor: {}", ex.getResponseBodyAsString());
-            return null;
-        } catch (RestClientException ex) {
-            logger.error("Error de conexión llamando a Python /exportar: {}", ex.getMessage());
-            if (ex.getMessage() != null && ex.getMessage().contains("Connection refused")) {
-                logger.error("El servidor Python no está ejecutándose. " +
-                           "Inicia el servidor con: python middleware/http_server.py o ejecuta: .\\run_middleware.ps1 server");
-            }
-            return null;
-        }
+        return descargarExportZip(tablasCsv, formato, null, null, null, null);
     }
 
     /**

@@ -154,3 +154,9 @@ variable "route53_zone_id" {
   default     = ""
 }
 
+variable "cors_origins" {
+  description = "Comma-separated list of CORS origins for middleware (defaults to production domain)"
+  type        = string
+  default     = ""
+}
+

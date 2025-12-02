@@ -111,7 +111,7 @@ resource "aws_lb_target_group" "middleware" {
     unhealthy_threshold = 3
     timeout             = 5
     interval            = 30
-    path                = "/health"
+    path                = "/middleware/health"
     matcher             = "200"
     protocol            = "HTTP"
   }
@@ -526,6 +526,10 @@ resource "aws_ecs_task_definition" "middleware" {
       {
         name  = "LOG_LEVEL"
         value = "info"
+      },
+      {
+        name  = "CORS_ORIGINS"
+        value = var.cors_origins != "" ? var.cors_origins : "https://zimmzimmgames.com,https://www.zimmzimmgames.com"
       }
     ]
 
