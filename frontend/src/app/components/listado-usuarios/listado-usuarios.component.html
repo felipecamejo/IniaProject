@@ -57,7 +57,7 @@
                 <div class="item-description">
                     
                 </div>
-                <div class="item-actions">
+                <div class="item-actions" *ngIf="item.rol !== 'ADMIN'">
                     <button class="action-button edit-button" (click)="editarItem(item)" title="Editar">
                         <i class="pi pi-pencil"></i>
                     </button>
@@ -93,32 +93,6 @@
         </div>
 
     </p-card>
-
-    <!-- Popup de confirmación de eliminación -->
-    <p-dialog 
-        header="Confirmación" 
-        [(visible)]="mostrarConfirmEliminar" 
-        [modal]="true" 
-        [draggable]="false" 
-        [resizable]="false"
-        [closable]="true"
-        [style]="{width: '90vw', maxWidth: '420px'}"
-        styleClass="confirm-modal"
-    >
-        <div class="confirm-content">
-            <p>
-                ¿Seguro que deseas eliminar al usuario 
-                <strong>{{ usuarioAEliminar?.nombre }}</strong>
-                <span *ngIf="usuarioAEliminar?.email"> ({{ usuarioAEliminar?.email }})</span>?
-            </p>
-        </div>
-        <ng-template pTemplate="footer">
-            <div class="confirm-footer">
-                <button pButton type="button" class="p-button-secondary" (click)="cancelarEliminacion()" [disabled]="confirmLoading" label="Cancelar"></button>
-                <button pButton type="button" class="p-button-danger" (click)="confirmarEliminacion()" [disabled]="confirmLoading" [label]="confirmLoading ? 'Eliminando...' : 'Eliminar'"></button>
-            </div>
-        </ng-template>
-    </p-dialog>
 
     <p-dialog 
         header="{{ modalTitulo }}" 
@@ -157,61 +131,71 @@
 
                 <!-- Checkbox para cambiar contraseña (solo en edición) -->
                 <div class="modal-form-field" *ngIf="itemEditando">
-                    <label class="checkbox-label">
+                    <div class="checkbox-item">
                         <input 
                             type="checkbox" 
+                            id="cambiar-password-checkbox"
                             [(ngModel)]="cambiarPassword" 
                             name="cambiarPassword"
-                            class="checkbox-input"
+                            class="custom-checkbox"
                         />
-                        <span class="checkbox-text">Cambiar contraseña</span>
-                    </label>
+                        <label for="cambiar-password-checkbox" class="checkbox-label">
+                            <span class="checkmark"></span>
+                            <span class="checkbox-text">Cambiar contraseña</span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="modal-form-field" *ngIf="cambiarPassword || !itemEditando">
                     <label for="modalPassword">{{ itemEditando ? 'Nueva Contraseña' : 'Contraseña' }} *</label>
-                    <div class="password-input-container">
-                        <input 
-                            id="modalPassword" 
-                            [type]="showModalPassword ? 'text' : 'password'" 
-                            [(ngModel)]="modalPassword" 
-                            name="modalPassword" 
-                            pInputText 
+                    <div class="password-wrapper">
+                        <input
+                            id="modalPassword"
+                            [type]="showModalPassword ? 'text' : 'password'"
+                            [(ngModel)]="modalPassword"
+                            name="modalPassword"
+                            pInputText
                             [required]="cambiarPassword || !itemEditando"
                             [placeholder]="itemEditando ? 'Ingrese la nueva contraseña' : 'Ingrese la contraseña'"
                             minlength="6"
                         />
-                        <button 
-                            type="button" 
-                            class="password-toggle-btn" 
+                        <button
+                            *ngIf="modalPassword && modalPassword.length > 0"
+                            type="button"
+                            class="toggle-password-btn"
                             (click)="toggleModalPasswordVisibility()"
-                            title="{{ showModalPassword ? 'Ocultar contraseña' : 'Mostrar contraseña' }}"
+                            tabindex="-1"
+                            aria-label="Mostrar/ocultar contraseña"
                         >
-                            <i [class]="showModalPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                            <i *ngIf="!showModalPassword" class="pi pi-eye"></i>
+                            <i *ngIf="showModalPassword" class="pi pi-eye-slash"></i>
                         </button>
                     </div>
                 </div>
 
                 <div class="modal-form-field" *ngIf="cambiarPassword || !itemEditando">
                     <label for="modalConfirmPassword">{{ itemEditando ? 'Confirmar Nueva Contraseña' : 'Confirmar Contraseña' }} *</label>
-                    <div class="password-input-container">
-                        <input 
-                            id="modalConfirmPassword" 
-                            [type]="showModalConfirmPassword ? 'text' : 'password'" 
-                            [(ngModel)]="modalConfirmPassword" 
-                            name="modalConfirmPassword" 
-                            pInputText 
+                    <div class="password-wrapper">
+                        <input
+                            id="modalConfirmPassword"
+                            [type]="showModalConfirmPassword ? 'text' : 'password'"
+                            [(ngModel)]="modalConfirmPassword"
+                            name="modalConfirmPassword"
+                            pInputText
                             [required]="cambiarPassword || !itemEditando"
                             [placeholder]="itemEditando ? 'Confirme la nueva contraseña' : 'Confirme la contraseña'"
                             minlength="6"
                         />
-                        <button 
-                            type="button" 
-                            class="password-toggle-btn" 
+                        <button
+                            *ngIf="modalConfirmPassword && modalConfirmPassword.length > 0"
+                            type="button"
+                            class="toggle-password-btn"
                             (click)="toggleModalConfirmPasswordVisibility()"
-                            title="{{ showModalConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña' }}"
+                            tabindex="-1"
+                            aria-label="Mostrar/ocultar contraseña"
                         >
-                            <i [class]="showModalConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                            <i *ngIf="!showModalConfirmPassword" class="pi pi-eye"></i>
+                            <i *ngIf="showModalConfirmPassword" class="pi pi-eye-slash"></i>
                         </button>
                     </div>
                 </div>
@@ -227,17 +211,5 @@
         </form>
     </p-dialog>
 
-    <!-- Popup de confirmación de eliminación -->
-    <app-confirm-dialog
-        [visible]="mostrarConfirmEliminar"
-        title="Eliminar Usuario"
-        [message]="'¿Estás seguro de que quieres eliminar este Usuario?'"
-        [itemName]="usuarioAEliminar?.nombre ? 'Usuario: ' + usuarioAEliminar!.nombre : ''"
-        [itemId]="usuarioAEliminar?.id ?? ''"
-        confirmText="Eliminar"
-        cancelText="Cancelar"
-        [loading]="confirmLoading"
-        (confirm)="confirmarEliminacion()"
-        (cancel)="cancelarEliminacion()">
-    </app-confirm-dialog>
+    
 </div>

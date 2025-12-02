@@ -34,7 +34,7 @@ export class PerfilComponent implements OnInit {
     private router: Router
   ) {}
 
-  opciones: string[] = ["Admin", "Analista", "Observador"];
+
   roles: string[] = [];
 
   ngOnInit() {
@@ -105,10 +105,6 @@ export class PerfilComponent implements OnInit {
     this.modalAbierto = true;
     this.error = '';
     this.success = '';
-    // Seleccionar el rol más alto del usuario por defecto
-    if (this.opciones && this.opciones.length > 0) {
-      this.rol = this.opciones[0];
-    }
   }
 
   cerrarModal() {
@@ -156,12 +152,23 @@ export class PerfilComponent implements OnInit {
     this.error = '';
     this.success = '';
 
+    function stringToUserRole(roleStr: string): UserRole {
+      switch (roleStr) {
+        case 'ADMIN':
+          return UserRole.ADMIN;
+        case 'ANALISTA':
+          return UserRole.ANALISTA;
+        default:
+          return UserRole.OBSERVADOR;
+      }
+    }
+
     const usuarioActualizado: UsuarioDto = {
       id: this.usuarioId,
       email: this.mail,
       nombre: this.nombre,
       telefono: this.telefono || undefined,
-      rol: typeof this.rol === 'string' ? EnumConverter.convertBackendRoleToFrontend(this.rol) : this.rol,
+      rol: stringToUserRole(this.rol), 
       activo: true
     };
 
@@ -170,22 +177,11 @@ export class PerfilComponent implements OnInit {
         this.loading = false;
         this.success = 'Perfil actualizado correctamente';
 
-        // Detectar cambio de rol de ADMIN a ANALISTA u OBSERVADOR
-        const rolesAntes = this.auth.userRoles;
-        const eraAdmin = rolesAntes.includes('ADMIN');
-        const nuevoRol = (typeof this.rol === 'string' ? this.rol.toUpperCase() : this.rol);
-        if (eraAdmin && (nuevoRol === 'ANALISTA' || nuevoRol === 'OBSERVADOR')) {
-          // Solo redirect a /login, no modificar localStorage
-          this.router.navigate(['/login']);
-          return;
-        }
-
-        // Actualizar datos en localStorage normalmente
+        // Actualizar datos en localStorage normalmente (sin tocar el rol)
         const userData = this.auth.userData;
         if (userData) {
           userData.nombre = this.nombre;
           userData.email = this.mail;
-          userData.roles = [nuevoRol];
           localStorage.setItem('user', JSON.stringify(userData));
         }
 
