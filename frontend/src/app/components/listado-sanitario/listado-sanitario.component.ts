@@ -9,6 +9,7 @@ import { SanitarioDto } from '../../../models/Sanitario.dto';
 import { ActivatedRoute } from '@angular/router';
 import { SanitarioService } from '../../../services/SanitarioService';
 import { LogService } from '../../../services/LogService';
+import { AuthService } from '../../../services/AuthService';
 
 @Component({
   selector: 'app-listado-sanitario.component',
@@ -22,12 +23,15 @@ export class ListadoSanitarioComponent implements OnInit {
         private router: Router, 
         private route: ActivatedRoute,
         private sanitarioService: SanitarioService,
-        private logService: LogService
+        private logService: LogService,
+        private authService: AuthService
     ) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
     searchText: string = '';
+
+    isObserver: boolean = false;
 
     loteId: string = '';
     private _reciboId: string = '';
@@ -134,6 +138,8 @@ export class ListadoSanitarioComponent implements OnInit {
             console.error('No se encontró el ID del recibo');
             return;
         }
+
+        this.isObserver = this.authService.isObservador();
 
         this.isLoading = true;
         const reciboIdNumber = parseInt(this.reciboId);

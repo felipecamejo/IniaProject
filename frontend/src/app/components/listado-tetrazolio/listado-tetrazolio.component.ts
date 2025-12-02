@@ -8,6 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TetrazolioDto } from '../../../models/Tetrazolio.dto';
 import { TetrazolioService } from '../../../services/TetrazolioService';
 import { LogService } from '../../../services/LogService';
+import { AuthService } from '../../../services/AuthService';
 
 @Component({
   selector: 'app-listado-tetrazolio.component',
@@ -21,7 +22,8 @@ export class ListadoTetrazolioComponent implements OnInit {
         private router: Router, 
         private route: ActivatedRoute,
         private tetrazolioService: TetrazolioService,
-        private logService: LogService
+        private logService: LogService,
+        private authService: AuthService
     ) {}
 
     selectedMes: string = '';
@@ -42,6 +44,8 @@ export class ListadoTetrazolioComponent implements OnInit {
       { label: 'Noviembre', id: 11 },
       { label: 'Diciembre', id: 12 }
     ];
+
+    isObserver: boolean = false;
 
     anios = [
       { label: '2020', id: 2020 },
@@ -76,6 +80,8 @@ export class ListadoTetrazolioComponent implements OnInit {
         this.loading = true;
         this.error = null;
         
+        this.isObserver = this.authService.isObservador();
+
         // Obtener reciboId de los parámetros de la ruta
         const reciboId = this.route.snapshot.paramMap.get('reciboId');
         

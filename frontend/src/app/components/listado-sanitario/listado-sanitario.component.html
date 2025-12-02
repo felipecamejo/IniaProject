@@ -26,7 +26,7 @@
                 </select>
             </div>
             <div class="filter-dropdown">
-                <div class="submit-btn">
+                <div class="submit-btn" *ngIf="!isObserver">
                     <button pButton type="button" (click)="crearItem()" label="Crear Sanitario" class="p-button-primary"></button>
                 </div>
             </div>
@@ -76,10 +76,10 @@
                     <button class="action-button view-button" (click)="navegarAVer(item)">
                         <i class="pi pi-eye"></i>
                     </button>
-                    <button *ngIf="!item.repetido" class="action-button edit-button" (click)="navegarAEditar(item)">
+                    <button *ngIf="!item.repetido && !isObserver" class="action-button edit-button" (click)="navegarAEditar(item)">
                         <i class="pi pi-pencil"></i>
                     </button>
-                    <button *ngIf="!item.repetido" class="action-button delete-button" 
+                    <button *ngIf="!item.repetido && !isObserver" class="action-button delete-button" 
                             (click)="eliminarItem(item)" 
                             [disabled]="isLoading">
                         <i class="pi pi-trash"></i>

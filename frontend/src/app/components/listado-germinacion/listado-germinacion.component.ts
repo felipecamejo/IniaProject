@@ -8,6 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { GerminacionDto } from '../../../models/Germinacion.dto';
 import { GerminacionService } from '../../../services/GerminacionService';
 import { LogService } from '../../../services/LogService';
+import { AuthService } from '../../../services/AuthService';
 
 @Component({
   selector: 'app-listado-germinacion',
@@ -17,7 +18,7 @@ import { LogService } from '../../../services/LogService';
   styleUrl: './listado-germinacion.component.scss'
 })
 export class ListadoGerminacionComponent implements OnInit {
-  constructor(private router: Router, private route: ActivatedRoute, private germSvc: GerminacionService, private logService : LogService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private germSvc: GerminacionService, private logService : LogService, private authService: AuthService) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
@@ -48,6 +49,8 @@ export class ListadoGerminacionComponent implements OnInit {
       { label: '2024', id: 2024 }
     ];
 
+    isObserver: boolean = false;
+
     items: GerminacionDto[] = [];
 
     // Propiedades de paginación
@@ -62,6 +65,7 @@ export class ListadoGerminacionComponent implements OnInit {
     confirmLoading: boolean = false;
 
     ngOnInit(): void {
+      this.isObserver = this.authService.isObservador();
       this.loteId = this.route.snapshot.paramMap.get('loteId');
       this.reciboId = this.route.snapshot.paramMap.get('reciboId');
       const rid = Number(this.reciboId);
@@ -134,7 +138,7 @@ export class ListadoGerminacionComponent implements OnInit {
     }
 
     goToHome() {
-      this.router.navigate(['/home']);
+      this.router.navigate([this.loteId, this.reciboId, 'lote-analisis']);
     }
 
     crearGerminacion() {

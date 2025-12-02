@@ -26,7 +26,7 @@
                 </select>
             </div>
             <div class="filter-dropdown">
-                <div class="submit-btn">
+                <div class="submit-btn" *ngIf="!isObserver">
                     <button pButton type="button" (click)="crearGerminacion()" label="Crear Germinación" class="p-button-primary"></button>
                 </div>
             </div>
@@ -67,10 +67,10 @@
                     <button class="action-button view-button" (click)="navegarAVer(item)">
                         <i class="pi pi-eye"></i>
                     </button>
-                    <button *ngIf="!item.repetido" class="action-button edit-button" (click)="navegarAEditar(item)">
+                    <button *ngIf="!item.repetido && !isObserver" class="action-button edit-button" (click)="navegarAEditar(item)">
                         <i class="pi pi-pencil"></i>
                     </button>
-                    <button *ngIf="!item.repetido" class="action-button delete-button" (click)="eliminarGerminacion(item)">
+                    <button *ngIf="!item.repetido && !isObserver" class="action-button delete-button" (click)="eliminarGerminacion(item)">
                         <i class="pi pi-trash"></i>
                     </button>
                 </div>

@@ -26,6 +26,8 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
     { label: 'Finalizado', id: 2 },
   ];
 
+  
+
   selectedMetodo: string = '';
   selectedMes: string = '';
   selectedAnio: string = '';
@@ -42,6 +44,8 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
     { label: 'CO', id: 'CO' },
   ];
   private navigationSubscription: any;
+
+  isObserver: boolean = false;
 
   meses = [
     { label: 'Enero', id: 1 },
@@ -103,6 +107,10 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
   }
 
   cargarLotesPage(): void {
+
+    this.isObserver = this.authService.isObservador();
+
+
     this.loading = true;
     const searchText = this.searchText || '';
     let estado: string | undefined = undefined;

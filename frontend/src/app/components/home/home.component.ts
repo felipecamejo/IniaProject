@@ -23,6 +23,8 @@ export class HomeComponent {
   isExporting = false;
   isImporting = false;
 
+  isObserver: boolean = this.authService.isObservador();
+
   get isAdmin(): boolean {
     return this.authService.isAdmin();
   }

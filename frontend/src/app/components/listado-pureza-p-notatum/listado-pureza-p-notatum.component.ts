@@ -8,6 +8,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PurezaPNotatumDto } from '../../../models/PurezaPNotatum.dto';
 import { PurezaPNotatumService } from '../../../services/PurezaPNotatumService';
 import { LogService } from '../../../services/LogService';
+import { AuthService } from '../../../services/AuthService';
 
 @Component({
   selector: 'app-listado-pureza-p-notatum',
@@ -17,7 +18,7 @@ import { LogService } from '../../../services/LogService';
   styleUrl: './listado-pureza-p-notatum.component.scss'
 })
 export class ListadoPurezaPNotatumComponent implements OnInit {
-    constructor(private router: Router, private route: ActivatedRoute, private purezaPNotatumService: PurezaPNotatumService, private logService: LogService) {}
+    constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute, private purezaPNotatumService: PurezaPNotatumService, private logService: LogService) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
@@ -48,6 +49,8 @@ export class ListadoPurezaPNotatumComponent implements OnInit {
     ];
 
     anios: { label: string, id: number }[] = [];
+    
+    isObserver: boolean = false;
 
     items: PurezaPNotatumDto[] = [];
 
@@ -63,6 +66,7 @@ export class ListadoPurezaPNotatumComponent implements OnInit {
         this.items = [];
         return;
       }
+      this.isObserver = this.authService.isObservador();
       this.purezaPNotatumService.listarPorRecibo(this.reciboId).subscribe({
         next: (data) => {
           // El servicio devuelve { purezaPNotatun: [...] }

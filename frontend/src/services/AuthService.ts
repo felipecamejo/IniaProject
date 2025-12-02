@@ -56,7 +56,16 @@ export class AuthService {
   }
 
   isAnalista(): boolean {
-    return this.userRoles.includes('ANALISTA');
+    // Jerarquía: ADMIN > ANALISTA > OBSERVADOR
+    const roles = this.userRoles;
+    if (roles.includes('ADMIN')) return false;
+    if (roles.includes('ANALISTA')) return true;
+    return false;
+  }
+
+  isObservador(): boolean {
+    const roles = this.userRoles;
+    return !roles.includes('ADMIN') && !roles.includes('ANALISTA') && roles.includes('OBSERVADOR');
   }
 
   hasRole(role: string): boolean {
