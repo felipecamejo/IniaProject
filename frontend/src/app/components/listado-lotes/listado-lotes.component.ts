@@ -287,12 +287,6 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
     });
   }
 
-  eliminarItem(lote: LoteDto) {
-    console.log('Eliminar Lote:', lote);
-    this.loteAEliminar = lote;
-    this.mostrarConfirmEliminar = true;
-  }
-
   confirmarEliminacion() {
     if (!this.loteAEliminar || this.loteAEliminar.id == null) return;
     this.confirmLoading = true;
@@ -305,6 +299,7 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
         this.mostrarConfirmEliminar = false;
         this.loteAEliminar = null;
         this.items = this.items.filter((loteItem: LoteDto) => loteItem.id !== loteId);
+        this.cargarLotesPage(); // Recargar para actualizar la paginación
       },
       error: (err: any) => {
         console.error('Error eliminando Lote:', err);
@@ -316,6 +311,17 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
     });
   }
 
+    eliminarItem(lote: LoteDto) {
+      console.log('Eliminar Lote:', lote);
+      
+      if (!lote.id) {
+        alert('Error: El lote no tiene un ID válido.');
+        return;
+      }
+
+      this.loteAEliminar = lote;
+      this.mostrarConfirmEliminar = true;
+    }
   cancelarEliminacion() {
     this.mostrarConfirmEliminar = false;
     this.loteAEliminar = null;

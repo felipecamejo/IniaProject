@@ -95,4 +95,18 @@
 
     </p-card>
 
+    <!-- Popup de confirmación de eliminación -->
+    <app-confirm-dialog
+        [visible]="mostrarConfirmEliminar"
+        title="Eliminar Lote"
+        [message]="'¿Estás seguro de que quieres eliminar este Lote?'"
+        [itemName]="loteAEliminar?.nombre ? 'Lote: ' + loteAEliminar!.nombre : ''"
+        [itemId]="loteAEliminar?.id ?? ''"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        [loading]="confirmLoading"
+        (confirm)="confirmarEliminacion()"
+        (cancel)="cancelarEliminacion()">
+    </app-confirm-dialog>
+
 </div>
