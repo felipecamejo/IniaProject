@@ -232,6 +232,7 @@ public class MapsDtoEntityService {
         dto.setRepetido(germinacion.isRepetido());
         dto.setFechaCreacion(germinacion.getFechaCreacion());
         dto.setFechaRepeticion(germinacion.getFechaRepeticion());
+        dto.setEstandar(germinacion.isEstandar());
 
 
         if (germinacion.getRecibo() != null) {
@@ -295,6 +296,7 @@ public class MapsDtoEntityService {
         germinacion.setActivo(dto.isActivo());
         germinacion.setFechaCreacion(dto.getFechaCreacion());
         germinacion.setFechaRepeticion(dto.getFechaRepeticion());
+        germinacion.setEstandar(dto.isEstandar());
 
     // Validar y obtener el recibo si existe
     Recibo recibo = getValidRecibo(dto.getReciboId());
@@ -586,7 +588,7 @@ public class MapsDtoEntityService {
         dto.setMalezasToleranciaCeroPorcentajeRedondeoInase(pureza.getMalezasToleranciaCeroPorcentajeRedondeoInase());
         dto.setOtrosCultivo(pureza.getOtrosCultivo());
         dto.setFechaEstandar(pureza.getFechaEstandar());
-        dto.setEstandar(pureza.getEstandar());
+        dto.setEstandar(pureza.isEstandar());
         dto.setActivo(pureza.isActivo());
         dto.setRepetido(pureza.isRepetido());
         dto.setFechaCreacion(pureza.getFechaCreacion());
@@ -922,12 +924,13 @@ public class MapsDtoEntityService {
         dto.setDeterminacionCuscuta(dosn.getDeterminacionCuscuta());
         dto.setDeterminacionCuscutaGramos(dosn.getDeterminacionCuscutaGramos());
         // Otros
-        dto.setEstandar(dosn.getEstandar());
+        dto.setEstandar(dosn.isEstandar());
         dto.setFechaAnalisis(dosn.getFechaAnalisis());
         dto.setActivo(dosn.isActivo());
         dto.setRepetido(dosn.isRepetido());
         dto.setFechaCreacion(dosn.getFechaCreacion());
         dto.setFechaRepeticion(dosn.getFechaRepeticion());
+        dto.setEstandar(dosn.isEstandar());
 
         // Colecciones -> listas de IDs
         dto.setMalezasNormalesINIAId(dosn.getMalezasNormalesINIA() != null ?
@@ -1034,6 +1037,7 @@ public class MapsDtoEntityService {
         dosn.setRepetido(dto.isRepetido());
         dosn.setFechaCreacion(dto.getFechaCreacion());
         dosn.setFechaRepeticion(dto.getFechaRepeticion());
+        dosn.setEstandar(dto.isEstandar());
 
         // Vincular recibo si viene en el DTO
         Recibo recibo = getValidRecibo(dto.getReciboId());
@@ -1268,6 +1272,7 @@ public class MapsDtoEntityService {
         dto.setFechaCreacion(pureza.getFechaCreacion());
         dto.setFechaRepeticion(pureza.getFechaRepeticion());
         dto.setObservaciones(pureza.getObservaciones());
+        dto.setEstandar(pureza.isEstandar());
 
         if (pureza.getRecibo() != null) {
             dto.setReciboId(pureza.getRecibo().getId());
@@ -1293,6 +1298,7 @@ public class MapsDtoEntityService {
         pureza.setFechaCreacion(dto.getFechaCreacion());
         pureza.setFechaRepeticion(dto.getFechaRepeticion());
         pureza.setObservaciones(dto.getObservaciones());
+        pureza.setEstandar(dto.isEstandar());
 
         // Validar y obtener el recibo si existe
         Recibo recibo = getValidRecibo(dto.getReciboId());
@@ -1347,6 +1353,7 @@ public class MapsDtoEntityService {
         dto.setActivo(tetrazolio.isActivo());
         dto.setRepetido(tetrazolio.isRepetido());
         dto.setReciboId(tetrazolio.getRecibo() != null ? tetrazolio.getRecibo().getId() : null);
+        dto.setEstandar(tetrazolio.isEstandar());
 
         // El reporte puede ser null y no está en la entidad aún, se inicializa como null
         dto.setReporte(null);
@@ -1393,6 +1400,7 @@ public class MapsDtoEntityService {
         tetrazolio.setRepetido(dto.isRepetido());
         tetrazolio.setFechaCreacion(dto.getFechaCreacion());
         tetrazolio.setFechaRepeticion(dto.getFechaRepeticion());
+        tetrazolio.setEstandar(dto.isEstandar());
 
         // Validar y obtener el recibo si existe
         Recibo recibo = getValidRecibo(dto.getReciboId());

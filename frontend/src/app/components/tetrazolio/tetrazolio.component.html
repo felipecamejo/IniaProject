@@ -384,7 +384,7 @@
                 </table>
             </div>
 
-            <!-- Checkboxes - visible solo para admin al editar -->
+            <<!-- Checkboxes - visible solo para admin al editar -->
                 <div class="checkbox-container" *ngIf="isEditing && isAdmin">
                     <h4 class="checkbox-title">Opciones De Edición</h4>
                     <div class="checkbox-grid">
@@ -419,7 +419,7 @@
             <div class="submit-btn" style="margin-top: 1.2rem;">
                 <button *ngIf="!isReadonly" pButton type="submit" class="p-button-success" [disabled]="errores.length > 0 || isSubmitting">
                     <i *ngIf="isSubmitting" class="pi pi-spin pi-spinner" style="margin-right: 8px;"></i>
-                    {{ isSubmitting ? 'Procesando...' : (isEditing ? 'Actualizar Tetrazolio' : 'Crear Tetrazolio') }}
+                    {{ isSubmitting ? 'Procesando...' : (isEditing ? 'Editar Tetrazolio' : 'Crear Tetrazolio') }}
                 </button>
 
                 <button pButton type="button" (click)="onCancel()" label="{{ isReadonly ? 'Volver' : 'Cancelar' }}" class="p-button-secondary" style="margin-left: 10px;" [disabled]="isSubmitting"></button>

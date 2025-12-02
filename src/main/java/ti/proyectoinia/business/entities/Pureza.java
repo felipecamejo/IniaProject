@@ -91,7 +91,7 @@ public class Pureza {
     private Date fechaEstandar;
 
     @Column(name = "ESTANDAR")
-    private Boolean estandar;
+    private boolean estandar;
 
     @ManyToOne
     @JoinColumn(name = "RECIBO_ID")

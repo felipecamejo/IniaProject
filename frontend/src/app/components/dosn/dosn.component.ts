@@ -374,6 +374,8 @@ import { AuthService } from '../../../services/AuthService';
 
             if (this.isEditing) {
               // Modo edición: editar devuelve Observable<string>
+              //payload.estandar = this.estandar;
+              //console.log('Payload para editar DOSN:', payload);
               this.dosnService.editar(payload).subscribe({
                 next: (resp: string) => {
                   this.loading = false;

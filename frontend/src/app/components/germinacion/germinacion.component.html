@@ -427,28 +427,6 @@
         <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
       </div>
 
-      <!-- Diálogo de confirmación para Estándar -->
-      <app-confirm-dialog
-        [visible]="mostrarConfirmEstandar"
-        title="Confirmar análisis estándar"
-        message="¿Estás seguro de que deseas marcar este análisis como estándar? Una vez marcado, no podrás cambiarlo."
-        confirmText="Confirmar"
-        cancelText="Cancelar"
-        (confirm)="confirmarEstandar()"
-        (cancel)="cancelarEstandar()">
-      </app-confirm-dialog>
-
-      <!-- Diálogo de confirmación para Repetido -->
-      <app-confirm-dialog
-        [visible]="mostrarConfirmRepetido"
-        title="Confirmar análisis repetido"
-        message="¿Estás seguro de que deseas marcar este análisis como repetido? Una vez marcado, no podrás cambiarlo."
-        confirmText="Confirmar"
-        cancelText="Cancelar"
-        (confirm)="confirmarRepetido()"
-        (cancel)="cancelarRepetido()">
-      </app-confirm-dialog>
-
       <div class="submit-btn" style="margin-top: 1.2rem; display: flex; gap: 1rem;" *ngIf="!isReadonly">
         <button
           pButton

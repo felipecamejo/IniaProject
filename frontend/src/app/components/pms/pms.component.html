@@ -125,9 +125,22 @@
                 <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
             </div>
 
-            <div class="submit-btn">
-                <button *ngIf="!isViewing" pButton type="submit" [label]="isEditing ? 'Actualizar PMS' : 'Crear PMS'" class="p-button-success" [disabled]="errores.length > 0"></button>
-                <button pButton type="button" [label]="isViewing ? 'Volver' : 'Cancelar'" class="p-button-secondary" (click)="onCancel()"></button>
+            <div class="submit-btn" style="display: flex; gap: 1rem;">
+                <button
+                *ngIf="!isViewing"
+                pButton
+                type="submit"
+                [label]="isEditing ? 'Editar PMS' : 'Crear PMS'"
+                class="p-button-success"
+                [disabled]="errores.length > 0"
+                ></button>
+                <button
+                pButton
+                type="button"
+                [label]="isViewing ? 'Volver' : 'Cancelar'"
+                class="p-button-secondary"
+                (click)="onCancel()"
+                ></button>
             </div>
         </form>
     </p-card>

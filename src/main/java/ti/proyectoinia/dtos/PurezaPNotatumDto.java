@@ -22,6 +22,8 @@ public class PurezaPNotatumDto {
 
     private boolean repetido;
 
+    private boolean estandar;
+
     private Long reciboId;
 
     private Date fechaCreacion;
