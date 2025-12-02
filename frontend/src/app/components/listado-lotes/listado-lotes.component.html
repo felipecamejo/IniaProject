@@ -56,7 +56,7 @@
                     <p>{{ item.descripcion || '' }}</p>
                 </div>
                 <div class="item-actions" (click)="$event.stopPropagation()">
-                    <button *ngIf="!isObserver"class="action-button delete-button" (click)="eliminarItem(item)" title="Eliminar">
+                    <button *ngIf="!isObserver && !isAnalista"class="action-button delete-button" (click)="eliminarItem(item)" title="Eliminar">
                         <i  class="pi pi-trash"></i>
                     </button>
                 </div>

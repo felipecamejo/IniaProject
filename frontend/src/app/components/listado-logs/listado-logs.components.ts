@@ -46,6 +46,10 @@ export class ListadoLogsComponent implements OnInit {
         label: anio.toString(),
         id: anio
       }));
+      // Si no hay años disponibles, asignar valor default ('') a selectedAnio
+      if (this.anios.length === 0) {
+        this.selectedAnio = '';
+      }
       console.log('Años disponibles:', this.anios);
     }
 

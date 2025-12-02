@@ -27,7 +27,7 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
     { label: 'Finalizado', id: 2 },
   ];
 
-  
+  isAnalista: boolean = false;
 
   selectedMetodo: string = '';
   selectedMes: string = '';
@@ -90,6 +90,7 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
   confirmLoading: boolean = false;
 
   ngOnInit(): void {
+    this.isAnalista = this.authService.isAnalista();
     this.cargarAniosDisponibles();
     this.cargarLotesPage();
     this.navigationSubscription = this.router.events
