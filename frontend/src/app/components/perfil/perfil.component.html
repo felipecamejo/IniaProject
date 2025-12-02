@@ -1,24 +1,35 @@
 <div class="perfil-container">
     <div class="perfil-card">
-        <div class="perfil-avatar">
-            <img [src]="imagenPreview || 'assets/default-avatar.png'" alt="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
-        </div>
-        <div class="perfil-info">
-            <h2 class="perfil-nombre">{{ nombre || 'Cargando...' }}</h2>
-            <p class="perfil-mail"><strong>Mail:</strong> {{ mail || 'Cargando...' }}</p>
-            <p class="perfil-tel"><strong>Teléfono:</strong> {{ telefono || 'No disponible' }}</p>
-            <p class="perfil-rol"><strong>ROL:</strong> {{ getRoleDisplayName(rol) || 'Cargando...' }}</p>
+        <div class="perfil-main-row">
+            <div class="perfil-avatar">
+                <img [src]="imagenPreview || 'assets/default-avatar.png'" alt="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
+            </div>
+            <div class="perfil-info">
+                <div class="form-field">
+                    <label for="nombre-view">Nombre</label>
+                    <input id="nombre-view" type="text" [value]="nombre" disabled />
+                </div>
+                <div class="form-field">
+                    <label for="mail-view">Email</label>
+                    <input id="mail-view" type="email" [value]="mail" disabled />
+                </div>
+                <div class="form-field">
+                    <label for="telefono-view">Teléfono</label>
+                    <input id="telefono-view" type="text" [value]="telefono" disabled />
+                </div>
+                <div class="form-field">
+                    <label for="rol-view">Rol</label>
+                    <input id="rol-view" type="text" [value]="getRoleDisplayName(rol)" disabled />
+                </div>
+            </div>
         </div>
         <div class="perfil-acciones">
             <button type="button" class="p-button p-button-success perfil-boton" (click)="abrirModal()" [disabled]="loading">
-        {{ loading ? 'Cargando...' : 'Editar' }}
-      </button>
+                {{ loading ? 'Cargando...' : 'Editar' }}
+            </button>
         </div>
     </div>
 
-    <!-- Mensajes de error y éxito -->
-    <div *ngIf="error" class="error-message">{{ error }}</div>
-    <div *ngIf="success" class="success-message">{{ success }}</div>
 </div>
 
 <!-- Modal de edición -->
@@ -28,29 +39,36 @@
         <form (ngSubmit)="guardarCambios()" #form="ngForm">
             <div class="modal-avatar-preview">
                 <img [src]="imagenPreview || 'assets/default-avatar.png'" alt="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
-                <input type="file" accept="image/*" (change)="cambiarImagen($event)">
+    
             </div>
 
-            <label>Nombre:</label>
-            <input type="text" [(ngModel)]="nombre" name="nombre" required>
+            <div class="form-field">
+                <label for="nombre">Nombre</label>
+                <input id="nombre" type="text" [(ngModel)]="nombre" name="nombre" pInputText required />
+            </div>
 
-            <label>Email:</label>
-            <input type="email" [(ngModel)]="mail" name="mail" required>
+            <div class="form-field">
+                <label for="mail">Email</label>
+                <input id="mail" type="email" [(ngModel)]="mail" name="mail" pInputText required />
+            </div>
 
-            <label>Rol:</label>
-            <input type="text" [value]="getRoleDisplayName(rol)" name="rol" readonly>
+            <div *ngIf="isAdmin()" class="form-field">
+                <label for="rol">Rol</label>
+                    <div class="filter-dropdown">
+                        <select id="rol" class="select-perfil" [(ngModel)]="rol" name="rol" class="categoria-select" required>
+                            <option value="">Seleccione un rol</option>
+                            <option *ngFor="let opcion of opciones" [value]="opcion">{{ opcion }}</option>
+                        </select>
+                    </div>
+            </div>
 
             <!-- Mensajes de error y éxito en el modal -->
             <div *ngIf="error" class="error-message">{{ error }}</div>
             <div *ngIf="success" class="success-message">{{ success }}</div>
 
-            <div class="modal-actions">
-                <button type="submit" class="p-button perfil-boton" [disabled]="loading || form.invalid">
-          {{ loading ? 'Guardando...' : 'Guardar' }}
-        </button>
-                <button type="button" class="p-button perfil-boton" (click)="cerrarModal()" [disabled]="loading">
-          Cancelar
-        </button>
+            <div class="modal-actions submit-btn">
+                <button type="submit" class="p-button perfil-boton" [disabled]="loading || form.invalid">{{ loading ? 'Guardando...' : 'Guardar' }}</button>
+                <button type="button" class="p-button perfil-boton" (click)="cerrarModal()" [disabled]="loading">Cancelar</button>
             </div>
         </form>
     </div>
