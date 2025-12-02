@@ -922,6 +922,13 @@ export class SanitarioComponent implements OnInit {
     return selectedDate >= today;
   }
 
+  repetidoDeshabilitado: boolean = false;
+  estandarDeshabilitado: boolean = false; 
+
+  onRepetidoChange() {}
+
+  onEstandarChange() {}
+
   validarTablaHongos(hongo: any): boolean {
     return hongo;
   }

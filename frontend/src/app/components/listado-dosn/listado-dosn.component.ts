@@ -197,12 +197,18 @@ export class ListadoDosnComponent implements OnInit {
     }
 
     getMesFromFecha(fecha: string): number {
-      const partes = fecha.split('-');
+      if (!fecha) return NaN;
+      const fechaSolo = fecha.split('T')[0];
+      const partes = fechaSolo.split('-');
+      if (partes.length < 2) return NaN;
       return parseInt(partes[1]); // El mes está en la posición 1 (YYYY-MM-DD)
     }
 
     getAnioFromFecha(fecha: string): number {
-      const partes = fecha.split('-');
+      if (!fecha) return NaN;
+      const fechaSolo = fecha.split('T')[0];
+      const partes = fechaSolo.split('-');
+      if (partes.length < 1) return NaN;
       return parseInt(partes[0]); // El año está en la posición 0 (YYYY-MM-DD)
     }
 
