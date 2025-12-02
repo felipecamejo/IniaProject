@@ -2,7 +2,7 @@
     <div class="perfil-card">
         <div class="perfil-main-row">
             <div class="perfil-avatar">
-                <img [src]="imagenPreview || 'assets/default-avatar.png'" alt="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
+                <img [src]="imagenPreview || 'https://cdn-icons-png.flaticon.com/512/847/847969.png'" alt="avatar">
             </div>
             <div class="perfil-info">
                 <div class="form-field">
@@ -24,7 +24,7 @@
             </div>
         </div>
         <div class="perfil-acciones">
-            <button type="button" class="p-button p-button-success perfil-boton" (click)="abrirModal()" [disabled]="loading">
+            <button type="button" class="p-button perfil-boton" (click)="abrirModal()" [disabled]="loading">
                 {{ loading ? 'Cargando...' : 'Editar' }}
             </button>
         </div>
@@ -38,7 +38,7 @@
         <h2>Editar Perfil</h2>
         <form (ngSubmit)="guardarCambios()" #form="ngForm">
             <div class="modal-avatar-preview">
-                <img [src]="imagenPreview || 'assets/default-avatar.png'" alt="avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
+                <img [src]="imagenPreview || 'https://cdn-icons-png.flaticon.com/512/847/847969.png'" alt="avatar">
     
             </div>
 
