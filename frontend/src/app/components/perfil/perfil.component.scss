@@ -253,6 +253,21 @@ select{
         padding: 0.7rem 1.5rem;
         transition: background 0.2s;
     }
+    .perfil-boton:hover,
+    .perfil-boton:focus {
+        background: var(--verde);
+        background-color: var(--verde);
+        border-color: var(--verde);
+        filter: brightness(0.85);
+        color: #fff;
+    }
+    .perfil-boton:active {
+        background: var(--verde);
+        background-color: var(--verde);
+        border-color: var(--verde);
+        filter: brightness(0.8);
+        color: #fff;
+    }
     .perfil-container {
         display: flex;
         justify-content: center;
@@ -306,6 +321,13 @@ select{
         display: flex;
         flex-direction: column;
         gap: 6px;
+    }
+    .perfil-info .form-field input,
+    .perfil-info .form-field select {
+        width: 100%;
+        box-sizing: border-box;
+        min-width: 0;
+        max-width: 100%;
     }
 
     .perfil-nombre {
