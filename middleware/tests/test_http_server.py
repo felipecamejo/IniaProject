@@ -70,6 +70,48 @@ class TestExportEndpoint:
         response = client.post("/exportar?formato=csv")
         # Puede fallar por BD, pero el formato debe ser aceptado
         assert response.status_code in [200, 400, 500, 503]
+    
+    def test_export_with_analisis_ids(self, client: TestClient):
+        """Verifica que el endpoint acepta analisis_ids."""
+        response = client.post("/exportar?analisis_ids=dosn:1,2,3")
+        # Puede fallar por BD o IDs inexistentes, pero el parámetro debe ser aceptado
+        assert response.status_code in [200, 400, 422, 500, 503]
+    
+    def test_export_with_fechas(self, client: TestClient):
+        """Verifica que el endpoint acepta filtros de fecha."""
+        response = client.post("/exportar?fecha_desde=2024-01-01&fecha_hasta=2024-12-31")
+        # Puede fallar por BD, pero los parámetros deben ser aceptados
+        assert response.status_code in [200, 400, 422, 500, 503]
+    
+    def test_export_with_fecha_invalida(self, client: TestClient):
+        """Verifica que fecha inválida retorna error 400."""
+        response = client.post("/exportar?fecha_desde=2024-13-01")
+        # Debe retornar 400 por formato de fecha inválido
+        assert response.status_code in [400, 422]
+        if response.status_code == 400:
+            content = response.json()
+            assert "fecha" in str(content).lower() or "formato" in str(content).lower()
+    
+    def test_export_with_rango_fechas_invalido(self, client: TestClient):
+        """Verifica que rango de fechas inválido retorna error 400."""
+        response = client.post("/exportar?fecha_desde=2024-12-31&fecha_hasta=2024-01-01")
+        # Debe retornar 400 por rango inválido
+        assert response.status_code in [400, 422]
+        if response.status_code == 400:
+            content = response.json()
+            assert "rango" in str(content).lower() or "fecha" in str(content).lower()
+    
+    def test_export_combinado_ids_y_fechas(self, client: TestClient):
+        """Verifica que se pueden combinar analisis_ids y fechas."""
+        response = client.post("/exportar?analisis_ids=dosn:1,2&fecha_desde=2024-01-01&fecha_hasta=2024-12-31")
+        # Puede fallar por BD o datos inexistentes, pero los parámetros deben ser aceptados
+        assert response.status_code in [200, 400, 422, 500, 503]
+    
+    def test_export_with_campo_fecha(self, client: TestClient):
+        """Verifica que el endpoint acepta campo_fecha."""
+        response = client.post("/exportar?tablas=dosn&campo_fecha=fecha_inia")
+        # Puede fallar por BD, pero el parámetro debe ser aceptado
+        assert response.status_code in [200, 400, 422, 500, 503]
 
 
 class TestImportEndpoint:

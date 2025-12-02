@@ -37,6 +37,75 @@
   font-size: 0.95rem;
 }
 
+// Estilos para la sección de filtros
+.filters-section {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--gris);
+}
+
+.filters-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--azul);
+  margin-bottom: 1rem;
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.9rem;
+  }
+
+  .filter-input,
+  .filter-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: var(--font-main);
+
+    &:focus {
+      outline: none;
+      border-color: var(--azul);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--azul) 25%, transparent);
+    }
+  }
+
+  .filter-help {
+    color: #6c757d;
+    font-size: 0.8rem;
+    margin-top: -0.25rem;
+  }
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
 .example-box {
   background-color: #f8f9fa;
   border-radius: 12px;

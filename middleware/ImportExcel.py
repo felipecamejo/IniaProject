@@ -89,40 +89,8 @@ except Exception:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Configuración de conexión a la base de datos
-DEFAULT_CONFIG = {
-    'DB_USER': 'postgres',
-    'DB_PASSWORD': '897888fg2',
-    'DB_HOST': 'localhost',
-    'DB_PORT': '5432',
-    'DB_NAME': 'Inia',
-}
-
-DB_USER = os.getenv('DB_USER', os.getenv('POSTGRES_USER', DEFAULT_CONFIG['DB_USER']))
-DB_PASSWORD = os.getenv('DB_PASSWORD', os.getenv('POSTGRES_PASSWORD', DEFAULT_CONFIG['DB_PASSWORD']))
-DB_HOST = os.getenv('DB_HOST', os.getenv('POSTGRES_HOST', DEFAULT_CONFIG['DB_HOST']))
-DB_PORT = os.getenv('DB_PORT', os.getenv('POSTGRES_PORT', DEFAULT_CONFIG['DB_PORT']))
-DB_NAME = os.getenv('DB_NAME', os.getenv('POSTGRES_DB', DEFAULT_CONFIG['DB_NAME']))
-
-# ================================
-# MÓDULO: CONEXIÓN A BASE DE DATOS
-# ================================
-def build_connection_string() -> str:
-    """Construye la cadena de conexión escapando credenciales."""
-    database_url = os.getenv('DATABASE_URL')
-    if database_url:
-        if database_url.startswith('postgresql://'):
-            return database_url.replace('postgresql://', 'postgresql+psycopg2://', 1)
-        elif database_url.startswith('postgres://'):
-            return database_url.replace('postgres://', 'postgresql+psycopg2://', 1)
-        return database_url
-    
-    user_esc = quote_plus(DB_USER or '')
-    pass_esc = quote_plus(DB_PASSWORD or '')
-    host = DB_HOST or 'localhost'
-    port = DB_PORT or '5432'
-    db = DB_NAME or ''
-    return f'postgresql+psycopg2://{user_esc}:{pass_esc}@{host}:{port}/{db}'
+# Importar configuración centralizada de base de datos
+from database_config import build_connection_string
 
 def obtener_engine():
     """Obtiene un engine de SQLAlchemy configurado."""
