@@ -302,36 +302,25 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
         this.router.navigate(['/home']);
     }
 
+
     eliminarItem(usuario: UsuarioDto) {
-        this.usuarioAEliminar = usuario;
-        this.mostrarConfirmEliminar = true;
+        const confirmMsg = `¿Seguro que deseas eliminar al usuario ${usuario.nombre}${usuario.email ? ' (' + usuario.email + ')' : ''}?`;
+        if (window.confirm(confirmMsg)) {
+            this.confirmLoading = true;
+            this.usuarioService.eliminarUsuario(usuario.id).subscribe({
+                next: (response: string) => {
+                    console.log('Usuario eliminado:', response);
+                    this.items = this.items.filter(i => i.id !== usuario.id);
+                    this.confirmLoading = false;
+                },
+                error: (error: any) => {
+                    console.error('Error al eliminar usuario:', error);
+                    this.confirmLoading = false;
+                    alert('Error al eliminar el usuario. Por favor, inténtalo de nuevo.');
+                }
+            });
+        }
     }
 
-    confirmarEliminacion() {
-        if (!this.usuarioAEliminar) return;
-        this.confirmLoading = true;
-        const usuario = this.usuarioAEliminar;
 
-        this.usuarioService.eliminarUsuario(usuario.id).subscribe({
-            next: (response: string) => {
-                console.log('Usuario eliminado:', response);
-                this.items = this.items.filter(i => i.id !== usuario.id);
-                this.confirmLoading = false;
-                this.mostrarConfirmEliminar = false;
-                this.usuarioAEliminar = null;
-            },
-            error: (error: any) => {
-                console.error('Error al eliminar usuario:', error);
-                this.confirmLoading = false;
-                this.mostrarConfirmEliminar = false;
-                this.usuarioAEliminar = null;
-                alert('Error al eliminar el usuario. Por favor, inténtalo de nuevo.');
-            }
-        });
-    }
-
-    cancelarEliminacion() {
-        this.mostrarConfirmEliminar = false;
-        this.usuarioAEliminar = null;
-    }
 }

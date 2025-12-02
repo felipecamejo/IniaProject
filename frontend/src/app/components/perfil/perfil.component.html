@@ -52,15 +52,7 @@
                 <input id="mail" type="email" [(ngModel)]="mail" name="mail" pInputText required />
             </div>
 
-            <div *ngIf="isAdmin()" class="form-field">
-                <label for="rol">Rol</label>
-                    <div class="filter-dropdown">
-                        <select id="rol" class="select-perfil" [(ngModel)]="rol" name="rol" class="categoria-select" required>
-                            <option value="">Seleccione un rol</option>
-                            <option *ngFor="let opcion of opciones" [value]="opcion">{{ opcion }}</option>
-                        </select>
-                    </div>
-            </div>
+         
 
             <!-- Mensajes de error y éxito en el modal -->
             <div *ngIf="error" class="error-message">{{ error }}</div>
