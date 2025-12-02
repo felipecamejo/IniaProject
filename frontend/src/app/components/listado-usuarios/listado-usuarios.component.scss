@@ -319,6 +319,13 @@
       filter: brightness(0.85) !important;
     }
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    ::ng-deep .p-button {
+      width: 100% !important;
+    }
+  }
 }
 
 ::ng-deep .card {
@@ -375,10 +382,7 @@
   gap: 0.5rem;
   align-items: flex-end;
   margin-top: 1rem;
-  
-  @media (max-width: 768px) {
-    justify-content: center;
-  }
+  justify-content: flex-end;
 }
 
 .action-button {

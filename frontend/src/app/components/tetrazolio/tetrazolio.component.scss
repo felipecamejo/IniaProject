@@ -15,14 +15,14 @@
   font-size: 1rem;
   i { font-size: 0.95rem; }
   @media (max-width: 768px) {
-    left: 5px;
+    left: -4px;
     width: 28px;
     height: 28px;
     font-size: 0.85rem;
     i { font-size: 0.85rem; }
   }
   @media (max-width: 480px) {
-    left: 2px;
+    left: -6px;
     width: 24px;
     height: 24px;
     font-size: 0.75rem;

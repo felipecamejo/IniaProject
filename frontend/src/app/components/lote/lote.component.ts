@@ -49,6 +49,10 @@ export class LoteComponent {
       private router: Router,
     ) {}
 
+    onCancel() {
+      this.router.navigate(['/home']);
+    }
+
     createLote() {
 
       const lote: LoteDto = {
