@@ -1,5 +1,7 @@
 <div class="container">
-  
+  <button class="back-button" (click)="onCancel()">
+    <i class="pi pi-arrow-left"></i>
+    </button>
     <p-card class="card">
                 <ng-template pTemplate="header">
                         <h2 class="title">
@@ -15,28 +17,26 @@
                 <div class="form-field">
                     <label for="cantidadSemillas">Cantidad de semillas</label>
                     <select id="cantidadSemillas" [(ngModel)]="cantidadSemillas" name="cantidadSemillas" (change)="manejarProblemas()"
-                        [ngClass]="{ 'input-error': cantidadSemillas === null || cantidadSemillas === undefined || cantidadSemillas === 0 }"
+                        [ngClass]="{ 'input-error': cantidadSemillas !== null && cantidadSemillas !== undefined && cantidadSemillas < 0 }"
                         [disabled]="isReadonly" style="color: initial;">
                         <option [ngValue]="null">Seleccione...</option>
                         <option [ngValue]="25">25</option>
                         <option [ngValue]="50">50</option>
                         <option [ngValue]="100">100</option>
                     </select>
-                    <span *ngIf="cantidadSemillas === null || cantidadSemillas === undefined || cantidadSemillas === 0" class="error-message">Se debe seleccionar un valor valido.</span>
+                    <span *ngIf="cantidadSemillas !== null && cantidadSemillas !== undefined && cantidadSemillas < 0" class="error-message">Se debe seleccionar un valor positivo.</span>
                 </div>
 
                 <!-- Pretratamiento: select o personalizado -->
                 <div class="form-field">
                     <label for="pretratamiento">Pretratamiento</label>
                     <select id="pretratamiento" [(ngModel)]="selectedPretratamiento" name="pretratamiento" (change)="manejarProblemas()"
-                        [ngClass]="{ 'input-error': selectedPretratamiento === null || selectedPretratamiento === undefined || selectedPretratamiento === '' || selectedPretratamiento === 'Seleccione...' }"
                         [disabled]="isReadonly" style="color: initial;">
                         <option [ngValue]="null">Seleccione...</option>
                         @for (opt of pretratamientoOptions; track $index) {
                             <option [ngValue]="opt.value">{{ opt.label }}</option>
                         }
                     </select>
-                    <span *ngIf="selectedPretratamiento === null || selectedPretratamiento === undefined || selectedPretratamiento === '' || selectedPretratamiento === 'Seleccione...'" class="error-message">Se debe ingresar un valor válido.</span>
                     @if (selectedPretratamiento === 'custom') {
                         <div class="custom-inline">
                             <input type="text" [(ngModel)]="pretratamientoCustom" name="pretratamientoCustom" placeholder="Especifique pretratamiento" [disabled]="isReadonly" />
@@ -48,14 +48,12 @@
                 <div class="form-field">
                     <label for="concentracion">Concentración (%)</label>
                     <select id="concentracion" [(ngModel)]="selectedConcentracion" name="concentracion" (change)="manejarProblemas()"
-                        [ngClass]="{ 'input-error': (selectedConcentracion !== 'custom' && (selectedConcentracion === null || selectedConcentracion === undefined)) || (selectedConcentracion === 'custom' && (concentracionCustom == null || concentracionCustom < 0)) }"
                         [disabled]="isReadonly" style="color: initial;">
                         <option [ngValue]="null">Seleccione...</option>
                         @for (opt of concentracionOptions; track $index) {
                             <option [ngValue]="opt.value">{{ opt.label }}</option>
                         }
                     </select>
-                    <span *ngIf="selectedConcentracion !== 'custom' && (selectedConcentracion === null || selectedConcentracion === undefined)" class="error-message">Se debe seleccionar un valor valido.</span>
                     @if (selectedConcentracion === 'custom') {
                         <div class="custom-inline">
                             <input type="number" step="0.1" min="0" [(ngModel)]="concentracionCustom" name="concentracionCustom" placeholder="Especifique (%)" [ngClass]="{ 'input-error': concentracionCustom == null || (concentracionCustom != null && concentracionCustom < 0) }" [disabled]="isReadonly" />
@@ -68,14 +66,12 @@
                 <div class="form-field">
                     <label for="tincionHs">Tinción (hs)</label>
                     <select id="tincionHs" [(ngModel)]="selectedTincionHs" name="tincionHs" (change)="manejarProblemas()"
-                        [ngClass]="{ 'input-error': selectedTincionHs === null || selectedTincionHs === undefined }"
                         [disabled]="isReadonly" style="color: initial;">
                         <option [ngValue]="null">Seleccione...</option>
                         @for (opt of tincionHsOptions; track $index) {
                             <option [ngValue]="opt.value">{{ opt.label }}</option>
                         }
                     </select>
-                    <span *ngIf="selectedTincionHs === null || selectedTincionHs === undefined" class="error-message">Se debe ingresar un valor válido.</span>
                     @if (selectedTincionHs === 'custom') {
                         <div class="custom-inline">
                             <input type="number" step="0.5" min="0" [(ngModel)]="tincionHsCustom" name="tincionHsCustom" placeholder="Especifique (hs)" [ngClass]="{ 'input-error': tincionHsCustom != null && tincionHsCustom < 0 }" [disabled]="isReadonly" />
@@ -86,15 +82,16 @@
                 <!-- Tinción (°C): ingreso manual -->
                 <div class="form-field">
                     <label for="tincionC">Tinción (°C)</label>
-                    <input id="tincionC" type="number" step="0.5" [(ngModel)]="tincionC" name="tincionC" placeholder="Ingrese °C" [ngClass]="{ 'input-error': tincionC === null || tincionC === undefined || tincionC <= 0 }" [disabled]="isReadonly" />
+                    <input id="tincionC" type="number" step="0.5" [(ngModel)]="tincionC" name="tincionC" placeholder="Ingrese °C" [ngClass]="{ 'input-error': tincionC !== null && tincionC !== undefined && tincionC <= 0 }" [disabled]="isReadonly" />
+                    <span *ngIf="tincionC !== null && tincionC !== undefined && tincionC <= 0" class="error-message">Se debe seleccionar un valor positivo.</span>
                 </div>
 
                 <!-- Fecha -->
                 <div class="form-field">
                     <label for="fecha">Fecha</label>
                     <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" 
-                        [ngClass]="{ 'input-error': !validarFecha(fecha) }" [disabled]="isReadonly" />
-                    <span *ngIf="!validarFecha(fecha)" class="error-message">La fecha debe estar completa y no puede ser futura a hoy.</span>
+                         [disabled]="isReadonly" />
+                    
                 </div>
             </div>
 
@@ -117,16 +114,16 @@
                             <td>{{ rep.numero }}</td>
                             <td>
                                 <input type="number" [ngModel]="rep.viables" (ngModelChange)="onRepeticionChange($index, 'viables', $event)" name="viables{{$index}}"
-                                    [ngClass]="{ 'input-error': rep.viables === null || rep.viables === undefined || rep.viables < 0 || (rep.viables + rep.noViables + rep.duras === 0) }" 
+                                    [ngClass]="{ 'input-error': rep.viables !== null && rep.viables !== undefined && rep.viables < 0  }" 
                                     [disabled]="isReadonly"/>
                             </td>
                             <td>
                                 <input type="number" [ngModel]="rep.noViables" (ngModelChange)="onRepeticionChange($index, 'noViables', $event)" name="noViables{{$index}}"
-                                    [ngClass]="{ 'input-error': rep.noViables === null || rep.noViables === undefined || rep.noViables < 0 || (rep.viables + rep.noViables + rep.duras === 0) }" [disabled]="isReadonly" />
+                                    [ngClass]="{ 'input-error': rep.noViables !== null && rep.noViables !== undefined && rep.noViables < 0 }" [disabled]="isReadonly" />
                             </td>
                             <td>
                                 <input type="number" [ngModel]="rep.duras" (ngModelChange)="onRepeticionChange($index, 'duras', $event)" name="duras{{$index}}"
-                                    [ngClass]="{ 'input-error': rep.duras === null || rep.duras === undefined || rep.duras < 0 || (rep.viables + rep.noViables + rep.duras === 0) }" [disabled]="isReadonly" />
+                                    [ngClass]="{ 'input-error': rep.duras !== null && rep.duras !== undefined && rep.duras < 0 }" [disabled]="isReadonly" />
                             </td>
                             <td>
                                 <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="eliminarRepeticion($index)" [disabled]="repeticiones.length === 1" title="Eliminar"></button>
