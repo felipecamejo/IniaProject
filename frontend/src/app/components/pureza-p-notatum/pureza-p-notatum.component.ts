@@ -48,9 +48,6 @@ export class PurezaPNotatumComponent implements OnInit {
   repetido: boolean = false;
   estandar: boolean = false;
 
-  // Variables para el diálogo de confirmación
-  mostrarConfirmEstandar: boolean = false;
-  mostrarConfirmRepetido: boolean = false;
   estandarPendiente: boolean = false;
   repetidoPendiente: boolean = false;
 
@@ -86,12 +83,18 @@ export class PurezaPNotatumComponent implements OnInit {
       this.repetidoOriginal = false;
     }
 
-    // Si está intentando marcar como estándar, mostrar confirmación
-    if (this.estandar && !this.mostrarConfirmEstandar) {
-      this.estandarPendiente = true;
-      this.mostrarConfirmEstandar = true;
-      // Revertir el cambio hasta que se confirme
-      this.estandar = false;
+    // Si está intentando marcar como estándar, mostrar confirmación con alert
+    if (this.estandar) {
+      const confirmar = confirm('¿Estás seguro de que deseas marcar este análisis como estándar? Una vez marcado, no podrás cambiarlo.');
+      if (!confirmar) {
+        // Revertir el cambio si no se confirma
+        this.estandar = false;
+        return;
+      }
+      // Confirmar el cambio
+      this.repetido = false;
+      this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
+      this.repetidoOriginal = false;
     }
   }
 
@@ -108,44 +111,22 @@ export class PurezaPNotatumComponent implements OnInit {
       this.estandarOriginal = false;
     }
 
-    // Si está intentando marcar como repetido, mostrar confirmación
-    if (this.repetido && !this.mostrarConfirmRepetido) {
-      this.repetidoPendiente = true;
-      this.mostrarConfirmRepetido = true;
-      // Revertir el cambio hasta que se confirme
-      this.repetido = false;
+    // Si está intentando marcar como repetido, mostrar confirmación con alert
+    if (this.repetido) {
+      const confirmar = confirm('¿Estás seguro de que deseas marcar este análisis como repetido? Una vez marcado, no podrás cambiarlo.');
+      if (!confirmar) {
+        // Revertir el cambio si no se confirma
+        this.repetido = false;
+        return;
+      }
+      // Confirmar el cambio
+      this.estandar = false;
+      this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
+      this.estandarOriginal = false;
     }
   }
 
-  confirmarEstandar() {
-    this.estandar = true;
-    this.repetido = false;
-    this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
-    this.repetidoOriginal = false;
-    this.mostrarConfirmEstandar = false;
-    this.estandarPendiente = false;
-  }
-
-  cancelarEstandar() {
-    this.estandar = false;
-    this.mostrarConfirmEstandar = false;
-    this.estandarPendiente = false;
-  }
-
-  confirmarRepetido() {
-    this.repetido = true;
-    this.estandar = false;
-    this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
-    this.estandarOriginal = false;
-    this.mostrarConfirmRepetido = false;
-    this.repetidoPendiente = false;
-  }
-
-  cancelarRepetido() {
-    this.repetido = false;
-    this.mostrarConfirmRepetido = false;
-    this.repetidoPendiente = false;
-  }
+  // Métodos de confirmación/cancelación ya no necesarios, lógica movida a onEstandarChange/onRepetidoChange con alert
 
   // Campos del formulario
   semillaPuraGr: number = 0;
@@ -382,9 +363,16 @@ export class PurezaPNotatumComponent implements OnInit {
 
     // Sincronizar repeticiones a repeticionesEntries antes de enviar
     this.repeticionesEntries = this.repeticiones.map(rep => ({...rep}));
-    
+
     const reciboIdNum = this.route.snapshot.params['reciboId'] ? Number(this.route.snapshot.params['reciboId']) : null;
-    
+
+    // Asegurar que el valor de estandar refleje el estado actual, incluso si el checkbox está deshabilitado
+    let estandarValue = this.estandar;
+    // Si el original está marcado, forzar el valor a true
+    if (this.estandarOriginal) {
+      estandarValue = true;
+    }
+
     const purezaData: PurezaPNotatumDto = {
       id: this.editingId ?? null,
       gramosSemillaPura: this.semillaPuraGr,
@@ -392,7 +380,7 @@ export class PurezaPNotatumComponent implements OnInit {
       gramosSemillasMalezas: this.semillaMalezasGr,
       gramosMateriaInerte: this.materiaInerteGr,
       activo: this.activo,
-      estandar: this.estandar ?? false,
+      estandar: estandarValue,
       repetido: this.repetido ?? false,
       reciboId: reciboIdNum,
       fechaCreacion: this.fechaCreacion,
@@ -406,18 +394,19 @@ export class PurezaPNotatumComponent implements OnInit {
         purezaData.repetido = true;
         purezaData.fechaRepeticion = new Date().toISOString().split('T')[0];
       }
+      // Si estandarOriginal está marcado, asegurar que se envía como true
+      if (this.estandarOriginal) {
+        purezaData.estandar = true;
+      }
       console.log('Actualizando Pureza P. notatum ID:', this.editingId, 'con datos:', purezaData);
       this.purezaPNotatumService.editar(purezaData).subscribe({
         next: (res) => {
           console.log('Pureza P. notatum actualizado correctamente:', res);
           // Procesar repeticiones
           this.procesarRepeticiones(this.editingId!).then(() => {
-
-
             if (res != null) {
               this.logService.crearLog(Number(this.loteId), Number(res), 'Pureza P. notatum', 'actualizada').subscribe();
             }
-
             this.safeNavigateToListado();
           }).catch(err => {
             console.error('Error procesando repeticiones después de editar:', err);
@@ -433,19 +422,16 @@ export class PurezaPNotatumComponent implements OnInit {
       console.log('Creando nueva Pureza P. notatum:', purezaData);
       purezaData.fechaRepeticion = null;
       purezaData.repetido = false;
+      purezaData.estandar = this.estandar ?? false;
       purezaData.fechaCreacion = new Date().toISOString().split('T')[0];
-      
       this.purezaPNotatumService.crear(purezaData).subscribe({
         next: (res) => {
           console.log('Pureza P. notatum creado correctamente:', res);
           // Procesar repeticiones
           this.procesarRepeticiones(res).then(() => {
-            
-
             if (res != null) { 
               this.logService.crearLog(Number(this.loteId), Number(res), 'Pureza P. notatum', 'creada').subscribe();
             }
-
             this.safeNavigateToListado();
           }).catch(err => {
             console.error('Error procesando repeticiones después de crear:', err);

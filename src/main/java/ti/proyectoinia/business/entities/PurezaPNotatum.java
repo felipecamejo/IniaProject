@@ -37,6 +37,9 @@ public class PurezaPNotatum {
     @Column(name = "PUREZA_REPETIDO")
     private boolean repetido;
 
+    @Column(name = "PUREZA_ESTANDAR")
+    private boolean estandar;
+
     @Column(name = "PUREZA_PNOTATUM_FECHA_CREACION")
     private Date fechaCreacion;
 
@@ -45,4 +48,6 @@ public class PurezaPNotatum {
 
     @Column(name = "PUREZA_PNOTATUM_OBSERVACIONES")
     private String observaciones;
+
+
 }
