@@ -22,17 +22,21 @@ export class App {
   protected title = 'inia-frontend';
   currentRoute: string = '';
 
+
   constructor(private router: Router) {
     // Suscribirse a cambios de ruta para ocultar header en login
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
-        this.currentRoute = event.url;
+        // Usar urlAfterRedirects si existe, si no url
+        const url = (event as any).urlAfterRedirects || event.url;
+        // Normalizar: solo path, sin query ni fragment
+        this.currentRoute = url.split('?')[0].split('#')[0];
       });
   }
 
   showHeader(): boolean {
-    // Ocultar header en la página de login
-    return this.currentRoute !== '/login' && this.currentRoute !== '';
+    // Ocultar header global en login o root
+    return this.currentRoute !== '/login' && this.currentRoute !== '' && this.currentRoute !== '/';
   }
 }
