@@ -8,6 +8,13 @@ import sys
 import os
 from pathlib import Path
 
+# Configurar variables de entorno antes de importar módulos que las requieren
+os.environ.setdefault('DB_PASSWORD', 'test_password')
+os.environ.setdefault('DB_USER', 'test_user')
+os.environ.setdefault('DB_HOST', 'localhost')
+os.environ.setdefault('DB_PORT', '5432')
+os.environ.setdefault('DB_NAME', 'test_db')
+
 # Agregar el directorio raíz del middleware al path
 middleware_root = Path(__file__).parent.parent
 sys.path.insert(0, str(middleware_root))

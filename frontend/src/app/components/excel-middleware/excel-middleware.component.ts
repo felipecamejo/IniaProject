@@ -8,6 +8,7 @@ import { MessageModule } from 'primeng/message';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { DividerModule } from 'primeng/divider';
+import { InputTextModule } from 'primeng/inputtext';
 import { MessageService } from 'primeng/api';
 import { MiddlewareService } from '../../../services/MiddlewareService';
 import { AuthService } from '../../../services/AuthService';
@@ -24,7 +25,8 @@ import { AuthService } from '../../../services/AuthService';
     MessageModule,
     ProgressSpinnerModule,
     ToastModule,
-    DividerModule
+    DividerModule,
+    InputTextModule
   ],
   providers: [MessageService],
   templateUrl: './excel-middleware.component.html',
@@ -38,6 +40,28 @@ export class ExcelMiddlewareComponent {
   importError: string | null = null;
   exportResult: string | null = null;
   exportError: string | null = null;
+
+  // Filtros de exportación
+  analisisIds: string = '';
+  fechaDesde: string = '';
+  fechaHasta: string = '';
+  campoFecha: string = 'auto';
+  formato: string = 'xlsx';
+
+  // Opciones para campo de fecha
+  camposFecha = [
+    { label: 'Automático', value: 'auto' },
+    { label: 'Fecha INIA', value: 'fecha_inia' },
+    { label: 'Fecha INASE', value: 'fecha_inase' },
+    { label: 'Fecha Análisis', value: 'fecha_analisis' },
+    { label: 'Fecha Germinación', value: 'fecha_germinacion' }
+  ];
+
+  // Opciones de formato
+  formatos = [
+    { label: 'Excel (.xlsx)', value: 'xlsx' },
+    { label: 'CSV', value: 'csv' }
+  ];
 
   constructor(
     private middlewareService: MiddlewareService,
@@ -64,6 +88,24 @@ export class ExcelMiddlewareComponent {
    */
   get canExportImport(): boolean {
     return this.isAdmin || this.isAnalista;
+  }
+
+  /**
+   * Verifica si hay filtros activos
+   */
+  get tieneFiltros(): boolean {
+    return !!(this.analisisIds || this.fechaDesde || this.fechaHasta);
+  }
+
+  /**
+   * Limpia todos los filtros de exportación
+   */
+  limpiarFiltros(): void {
+    this.analisisIds = '';
+    this.fechaDesde = '';
+    this.fechaHasta = '';
+    this.campoFecha = 'auto';
+    this.exportError = null;
   }
 
   /**
@@ -124,7 +166,7 @@ export class ExcelMiddlewareComponent {
   }
 
   /**
-   * Exporta todas las tablas a Excel
+   * Exporta todas las tablas a Excel con filtros opcionales
    */
   exportarTablas(): void {
     if (!this.canExportImport) {
@@ -136,12 +178,41 @@ export class ExcelMiddlewareComponent {
       return;
     }
 
+    // Validar rango de fechas
+    if (this.fechaDesde && this.fechaHasta && this.fechaDesde > this.fechaHasta) {
+      this.exportError = 'La fecha de inicio debe ser anterior o igual a la fecha de fin.';
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error de validación',
+        detail: 'La fecha de inicio debe ser anterior o igual a la fecha de fin.'
+      });
+      return;
+    }
+
     this.isExporting = true;
     // Limpiar resultados anteriores
     this.exportResult = null;
     this.exportError = null;
 
-    this.middlewareService.exportarTablas().subscribe({
+    // Construir opciones de exportación
+    const options: any = {
+      formato: this.formato
+    };
+
+    if (this.analisisIds) {
+      options.analisisIds = this.analisisIds.trim();
+    }
+    if (this.fechaDesde) {
+      options.fechaDesde = this.fechaDesde;
+    }
+    if (this.fechaHasta) {
+      options.fechaHasta = this.fechaHasta;
+    }
+    if (this.campoFecha && this.campoFecha !== 'auto') {
+      options.campoFecha = this.campoFecha;
+    }
+
+    this.middlewareService.exportarTablas(options).subscribe({
       next: (blob: Blob) => {
         // Verificar que el blob no esté vacío
         if (blob.size === 0) {
@@ -168,7 +239,10 @@ export class ExcelMiddlewareComponent {
 
         // Mostrar resultado exitoso en el panel
         const fileSizeMB = (blob.size / (1024 * 1024)).toFixed(2);
-        this.exportResult = `Exportación completada exitosamente.\n\nArchivo generado: export_tablas.xlsx.zip\nTamaño: ${fileSizeMB} MB\n\nEl archivo se ha descargado automáticamente.`;
+        const filtrosInfo = this.tieneFiltros 
+          ? `\nFiltros aplicados: ${this.analisisIds ? 'IDs de análisis' : ''}${this.fechaDesde || this.fechaHasta ? ', Rango de fechas' : ''}`
+          : '';
+        this.exportResult = `Exportación completada exitosamente.\n\nArchivo generado: export_tablas.xlsx.zip\nTamaño: ${fileSizeMB} MB${filtrosInfo}\n\nEl archivo se ha descargado automáticamente.`;
         
         // Toast opcional (se puede comentar si solo se quiere mostrar en el panel)
         // this.messageService.add({

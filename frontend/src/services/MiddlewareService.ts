@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UrlService } from './url.service';
 
@@ -9,12 +9,38 @@ export class MiddlewareService {
 
   /**
    * Exporta todas las tablas a Excel
+   * @param options Opciones de exportación (análisis IDs, fechas, campo de fecha)
    * @returns Observable con el archivo ZIP como blob
    */
-  exportarTablas(): Observable<Blob> {
+  exportarTablas(options?: {
+    analisisIds?: string;
+    fechaDesde?: string;
+    fechaHasta?: string;
+    campoFecha?: string;
+    formato?: string;
+  }): Observable<Blob> {
+    let params = new HttpParams();
+    
+    if (options?.analisisIds) {
+      params = params.set('analisis_ids', options.analisisIds);
+    }
+    if (options?.fechaDesde) {
+      params = params.set('fecha_desde', options.fechaDesde);
+    }
+    if (options?.fechaHasta) {
+      params = params.set('fecha_hasta', options.fechaHasta);
+    }
+    if (options?.campoFecha) {
+      params = params.set('campo_fecha', options.campoFecha);
+    }
+    if (options?.formato) {
+      params = params.set('formato', options.formato);
+    }
+    
     // Usar /middleware directamente (no /Inia/api/v1) para que el proxy funcione
     return this.http.post(`/middleware/exportar`, {}, {
-      responseType: 'blob'
+      responseType: 'blob',
+      params: params
     });
   }
 
