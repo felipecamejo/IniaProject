@@ -1,75 +1,4 @@
-// Estilos mejorados para el perfil
-// Layout rectangular para perfil
-.perfil-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 80vh;
-    .perfil-card {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        background: #f1f7fb;
-        border: 2px solid #0a2c52;
-        border-radius: 28px;
-        padding: 40px 40px 40px 40px;
-        width: 700px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-        position: relative;
-        .perfil-avatar {
-            flex: 0 0 140px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            img {
-                width: 120px;
-                height: 120px;
-                border-radius: 50%;
-                background-color: #f7931e;
-                padding: 10px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            }
-        }
-        .perfil-info {
-            flex: 1;
-            margin-left: 32px;
-            .perfil-nombre {
-                margin: 0 0 10px 0;
-                font-size: 2rem;
-                font-weight: bold;
-                color: #0a2c52;
-            }
-            .perfil-mail,
-            .perfil-tel,
-            .perfil-rol {
-                font-size: 1.1rem;
-                margin: 8px 0;
-                color: #333;
-            }
-        }
-        .perfil-acciones {
-            position: absolute;
-            right: 32px;
-            bottom: 32px;
-        }
-    }
-    .perfil-boton {
-        min-width: 120px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        border-radius: 25px;
-        background: var(--verde);
-        color: #fff;
-        box-shadow: 0 2px 8px rgba(21, 177, 109, 0.12);
-        border: none;
-        padding: 0.7rem 1.5rem;
-        transition: background 0.2s;
-    }
-    .perfil-boton:hover {
-        background: #13a05e;
-    }
-}
-
+// --- MODAL DE EDICIÓN DE PERFIL ---
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -86,13 +15,13 @@
 .modal-card {
     background: #f1f7fb;
     border: 2px solid #0a2c52;
-    border-radius: 28px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    padding: 32px 40px;
-    min-width: 350px;
-    max-width: 400px;
-    min-height: 280px;
-    max-height: 70vh;
+    border-radius: 22px;
+    box-shadow: 0 4px 24px rgba(10, 44, 82, 0.13);
+    padding: 28px 24px 20px 24px;
+    min-width: 320px;
+    max-width: 95vw;
+    min-height: 260px;
+    max-height: 90vh;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -107,27 +36,86 @@
 }
 
 .modal-avatar-preview img {
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
-    background-color: #f7931e;
-    padding: 8px;
+    background-color: #0071bc;
+    padding: 6px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     margin-bottom: 8px;
+    object-fit: cover;
 }
 
-form label {
+.modal-avatar-preview input[type="file"] {
+    margin-top: 6px;
+}
+
+input,
+select{
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--gris);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.2s ease;
+    font-family: var(--font-main);
+
+    &:focus {
+        border-color: var(--celeste);
+        box-shadow: 0 0 0 2px rgba(86, 168, 220, 0.25);
+    }
+}
+
+.modal-card form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.modal-card label {
     font-weight: bold;
     margin-top: 10px;
+    margin-bottom: 2px;
 }
 
-form input[type="text"],
-form input[type="email"] {
+
+.modal-card input[type="text"],
+.modal-card input[type="email"],
+.modal-card select {
     width: 100%;
-    padding: 6px;
-    border-radius: 8px;
-    border: 1px solid #0a2c52;
-    margin-bottom: 8px;
+    box-sizing: border-box;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--gris);
+    margin-bottom: 12px;
+    font-size: 1rem;
+    background: #fff;
+    max-width: 100%;
+    font-family: var(--font-main);
+    outline: none;
+    transition: all 0.2s ease;
+}
+.modal-card input[type="text"]:focus,
+.modal-card input[type="email"]:focus,
+.modal-card select:focus {
+    border-color: var(--celeste);
+    box-shadow: 0 0 0 2px rgba(86, 168, 220, 0.25);
+}
+
+.modal-card .form-field {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+.modal-card form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
 }
 
 .modal-actions {
@@ -136,6 +124,323 @@ form input[type="email"] {
     margin-top: 18px;
     justify-content: center;
 }
+
+@media (max-width: 500px) {
+    .modal-card {
+        min-width: 0;
+        padding: 10px 2vw;
+        border-radius: 12px;
+    }
+    .modal-avatar-preview img {
+        width: 60px;
+        height: 60px;
+        padding: 2px;
+    }
+    .modal-card label {
+        font-size: 0.98rem;
+    }
+    .modal-card input[type="text"],
+    .modal-card input[type="email"] {
+        font-size: 0.95rem;
+        padding: 5px 6px;
+    }
+}
+// Estilos mejorados para el perfil
+// Layout rectangular para perfil
+.perfil-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    .perfil-card {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        background: #f1f7fb;
+        border: 2px solid #0a2c52;
+        border-radius: 28px;
+        padding: 40px 40px 40px 40px;
+        width: 420px;
+        max-width: 98vw;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        position: relative;
+    }
+
+    .perfil-main-row {
+        display: block;
+        width: 100%;
+    }
+
+    .perfil-avatar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .perfil-info {
+        margin-bottom: 10px;
+    }
+    .perfil-avatar img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background-color: #0071bc;
+        padding: 3px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .perfil-nombre {
+        margin: 0 0 10px 0;
+        font-size: 2rem;
+        font-weight: bold;
+        color: #0a2c52;
+    }
+    .perfil-mail,
+    .perfil-tel {
+        font-size: 1.1rem;
+        margin: 8px 0;
+        color: #333;
+        word-break: break-all;
+        overflow-wrap: break-word;
+        max-width: 100%;
+        white-space: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .perfil-rol {
+        font-size: 1.1rem;
+        margin: 8px 0;
+        color: #333;
+        word-break: break-all;
+        overflow-wrap: break-word;
+        max-width: 100%;
+        white-space: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .perfil-info {
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .perfil-card {
+        box-sizing: border-box;
+        word-break: break-all;
+        overflow-wrap: break-word;
+        max-width: 100vw;
+    }
+
+    .perfil-acciones {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+        position: static;
+    }
+    }
+    .perfil-boton {
+        min-width: 120px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 25px;
+        background: var(--verde);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(21, 177, 109, 0.12);
+        border: none;
+        padding: 0.7rem 1.5rem;
+        transition: background 0.2s;
+    }
+    .perfil-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 16px;
+        background: #f1f7fb;
+    }
+
+    .perfil-card {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        background: #f1f7fb;
+        border: 2px solid #0a2c52;
+        border-radius: 24px;
+        padding: 32px 32px 32px 32px;
+        max-width: 520px;
+        width: 100%;
+        box-shadow: 0 4px 18px rgba(10, 44, 82, 0.10);
+        position: relative;
+        gap: 24px;
+        transition: box-shadow 0.2s;
+    }
+
+    .perfil-card:hover {
+        box-shadow: 0 8px 32px rgba(10, 44, 82, 0.13);
+    }
+
+    .perfil-avatar {
+        flex: 0 0 110px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .perfil-avatar img {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background-color: #0071bc;
+        padding: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        object-fit: cover;
+        border: 2px solid #fff;
+    }
+
+    .perfil-info {
+        flex: 1;
+        margin-left: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .perfil-nombre {
+        margin: 0 0 10px 0;
+        font-size: 2rem;
+        font-weight: bold;
+        color: #0a2c52;
+        text-align: center;
+        display: block;
+    }
+    
+
+    .perfil-mail,
+    .perfil-tel,
+    .perfil-rol {
+        font-size: 1.05rem;
+        margin: 2px 0;
+        color: #333;
+        letter-spacing: 0.1px;
+    }
+
+
+
+    .submit-btn {
+        display: flex !important;
+        align-items: center !important;
+        padding-bottom: 23px !important;
+        
+        ::ng-deep .p-button {
+            background: var(--verde) !important;
+            background-color: var(--verde) !important;
+            border: 2px solid var(--verde) !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            padding: 0.75rem 1.5rem !important;
+            color: white !important;
+            font-family: var(--font-main) !important;
+            transition: all 0.2s ease !important;
+            white-space: nowrap !important;
+            height: auto !important;
+            min-height: 46px !important; // Misma altura que los selects
+
+            &:hover {
+            background: var(--verde) !important;
+            background-color: var(--verde) !important;
+            border-color: var(--verde) !important;
+            filter: brightness(0.85) !important;
+            }
+
+            &:focus {
+            background: var(--verde) !important;
+            background-color: var(--verde) !important;
+            border-color: var(--verde) !important;
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--verde) 25%, transparent) !important;
+            }
+
+            &:active {
+            background: var(--verde) !important;
+            background-color: var(--verde) !important;
+            border-color: var(--verde) !important;
+            filter: brightness(0.8) !important;
+            }
+        }
+
+        ::ng-deep .p-button-primary {
+            background: var(--verde) !important;
+            background-color: var(--verde) !important;
+            border-color: var(--verde) !important;
+
+            &:hover {
+            background: var(--verde) !important;
+            background-color: var(--verde) !important;
+            border-color: var(--verde) !important;
+            filter: brightness(0.85) !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            width: 100%;
+            ::ng-deep .p-button,
+            ::ng-deep .p-button-primary {
+            width: 100% !important;
+            display: block !important;
+            }
+        }
+    }
+
+    // Responsive
+    @media (max-width: 700px) {
+        .perfil-card {
+            padding: 16px 2vw;
+            max-width: 100vw;
+            min-width: 0;
+        }
+        .perfil-avatar img {
+            width: 80px;
+            height: 80px;
+        }
+        .perfil-nombre {
+            font-size: 1.2rem;
+        }
+        .perfil-mail,
+        .perfil-tel,
+        .perfil-rol {
+            font-size: 0.98rem;
+            word-break: break-word;
+        }
+        .perfil-boton {
+            min-width: 90px;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .perfil-card {
+            padding: 6px 1vw;
+            border-radius: 10px;
+        }
+        .perfil-avatar img {
+            width: 54px;
+            height: 54px;
+            padding: 2px;
+        }
+        .perfil-nombre {
+            font-size: 1rem;
+        }
+        .perfil-mail,
+        .perfil-tel,
+        .perfil-rol {
+            font-size: 0.85rem;
+        }
+    }
+    
+
 
 // Mensajes de error y éxito
 .error-message {

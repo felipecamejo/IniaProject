@@ -1,4 +1,3 @@
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -35,13 +34,27 @@ export class PerfilComponent implements OnInit {
     private router: Router
   ) {}
 
+  opciones: string[] = ["Admin", "Analista", "Observador"];
+  roles: string[] = [];
+
   ngOnInit() {
     // Validar que el usuario esté autenticado
     if (!this.auth.token) {
       this.router.navigate(['/login']);
       return;
     }
+    // Guardar los roles del usuario
+    this.roles = this.auth.userRoles || [];
+    // Opciones: solo los roles que tiene el usuario, en orden descendente
     this.cargarPerfilUsuario();
+  }
+  
+  isAdmin(): boolean {
+    return this.auth.isAdmin();
+  }
+
+  getRoleDisplayName(role: UserRole | string): string {
+    return EnumConverter.getRoleDisplayName(role.toString());
   }
 
   cargarPerfilUsuario() {
@@ -92,6 +105,10 @@ export class PerfilComponent implements OnInit {
     this.modalAbierto = true;
     this.error = '';
     this.success = '';
+    // Seleccionar el rol más alto del usuario por defecto
+    if (this.opciones && this.opciones.length > 0) {
+      this.rol = this.opciones[0];
+    }
   }
 
   cerrarModal() {
@@ -152,15 +169,26 @@ export class PerfilComponent implements OnInit {
       next: (response: any) => {
         this.loading = false;
         this.success = 'Perfil actualizado correctamente';
-        
-        // Actualizar datos en localStorage
+
+        // Detectar cambio de rol de ADMIN a ANALISTA u OBSERVADOR
+        const rolesAntes = this.auth.userRoles;
+        const eraAdmin = rolesAntes.includes('ADMIN');
+        const nuevoRol = (typeof this.rol === 'string' ? this.rol.toUpperCase() : this.rol);
+        if (eraAdmin && (nuevoRol === 'ANALISTA' || nuevoRol === 'OBSERVADOR')) {
+          // Solo redirect a /login, no modificar localStorage
+          this.router.navigate(['/login']);
+          return;
+        }
+
+        // Actualizar datos en localStorage normalmente
         const userData = this.auth.userData;
         if (userData) {
           userData.nombre = this.nombre;
           userData.email = this.mail;
+          userData.roles = [nuevoRol];
           localStorage.setItem('user', JSON.stringify(userData));
         }
-        
+
         setTimeout(() => {
           this.cerrarModal();
         }, 1500);
@@ -168,7 +196,7 @@ export class PerfilComponent implements OnInit {
       error: (error: any) => {
         this.loading = false;
         console.error('Error al actualizar usuario:', error);
-        
+
         // Manejar diferentes tipos de errores
         if (error.status === 401) {
           this.error = 'Sesión expirada. Por favor, inicia sesión nuevamente.';
@@ -187,7 +215,4 @@ export class PerfilComponent implements OnInit {
     });
   }
 
-  getRoleDisplayName(role: UserRole | string): string {
-    return EnumConverter.getRoleDisplayName(role);
-  }
 }
