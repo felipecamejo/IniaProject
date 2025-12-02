@@ -33,7 +33,7 @@ public class DOSNDto {
     private Boolean determinacionCuscuta;
     private Float determinacionCuscutaGramos;
 
-    private Boolean estandar;
+    private boolean estandar;
     private Date fechaAnalisis;
 
     // Colecciones (IDs) para malezas y cultivos por organismo

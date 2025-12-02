@@ -73,6 +73,8 @@ public class GerminacionDto {
 
     private boolean repetido;
 
+    private boolean estandar;
+
     private Date fechaCreacion;
 
     private Date fechaRepeticion;

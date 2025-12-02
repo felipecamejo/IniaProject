@@ -49,7 +49,7 @@ public class DOSN {
     private Float determinacionBrassicaGramos;
 
     @Column(name = "DOSN_ESTANDAR")
-    private Boolean estandar;
+    private boolean estandar;
 
     @Column(name = "DOSN_FECHA_ANALISIS")
     private Date fechaAnalisis;

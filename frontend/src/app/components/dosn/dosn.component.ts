@@ -186,9 +186,7 @@ import { AuthService } from '../../../services/AuthService';
       estandar: boolean = false;
       repetido: boolean = false;
 
-      // Variables para el diálogo de confirmación
-      mostrarConfirmEstandar: boolean = false;
-      mostrarConfirmRepetido: boolean = false;
+
       estandarPendiente: boolean = false;
       repetidoPendiente: boolean = false;
 
@@ -224,12 +222,18 @@ import { AuthService } from '../../../services/AuthService';
           this.repetidoOriginal = false;
         }
 
-        // Si está intentando marcar como estándar, mostrar confirmación
-        if (this.estandar && !this.mostrarConfirmEstandar) {
-          this.estandarPendiente = true;
-          this.mostrarConfirmEstandar = true;
-          // Revertir el cambio hasta que se confirme
-          this.estandar = false;
+        // Si está intentando marcar como estándar, mostrar confirmación con alert
+        if (this.estandar) {
+          const confirmar = confirm('¿Estás seguro de que deseas marcar este análisis como estándar? Una vez marcado, no podrás cambiarlo.');
+          if (!confirmar) {
+            // Revertir el cambio si no se confirma
+            this.estandar = false;
+            return;
+          }
+          // Confirmar el cambio
+          this.repetido = false;
+          this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
+          this.repetidoOriginal = false;
         }
       }
 
@@ -246,43 +250,35 @@ import { AuthService } from '../../../services/AuthService';
           this.estandarOriginal = false;
         }
 
-        // Si está intentando marcar como repetido, mostrar confirmación
-        if (this.repetido && !this.mostrarConfirmRepetido) {
-          this.repetidoPendiente = true;
-          this.mostrarConfirmRepetido = true;
-          // Revertir el cambio hasta que se confirme
-          this.repetido = false;
+        // Si está intentando marcar como repetido, mostrar confirmación con alert
+        if (this.repetido) {
+          const confirmar = confirm('¿Estás seguro de que deseas marcar este análisis como repetido? Una vez marcado, no podrás cambiarlo.');
+          if (!confirmar) {
+            // Revertir el cambio si no se confirma
+            this.repetido = false;
+            return;
+          }
+          // Confirmar el cambio
+          this.estandar = false;
+          this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
+          this.estandarOriginal = false;
         }
       }
 
       confirmarEstandar() {
-        this.estandar = true;
-        this.repetido = false;
-        this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
-        this.repetidoOriginal = false;
-        this.mostrarConfirmEstandar = false;
-        this.estandarPendiente = false;
+        // Método ya no necesario, lógica movida a onEstandarChange con alert
       }
 
       cancelarEstandar() {
-        this.estandar = false;
-        this.mostrarConfirmEstandar = false;
-        this.estandarPendiente = false;
+        // Método ya no necesario, lógica movida a onEstandarChange con alert
       }
 
       confirmarRepetido() {
-        this.repetido = true;
-        this.estandar = false;
-        this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
-        this.estandarOriginal = false;
-        this.mostrarConfirmRepetido = false;
-        this.repetidoPendiente = false;
+        // Método ya no necesario, lógica movida a onRepetidoChange con alert
       }
 
       cancelarRepetido() {
-        this.repetido = false;
-        this.mostrarConfirmRepetido = false;
-        this.repetidoPendiente = false;
+        // Método ya no necesario, lógica movida a onRepetidoChange con alert
       }
 
       // Variables para manejar navegación
@@ -378,6 +374,8 @@ import { AuthService } from '../../../services/AuthService';
 
             if (this.isEditing) {
               // Modo edición: editar devuelve Observable<string>
+              //payload.estandar = this.estandar;
+              //console.log('Payload para editar DOSN:', payload);
               this.dosnService.editar(payload).subscribe({
                 next: (resp: string) => {
                   this.loading = false;
@@ -742,6 +740,21 @@ import { AuthService } from '../../../services/AuthService';
       return list;
     };
 
+    // Manejo de fechas igual que PMS
+    let fechaCreacion = this.dosn?.fechaCreacion || null;
+    let fechaRepeticion = this.dosn?.fechaRepeticion || null;
+    const fechaActual = new Date().toISOString().split('T')[0];
+
+    // Si es creación, asignar fecha actual
+    if (!this.isEditing) {
+      fechaCreacion = fechaActual;
+    }
+
+    // Si es edición y repetido pasa de false a true, asignar fecha actual
+    if (this.isEditing && !this.dosn?.repetido && this.repetido) {
+      fechaRepeticion = fechaActual;
+    }
+
     return {
       id: this.isEditing ? this.editingId! : null,
       reciboId: this.reciboId ?? null,
@@ -783,8 +796,8 @@ import { AuthService } from '../../../services/AuthService';
       // Preservar flags y metadatos
       activo: this.dosn?.activo ?? true,
       repetido: this.repetido ?? false,
-      fechaCreacion: this.dosn?.fechaCreacion ?? null,
-      fechaRepeticion: this.dosn?.fechaRepeticion ?? null
+      fechaCreacion,
+      fechaRepeticion
     };
   }
 

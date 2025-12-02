@@ -65,6 +65,8 @@ public class TetrazolioDto {
 
     private boolean activo;
 
+    private boolean estandar;
+
     private boolean repetido;
 
     private Date fechaCreacion;

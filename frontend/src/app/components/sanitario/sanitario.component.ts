@@ -141,6 +141,7 @@ export class SanitarioComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.isAdmin = this.authService.isAdmin();
     this.loteId = this.route.snapshot.params['loteId'];
     this.reciboId = this.route.snapshot.params['reciboId'];
 
@@ -920,6 +921,65 @@ export class SanitarioComponent implements OnInit {
     const selectedDate = new Date(fecha);
     const today = new Date();
     return selectedDate >= today;
+  }
+
+  repetidoDeshabilitado: boolean = false;
+  estandarDeshabilitado: boolean = false; 
+
+  onEstandarChange() {
+    // Si ya estaba marcado como estándar, no permitir cambiar
+    if (this.estandarDeshabilitado) {
+      this.estandar = true; // Revertir
+      return;
+    }
+
+    // Si está intentando marcar como estándar y ya está marcado como repetido
+    if (this.estandar && this.repetido) {
+      this.repetido = false;
+      this.repetidoDeshabilitado = false;
+    }
+
+    // Si está intentando marcar como estándar, mostrar confirmación con alert
+    if (this.estandar) {
+      const confirmar = confirm('¿Estás seguro de que deseas marcar este análisis como estándar? Una vez marcado, no podrás cambiarlo.');
+      if (!confirmar) {
+        // Revertir el cambio si no se confirma
+        this.estandar = false;
+        return;
+      }
+      // Confirmar el cambio
+      this.repetido = false;
+      this.estandarDeshabilitado = true; // Marcar como original para que no se pueda cambiar
+      this.repetidoDeshabilitado = false;
+    }
+  }
+
+  onRepetidoChange() {
+    // Si ya estaba marcado como repetido, no permitir cambiar
+    if (this.repetidoDeshabilitado) {
+      this.repetido = true; // Revertir
+      return;
+    }
+
+    // Si está intentando marcar como repetido y ya está marcado como estándar
+    if (this.repetido && this.estandar) {
+      this.estandar = false;
+      this.estandarDeshabilitado = false;
+    }
+
+    // Si está intentando marcar como repetido, mostrar confirmación con alert
+    if (this.repetido) {
+      const confirmar = confirm('¿Estás seguro de que deseas marcar este análisis como repetido? Una vez marcado, no podrás cambiarlo.');
+      if (!confirmar) {
+        // Revertir el cambio si no se confirma
+        this.repetido = false;
+        return;
+      }
+      // Confirmar el cambio
+      this.estandar = false;
+      this.repetidoDeshabilitado = true; // Marcar como original para que no se pueda cambiar
+      this.estandarDeshabilitado = false;
+    }
   }
 
   validarTablaHongos(hongo: any): boolean {
