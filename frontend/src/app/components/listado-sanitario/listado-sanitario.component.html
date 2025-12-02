@@ -119,4 +119,18 @@
         </div>
        
     </p-card>
+
+    <!-- Popup de confirmación de eliminación -->
+    <app-confirm-dialog
+        [visible]="mostrarConfirmEliminar"
+        title="Eliminar Sanitario"
+        [message]="'¿Estás seguro de que quieres eliminar este Sanitario?'"
+        [itemName]="sanitarioAEliminar?.id ? 'Sanitario #' + sanitarioAEliminar!.id : ''"
+        [itemId]="sanitarioAEliminar?.id ?? ''"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        [loading]="confirmLoading"
+        (confirm)="confirmarEliminacion()"
+        (cancel)="cancelarEliminacion()">
+    </app-confirm-dialog>
 </div>

@@ -10,11 +10,12 @@ import { ActivatedRoute } from '@angular/router';
 import { SanitarioService } from '../../../services/SanitarioService';
 import { LogService } from '../../../services/LogService';
 import { AuthService } from '../../../services/AuthService';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-listado-sanitario.component',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, ConfirmDialogComponent],
   templateUrl: './listado-sanitario.component.html',
   styleUrls: ['./listado-sanitario.component.scss']
 })
@@ -70,6 +71,11 @@ export class ListadoSanitarioComponent implements OnInit {
     totalPages = 0;
 
     isLoading: boolean = false;
+
+    // Propiedades para el popup de confirmación
+    mostrarConfirmEliminar: boolean = false;
+    sanitarioAEliminar: SanitarioDto | null = null;
+    confirmLoading: boolean = false;
 
 
     /**
@@ -211,23 +217,38 @@ export class ListadoSanitarioComponent implements OnInit {
         return;
       }
 
-      if (confirm(`¿Estás seguro de que quieres eliminar el Sanitario #${item.id}?`)) {
-        this.isLoading = true;
-        
-        this.sanitarioService.eliminar(item.id).subscribe({
-          next: (response) => {
-            console.log('Sanitario eliminado:', response);
-            // Recargar la lista después de eliminar
-            this.cargarSanitarios();
-            this.logService.crearLog(Number(this.loteId), Number(item.id), 'Sanitario', 'eliminado').subscribe();
-          },
-          error: (error) => {
-            console.error('Error al eliminar sanitario:', error);
-            this.isLoading = false;
-            alert('Error al eliminar el sanitario. Por favor, inténtalo de nuevo.');
-          }
-        });
-      }
+      this.sanitarioAEliminar = item;
+      this.mostrarConfirmEliminar = true;
+    }
+
+    confirmarEliminacion() {
+      const sanitario = this.sanitarioAEliminar;
+      if (!sanitario || sanitario.id == null) return;
+      this.confirmLoading = true;
+      
+      this.sanitarioService.eliminar(sanitario.id).subscribe({
+        next: (response) => {
+          console.log('Sanitario eliminado:', response);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.sanitarioAEliminar = null;
+          // Recargar la lista después de eliminar
+          this.cargarSanitarios();
+          this.logService.crearLog(Number(this.loteId), Number(sanitario.id), 'Sanitario', 'eliminado').subscribe();
+        },
+        error: (error) => {
+          console.error('Error al eliminar sanitario:', error);
+          this.confirmLoading = false;
+          this.mostrarConfirmEliminar = false;
+          this.sanitarioAEliminar = null;
+          alert('Error al eliminar el sanitario. Por favor, inténtalo de nuevo.');
+        }
+      });
+    }
+
+    cancelarEliminacion() {
+      this.mostrarConfirmEliminar = false;
+      this.sanitarioAEliminar = null;
     }
 
     /**

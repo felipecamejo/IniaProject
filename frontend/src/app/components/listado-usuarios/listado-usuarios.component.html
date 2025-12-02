@@ -211,5 +211,18 @@
         </form>
     </p-dialog>
 
+    <!-- Popup de confirmación de eliminación -->
+    <app-confirm-dialog
+        [visible]="mostrarConfirmEliminar"
+        title="Eliminar Usuario"
+        [message]="'¿Estás seguro de que quieres eliminar este Usuario?'"
+        [itemName]="usuarioAEliminar?.nombre ? 'Usuario: ' + usuarioAEliminar!.nombre + (usuarioAEliminar!.email ? ' (' + usuarioAEliminar!.email + ')' : '') : ''"
+        [itemId]="usuarioAEliminar?.id ?? ''"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        [loading]="confirmLoading"
+        (confirm)="onConfirmEliminar()"
+        (cancel)="onCancelEliminar()">
+    </app-confirm-dialog>
     
 </div>

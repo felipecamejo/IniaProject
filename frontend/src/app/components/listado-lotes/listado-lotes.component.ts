@@ -10,11 +10,12 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { LoteDto } from '../../../models/Lote.dto';
 import { LoteService, ResponseListadoLotesPage } from '../../../services/LoteService';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-listado-lotes.component',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule, ConfirmDialogComponent],
   templateUrl: './listado-lotes.component.html',
   styleUrl: './listado-lotes.component.scss'
 })
@@ -298,6 +299,7 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
         this.mostrarConfirmEliminar = false;
         this.loteAEliminar = null;
         this.items = this.items.filter((loteItem: LoteDto) => loteItem.id !== loteId);
+        this.cargarLotesPage(); // Recargar para actualizar la paginación
       },
       error: (err: any) => {
         console.error('Error eliminando Lote:', err);
@@ -311,32 +313,14 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
 
     eliminarItem(lote: LoteDto) {
       console.log('Eliminar Lote:', lote);
-      const nombreLote = lote.nombre || 'este lote';
-      const confirmar = confirm(`¿Estás seguro de que quieres eliminar el lote "${nombreLote}"?`);
       
-      if (!confirmar) {
-        return;
-      }
-
       if (!lote.id) {
         alert('Error: El lote no tiene un ID válido.');
         return;
       }
 
-      const loteId = lote.id;
-
-      this.loteService.eliminarLote(loteId).subscribe({
-        next: (res) => {
-          console.log('Lote eliminado en backend:', res);
-          alert('Lote eliminado correctamente.');
-          // Actualizar lista localmente
-          this.items = this.items.filter(loteItem => loteItem.id !== loteId);
-        },
-        error: (err) => {
-          console.error('Error eliminando Lote:', err);
-          alert('Error al eliminar el lote. Por favor, inténtalo de nuevo.');
-        }
-      });
+      this.loteAEliminar = lote;
+      this.mostrarConfirmEliminar = true;
     }
   cancelarEliminacion() {
     this.mostrarConfirmEliminar = false;

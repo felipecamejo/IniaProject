@@ -304,22 +304,34 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
 
 
     eliminarItem(usuario: UsuarioDto) {
-        const confirmMsg = `¿Seguro que deseas eliminar al usuario ${usuario.nombre}${usuario.email ? ' (' + usuario.email + ')' : ''}?`;
-        if (window.confirm(confirmMsg)) {
-            this.confirmLoading = true;
-            this.usuarioService.eliminarUsuario(usuario.id).subscribe({
-                next: (response: string) => {
-                    console.log('Usuario eliminado:', response);
-                    this.items = this.items.filter(i => i.id !== usuario.id);
-                    this.confirmLoading = false;
-                },
-                error: (error: any) => {
-                    console.error('Error al eliminar usuario:', error);
-                    this.confirmLoading = false;
-                    alert('Error al eliminar el usuario. Por favor, inténtalo de nuevo.');
-                }
-            });
-        }
+        this.usuarioAEliminar = usuario;
+        this.mostrarConfirmEliminar = true;
+    }
+
+    onConfirmEliminar() {
+        if (!this.usuarioAEliminar || this.usuarioAEliminar.id == null) return;
+        this.confirmLoading = true;
+        this.usuarioService.eliminarUsuario(this.usuarioAEliminar.id).subscribe({
+            next: (response: string) => {
+                console.log('Usuario eliminado:', response);
+                this.items = this.items.filter(i => i.id !== this.usuarioAEliminar!.id);
+                this.confirmLoading = false;
+                this.mostrarConfirmEliminar = false;
+                this.usuarioAEliminar = null;
+            },
+            error: (error: any) => {
+                console.error('Error al eliminar usuario:', error);
+                this.confirmLoading = false;
+                this.mostrarConfirmEliminar = false;
+                this.usuarioAEliminar = null;
+                alert('Error al eliminar el usuario. Por favor, inténtalo de nuevo.');
+            }
+        });
+    }
+
+    onCancelEliminar() {
+        this.mostrarConfirmEliminar = false;
+        this.usuarioAEliminar = null;
     }
 
 
