@@ -33,7 +33,6 @@ export class ListadoLotesComponent implements OnInit, OnDestroy {
   selectedCategoria: string = '';
   searchText: string = '';
   categorias = [
-    { label: 'Todas', id: '' },
     { label: 'P', id: 'P' },
     { label: 'FT', id: 'FT' },
     { label: 'M', id: 'M' },
