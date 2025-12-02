@@ -228,6 +228,22 @@ function Start-Server {
         Stop-ServerOnPort -Port $Port
     }
     
+    # Configurar variables de entorno de base de datos
+    # Estas variables son necesarias para que el middleware se conecte a PostgreSQL
+    Write-Host "Configurando variables de entorno de base de datos..." -ForegroundColor Cyan
+    $env:DB_USER = if ($env:DB_USER) { $env:DB_USER } else { "postgres" }
+    $env:DB_PASSWORD = if ($env:DB_PASSWORD) { $env:DB_PASSWORD } else { "Inia2024SecurePass!" }
+    $env:DB_HOST = if ($env:DB_HOST) { $env:DB_HOST } else { "localhost" }
+    $env:DB_PORT = if ($env:DB_PORT) { $env:DB_PORT } else { "5432" }
+    $env:DB_NAME = if ($env:DB_NAME) { $env:DB_NAME } else { "Inia" }
+    $env:PY_MIDDLEWARE_PORT = if ($env:PY_MIDDLEWARE_PORT) { $env:PY_MIDDLEWARE_PORT } else { $Port.ToString() }
+    
+    Write-Host "  DB_USER: $env:DB_USER" -ForegroundColor Gray
+    Write-Host "  DB_HOST: $env:DB_HOST" -ForegroundColor Gray
+    Write-Host "  DB_PORT: $env:DB_PORT" -ForegroundColor Gray
+    Write-Host "  DB_NAME: $env:DB_NAME" -ForegroundColor Gray
+    Write-Host "  DB_PASSWORD: [CONFIGURADO]" -ForegroundColor Gray
+    
     Write-Host "`nStarting middleware API server on port $Port..." -ForegroundColor Green
     Write-Host "Available endpoints (both with and without /middleware/ prefix):" -ForegroundColor Yellow
     Write-Host "  GET  /health or /middleware/health - Health check" -ForegroundColor White
