@@ -8,6 +8,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PMSDto } from '../../../models/PMS.dto';
 import { PMSService } from '../../../services/PMSService';
 import { LogService } from '../../../services/LogService';
+import { AuthService } from '../../../services/AuthService';
 
 @Component({
   selector: 'app-listado-pms.component',
@@ -17,13 +18,15 @@ import { LogService } from '../../../services/LogService';
   styleUrl: './listado-pms.component.scss'
 })
 export class ListadoPmsComponent implements OnInit {
-  constructor(private router: Router, private route: ActivatedRoute, private pmsService: PMSService, private logService: LogService) {}
+  constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute, private pmsService: PMSService, private logService: LogService) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
   searchText: string = '';
   loteId: string = '';
   reciboId: number | null = null;
+
+  isObserver: boolean = false;
 
   ngOnInit() {
     this.loteId = this.route.snapshot.params['loteId'];
@@ -68,6 +71,7 @@ export class ListadoPmsComponent implements OnInit {
         this.items = [];
         return;
       }
+      this.isObserver = this.authService.isObservador();
       this.pmsService.listar(this.reciboId).subscribe({
         next: (data: PMSDto[]) => {
           // Algunos endpoints devuelven { pms: [...] } en lugar de [...] directamente.

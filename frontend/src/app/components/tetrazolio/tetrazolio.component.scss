@@ -6,6 +6,31 @@
   table-layout: auto;
 }
 
+.back-button {
+  left: 32px;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 10px;
+  margin-right: 0;
+  font-size: 1rem;
+  i { font-size: 0.95rem; }
+  @media (max-width: 768px) {
+    left: -4px;
+    width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+    i { font-size: 0.85rem; }
+  }
+  @media (max-width: 480px) {
+    left: -6px;
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+    margin-bottom: 8px;
+    i { font-size: 0.75rem; }
+  }
+}
+
 // Estilos específicos para el checkbox en el formulario 
 .form-field {
   label {

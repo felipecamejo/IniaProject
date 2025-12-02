@@ -1,113 +1,91 @@
 // Sección de filtros alineados en un solo renglón
 
+
+// Responsive y estilos de filtros igual a listado-pms
 .search-section {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: flex-end;
-  margin-bottom: 1.5rem;
+  display: flex !important;
+  gap: 1rem !important;
+  align-items: center !important;
+  margin-bottom: 1rem !important;
+  flex-wrap: wrap !important;
+
+  @media (max-width: 768px) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
 }
 
 .search-bar {
-  flex: 1 1 0;
-  min-width: 140px;
-  max-width: 300px;
+  flex: 1 !important;
+  min-width: 200px !important;
+  
+  .search-input {
+    width: 100% !important;
+    padding: 0.75rem 1rem !important;
+    border: 2px solid var(--gris) !important;
+    border-radius: 8px !important;
+    font-family: var(--font-main) !important;
+    font-size: 0.9rem !important;
+    outline: none !important;
+    transition: border-color 0.2s ease !important;
+
+    &:focus {
+      border-color: var(--azul) !important;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul) 25%, transparent) !important;
+    }
+
+    &::placeholder {
+      color: var(--gris-oscuro) !important;
+      opacity: 0.7 !important;
+    }
+  }
 }
 
 .filter-dropdown {
-  flex: 1 1 0;
-  min-width: 120px;
-  max-width: 180px;
+  display: flex !important;
+  align-items: center !important;
+
+  .estado-select,
+  .mes-select,
+  .anio-select,
+  .categoria-select {
+    padding: 0.75rem 1rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.83rem;
+    font-family: var(--font-main);
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 150px;
+    min-height: 44px;
+    height: 44px;
+    box-sizing: border-box;
+    width: 100%;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      min-width: unset;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--celeste);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--celeste) 25%, transparent);
+    }
+
+    &:hover {
+      border-color: #9ca3af;
+    }
+  }
 }
-// Asegura que los selects no se superpongan y ocupen el 100% del contenedor padre
+
+// Asegura que los selects y el input ocupen el 100% del contenedor padre
 .search-bar input,
 .filter-dropdown select {
   width: 100%;
   box-sizing: border-box;
-}
-
-.categoria-select {
-  width: 100%;
-  padding: 0.5rem 1rem;
-  border: 2px solid var(--gris);
-  border-radius: 8px;
-  font-family: var(--font-main);
-  font-size: 0.9rem;
-  background-color: white;
-  color: var(--azul);
-  outline: none;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  min-width: 120px;
-  font-weight: 500;
-
-  &:focus {
-    border-color: var(--azul);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul) 25%, transparent);
-  }
-
-  &:hover {
-    border-color: var(--celeste);
-  }
-
-  option {
-    padding: 0.5rem;
-    background-color: white;
-    color: var(--azul);
-  }
-}
-
-@media (max-width: 900px) {
-  .search-section {
-    gap: 0.5rem;
-  }
-  .filter-dropdown, .search-bar {
-    min-width: 100px;
-    flex-basis: 100px;
-  }
-}
-
-@media (max-width: 600px) {
-  .search-section {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
-  }
-  .filter-dropdown, .search-bar {
-    min-width: 0;
-    flex-basis: 100%;
-  }
-}
-// Ajuste visual para el filtro de categoría para que coincida con los otros filtros
-.categoria-select {
-  width: 100%;
-  padding: 0.5rem 1rem;
-  border: 2px solid var(--gris);
-  border-radius: 8px;
-  font-family: var(--font-main);
-  font-size: 0.9rem;
-  background-color: white;
-  color: var(--azul);
-  outline: none;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  min-width: 120px;
-  font-weight: 500;
-
-  &:focus {
-    border-color: var(--azul);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul) 25%, transparent);
-  }
-
-  &:hover {
-    border-color: var(--celeste);
-  }
-
-  option {
-    padding: 0.5rem;
-    background-color: white;
-    color: var(--azul);
-  }
 }
 
 // Estilos para hacer la card más ancha

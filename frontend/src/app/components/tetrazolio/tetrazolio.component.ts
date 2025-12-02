@@ -997,9 +997,9 @@ export class TetrazolioComponent implements OnInit {
     }
   }
 
-  validarFecha(fecha: string | null): boolean {
+  validarFecha(fecha: string ): boolean {
     if (!fecha || fecha.trim() === '') {
-      return false; // Fecha vacía
+      return false; 
     }
     // Normalizar fechas a solo año-mes-día para evitar problemas de hora
     const selectedDate = new Date(fecha + 'T00:00:00');
@@ -1013,91 +1013,24 @@ export class TetrazolioComponent implements OnInit {
     this.errores = []; // Reiniciar errores
 
     // Validar cantidadSemillas
-    if (
-      this.cantidadSemillas === null ||
-      this.cantidadSemillas === undefined 
-    ) {
-      this.errores.push('Debe seleccionar una cantidad de semillas válida');
-    } else if (this.cantidadSemillas < 0) {
-      this.errores.push('La cantidad de semillas no puede ser menor que cero');
+    if (this.cantidadSemillas !== null && this.cantidadSemillas !== undefined && this.cantidadSemillas < 0) {
+      this.errores.push('La cantidad de semillas no puede ser negativa');
     }
 
-    // Validar pretratamiento
-    if (
-      this.selectedPretratamiento === null ||
-      this.selectedPretratamiento === undefined ||
-      this.selectedPretratamiento === '' ||
-      this.selectedPretratamiento === 'Seleccione...'
-    ) {
-      this.errores.push('Debe seleccionar un pretratamiento válido');
-    }
-
-    // Validar concentración
-    const concentracion = this.selectedConcentracion === 'custom' ? this.concentracionCustom : this.selectedConcentracion;
-    if (concentracion === null || concentracion === undefined) {
-      this.errores.push('Debe seleccionar una concentración válida');
-    }
-
-    // Validar tinción horas
-    const tincionHoras = this.selectedTincionHs === 'custom' ? this.tincionHsCustom : this.selectedTincionHs;
-    if (tincionHoras === null || tincionHoras === undefined ) {
-      this.errores.push('Debe seleccionar un valor válido para tinción horas');
-    }
-  
-
-    // Validar tinción grados
-    if (this.tincionC === null || this.tincionC === undefined || this.tincionC <= 0) {
-      this.errores.push('Los grados de tinción deben ser un valor válido mayor a 0');
-    }
     if (this.tincionC !== null && this.tincionC !== undefined && this.tincionC < 0) {
       this.errores.push('Los grados de tinción no pueden ser menores que cero');
     }
 
-    // Validar fecha
-    if (!this.validarFecha(this.fecha)) {
-      this.errores.push('La fecha debe estar completa y no puede ser futura a hoy.');
-    }
-
-
     // Validar repeticiones
-    if (!this.repeticiones || this.repeticiones.length === 0) {
-      this.errores.push('Debe tener al menos una repetición');
-    } else {
+    if ( this.repeticiones.length > 0) {
+
       // Validar que todas las repeticiones tengan datos válidos
       this.repeticiones.forEach((rep, index) => {
         if (rep.viables < 0 || rep.noViables < 0 || rep.duras < 0) {
           this.errores.push(`La repetición ${index + 1} tiene valores negativos. Los valores no pueden ser menores que cero`);
         }
 
-        const totalRep = rep.viables + rep.noViables + rep.duras;
-        if (totalRep === 0) {
-          this.errores.push(`La repetición ${index + 1} no tiene datos ingresados`);
-        }
       });
-    }
-
-    // Validar promedios: deben estar entre 0 y 100
-    if (this.repeticiones && this.repeticiones.length > 0) {
-      const promedioViables = parseFloat(this.getPromedioViables(false));
-      if (!isNaN(promedioViables)) {
-        if (promedioViables < 0 || promedioViables > 100) {
-          this.errores.push(`El promedio de viables (${promedioViables.toFixed(2)}%) debe estar entre 0 y 100`);
-        }
-      }
-
-      const promedioNoViables = parseFloat(this.getPromedioNoViables(false));
-      if (!isNaN(promedioNoViables)) {
-        if (promedioNoViables < 0 || promedioNoViables > 100) {
-          this.errores.push(`El promedio de no viables (${promedioNoViables.toFixed(2)}%) debe estar entre 0 y 100`);
-        }
-      }
-
-      const promedioDuras = parseFloat(this.getPromedioDuras(false));
-      if (!isNaN(promedioDuras)) {
-        if (promedioDuras < 0 || promedioDuras > 100) {
-          this.errores.push(`El promedio de duras (${promedioDuras.toFixed(2)}%) debe estar entre 0 y 100`);
-        }
-      }
     }
 
     // Validar detalles de semillas
