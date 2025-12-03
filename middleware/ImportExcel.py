@@ -652,6 +652,136 @@ def asegurar_autoincrementos(engine):
 # ================================
 # MÓDULO: IMPORTACIÓN DE ARCHIVOS
 # ================================
+def validar_foreign_keys(session, tabla_nombre: str, datos: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Valida que los valores de foreign keys existen en las tablas referenciadas.
+    
+    Args:
+        session: Sesión de SQLAlchemy
+        tabla_nombre: Nombre de la tabla
+        datos: Diccionario con los datos a validar
+    
+    Returns:
+        List[Dict[str, Any]]: Lista de errores encontrados. Cada error tiene:
+            - 'columna': nombre de la columna FK
+            - 'valor': valor que no existe
+            - 'tabla_referenciada': tabla que debería contener el valor
+            - 'mensaje': mensaje de error descriptivo
+    """
+    errores = []
+    
+    try:
+        from sqlalchemy import text, MetaData, inspect
+        
+        # Obtener constraints de foreign key de la tabla
+        query_fk = text("""
+            SELECT
+                kcu.column_name AS fk_column,
+                ccu.table_name AS referenced_table,
+                ccu.column_name AS referenced_column
+            FROM information_schema.table_constraints AS tc
+            JOIN information_schema.key_column_usage AS kcu
+                ON tc.constraint_name = kcu.constraint_name
+                AND tc.table_schema = kcu.table_schema
+            JOIN information_schema.constraint_column_usage AS ccu
+                ON ccu.constraint_name = tc.constraint_name
+                AND ccu.table_schema = tc.table_schema
+            WHERE tc.constraint_type = 'FOREIGN KEY'
+                AND tc.table_name = :tabla
+                AND tc.table_schema = 'public'
+        """)
+        
+        result = session.execute(query_fk, {"tabla": tabla_nombre})
+        fk_constraints = result.fetchall()
+        
+        # Validar cada foreign key
+        for fk_col, ref_table, ref_col in fk_constraints:
+            fk_col_lower = fk_col.lower()
+            ref_table_lower = ref_table.lower()
+            
+            # Buscar el valor en los datos (case-insensitive)
+            valor_fk = None
+            for key, value in datos.items():
+                if key.lower() == fk_col_lower:
+                    valor_fk = value
+                    break
+            
+            # Si hay un valor de FK y no es None, validar que existe
+            if valor_fk is not None:
+                try:
+                    # Verificar que el valor existe en la tabla referenciada
+                    check_query = text(f"""
+                        SELECT COUNT(*) 
+                        FROM public.{ref_table} 
+                        WHERE {ref_col} = :valor
+                    """)
+                    count_result = session.execute(check_query, {"valor": valor_fk})
+                    count = count_result.scalar()
+                    
+                    if count == 0:
+                        errores.append({
+                            'columna': fk_col,
+                            'valor': valor_fk,
+                            'tabla_referenciada': ref_table,
+                            'columna_referenciada': ref_col,
+                            'mensaje': f"Foreign key '{fk_col}' con valor '{valor_fk}' no existe en tabla '{ref_table}.{ref_col}'"
+                        })
+                except Exception as e:
+                    logger.warning(f"Error validando FK {fk_col} -> {ref_table}.{ref_col}: {e}")
+                    # No agregar error si la validación misma falla (puede ser problema de permisos)
+        
+    except Exception as e:
+        logger.warning(f"Error obteniendo constraints de foreign key para tabla {tabla_nombre}: {e}")
+        # Si no se pueden obtener los constraints, no validar (no fallar completamente)
+    
+    return errores
+
+
+def validar_not_null(session, tabla_nombre: str, datos: Dict[str, Any], table) -> List[Dict[str, Any]]:
+    """
+    Valida que los datos tienen valores para todas las columnas NOT NULL.
+    
+    Args:
+        session: Sesión de SQLAlchemy
+        tabla_nombre: Nombre de la tabla
+        datos: Diccionario con los datos a validar
+        table: Objeto Table de SQLAlchemy
+    
+    Returns:
+        List[Dict[str, Any]]: Lista de errores encontrados. Cada error tiene:
+            - 'columna': nombre de la columna NOT NULL
+            - 'mensaje': mensaje de error descriptivo
+    """
+    errores = []
+    
+    try:
+        # Obtener columnas NOT NULL de la tabla
+        for column in table.columns:
+            # Verificar si la columna es NOT NULL y no tiene default
+            is_not_null = not column.nullable
+            has_default = column.server_default is not None or column.default is not None
+            
+            if is_not_null and not has_default:
+                # Buscar el valor en los datos (case-insensitive)
+                valor = None
+                for key, value in datos.items():
+                    if key.lower() == column.name.lower():
+                        valor = value
+                        break
+                
+                # Si el valor es None o string vacío, es un error
+                if valor is None or (isinstance(valor, str) and valor.strip() == ''):
+                    errores.append({
+                        'columna': column.name,
+                        'mensaje': f"Columna NOT NULL '{column.name}' no tiene valor o está vacía"
+                    })
+        
+    except Exception as e:
+        logger.warning(f"Error validando NOT NULL para tabla {tabla_nombre}: {e}")
+    
+    return errores
+
+
 def convertir_valor_segun_tipo(valor: Any, tipo_columna) -> Any:
     """
     Convierte un valor según el tipo de columna de la base de datos.
@@ -752,8 +882,14 @@ def convertir_valor_segun_tipo(valor: Any, tipo_columna) -> Any:
                 # Intentar parsear fecha
                 try:
                     from datetime import datetime
-                    # Intentar varios formatos comunes
-                    formatos = ['%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y', '%Y-%m-%d %H:%M:%S']
+                    # Intentar varios formatos comunes (incluyendo microsegundos)
+                    formatos = [
+                        '%Y-%m-%d', 
+                        '%d/%m/%Y', 
+                        '%m/%d/%Y', 
+                        '%Y-%m-%d %H:%M:%S',
+                        '%Y-%m-%d %H:%M:%S.%f'  # Formato con microsegundos
+                    ]
                     for fmt in formatos:
                         try:
                             return datetime.strptime(valor.strip(), fmt)
@@ -773,7 +909,7 @@ def convertir_valor_segun_tipo(valor: Any, tipo_columna) -> Any:
         logger.warning(f"Error convirtiendo valor '{valor}' a tipo {tipo_python}: {e}")
         return valor
 
-def import_one_file(session, model, ruta_archivo: str, formato: str, upsert: bool = False, keep_ids: bool = False) -> Tuple[int, int]:
+def import_one_file(session, model, ruta_archivo: str, formato: str, upsert: bool = False, keep_ids: bool = False) -> Tuple[int, int, Dict[str, Any]]:
     """
     Importa un archivo Excel/CSV a una tabla.
     
@@ -786,10 +922,23 @@ def import_one_file(session, model, ruta_archivo: str, formato: str, upsert: boo
         keep_ids: Si es True, mantiene los IDs del archivo
     
     Returns:
-        Tuple[int, int]: (insertados, actualizados)
+        Tuple[int, int, Dict[str, Any]]: (insertados, actualizados, errores_detalle)
+        errores_detalle contiene:
+            - 'errores_foreign_key': número de errores de FK
+            - 'errores_not_null': número de errores NOT NULL
+            - 'errores_tipo_dato': número de errores de tipo
+            - 'errores_otros': número de otros errores
+            - 'total_errores': total de errores
     """
     inserted = 0
     updated = 0
+    errores_detalle = {
+        'errores_foreign_key': 0,
+        'errores_not_null': 0,
+        'errores_tipo_dato': 0,
+        'errores_otros': 0,
+        'total_errores': 0
+    }
     
     try:
         # Leer archivo
@@ -866,14 +1015,15 @@ def import_one_file(session, model, ruta_archivo: str, formato: str, upsert: boo
                         datos[columna] = valor_convertido
                 
                 if datos:
-                    filas_datos.append(datos)
+                    filas_datos.append((len(filas_datos) + 1, datos))  # Guardar índice de fila junto con datos
             except Exception as e:
                 logger.warning(f"Error procesando fila: {e}")
+                errores_detalle['errores_otros'] += 1
                 continue
         
         # Usar SQLAlchemy Core directamente pero con el mapper
         # Obtener la tabla de forma segura usando caché para evitar configurar relaciones
-        from sqlalchemy import insert, select, update, MetaData
+        from sqlalchemy import insert, select, update, MetaData, text
         
         if filas_datos:
             try:
@@ -890,10 +1040,43 @@ def import_one_file(session, model, ruta_archivo: str, formato: str, upsert: boo
                 
                 table = _TABLES_CACHE[tabla_nombre]
                 
+                # Contadores de errores por tipo
+                errores_foreign_key = 0
+                errores_not_null = 0
+                errores_tipo_dato = 0
+                errores_otros = 0
+                
                 if upsert:
                     # Para upsert, necesitamos procesar individualmente
-                    for datos in filas_datos:
+                    # Usar savepoints para aislar errores por fila sin abortar toda la transacción
+                    commit_interval = 100  # Commit cada 100 filas
+                    
+                    for fila_idx, datos in filas_datos:
+                        savepoint_name = f"sp_fila_{fila_idx}"
                         try:
+                            # Validar foreign keys y NOT NULL antes de procesar
+                            errores_fk = validar_foreign_keys(session, tabla_nombre, datos)
+                            errores_nn = validar_not_null(session, tabla_nombre, datos, table)
+                            
+                            # Si hay errores de validación, reportarlos y saltar esta fila
+                            if errores_fk or errores_nn:
+                                for error in errores_fk:
+                                    logger.warning(f"Fila {fila_idx} - Validación FK fallida: {error['mensaje']}")
+                                    errores_foreign_key += 1
+                                for error in errores_nn:
+                                    logger.warning(f"Fila {fila_idx} - Validación NOT NULL fallida: {error['mensaje']}")
+                                    errores_not_null += 1
+                                # Log datos de la fila para diagnóstico
+                                datos_sanitizados = {k: ('***' if 'password' in k.lower() or 'pass' in k.lower() else v) 
+                                                    for k, v in datos.items()}
+                                logger.debug(f"Fila {fila_idx} - Datos con error de validación: {datos_sanitizados}")
+                                # No procesar esta fila si tiene errores de validación
+                                continue
+                            
+                            # Crear savepoint antes de procesar cada fila
+                            # Esto permite hacer rollback solo de esta fila si hay error
+                            session.execute(text(f"SAVEPOINT {savepoint_name}"))
+                            
                             # Buscar clave primaria
                             pk_column = None
                             for col in table.primary_key.columns:
@@ -925,15 +1108,82 @@ def import_one_file(session, model, ruta_archivo: str, formato: str, upsert: boo
                                 stmt_insert = insert(table).values(**datos)
                                 session.execute(stmt_insert)
                                 inserted += 1
+                            
+                            # Liberar savepoint si todo salió bien
+                            session.execute(text(f"RELEASE SAVEPOINT {savepoint_name}"))
+                            
+                            # Commit periódico para evitar perder trabajo y mantener transacción válida
+                            if fila_idx % commit_interval == 0:
+                                session.commit()
+                                logger.debug(f"Commit periódico: {fila_idx} filas procesadas")
+                                
                         except Exception as e:
-                            logger.warning(f"Error procesando fila (upsert): {e}")
+                            # Determinar tipo de error
+                            error_msg = str(e).lower()
+                            tipo_error = "otro"
+                            if 'foreign key' in error_msg or 'violates foreign key' in error_msg:
+                                errores_foreign_key += 1
+                                tipo_error = "foreign_key"
+                            elif 'not null' in error_msg or 'null value' in error_msg:
+                                errores_not_null += 1
+                                tipo_error = "not_null"
+                            elif 'invalid input' in error_msg or 'type' in error_msg or 'invalid' in error_msg:
+                                errores_tipo_dato += 1
+                                tipo_error = "tipo_dato"
+                            else:
+                                errores_otros += 1
+                            
+                            # Log detallado del error
+                            logger.warning(f"Fila {fila_idx} - Error tipo '{tipo_error}': {e}")
+                            # Log datos de la fila (sanitizado, sin valores sensibles)
+                            datos_sanitizados = {k: ('***' if 'password' in k.lower() or 'pass' in k.lower() else v) 
+                                                for k, v in datos.items()}
+                            logger.debug(f"Fila {fila_idx} - Datos: {datos_sanitizados}")
+                            
+                            # Hacer rollback al savepoint (solo esta fila)
+                            try:
+                                session.execute(text(f"ROLLBACK TO SAVEPOINT {savepoint_name}"))
+                                logger.debug(f"Fila {fila_idx} - Rollback al savepoint realizado exitosamente")
+                            except Exception as rollback_error:
+                                # Si el rollback al savepoint falla, hacer rollback completo
+                                logger.error(f"Fila {fila_idx} - Error haciendo rollback al savepoint {savepoint_name}: {rollback_error}. Haciendo rollback completo.")
+                                try:
+                                    session.rollback()
+                                except Exception as full_rollback_error:
+                                    logger.error(f"Fila {fila_idx} - Error crítico en rollback completo: {full_rollback_error}")
                             continue
                 else:
                     # Usar insert() statements directamente (Core, no ORM)
                     # Insertar en lotes para mejor rendimiento
+                    # Primero validar y filtrar filas inválidas
                     batch_size = 1000
-                    for i in range(0, len(filas_datos), batch_size):
-                        batch = filas_datos[i:i + batch_size]
+                    filas_validas = []
+                    
+                    for fila_idx, datos in filas_datos:
+                        # Validar foreign keys y NOT NULL antes de agregar al batch
+                        errores_fk = validar_foreign_keys(session, tabla_nombre, datos)
+                        errores_nn = validar_not_null(session, tabla_nombre, datos, table)
+                        
+                        if errores_fk or errores_nn:
+                            # Reportar errores y no incluir esta fila
+                            for error in errores_fk:
+                                logger.warning(f"Fila {fila_idx} - Validación FK fallida: {error['mensaje']}")
+                                errores_foreign_key += 1
+                            for error in errores_nn:
+                                logger.warning(f"Fila {fila_idx} - Validación NOT NULL fallida: {error['mensaje']}")
+                                errores_not_null += 1
+                            # Log datos de la fila para diagnóstico
+                            datos_sanitizados = {k: ('***' if 'password' in k.lower() or 'pass' in k.lower() else v) 
+                                                for k, v in datos.items()}
+                            logger.debug(f"Fila {fila_idx} - Datos con error de validación: {datos_sanitizados}")
+                            continue
+                        
+                        # Agregar solo los datos (sin el índice) a la lista de filas válidas
+                        filas_validas.append(datos)
+                    
+                    # Insertar filas válidas en lotes
+                    for i in range(0, len(filas_validas), batch_size):
+                        batch = filas_validas[i:i + batch_size]
                         # Filtrar None de las claves primarias para evitar SAWarning
                         # Si la PK tiene autoincrement en la BD, no necesita valor explícito
                         batch_clean = []
@@ -948,12 +1198,40 @@ def import_one_file(session, model, ruta_archivo: str, formato: str, upsert: boo
                                         del row_clean[pk_col.name]
                             batch_clean.append(row_clean)
                         
-                        stmt = insert(table).values(batch_clean)
-                        result = session.execute(stmt)
-                        inserted += len(batch_clean)
+                        try:
+                            stmt = insert(table).values(batch_clean)
+                            result = session.execute(stmt)
+                            inserted += len(batch_clean)
+                        except Exception as batch_error:
+                            # Si un batch falla, intentar insertar fila por fila para identificar el problema
+                            error_msg = str(batch_error).lower()
+                            if 'foreign key' in error_msg or 'violates foreign key' in error_msg:
+                                errores_foreign_key += len(batch_clean)
+                            elif 'not null' in error_msg or 'null value' in error_msg:
+                                errores_not_null += len(batch_clean)
+                            elif 'invalid input' in error_msg or 'type' in error_msg:
+                                errores_tipo_dato += len(batch_clean)
+                            else:
+                                errores_otros += len(batch_clean)
+                            logger.warning(f"Error insertando batch: {batch_error}")
+                            # Continuar con el siguiente batch
+                            continue
                 
                 session.commit()
-                logger.info(f"Importación completada: {inserted} insertados, {updated} actualizados")
+                
+                # Actualizar contadores de errores en el diccionario de retorno
+                errores_detalle['errores_foreign_key'] = errores_foreign_key
+                errores_detalle['errores_not_null'] = errores_not_null
+                errores_detalle['errores_tipo_dato'] = errores_tipo_dato
+                errores_detalle['errores_otros'] = errores_otros
+                errores_detalle['total_errores'] = errores_foreign_key + errores_not_null + errores_tipo_dato + errores_otros
+                
+                # Log resumen de errores
+                if errores_detalle['total_errores'] > 0:
+                    logger.warning(f"Importación completada con errores: {inserted} insertados, {updated} actualizados")
+                    logger.warning(f"Errores encontrados: FK={errores_foreign_key}, NOT NULL={errores_not_null}, Tipo={errores_tipo_dato}, Otros={errores_otros}")
+                else:
+                    logger.info(f"Importación completada: {inserted} insertados, {updated} actualizados")
             except Exception as e:
                 logger.error(f"Error en insert: {e}")
                 session.rollback()
@@ -966,7 +1244,7 @@ def import_one_file(session, model, ruta_archivo: str, formato: str, upsert: boo
         session.rollback()
         raise
     
-    return inserted, updated
+    return inserted, updated, errores_detalle
 
 
 def _detectar_modelo_para_archivo(ruta_archivo: str, formato: str, tabla_cli: Optional[str]) -> Tuple[str, Any]:
@@ -1059,9 +1337,10 @@ def _procesar_archivo_cli(
 
     session = SessionFactory()
     try:
-        inserted, updated = import_one_file(session, modelo, ruta_archivo, formato, upsert=upsert, keep_ids=keep_ids)
+        inserted, updated, errores_detalle = import_one_file(session, modelo, ruta_archivo, formato, upsert=upsert, keep_ids=keep_ids)
         resultado["insertados"] = inserted
         resultado["actualizados"] = updated
+        resultado["errores"] = errores_detalle
         resultado["exito"] = True
         resultado["mensaje"] = "Importación completada"
     except Exception as exc:

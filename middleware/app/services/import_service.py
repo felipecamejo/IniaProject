@@ -312,7 +312,7 @@ async def procesar_un_archivo(
                 try:
                     tabla_nombre = obtener_nombre_tabla_seguro(model)
                     logger.info(f"Iniciando importación de {file.filename} a tabla {tabla_nombre}...")
-                    inserted, updated = py_import_one_file(session, model, tmp_path, fmt, upsert, keep_ids)
+                    inserted, updated, errores_detalle = py_import_one_file(session, model, tmp_path, fmt, upsert, keep_ids)
                 except AttributeError as attr_error:
                     logger.error(f"Error accediendo a atributos del modelo: {attr_error}", exc_info=True)
                     resultado["error"] = obtener_mensaje_error_seguro(attr_error, "Error en la estructura del modelo")
@@ -323,6 +323,8 @@ async def procesar_un_archivo(
                     return resultado
 
                 logger.info(f"Importación completada. Insertados: {inserted}, Actualizados: {updated}")
+                if errores_detalle.get('total_errores', 0) > 0:
+                    logger.warning(f"Errores durante importación: {errores_detalle}")
 
                 # Asegurar autoincrementos después de importar
                 try:
@@ -341,6 +343,7 @@ async def procesar_un_archivo(
                 resultado["formato"] = fmt
                 resultado["insertados"] = inserted
                 resultado["actualizados"] = updated
+                resultado["errores"] = errores_detalle
                 
             except Exception as import_error:
                 logger.error(f"Error durante la importación: {import_error}", exc_info=True)
