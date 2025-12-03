@@ -4,8 +4,8 @@ Endpoint de health check.
 import logging
 from fastapi import Request, APIRouter
 from fastapi.responses import JSONResponse
-from database_config import build_connection_string
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
+from app.services.database_service import create_engine_with_pool
 from app.core.middleware import get_concurrent_requests
 from app.config import MAX_CONCURRENT_REQUESTS
 
@@ -21,8 +21,7 @@ async def health_check(request: Request):
     try:
         # Verificar conexión a base de datos
         try:
-            conn_str = build_connection_string()
-            engine = create_engine(conn_str)
+            engine = create_engine_with_pool()
             with engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
             db_status = "ok"

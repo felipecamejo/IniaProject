@@ -4,6 +4,7 @@ import argparse
 import logging
 import re
 import unicodedata
+import traceback
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 from datetime import datetime, date
 from urllib.parse import quote_plus
@@ -107,6 +108,69 @@ MODELS = {}
 # Caché de tablas para evitar acceder al mapper repetidamente
 _TABLES_CACHE = {}
 
+def _intentar_reflejar_tablas_selectivas(engine, tablas_criticas=None):
+    """
+    Intenta reflejar tablas de forma selectiva para evitar problemas de codificación.
+    
+    Args:
+        engine: Engine de SQLAlchemy
+        tablas_criticas: Lista de nombres de tablas críticas a reflejar primero
+    
+    Returns:
+        Base preparado o None si falla
+    """
+    if tablas_criticas is None:
+        tablas_criticas = ['lote', 'recibo']  # Tablas críticas para importación
+    
+    try:
+        from sqlalchemy import inspect as sql_inspect
+        inspector = sql_inspect(engine)
+        
+        # Obtener esquemas disponibles
+        schemas = inspector.get_schema_names()
+        tablas_disponibles = []
+        
+        for schema in schemas:
+            if schema in ['pg_catalog', 'information_schema']:
+                continue
+            try:
+                tablas = inspector.get_table_names(schema=schema)
+                for tabla in tablas:
+                    tablas_disponibles.append((schema, tabla))
+            except Exception as e:
+                logger.warning(f"Error obteniendo tablas del esquema {schema}: {e}")
+                continue
+        
+        # Intentar reflejar solo tablas críticas primero
+        tablas_a_reflejar = []
+        for schema, tabla in tablas_disponibles:
+            tabla_lower = tabla.lower()
+            if any(critica.lower() in tabla_lower for critica in tablas_criticas):
+                tablas_a_reflejar.append((schema, tabla))
+        
+        if tablas_a_reflejar:
+            logger.info(f"Intentando reflejar {len(tablas_a_reflejar)} tablas críticas...")
+            Base = automap_base()
+            metadata = Base.metadata
+            
+            # Reflejar solo las tablas críticas
+            nombres_tablas = [tabla for _, tabla in tablas_a_reflejar]
+            metadata.reflect(engine, only=nombres_tablas)
+            Base.prepare()
+            logger.info(f"✓ Tablas críticas reflejadas exitosamente: {len(Base.classes)} tablas")
+            return Base
+        
+        # Si no hay tablas críticas, intentar reflejar todas
+        logger.info("No se encontraron tablas críticas, intentando reflejar todas...")
+        Base = automap_base()
+        Base.prepare(autoload_with=engine, generate_relationship=None)
+        return Base
+        
+    except Exception as e:
+        logger.error(f"Error en reflejo selectivo: {e}")
+        return None
+
+
 def inicializar_automap(engine=None):
     """Inicializa automap_base y genera modelos automáticamente desde la BD."""
     global Base, _engine, _models_initialized, MODELS
@@ -115,35 +179,121 @@ def inicializar_automap(engine=None):
         return Base
     
     if engine is None:
-        connection_string = build_connection_string()
-        _engine = create_engine(connection_string)
+        # Usar función centralizada para crear engine con codificación UTF-8
+        try:
+            from app.services.database_service import create_engine_with_pool
+            _engine = create_engine_with_pool()
+            logger.info("Engine creado usando create_engine_with_pool() con codificación UTF-8")
+        except Exception as e:
+            logger.error(f"Error creando engine con create_engine_with_pool(): {e}")
+            logger.error(traceback.format_exc())
+            raise
     else:
         _engine = engine
     
     Base = automap_base()
     
+    logger.info("Iniciando preparación de automap_base...")
+    logger.debug(f"Engine configurado: {_engine.url if hasattr(_engine, 'url') else 'N/A'}")
+    
     try:
         # Deshabilitar generación automática de relaciones para evitar conflictos de backref
         # Solo necesitamos las columnas para la importación, no las relaciones
+        logger.info("Ejecutando Base.prepare() para reflejar todas las tablas...")
         Base.prepare(
             autoload_with=_engine,
             generate_relationship=None  # No generar relaciones automáticamente
             # Nota: reflect=True está deprecado cuando se usa autoload_with (reflexión automática)
         )
         logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
+    except (UnicodeDecodeError, UnicodeError) as e:
+        logger.error("=" * 80)
+        logger.error("ERROR DE CODIFICACIÓN DETECTADO DURANTE Base.prepare()")
+        logger.error("=" * 80)
+        logger.error(f"Tipo de error: {type(e).__name__}")
+        logger.error(f"Mensaje: {e}")
+        if hasattr(e, 'start') and hasattr(e, 'end'):
+            logger.error(f"Posición del error: bytes {e.start}-{e.end}")
+        if hasattr(e, 'object') and hasattr(e, 'start'):
+            try:
+                byte_problematico = e.object[e.start] if e.start < len(e.object) else None
+                logger.error(f"Byte problemático: {hex(byte_problematico) if byte_problematico is not None else 'N/A'}")
+                # Intentar mostrar contexto alrededor del byte problemático
+                inicio = max(0, e.start - 10)
+                fin = min(len(e.object), e.end + 10)
+                contexto = e.object[inicio:fin]
+                logger.error(f"Contexto (bytes): {contexto}")
+            except Exception:
+                pass
+        logger.error("Stack trace completo:")
+        logger.error(traceback.format_exc())
+        logger.warning("Esto puede deberse a nombres de tablas/columnas con caracteres especiales.")
+        logger.warning("Intentando continuar con manejo de errores de codificación...")
+        # Verificar si se cargaron algunas clases a pesar del error
+        if not hasattr(Base, 'classes') or len(Base.classes) == 0:
+            # Si no se cargaron clases, intentar con configuración de codificación diferente
+            logger.warning("No se cargaron clases. Intentando con configuración alternativa...")
+            try:
+                # Intentar con encoding explícito en la conexión
+                Base = automap_base()
+                logger.info("Reintentando Base.prepare() con configuración alternativa...")
+                Base.prepare(autoload_with=_engine, generate_relationship=None)
+                logger.info(f"Modelos generados automáticamente (con encoding alternativo): {len(Base.classes)} tablas")
+            except Exception as e2:
+                logger.error(f"Error en intento alternativo: {e2}")
+                logger.error("Stack trace del intento alternativo:")
+                logger.error(traceback.format_exc())
+                
+                # Intentar reflejo selectivo como último recurso
+                logger.warning("Intentando reflejo selectivo de tablas críticas...")
+                Base_selectivo = _intentar_reflejar_tablas_selectivas(_engine)
+                if Base_selectivo and hasattr(Base_selectivo, 'classes') and len(Base_selectivo.classes) > 0:
+                    Base = Base_selectivo
+                    logger.info(f"✓ Reflejo selectivo exitoso: {len(Base.classes)} tablas cargadas")
+                else:
+                    raise RuntimeError(f"No se pudieron cargar modelos debido a error de codificación: {e}. Error alternativo: {e2}")
     except Exception as e:
-        logger.error(f"Error inicializando automap: {e}")
+        logger.error("=" * 80)
+        logger.error("ERROR INESPERADO DURANTE Base.prepare()")
+        logger.error("=" * 80)
+        logger.error(f"Tipo de error: {type(e).__name__}")
+        logger.error(f"Mensaje: {e}")
+        logger.error("Stack trace completo:")
+        logger.error(traceback.format_exc())
         # Si falla, intentar sin reflect=True como fallback
         try:
             logger.warning("Intentando inicializar automap sin reflect=True...")
             Base = automap_base()
             Base.prepare(autoload_with=_engine, generate_relationship=None)
             logger.info(f"Modelos generados automáticamente (fallback): {len(Base.classes)} tablas")
+        except (UnicodeDecodeError, UnicodeError) as e2:
+            logger.error(f"Error de codificación en fallback de automap: {e2}")
+            logger.error("Stack trace del fallback:")
+            logger.error(traceback.format_exc())
+            logger.warning("Continuando con manejo de errores de codificación...")
+            pass
         except Exception as e2:
             logger.error(f"Error en fallback de automap: {e2}")
-            raise
+            logger.error("Stack trace del fallback:")
+            logger.error(traceback.format_exc())
+            
+            # Intentar reflejo selectivo como último recurso
+            logger.warning("Intentando reflejo selectivo de tablas críticas como último recurso...")
+            Base_selectivo = _intentar_reflejar_tablas_selectivas(_engine)
+            if Base_selectivo and hasattr(Base_selectivo, 'classes') and len(Base_selectivo.classes) > 0:
+                Base = Base_selectivo
+                logger.info(f"✓ Reflejo selectivo exitoso: {len(Base.classes)} tablas cargadas")
+            else:
+                raise
+    
+    # Verificar que se cargaron clases
+    if not hasattr(Base, 'classes') or len(Base.classes) == 0:
+        raise RuntimeError("No se cargaron modelos de la base de datos. Base.classes está vacío.")
     
     MODELS.clear()
+    modelos_procesados = 0
+    modelos_con_error = 0
+    
     for class_name in dir(Base.classes):
         if not class_name.startswith('_'):
             try:
@@ -154,32 +304,72 @@ def inicializar_automap(engine=None):
                 # Método 1: Intentar __tablename__
                 try:
                     if hasattr(cls, '__tablename__'):
-                        tabla_nombre = cls.__tablename__.lower()
-                except:
+                        tabla_nombre_raw = cls.__tablename__
+                        # Manejar posibles problemas de codificación
+                        if isinstance(tabla_nombre_raw, bytes):
+                            tabla_nombre = tabla_nombre_raw.decode('utf-8', errors='replace').lower()
+                        else:
+                            tabla_nombre = str(tabla_nombre_raw).lower()
+                except (UnicodeDecodeError, UnicodeError) as e:
+                    logger.warning(f"Error de codificación obteniendo __tablename__ de {class_name}: {e}")
+                    try:
+                        # Intentar con diferentes codificaciones
+                        if isinstance(cls.__tablename__, bytes):
+                            tabla_nombre = cls.__tablename__.decode('latin-1', errors='replace').lower()
+                    except:
+                        pass
+                except Exception:
                     pass
                 
                 # Método 2: Intentar __table__.name
                 if tabla_nombre is None:
                     try:
                         if hasattr(cls, '__table__') and hasattr(cls.__table__, 'name'):
-                            tabla_nombre = cls.__table__.name.lower()
-                    except:
+                            tabla_nombre_raw = cls.__table__.name
+                            # Manejar posibles problemas de codificación
+                            if isinstance(tabla_nombre_raw, bytes):
+                                tabla_nombre = tabla_nombre_raw.decode('utf-8', errors='replace').lower()
+                            else:
+                                tabla_nombre = str(tabla_nombre_raw).lower()
+                    except (UnicodeDecodeError, UnicodeError) as e:
+                        logger.warning(f"Error de codificación obteniendo __table__.name de {class_name}: {e}")
+                        try:
+                            if hasattr(cls, '__table__') and hasattr(cls.__table__, 'name'):
+                                if isinstance(cls.__table__.name, bytes):
+                                    tabla_nombre = cls.__table__.name.decode('latin-1', errors='replace').lower()
+                        except:
+                            pass
+                    except Exception:
                         pass
                 
                 # Método 3: Usar el nombre de la clase directamente (en automap suelen coincidir)
                 if tabla_nombre is None:
-                    tabla_nombre = class_name.lower()
+                    try:
+                        tabla_nombre = str(class_name).lower()
+                    except Exception:
+                        logger.warning(f"Error convirtiendo class_name a string: {class_name}")
+                        continue
                 
                 # Mapear la clase
                 if tabla_nombre:
                     MODELS[tabla_nombre] = cls
                     MODELS[class_name.lower()] = cls
+                    modelos_procesados += 1
                     logger.debug(f"Mapeado: {tabla_nombre} -> {class_name}")
+            except (UnicodeDecodeError, UnicodeError) as e:
+                modelos_con_error += 1
+                logger.warning(f"Error de codificación procesando clase {class_name}: {e}. Omitiendo esta clase.")
+                continue
             except Exception as e:
+                modelos_con_error += 1
                 logger.warning(f"Error procesando clase {class_name}: {e}")
                 continue
     
-    logger.info(f"Total de modelos mapeados: {len(MODELS)}")
+    logger.info(f"Total de modelos mapeados: {len(MODELS)} (procesados: {modelos_procesados}, con errores: {modelos_con_error})")
+    
+    # Verificar que se mapearon al menos algunos modelos
+    if len(MODELS) == 0:
+        raise RuntimeError("No se pudieron mapear modelos. MODELS está vacío después del procesamiento.")
     _models_initialized = True
     return Base
 

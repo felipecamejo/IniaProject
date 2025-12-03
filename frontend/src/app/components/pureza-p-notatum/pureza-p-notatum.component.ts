@@ -9,7 +9,6 @@ import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TabsModule } from 'primeng/tabs';
 import { PurezaPNotatumService } from '../../../services/PurezaPNotatumService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { PurezaPNotatumDto } from '../../../models/PurezaPNotatum.dto';
 import { RepeticionPPN } from '../../../models/RepeticionPPN.dto';
 import { LogService } from '../../../services/LogService';
@@ -26,8 +25,7 @@ import { AuthService } from '../../../services/AuthService';
     InputNumberModule,
     ButtonModule,
     MultiSelectModule,
-    TabsModule,
-    ConfirmDialogComponent
+    TabsModule
   ],
   templateUrl: './pureza-p-notatum.component.html',
   styleUrl: './pureza-p-notatum.component.scss'

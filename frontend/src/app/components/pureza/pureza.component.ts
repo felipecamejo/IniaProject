@@ -15,7 +15,6 @@ import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
 import { LogService } from '../../../services/LogService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { AuthService } from '../../../services/AuthService';
 
 
@@ -29,8 +28,7 @@ import { AuthService } from '../../../services/AuthService';
     InputNumberModule,
     ButtonModule,
     MultiSelectModule,
-    TableModule,
-    ConfirmDialogComponent],
+    TableModule],
   templateUrl: './pureza.component.html',
   styleUrl: './pureza.component.scss'
 })

@@ -9,11 +9,18 @@ import os
 from pathlib import Path
 
 # Configurar variables de entorno antes de importar módulos que las requieren
-os.environ.setdefault('DB_PASSWORD', 'test_password')
-os.environ.setdefault('DB_USER', 'test_user')
-os.environ.setdefault('DB_HOST', 'localhost')
-os.environ.setdefault('DB_PORT', '5432')
-os.environ.setdefault('DB_NAME', 'test_db')
+# NOTA: Usar setdefault solo si no están ya configuradas, para permitir que
+# los tests individuales configuren sus propios valores
+if 'DB_PASSWORD' not in os.environ:
+    os.environ.setdefault('DB_PASSWORD', 'test_password')
+if 'DB_USER' not in os.environ:
+    os.environ.setdefault('DB_USER', 'test_user')
+if 'DB_HOST' not in os.environ:
+    os.environ.setdefault('DB_HOST', 'localhost')
+if 'DB_PORT' not in os.environ:
+    os.environ.setdefault('DB_PORT', '5432')
+if 'DB_NAME' not in os.environ:
+    os.environ.setdefault('DB_NAME', 'test_db')
 
 # Agregar el directorio raíz del middleware al path
 middleware_root = Path(__file__).parent.parent

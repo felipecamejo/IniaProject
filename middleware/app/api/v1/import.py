@@ -12,8 +12,7 @@ from app.services.import_service import procesar_un_archivo
 from app.services.file_service import validar_cantidad_archivos
 from app.config import MAX_FILE_SIZE, MAX_TOTAL_FILES_SIZE, MAX_IMPORT_FILES
 from ImportExcel import MODELS as IMPORT_MODELS, inicializar_automap
-from database_config import build_connection_string
-from sqlalchemy import create_engine
+from app.services.database_service import create_engine_with_pool
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -100,8 +99,7 @@ async def importar(
         if not IMPORT_MODELS:
             logger.info(f"[{request_id}] Inicializando modelos de la base de datos...")
             try:
-                conn_str = build_connection_string()
-                engine_init = create_engine(conn_str)
+                engine_init = create_engine_with_pool()
                 inicializar_automap(engine_init)
                 if not IMPORT_MODELS:
                     respuesta_error = crear_respuesta_error(

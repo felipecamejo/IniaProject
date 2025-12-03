@@ -120,7 +120,8 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
           console.log('Recibo ID recibido del backend:', reciboId);
           
           if (reciboId !== null && reciboId > 0) {
-            this.tieneRecibo = true;
+            // NO establecer tieneRecibo aquí, esperar a verificarRecibo()
+            // para confirmar que el recibo existe y está activo
             
             // Si no se especificó reciboId en la ruta, usar el del lote
             if (!this.reciboId) {
@@ -130,6 +131,7 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
             console.log('Recibo del lote encontrado:', reciboId);
             
             // Verificar el recibo y sus análisis
+            // verificarRecibo() establecerá tieneRecibo basado en si el recibo existe y está activo
             if (this.reciboId) {
               this.verificarRecibo();
             }
@@ -151,7 +153,22 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
       this.reciboService.obtenerRecibo(this.reciboId).subscribe({
         next: (recibo) => {
           this.recibo = recibo;
-          this.tieneRecibo = recibo && recibo.activo;
+          
+          // El backend ya filtra recibos activos en obtenerReciboPorId,
+          // pero verificamos doblemente que el recibo existe y está activo
+          if (recibo) {
+            this.tieneRecibo = recibo.activo === true;
+            console.log('Recibo verificado:', {
+              id: recibo.id,
+              activo: recibo.activo,
+              tieneRecibo: this.tieneRecibo
+            });
+          } else {
+            // Si el backend devuelve null, el recibo no existe o está inactivo
+            this.tieneRecibo = false;
+            console.warn('El recibo no existe o está inactivo. ReciboId:', this.reciboId);
+          }
+          
           // Verificar si hay análisis disponibles
           this.verificarAnalisisDisponibles(recibo);
           // Verificar si hay certificado creado

@@ -11,8 +11,6 @@ import { AuthService } from '../../../services/AuthService';
 import { LogDto } from '../../../models/Log.dto';
 import { LogService, ResponseListadoLogsPage } from '../../../services/LogService';
 
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-
 @Component({
   selector: 'app-listado-logs.components',
   imports: [
