@@ -383,7 +383,8 @@ def generar_valor_aleatorio(columna: str, tipo_dato: str, valores_existentes: Op
     return None
 
 def generar_valores_columna(col_info: Dict[str, Any], cantidad: int, fk_map: Dict[str, str], 
-                           ids_referencias: Dict[str, List[int]], check_map: Dict[str, List[str]] = None) -> List[Any]:
+                           ids_referencias: Dict[str, List[int]], check_map: Dict[str, List[str]] = None,
+                           engine=None, tabla_nombre: str = None) -> List[Any]:
     """Genera valores para una columna específica."""
     if check_map is None:
         check_map = {}
@@ -423,7 +424,27 @@ def generar_valores_columna(col_info: Dict[str, Any], cantidad: int, fk_map: Dic
     
     # Para columnas "nombre", siempre generar valores de texto, nunca NULL
     if es_columna_nombre:
-        # Generar nombres aleatorios de longitud razonable
+        # Caso especial: LOTE_NOMBRE - generar nombres secuenciales "Lote 001", "Lote 002", etc.
+        if tabla_nombre and tabla_nombre.lower() == 'lote' and col_name_lower == 'lote_nombre':
+            if engine:
+                try:
+                    # Obtener el ID máximo actual de LOTE para continuar la secuencia
+                    id_maximo = obtener_id_maximo(engine, 'lote')
+                    nombres_generados = []
+                    for i in range(cantidad):
+                        numero = str(id_maximo + i + 1).zfill(3)  # Formato 001, 002, etc.
+                        nombres_generados.append(f"Lote {numero}")
+                    return nombres_generados
+                except Exception as e:
+                    logger.warning(f"Error obteniendo ID máximo para LOTE_NOMBRE: {e}. Usando nombres aleatorios.")
+            # Fallback: si no hay engine o falla la consulta, usar nombres aleatorios
+            nombres_generados = []
+            for i in range(cantidad):
+                numero = str(i + 1).zfill(3)
+                nombres_generados.append(f"Lote {numero}")
+            return nombres_generados
+        
+        # Para otras columnas "nombre", generar nombres aleatorios de longitud razonable
         nombres_generados = []
         for _ in range(cantidad):
             longitud = random.randint(5, 30)
@@ -523,7 +544,7 @@ def generar_datos_tabla(engine, tabla_nombre: str, cantidad: int, ids_referencia
                 pass
         
         columnas_procesadas.add(col_name)
-        valores = generar_valores_columna(col_info, cantidad, fk_map, ids_referencias, check_map)
+        valores = generar_valores_columna(col_info, cantidad, fk_map, ids_referencias, check_map, engine, tabla_nombre)
         
         if valores is not None:
             datos[col_name] = valores
@@ -575,7 +596,7 @@ def generar_datos_tabla(engine, tabla_nombre: str, cantidad: int, ids_referencia
                     for col_info in columnas_info:
                         col_name = col_info['name']
                         if col_name in columnas_procesadas:
-                            valores = generar_valores_columna(col_info, 1, fk_map, ids_referencias, check_map)
+                            valores = generar_valores_columna(col_info, 1, fk_map, ids_referencias, check_map, engine, tabla_nombre)
                             if valores is not None and len(valores) > 0:
                                 nueva_fila[col_name] = valores[0]
                     
@@ -1198,6 +1219,112 @@ def reintentar_tablas_pendientes(engine, tablas_pendientes: List[str], mapeo_com
     
     return tablas_pendientes, errores_adicionales
 
+def actualizar_descripciones_lotes(engine):
+    """Actualiza las descripciones de los lotes con los análisis realmente asociados."""
+    from sqlalchemy import text
+    
+    logger.info("=" * 80)
+    logger.info("Actualizando descripciones de lotes con análisis asociados...")
+    logger.info("=" * 80)
+    
+    # Mapeo de tipos de análisis a tablas y columnas
+    tipos_analisis = {
+        'DOSN': {'tabla': 'DOSN', 'recibo_col': 'RECIBO_ID', 'activo_col': 'DOSN_ACTIVO'},
+        'Pureza': {'tabla': 'PUREZA', 'recibo_col': 'RECIBO_ID', 'activo_col': 'PUREZA_ACTIVO'},
+        'Germinación': {'tabla': 'GERMINACION', 'recibo_col': 'RECIBO_ID', 'activo_col': 'GERMINACION_ACTIVO'},
+        'PMS': {'tabla': 'PMS', 'recibo_col': 'RECIBO_ID', 'activo_col': 'PMS_ACTIVO'},
+        'Sanitario': {'tabla': 'SANITARIO', 'recibo_col': 'SANITARIO_RECIBOID', 'activo_col': 'SANITARIO_ACTIVO'},
+        'Tetrazolio': {'tabla': 'TETRAZOLIO', 'recibo_col': 'RECIBO_ID', 'activo_col': 'TETRAZOLIO_ACTIVO'},
+        'Pureza P. notatum': {'tabla': 'PUREZA_PNOTATUM', 'recibo_col': 'RECIBO_ID', 'activo_col': 'PUREZA_ACTIVO'}
+    }
+    
+    try:
+        with engine.connect() as conn:
+            # Obtener todos los lotes activos
+            query_lotes = text("""
+                SELECT LOTE_ID 
+                FROM LOTE 
+                WHERE LOTE_ACTIVO = true
+                ORDER BY LOTE_ID
+            """)
+            lotes = conn.execute(query_lotes).fetchall()
+            
+            if not lotes:
+                logger.info("No se encontraron lotes activos para actualizar")
+                return
+            
+            logger.info(f"Procesando {len(lotes)} lotes...")
+            lotes_actualizados = 0
+            
+            for (lote_id,) in lotes:
+                # Obtener recibos activos asociados al lote
+                query_recibos = text("""
+                    SELECT RECIBO_ID 
+                    FROM RECIBO 
+                    WHERE LOTE_ID = :lote_id 
+                    AND RECIBO_ACTIVO = true
+                """)
+                recibos = conn.execute(query_recibos, {"lote_id": lote_id}).fetchall()
+                
+                if not recibos:
+                    # Si no hay recibos, actualizar descripción como "Sin análisis asociados"
+                    query_update = text("""
+                        UPDATE LOTE 
+                        SET LOTE_DESCRIPCION = :descripcion 
+                        WHERE LOTE_ID = :lote_id
+                    """)
+                    conn.execute(query_update, {"lote_id": lote_id, "descripcion": "Sin análisis asociados"})
+                    conn.commit()
+                    continue
+                
+                # Para cada recibo, verificar qué análisis tiene asociados
+                analisis_encontrados = []
+                
+                for (recibo_id,) in recibos:
+                    # Verificar cada tipo de análisis
+                    for nombre_analisis, info in tipos_analisis.items():
+                        tabla = info['tabla']
+                        recibo_col = info['recibo_col']
+                        activo_col = info['activo_col']
+                        
+                        # Verificar si existe análisis de este tipo para este recibo
+                        query_analisis = text(f"""
+                            SELECT COUNT(*) 
+                            FROM {tabla} 
+                            WHERE {recibo_col} = :recibo_id 
+                            AND {activo_col} = true
+                        """)
+                        count = conn.execute(query_analisis, {"recibo_id": recibo_id}).scalar()
+                        
+                        if count and count > 0:
+                            if nombre_analisis not in analisis_encontrados:
+                                analisis_encontrados.append(nombre_analisis)
+                
+                # Construir descripción
+                if analisis_encontrados:
+                    descripcion = f"Incluye análisis de: {', '.join(analisis_encontrados)}"
+                else:
+                    descripcion = "Sin análisis asociados"
+                
+                # Actualizar descripción del lote
+                query_update = text("""
+                    UPDATE LOTE 
+                    SET LOTE_DESCRIPCION = :descripcion 
+                    WHERE LOTE_ID = :lote_id
+                """)
+                conn.execute(query_update, {"lote_id": lote_id, "descripcion": descripcion})
+                conn.commit()
+                lotes_actualizados += 1
+                
+                if lotes_actualizados % 100 == 0:
+                    logger.info(f"Actualizados {lotes_actualizados}/{len(lotes)} lotes...")
+            
+            logger.info(f"Descripciones actualizadas exitosamente para {lotes_actualizados} lotes")
+            
+    except Exception as e:
+        logger.warning(f"Error actualizando descripciones de lotes: {e}. Continuando...")
+        logger.debug(f"Detalles del error: {e}", exc_info=True)
+
 def mostrar_resumen_final(tablas_completadas: List[str], tablas_pendientes: List[str], errores_encontrados: List[Dict[str, Any]]):
     """Muestra el resumen final del proceso de inserción."""
     logger.info("=" * 80)
@@ -1305,6 +1432,13 @@ def insertar_1000_registros_principales():
         tablas_completadas.extend([t for t in tablas_pendientes if t not in pendientes_finales])
         tablas_pendientes = pendientes_finales
         errores_encontrados.extend(errores_reintento)
+    
+    # Actualizar descripciones de lotes con análisis asociados
+    if 'lote' in tablas_completadas:
+        try:
+            actualizar_descripciones_lotes(engine)
+        except Exception as e:
+            logger.warning(f"Error actualizando descripciones de lotes: {e}. Continuando...")
     
     # Mostrar resumen final
     mostrar_resumen_final(tablas_completadas, tablas_pendientes, errores_encontrados)
