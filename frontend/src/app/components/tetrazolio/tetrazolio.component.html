@@ -89,9 +89,9 @@
                 <!-- Fecha -->
                 <div class="form-field">
                     <label for="fecha">Fecha</label>
-                    <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" 
+                    <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha"
                          [disabled]="isReadonly" />
-                    
+
                 </div>
             </div>
 
@@ -114,7 +114,7 @@
                             <td>{{ rep.numero }}</td>
                             <td>
                                 <input type="number" [ngModel]="rep.viables" (ngModelChange)="onRepeticionChange($index, 'viables', $event)" name="viables{{$index}}"
-                                    [ngClass]="{ 'input-error': rep.viables !== null && rep.viables !== undefined && rep.viables < 0  }" 
+                                    [ngClass]="{ 'input-error': rep.viables !== null && rep.viables !== undefined && rep.viables < 0  }"
                                     [disabled]="isReadonly"/>
                             </td>
                             <td>
@@ -129,7 +129,7 @@
                                 <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="eliminarRepeticion($index)" [disabled]="repeticiones.length === 1" title="Eliminar"></button>
                             </td>
                         </tr>
-                        
+
                         }
                     </tbody>
                     <tfoot>
@@ -168,7 +168,7 @@
             <!-- Nueva tabla de detalles de semillas -->
             <h3 style="margin-top:2.5rem;">Detalle de semillas y daños</h3>
             <div class="detalle-actions" style="margin-bottom: 0.75rem;">
-                <button pButton type="button" label="Clonar tabla" icon="pi pi-copy" class="btn-clonar-tabla" (click)="agregarTablaDetalleClon()" [disabled]="detalles.length >= 8"></button>
+                <button pButton type="button" label="Agregar Repetición" class="btn-clonar-tabla" (click)="agregarTablaDetalleClon()" [disabled]="detalles.length >= 8"></button>
                 <span style="margin-left: 10px; font-size: 0.9rem; color: #666;">Tablas: {{detalles.length}} / 8</span>
             </div>
 
@@ -405,7 +405,7 @@
                         </div>
                     </div>
                 </div>
-           
+
 
              <!-- Mensajes de error -->
             <div *ngIf="errores && errores.length > 0" class="error-container">
@@ -424,7 +424,7 @@
 
                 <button pButton type="button" (click)="onCancel()" label="{{ isReadonly ? 'Volver' : 'Cancelar' }}" class="p-button-secondary" style="margin-left: 10px;" [disabled]="isSubmitting"></button>
             </div>
-           
+
         </form>
     </p-card>
 </div>

@@ -15,8 +15,8 @@
         </div>
         <span class="button-text">Recibo</span>
       </div>
-      
-      <div class="analisis-button" 
+
+      <div class="analisis-button"
            [class.disabled]="isButtonDisabled('pureza')"
            (click)="navigateToComponent('pureza')">
         <div class="button-circle azul">
@@ -24,17 +24,17 @@
         </div>
         <span class="button-text">Pureza</span>
       </div>
-      
-      <div class="analisis-button" 
+
+      <div class="analisis-button"
            [class.disabled]="isButtonDisabled('pureza-p-notatum')"
            (click)="navigateToComponent('pureza-p-notatum')">
         <div class="button-circle rojo">
           <img src="assets/PurezaPN.svg" alt="Pureza P notatum" class="button-icon" />
         </div>
-        <span class="button-text">Pureza P notatum</span>
+        <span class="button-text">Pureza P Notatum</span>
       </div>
-      
-      <div class="analisis-button" 
+
+      <div class="analisis-button"
            [class.disabled]="isButtonDisabled('pms')"
            (click)="navigateToComponent('pms')">
         <div class="button-circle color-marino">
@@ -44,7 +44,7 @@
       </div>
 
       <!-- Fila 2 -->
-      <div class="analisis-button" 
+      <div class="analisis-button"
            [class.disabled]="isButtonDisabled('dosn')"
            (click)="navigateToComponent('dosn')">
         <div class="button-circle naranja">
@@ -52,8 +52,8 @@
         </div>
         <span class="button-text">DOSN</span>
       </div>
-      
-      <div class="analisis-button" 
+
+      <div class="analisis-button"
            [class.disabled]="isButtonDisabled('germinacion')"
            (click)="navigateToComponent('germinacion')">
         <div class="button-circle azul">
@@ -61,8 +61,8 @@
         </div>
         <span class="button-text">Germinación</span>
       </div>
-      
-      <div class="analisis-button" 
+
+      <div class="analisis-button"
            [class.disabled]="isButtonDisabled('tetrazolio')"
            (click)="navigateToComponent('tetrazolio')">
         <div class="button-circle rojo">
@@ -70,8 +70,8 @@
         </div>
         <span class="button-text">Tetrazolio</span>
       </div>
-      
-      <div class="analisis-button" 
+
+      <div class="analisis-button"
            [class.disabled]="isButtonDisabled('sanitario')"
            (click)="navigateToComponent('sanitario')">
         <div class="button-circle color-marino">
@@ -80,31 +80,31 @@
         <span class="button-text">Sanitario</span>
       </div>
     </div>
-    
-    
+
+
 
     <!-- Botón de Certificado -->
     <div class="certificado-button-container">
 
       <div class="certificado-main-button">
-        <div class="analisis-button certificado-button" 
+        <div class="analisis-button certificado-button"
              (click)="goToListadoLogs()">
           <div class="button-circle rosa">
             <img src="assets/excel.svg" alt="Historial" class="button-icon" />
           </div>
-          <span class="button-text">Exportacion</span>
+          <span class="button-text">Exportación</span>
         </div>
       </div>
 
       <div class="certificado-main-button">
         <!-- Botón pequeño para eliminar -->
-        <button *ngIf="tieneCertificado && certificadoId" 
+        <button *ngIf="tieneCertificado && certificadoId"
           class="certificado-delete-button"
           (click)="eliminarCertificado()"
           title="Eliminar certificado">
           <span class="pi pi-trash"></span>
         </button>
-        <div class="analisis-button certificado-button" 
+        <div class="analisis-button certificado-button"
              [class.disabled]="isButtonDisabled('certificado')"
              (click)="navigateToComponent('certificado')">
           <div class="button-circle verde">
@@ -113,16 +113,16 @@
           <span class="button-text">{{ tieneCertificado ? 'Editar' : 'Certificado' }}</span>
         </div>
         <!-- Botón pequeño para visualizar/descargar -->
-        <button *ngIf="tieneCertificado && certificadoId" 
+        <button *ngIf="tieneCertificado && certificadoId"
                 class="certificado-view-button"
                 (click)="verCertificado()"
-                title="Ver certificado"> 
-                <span class="pi pi-eye"></span> 
+                title="Ver certificado">
+                <span class="pi pi-eye"></span>
         </button>
       </div>
 
       <div class="certificado-main-button">
-        <div class="analisis-button certificado-button" 
+        <div class="analisis-button certificado-button"
              (click)="goToListadoLogs()">
           <div class="button-circle morado">
             <img src="assets/Historial.svg" alt="Historial" class="button-icon" />
@@ -131,8 +131,8 @@
         </div>
       </div>
 
-      
-      
+
+
     </div>
 
   </div>
@@ -142,5 +142,5 @@
     <p>© Inia 2025</p>
   </footer>
 
- 
+
 </div>

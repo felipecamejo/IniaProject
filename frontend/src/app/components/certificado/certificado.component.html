@@ -20,14 +20,14 @@
     </div>
 
     <form (ngSubmit)="onSubmit()" (input)="manejarProblemas()">
-      
+
       <!-- INFORMACIÓN DEL SOLICITANTE -->
       <div class="section-certificado">
         <h3 class="section-title-certificado">INFORMACIÓN DEL SOLICITANTE</h3>
         <div class="form-grid">
           <div class="form-field">
             <label for="nombreSolicitante">Nombre</label>
-            <input id="nombreSolicitante" type="text" [(ngModel)]="nombreSolicitante" name="nombreSolicitante" pInputText [readonly]="true" />
+            <input id="nombreSolicitante" type="text" [(ngModel)]="nombreSolicitante" name="nombreSolicitante" pInputText />
           </div>
 
           <div class="form-field">
@@ -57,42 +57,47 @@
           </div>
 
           <div class="form-field">
-            <label for="fechaMuestreo">Fecha muestreo</label>
-            <span *ngIf="isFechaMuestreoInvalida" class="error-message">La fecha no puede ser futura.</span>
-            <input id="fechaMuestreo" type="date" [(ngModel)]="fechaMuestreo" name="fechaMuestreo" 
-                   [ngClass]="{ 'input-error': isFechaMuestreoInvalida }" [readonly]="isViewing" />
+            <label for="numeroLote">Número de lote</label>
+            <input id="numeroLote" type="text" [value]="getNumeroLote()" name="numeroLote" pInputText [readonly]="true" />
           </div>
 
           <div class="form-field">
-            <label for="numeroLote">Número de lote</label>
-            <input id="numeroLote" type="text" [(ngModel)]="numeroLote" name="numeroLote" pInputText [readonly]="true" />
+            <label for="categoria2">Categoría</label>
+            <input id="categoria2" type="text" [(ngModel)]="categoria" name="categoria" pInputText [readonly]="true" />
+          </div>
+
+          <div class="form-field">
+            <label for="fechaMuestreo">Fecha muestreo</label>
+            <span *ngIf="isFechaMuestreoInvalida" class="error-message">La fecha no puede ser futura.</span>
+            <input id="fechaMuestreo" type="date" [(ngModel)]="fechaMuestreo" name="fechaMuestreo"
+                   [ngClass]="{ 'input-error': isFechaMuestreoInvalida }" [readonly]="isViewing" />
           </div>
 
           <div class="form-field">
             <label for="pesoKg">Peso (kg)</label>
             <span *ngIf="pesoKg != null && pesoKg < 0" class="error-message">El peso no puede ser negativo.</span>
-            <input id="pesoKg" type="number" [(ngModel)]="pesoKg" name="pesoKg" pInputText 
+            <input id="pesoKg" type="number" [(ngModel)]="pesoKg" name="pesoKg" pInputText
                    [ngClass]="{ 'input-error': pesoKg != null && pesoKg < 0 }" [readonly]="isViewing" />
           </div>
 
           <div class="form-field">
             <label for="numeroEnvases">N° de envases</label>
             <span *ngIf="numeroEnvases != null && numeroEnvases < 0" class="error-message">El número de envases no puede ser negativo.</span>
-            <input id="numeroEnvases" type="number" [(ngModel)]="numeroEnvases" name="numeroEnvases" pInputText 
+            <input id="numeroEnvases" type="number" [(ngModel)]="numeroEnvases" name="numeroEnvases" pInputText
                    [ngClass]="{ 'input-error': numeroEnvases != null && numeroEnvases < 0 }" [readonly]="isViewing" />
           </div>
 
           <div class="form-field">
             <label for="fechaIngresoLaboratorio">Ingreso Laboratorio</label>
             <span *ngIf="isFechaIngresoInvalida" class="error-message">La fecha no puede ser futura.</span>
-            <input id="fechaIngresoLaboratorio" type="date" [(ngModel)]="fechaIngresoLaboratorio" name="fechaIngresoLaboratorio" 
+            <input id="fechaIngresoLaboratorio" type="date" [(ngModel)]="fechaIngresoLaboratorio" name="fechaIngresoLaboratorio"
                    [ngClass]="{ 'input-error': isFechaIngresoInvalida }" [readonly]="isViewing" />
           </div>
 
           <div class="form-field">
             <label for="fechaFinalizacionAnalisis">Finalización análisis</label>
             <span *ngIf="isFechaFinalizacionInvalida" class="error-message">La fecha no puede ser futura.</span>
-            <input id="fechaFinalizacionAnalisis" type="date" [(ngModel)]="fechaFinalizacionAnalisis" name="fechaFinalizacionAnalisis" 
+            <input id="fechaFinalizacionAnalisis" type="date" [(ngModel)]="fechaFinalizacionAnalisis" name="fechaFinalizacionAnalisis"
                    [ngClass]="{ 'input-error': isFechaFinalizacionInvalida }" [readonly]="isViewing" />
           </div>
 
@@ -113,7 +118,7 @@
       <!-- RESULTADOS DE ANÁLISIS -->
       <div class="section-certificado">
         <h3 class="section-title-certificado">RESULTADOS DE ANÁLISIS</h3>
-        
+
         <!-- Leyenda de análisis solicitados -->
         <div class="analisis-solicitados-leyenda" *ngIf="analisisSolicitados">
           <h4 class="leyenda-title">Análisis solicitados:</h4>
@@ -124,7 +129,7 @@
             <span *ngIf="debeRealizarGerminacion" class="analisis-item">✓ Germinación</span>
           </div>
         </div>
-        
+
         <div class="form-field">
           <label for="especieCientifica">Especie (nombre científico)</label>
           <input id="especieCientifica" type="text" [(ngModel)]="especie" name="especieCientifica" pInputText [readonly]="isViewing" />
@@ -191,7 +196,7 @@
         </div>
 
         <div class="form-field">
-          <label for="dosnBrassicaSpp">Determinación de Brassica spp. en {{ dosnGramosAnalizados ?? 'N' }} g</label>
+          <label for="dosnBrassicaSpp">Determinación de Brassica spp. en {{ dosnGramosAnalizados ?? '' }} g</label>
           <input id="dosnBrassicaSpp" type="text" [(ngModel)]="dosnBrassicaSpp" name="dosnBrassicaSpp" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnBrassicaSpp || ''" />
         </div>
 
@@ -241,7 +246,7 @@
           <div class="form-field">
             <label for="fechaEmision">Fecha de Emisión</label>
             <span *ngIf="isFechaEmisionInvalida" class="error-message">La fecha no puede ser futura.</span>
-            <input id="fechaEmision" type="date" [(ngModel)]="fechaEmision" name="fechaEmision" 
+            <input id="fechaEmision" type="date" [(ngModel)]="fechaEmision" name="fechaEmision"
                    [ngClass]="{ 'input-error': isFechaEmisionInvalida }" [readonly]="isViewing" />
           </div>
 
@@ -249,6 +254,17 @@
             <label for="firmante">Firmante</label>
             <input id="firmante" type="text" [(ngModel)]="firmante" name="firmante" pInputText [readonly]="isViewing" />
           </div>
+
+          <div class="form-field">
+            <label for="firmante">Nombre</label>
+            <input id="firmante1" type="text" [(ngModel)]="firmante" name="firmante" pInputText [readonly]="isViewing" />
+          </div>
+
+          <div class="form-field">
+            <label for="firmante">Función</label>
+            <input id="firmante2" type="text" [(ngModel)]="firmante" name="firmante" pInputText [readonly]="isViewing" />
+          </div>
+
         </div>
       </div>
 
@@ -260,8 +276,8 @@
       </div>
 
       <div class="submit-btn" *ngIf="!isViewing">
-        <button pButton type="submit" [disabled]="errores.length > 0" 
-                [label]="isEditing ? 'Actualizar' : 'Crear Certificado'" 
+        <button pButton type="submit" [disabled]="errores.length > 0"
+                [label]="isEditing ? 'Actualizar' : 'Crear Certificado'"
                 class="p-button-success"></button>
       </div>
     </form>
@@ -270,8 +286,11 @@
     <div class="certificado-footer">
       <p class="footer-date">{{ fechaEmision ? formatearFecha(fechaEmision) : '' }}</p>
       <p class="footer-text">Fecha de emisión</p>
-      <p class="footer-notice">ESTE CERTIFICADO AMPARA A UN LOTE DE SEMILLAS</p>
+      <p class="footer-notice">LOS RESULTADOS remitidos refieren a la muestra recibida por el laboratorio.</p>
+      <p class="footer-notice">Este informe no debe ser reproducido parcialmente sin la autorización del laboratorio.</p>
       <p class="footer-note">N=no analizado|TR=&lt;0,05%</p>
     </div>
+
+
   </div>
 </div>
