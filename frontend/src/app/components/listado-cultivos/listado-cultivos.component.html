@@ -6,16 +6,16 @@
     
     <p-card class="card">
         <ng-template pTemplate="header">
-            <h2 class="title">Listado de Cultivos</h2>
+            <h2 class="title">Listado de Cultivares</h2>
         </ng-template>
 
         <div class="search-section">
             <div class="search-bar">
-                <input type="text" placeholder="Buscar Cultivos..." class="search-input" [(ngModel)]="searchText" name="search" />
+                <input type="text" placeholder="Buscar Cultivares..." class="search-input" [(ngModel)]="searchText" name="search" />
             </div>
             <div class="filter-dropdown">
                  <div class="submit-btn">
-                    <button pButton type="button" (click)="abrirModal()" label="Crear Cultivo" class="p-button-primary"></button>
+                    <button pButton type="button" (click)="abrirModal()" label="Crear Cultivar" class="p-button-primary"></button>
                 </div>
             </div>
         </div>
@@ -24,7 +24,7 @@
         <div class="loading-message" *ngIf="loading">
             <div class="loading-content">
                 <i class="pi pi-spin pi-spinner"></i>
-                <p>Cargando cultivos...</p>
+                <p>Cargando cultivares...</p>
             </div>
         </div>
 
@@ -41,8 +41,8 @@
         <!-- Mensaje cuando no hay elementos -->
         <div class="no-results-message" *ngIf="!loading && !error && itemsFiltrados.length === 0">
             <div class="no-results-content">
-                <h3>No se encontraron Cultivos</h3>
-                <p>No hay cultivos que coincidan con los filtros seleccionados.</p>
+                <h3>No se encontraron Cultivares</h3>
+                <p>No hay cultivares que coincidan con los filtros seleccionados.</p>
                 <p>Intenta ajustar los criterios de búsqueda.</p>
             </div>
         </div>
@@ -99,20 +99,6 @@
         </ng-container>
     
     </p-card>
-
-    <!-- Popup de confirmación de eliminación -->
-    <app-confirm-dialog
-        [visible]="mostrarConfirmEliminar"
-        title="Eliminar Cultivo"
-        [message]="'¿Estás seguro de que quieres eliminar este Cultivo?'"
-        [itemName]="cultivoAEliminar?.nombre ? 'Cultivo: ' + cultivoAEliminar!.nombre : ''"
-        [itemId]="cultivoAEliminar?.id ?? ''"
-        confirmText="Eliminar"
-        cancelText="Cancelar"
-        [loading]="confirmLoading"
-        (confirm)="confirmarEliminacion()"
-        (cancel)="cancelarEliminacion()">
-    </app-confirm-dialog>
 
     <!-- Modal de Autenticación -->
     <p-dialog 

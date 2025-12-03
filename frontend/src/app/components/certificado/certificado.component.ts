@@ -43,6 +43,9 @@ export class CertificadoComponent implements OnInit {
   nombreSolicitante: string = '';
   especie: string = '';
   cultivar: string = '';
+  otrasDeterminaciones: string = '';
+  nombreFirmante: string = '';
+  funcionFirmante: string = '';
   categoria: string = '';
   responsableMuestreo: string = '';
   fechaMuestreo: string = '';
@@ -586,6 +589,10 @@ export class CertificadoComponent implements OnInit {
         this.dosnOtrosCultivos = certificado.dosnOtrosCultivos ?? null;
         this.dosnBrassicaSpp = certificado.dosnBrassicaSpp != null ? String(certificado.dosnBrassicaSpp) : "0";
 
+        this.otrasDeterminaciones = certificado.otrasDeterminaciones || '';
+        this.nombreFirmante = certificado.nombreFirmante || '';
+        this.funcionFirmante = certificado.funcionFirmante || '';
+        
         // Determinar si existe análisis de DOSN
         this.tieneDOSN = this.dosnGramosAnalizados != null;
 
@@ -791,7 +798,10 @@ export class CertificadoComponent implements OnInit {
       dosnMalezasToleranciaCero: this.dosnMalezasToleranciaCero ?? null,
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
-      dosnBrassicaSpp: null,
+      dosnBrassicaSpp: Number(this.dosnBrassicaSpp) ?? null,
+      otrasDeterminaciones: this.otrasDeterminaciones || null,
+      nombreFirmante: this.nombreFirmante || null,
+      funcionFirmante: this.funcionFirmante || null,
       // Resultados de análisis - Germinación
       germinacionNumeroDias: this.germinacionNumeroDias ?? null,
       germinacionPlantulasNormales: this.germinacionPlantulasNormales ?? null,
@@ -901,6 +911,9 @@ export class CertificadoComponent implements OnInit {
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
       dosnBrassicaSpp: Number(this.dosnBrassicaSpp) || 0,
+      otrasDeterminaciones: this.otrasDeterminaciones || null,
+      nombreFirmante: this.nombreFirmante || null,
+      funcionFirmante: this.funcionFirmante || null,
       // Resultados de análisis - Germinación
       germinacionNumeroDias: this.germinacionNumeroDias ?? null,
       germinacionPlantulasNormales: this.germinacionPlantulasNormales ?? null,

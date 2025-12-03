@@ -1875,6 +1875,9 @@ public class MapsDtoEntityService {
         dto.setFirmante(certificado.getFirmante());
         dto.setFechaFirma(certificado.getFechaFirma());
         dto.setActivo(certificado.isActivo());
+        dto.setOtrasDeterminaciones(certificado.getOtrasDeterminaciones());
+        dto.setNombreFirmante(certificado.getNombreFirmante());
+        dto.setFuncionFirmante(certificado.getFuncionFirmante());
         
         // Mapear relación con Recibo
         if (certificado.getRecibo() != null) {
@@ -1941,6 +1944,10 @@ public class MapsDtoEntityService {
         certificado.setFirmante(dto.getFirmante());
         certificado.setFechaFirma(dto.getFechaFirma());
         certificado.setActivo(dto.isActivo());
+
+        certificado.setOtrasDeterminaciones(dto.getOtrasDeterminaciones());
+        certificado.setNombreFirmante(dto.getNombreFirmante());
+        certificado.setFuncionFirmante(dto.getFuncionFirmante());
         
         // Vincular recibo si viene en el DTO
         Recibo recibo = getValidRecibo(dto.getReciboId());

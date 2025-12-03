@@ -67,5 +67,10 @@ public class CertificadoDto {
     private String germinacionSustrato;
     private Integer germinacionTemperatura;
     private String germinacionPreTratamiento;
+
+    private String otrasDeterminaciones;
+    private String nombreFirmante;
+    private String funcionFirmante;
+
 }
 

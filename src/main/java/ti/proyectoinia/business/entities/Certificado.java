@@ -156,5 +156,14 @@ public class Certificado {
         DEFINITIVO,
         PROVISORIO
     }
+
+    @Column(name = "OTRAS_DETERMINACIONES")
+    private String otrasDeterminaciones;
+
+    @Column(name = "NOMBRE_FIRMANTE")
+    private String nombreFirmante;
+
+    @Column(name = "FUNCION_FIRMANTE")
+    private String funcionFirmante;
 }
 
