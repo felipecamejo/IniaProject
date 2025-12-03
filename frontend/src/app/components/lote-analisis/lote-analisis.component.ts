@@ -29,7 +29,6 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   private currentUrl: string = '';
 
   // Propiedades para el popup de confirmación de eliminación
-  mostrarConfirmEliminar: boolean = false;
   certificadoAEliminar: CertificadoDto | null = null;
   confirmLoading: boolean = false;
 
@@ -372,16 +371,19 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
       alert('No hay certificado disponible para eliminar.');
       return;
     }
-
-    // Cargar el certificado para mostrar en el popup
-    this.certificadoService.obtenerCertificado(this.certificadoId).subscribe({
-      next: (certificado: CertificadoDto) => {
-        this.certificadoAEliminar = certificado;
-        this.mostrarConfirmEliminar = true;
+    // Eliminar directamente, ya se confirmó en confirmarEliminarCertificado
+    this.certificadoService.eliminarCertificado(this.certificadoId).subscribe({
+      next: (mensaje: string) => {
+        console.log('Certificado eliminado:', mensaje);
+        // Actualizar estado local, redirigir, etc.
+        this.tieneCertificado = false;
+        this.certificadoId = null;
+        alert('Certificado eliminado correctamente.');
+        // Redirigir o refrescar si es necesario
       },
       error: (error) => {
-        console.error('Error cargando certificado:', error);
-        alert('Error al cargar el certificado. Por favor, intente nuevamente.');
+        console.error('Error eliminando certificado:', error);
+        alert('Error al eliminar el certificado. Por favor, intente nuevamente.');
       }
     });
   }
@@ -396,7 +398,7 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
       next: (mensaje: string) => {
         console.log('Certificado eliminado:', mensaje);
         this.confirmLoading = false;
-        this.mostrarConfirmEliminar = false;
+
         this.certificadoAEliminar = null;
         // Actualizar estado local
         this.tieneCertificado = false;
@@ -407,7 +409,6 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error eliminando certificado:', error);
         this.confirmLoading = false;
-        this.mostrarConfirmEliminar = false;
         this.certificadoAEliminar = null;
         alert('Error al eliminar el certificado. Por favor, intente nuevamente.');
       }
@@ -415,7 +416,6 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   }
 
   cancelarEliminacion(): void {
-    this.mostrarConfirmEliminar = false;
     this.certificadoAEliminar = null;
     this.confirmLoading = false;
   }

@@ -104,14 +104,23 @@
       </div>
 
       <div class="submit-btn">
-        <p-button 
-          label="Exportar Tablas" 
-          icon="pi pi-download"
-          [loading]="isExporting"
-          [disabled]="!canExportImport || isExporting"
-          (onClick)="exportarTablas()"
-          styleClass="p-button-success">
-        </p-button>
+          <p-button 
+            [loading]="isExporting"
+            [disabled]="!canExportImport || isExporting"
+            (onClick)="exportarTablas()"
+            styleClass="p-button-success">
+            <span class="export-btn-content">
+              <span class="pi pi-download"></span>
+              <span>Exportar Tablas</span>
+            </span>
+          </p-button>
+          <style>
+            .export-btn-content {
+              display: inline-flex;
+              align-items: center;
+              gap: 0.5em;
+            }
+          </style>
       </div>
 
       <!-- Resultado de la exportación -->
@@ -185,14 +194,23 @@
       </div>
 
       <div class="submit-btn">
-        <p-button 
-          [label]="selectedFiles.length === 1 ? 'Importar Excel' : 'Importar Archivos'" 
-          icon="pi pi-upload"
-          [loading]="isImporting"
-          [disabled]="!canExportImport || selectedFiles.length === 0 || isImporting"
-          (onClick)="importarExcel()"
-          styleClass="p-button-success">
-        </p-button>
+          <p-button 
+            [loading]="isImporting"
+            [disabled]="!canExportImport || selectedFiles.length === 0 || isImporting"
+            (onClick)="importarExcel()"
+            styleClass="p-button-success">
+            <span class="import-btn-content">
+              <span class="pi pi-upload"></span>
+              <span>{{ selectedFiles.length === 1 ? 'Importar Excel' : 'Importar Archivos' }}</span>
+            </span>
+          </p-button>
+          <style>
+            .import-btn-content {
+              display: inline-flex;
+              align-items: center;
+              gap: 0.5em;
+            }
+          </style>
       </div>
 
       <!-- Resultado de la importación -->
