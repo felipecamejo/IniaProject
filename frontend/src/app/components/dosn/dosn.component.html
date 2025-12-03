@@ -16,14 +16,14 @@
   <div class="form-grid inase-section">
         <div class="form-field">
           <label for="fechaInase">Fecha</label>
-          <input id="fechaInase" type="date" [(ngModel)]="fechaInase" name="fechaInase" pInputText [readonly]="isReadonly" 
+          <input id="fechaInase" type="date" [(ngModel)]="fechaInase" name="fechaInase" pInputText [readonly]="isReadonly"
           [ngClass]="{ 'input-error': validarFecha(fechaInase) }"
           />
            <span *ngIf="validarFecha(fechaInase)" class="error-message">La fecha no puede ser futura.</span>
         </div>
         <div class="form-field">
           <label for="gramosInase">Gramos analizados</label>
-          <input id="gramosInase" type="number" [(ngModel)]="gramosInase" name="gramosInase" pInputText [readonly]="isReadonly" 
+          <input id="gramosInase" type="number" [(ngModel)]="gramosInase" name="gramosInase" pInputText [readonly]="isReadonly"
           [ngClass]="{ 'input-error': !validarNumero(gramosInase) }"
           />
           <span *ngIf="!validarNumero(gramosInase)" class="error-message">El valor debe ser un número válido.</span>
@@ -64,7 +64,7 @@
           <div class="selected-counts" *ngIf="selectedMalezasInase.length">
             <div class="count-row" *ngFor="let id of selectedMalezasInase">
               <span class="count-label">{{ getLabelById(malezasOptions, id) }}</span>
-              <input type="number" [(ngModel)]="malezasInaseCounts[id]" [name]="'malezaInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" 
+              <input type="number" [(ngModel)]="malezasInaseCounts[id]" [name]="'malezaInaseCount_'+id" min="0" pInputText [readonly]="isReadonly"
               [ngClass]="{ 'input-error': !validarNumero(malezasInaseCounts[id]) }" />
             </div>
           </div>
@@ -95,7 +95,7 @@
           <div class="selected-counts" *ngIf="selectedCultivosInase.length">
             <div class="count-row" *ngFor="let id of selectedCultivosInase">
               <span class="count-label">{{ getLabelById(cultivosOptions, id) }}</span>
-              <input type="number" [(ngModel)]="cultivosInaseCounts[id]" [name]="'cultivoInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" 
+              <input type="number" [(ngModel)]="cultivosInaseCounts[id]" [name]="'cultivoInaseCount_'+id" min="0" pInputText [readonly]="isReadonly"
               [ngClass]="{ 'input-error': !validarNumero(cultivosInaseCounts[id]) }" />
             </div>
           </div>
@@ -126,7 +126,7 @@
           <div class="selected-counts" *ngIf="selectedMalezasToleradasInase.length">
             <div class="count-row" *ngFor="let id of selectedMalezasToleradasInase">
               <span class="count-label">{{ getLabelById(malezasToleradasOptions, id) }}</span>
-              <input type="number" [(ngModel)]="malezasToleradasInaseCounts[id]" [name]="'malezaTolInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" 
+              <input type="number" [(ngModel)]="malezasToleradasInaseCounts[id]" [name]="'malezaTolInaseCount_'+id" min="0" pInputText [readonly]="isReadonly"
               [ngClass]="{ 'input-error': !validarNumero(malezasToleradasInaseCounts[id]) }" />
             </div>
           </div>
@@ -157,7 +157,7 @@
           <div class="selected-counts" *ngIf="selectedMalezasCeroInase.length">
             <div class="count-row" *ngFor="let id of selectedMalezasCeroInase">
               <span class="count-label">{{ getLabelById(malezasCeroOptions, id) }}</span>
-              <input type="number" [(ngModel)]="malezasCeroInaseCounts[id]" [name]="'malezaCeroInaseCount_'+id" min="0" pInputText [readonly]="isReadonly" 
+              <input type="number" [(ngModel)]="malezasCeroInaseCounts[id]" [name]="'malezaCeroInaseCount_'+id" min="0" pInputText [readonly]="isReadonly"
               [ngClass]="{ 'input-error': !validarNumero(malezasCeroInaseCounts[id]) }" />
             </div>
           </div>
@@ -169,14 +169,14 @@
   <div class="form-grid inia-section">
         <div class="form-field">
           <label for="fechaInia">Fecha</label>
-          <input id="fechaInia" type="date" [(ngModel)]="fechaInia" name="fechaInia" pInputText [readonly]="isReadonly" 
+          <input id="fechaInia" type="date" [(ngModel)]="fechaInia" name="fechaInia" pInputText [readonly]="isReadonly"
           [ngClass]="{ 'input-error': validarFecha(fechaInia) }"
           />
           <span *ngIf="validarFecha(fechaInia)" class="error-message">La fecha no puede ser futura.</span>
         </div>
         <div class="form-field">
           <label for="gramosInia">Gramos analizados</label>
-          <input id="gramosInia" type="number" [(ngModel)]="gramosInia" name="gramosInia" pInputText [readonly]="isReadonly" 
+          <input id="gramosInia" type="number" [(ngModel)]="gramosInia" name="gramosInia" pInputText [readonly]="isReadonly"
           [ngClass]="{ 'input-error': !validarNumero(gramosInia) }"
           />
           <span *ngIf="!validarNumero(gramosInia)" class="error-message">El valor debe ser un número válido.</span>
@@ -343,7 +343,7 @@
 
       <!-- Fecha estándar -->
       <div class="form-field" style="display: flex; flex-direction: column; align-items: flex-start;">
-          <label for="fechaEstandar" style="margin-bottom: 0.25rem;">Fecha estándar</label>
+          <label for="fechaEstandar" style="margin-bottom: 0.25rem;">Fecha</label>
           <input id="fechaEstandar" type="date" [(ngModel)]="fechaEstandar" name="fechaEstandar" pInputText [readonly]="isReadonly"
             [ngClass]="{ 'input-error': validarFecha(fechaEstandar) }"
             style="width: 100%; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 0.25rem;" />
