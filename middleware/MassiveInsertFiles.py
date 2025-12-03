@@ -394,6 +394,11 @@ def generar_valores_columna(col_info: Dict[str, Any], cantidad: int, fk_map: Dic
     default = col_info.get('default')
     autoincrement = col_info.get('autoincrement', False)
     
+    # Detectar si es una columna "activo" o "nombre" (nunca pueden ser NULL)
+    col_name_lower = col_name.lower()
+    es_columna_activo = 'activo' in col_name_lower
+    es_columna_nombre = 'nombre' in col_name_lower
+    
     # Saltar columnas autoincrementales
     if autoincrement:
         return None
@@ -411,6 +416,20 @@ def generar_valores_columna(col_info: Dict[str, Any], cantidad: int, fk_map: Dic
         valores_permitidos = check_map[col_name]
         if valores_permitidos:
             return [random.choice(valores_permitidos) for _ in range(cantidad)]
+    
+    # Para columnas "activo", siempre generar valores booleanos (True/False), nunca NULL
+    if es_columna_activo:
+        return [random.choice([True, False]) for _ in range(cantidad)]
+    
+    # Para columnas "nombre", siempre generar valores de texto, nunca NULL
+    if es_columna_nombre:
+        # Generar nombres aleatorios de longitud razonable
+        nombres_generados = []
+        for _ in range(cantidad):
+            longitud = random.randint(5, 30)
+            nombre = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=longitud))
+            nombres_generados.append(nombre)
+        return nombres_generados
     
     # Generar valores aleatorios
     valores = []
@@ -440,6 +459,9 @@ def generar_datos_tabla(engine, tabla_nombre: str, cantidad: int, ids_referencia
     
     inspector = inspect(engine)
     columnas_info = inspector.get_columns(tabla_nombre, schema='public')
+    
+    # Obtener columnas con secuencias para excluirlas
+    columnas_con_secuencia = obtener_columnas_con_secuencia(engine, tabla_nombre)
     
     # Obtener dependencias (foreign keys)
     dependencias = obtener_dependencias_tabla(engine, tabla_nombre)
@@ -473,6 +495,32 @@ def generar_datos_tabla(engine, tabla_nombre: str, cantidad: int, ids_referencia
         if col_name in columnas_procesadas:
             logger.warning(f"Columna duplicada detectada en '{tabla_nombre}': {col_name}. Omitiendo.")
             continue
+        
+        # Excluir columnas con secuencias del DataFrame
+        # PostgreSQL las generará automáticamente cuando no se incluyan en el INSERT
+        col_name_lower = col_name.lower()
+        if any(col_name_lower == c.lower() for c in columnas_con_secuencia):
+            logger.debug(f"Excluyendo columna con secuencia '{col_name}' de tabla '{tabla_nombre}' (será generada por PostgreSQL)")
+            continue
+        
+        # También manejar columnas que son primary keys y tienen tipo integer/bigint
+        # si no están ya en la lista de columnas con secuencia
+        if col_name.lower().endswith('_id') and ('int' in str(col_info.get('type', '')).lower()):
+            # Verificar si es primary key
+            inspector = inspect(engine)
+            try:
+                pk_constraint = inspector.get_pk_constraint(tabla_nombre, schema='public')
+                pk_columns = pk_constraint.get('constrained_columns', [])
+                if col_name in pk_columns or col_name.upper() in [c.upper() for c in pk_columns]:
+                    # Verificar si tiene secuencia
+                    if not any(col_name_lower == c.lower() for c in columnas_con_secuencia):
+                        # Si es PK pero no tiene secuencia detectada, intentar incluirla con None
+                        logger.debug(f"Incluyendo columna PK '{col_name}' en tabla '{tabla_nombre}' con valores None (probablemente tiene secuencia)")
+                        datos[col_name] = [None] * cantidad
+                        columnas_procesadas.add(col_name)
+                        continue
+            except:
+                pass
         
         columnas_procesadas.add(col_name)
         valores = generar_valores_columna(col_info, cantidad, fk_map, ids_referencias, check_map)
@@ -587,15 +635,22 @@ def validar_dependencias_disponibles(tabla: str, mapeo: Dict[str, Dict[str, Any]
     
     return True
 
-def validar_dataframe_not_null(df: pd.DataFrame, tabla: str, constraints: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
-    """Valida que las columnas NOT NULL no tengan valores NULL."""
+def validar_dataframe_not_null(df: pd.DataFrame, tabla: str, constraints: Dict[str, Any], engine=None, columnas_con_secuencia: List[str] = None) -> Tuple[bool, Optional[str]]:
+    """Valida que las columnas NOT NULL no tengan valores NULL, excepto columnas con secuencias."""
+    if columnas_con_secuencia is None and engine is not None:
+        columnas_con_secuencia = obtener_columnas_con_secuencia(engine, tabla)
+    
     if constraints.get('not_null'):
         for col in constraints['not_null']:
+            # Permitir NULL en columnas con secuencias (PostgreSQL las generará automáticamente)
+            if columnas_con_secuencia and any(col.lower() == c.lower() for c in columnas_con_secuencia):
+                continue
+            
             if col in df.columns and df[col].isna().any():
                 return False, col
     return True, None
 
-def validar_dataframe_antes_insertar(df: pd.DataFrame, tabla_nombre: str, engine) -> pd.DataFrame:
+def validar_dataframe_antes_insertar(df: pd.DataFrame, tabla_nombre: str, engine, columnas_con_secuencia: List[str] = None) -> pd.DataFrame:
     """Valida y limpia el DataFrame antes de insertar."""
     if df.empty:
         raise ValueError(f"DataFrame vacío para tabla '{tabla_nombre}'")
@@ -626,8 +681,19 @@ def validar_dataframe_antes_insertar(df: pd.DataFrame, tabla_nombre: str, engine
 def obtener_ids_insertados(engine, tabla_nombre: str, id_max_antes: int, cantidad: int) -> List[int]:
     """Obtiene los IDs de los registros insertados."""
     inspector = inspect(engine)
-    pk_constraint = inspector.get_pk_constraint(tabla_nombre, schema='public')
-    pk_columns = pk_constraint.get('constrained_columns', [])
+    
+    # Intentar obtener PK con diferentes variantes del nombre de tabla
+    pk_constraint = None
+    pk_columns = []
+    for tabla_variant in [tabla_nombre, tabla_nombre.lower(), tabla_nombre.upper()]:
+        try:
+            pk_constraint = inspector.get_pk_constraint(tabla_variant, schema='public')
+            pk_columns = pk_constraint.get('constrained_columns', [])
+            if pk_columns:
+                break
+        except:
+            continue
+    
     pk_column = pk_columns[0] if pk_columns else None
     
     if not pk_column:
@@ -635,45 +701,293 @@ def obtener_ids_insertados(engine, tabla_nombre: str, id_max_antes: int, cantida
     
     ids = []
     with engine.connect() as conn:
-        query = text(f"SELECT {pk_column} FROM {tabla_nombre} WHERE {pk_column} > :id_max ORDER BY {pk_column} LIMIT :limit")
-        result = conn.execute(query, {"id_max": id_max_antes, "limit": cantidad})
-        ids = [row[0] for row in result]
+        # Usar el nombre de tabla tal como está en la BD (probablemente en mayúsculas)
+        # Intentar con diferentes variantes
+        for tabla_variant in [tabla_nombre.upper(), tabla_nombre.lower(), tabla_nombre]:
+            try:
+                query = text(f"SELECT {pk_column} FROM {tabla_variant} WHERE {pk_column} > :id_max ORDER BY {pk_column} LIMIT :limit")
+                result = conn.execute(query, {"id_max": id_max_antes, "limit": cantidad})
+                ids = [row[0] for row in result]
+                if ids:
+                    break
+            except:
+                continue
     
     return ids
 
 def obtener_id_maximo(engine, tabla_nombre: str) -> int:
     """Obtiene el ID máximo actual de una tabla."""
     inspector = inspect(engine)
-    pk_constraint = inspector.get_pk_constraint(tabla_nombre, schema='public')
-    pk_columns = pk_constraint.get('constrained_columns', [])
+    
+    # Intentar obtener PK con diferentes variantes del nombre de tabla
+    pk_constraint = None
+    pk_columns = []
+    for tabla_variant in [tabla_nombre, tabla_nombre.lower(), tabla_nombre.upper()]:
+        try:
+            pk_constraint = inspector.get_pk_constraint(tabla_variant, schema='public')
+            pk_columns = pk_constraint.get('constrained_columns', [])
+            if pk_columns:
+                break
+        except:
+            continue
+    
     pk_column = pk_columns[0] if pk_columns else None
     
     if not pk_column:
         return 0
     
     with engine.connect() as conn:
-        query_max = text(f"SELECT COALESCE(MAX({pk_column}), 0) FROM {tabla_nombre}")
-        result_max = conn.execute(query_max)
-        return result_max.scalar() or 0
+        # Intentar con diferentes variantes del nombre de tabla
+        for tabla_variant in [tabla_nombre.upper(), tabla_nombre.lower(), tabla_nombre]:
+            try:
+                query_max = text(f"SELECT COALESCE(MAX({pk_column}), 0) FROM {tabla_variant}")
+                result_max = conn.execute(query_max)
+                return result_max.scalar() or 0
+            except:
+                continue
+    
+    return 0
+
+def obtener_columnas_con_secuencia(engine, tabla_nombre: str) -> List[str]:
+    """Obtiene las columnas que tienen secuencias (SERIAL/BIGSERIAL) en PostgreSQL."""
+    columnas_con_secuencia = []
+    try:
+        # Normalizar nombre de tabla a minúsculas para búsqueda consistente
+        tabla_normalizada = tabla_nombre.lower()
+        
+        with engine.connect() as conn:
+            # Método 1: Buscar por column_default LIKE 'nextval%'
+            query = text("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema = 'public'
+                    AND LOWER(table_name) = LOWER(:tabla)
+                    AND column_default LIKE 'nextval%'
+            """)
+            result = conn.execute(query, {"tabla": tabla_nombre})
+            columnas_con_secuencia = [row[0] for row in result]
+            
+            # Método 2: Si no encontramos nada, buscar secuencias por nombre de tabla
+            # Las secuencias suelen tener el formato: tabla_seq
+            if not columnas_con_secuencia:
+                # Buscar secuencias que coincidan con el nombre de la tabla
+                query_seq = text("""
+                    SELECT sequence_name
+                    FROM information_schema.sequences
+                    WHERE sequence_schema = 'public'
+                        AND sequence_name = :seq_name
+                """)
+                seq_name_pattern = f"{tabla_normalizada}_seq"
+                seq_result = conn.execute(query_seq, {"seq_name": seq_name_pattern}).fetchone()
+                
+                if seq_result:
+                    # Si encontramos una secuencia, buscar columnas que puedan usarla
+                    # Generalmente es la columna que termina en _id y es primary key
+                    inspector = inspect(engine)
+                    try:
+                        # Intentar con nombre original y normalizado
+                        for tabla_variant in [tabla_nombre, tabla_normalizada, tabla_nombre.upper()]:
+                            try:
+                                pk_constraint = inspector.get_pk_constraint(tabla_variant, schema='public')
+                                pk_columns = pk_constraint.get('constrained_columns', [])
+                                if pk_columns:
+                                    # Agregar la primera columna PK que termine en _id
+                                    for pk_col in pk_columns:
+                                        if pk_col.lower().endswith('_id'):
+                                            if pk_col not in columnas_con_secuencia:
+                                                columnas_con_secuencia.append(pk_col)
+                                    break
+                            except:
+                                continue
+                    except Exception as e:
+                        logger.debug(f"Error obteniendo PK para {tabla_nombre}: {e}")
+                
+                # Método 3: Si aún no encontramos nada, usar pg_get_serial_sequence
+                if not columnas_con_secuencia:
+                    # Obtener todas las columnas que terminan en _id
+                    query_cols = text("""
+                        SELECT column_name
+                        FROM information_schema.columns
+                        WHERE table_schema = 'public'
+                            AND LOWER(table_name) = LOWER(:tabla)
+                            AND column_name LIKE '%_id'
+                            AND data_type IN ('integer', 'bigint')
+                    """)
+                    cols_result = conn.execute(query_cols, {"tabla": tabla_nombre})
+                    for col_row in cols_result:
+                        col_name = col_row[0]
+                        # Verificar si tiene secuencia usando pg_get_serial_sequence
+                        # Intentar con diferentes variantes del nombre de tabla
+                        for tabla_variant in [tabla_nombre.upper(), tabla_normalizada, tabla_nombre]:
+                            try:
+                                query_pg_seq = text(f"SELECT pg_get_serial_sequence('{tabla_variant}', '{col_name}')")
+                                seq_name = conn.execute(query_pg_seq).scalar()
+                                if seq_name:
+                                    if col_name not in columnas_con_secuencia:
+                                        columnas_con_secuencia.append(col_name)
+                                    break
+                            except:
+                                continue
+                
+    except Exception as e:
+        logger.warning(f"Error obteniendo columnas con secuencia para {tabla_nombre}: {e}")
+    
+    return columnas_con_secuencia
 
 def insertar_datos_tabla(engine, tabla_nombre: str, df: pd.DataFrame, chunksize: int = 1000) -> List[int]:
     """Inserta datos en una tabla y retorna los IDs generados."""
     try:
         # Validar DataFrame antes de insertar
-        df = validar_dataframe_antes_insertar(df, tabla_nombre, engine)
+        columnas_con_secuencia = obtener_columnas_con_secuencia(engine, tabla_nombre)
+        df = validar_dataframe_antes_insertar(df, tabla_nombre, engine, columnas_con_secuencia)
         
         # Obtener ID máximo antes de insertar
         id_max_antes = obtener_id_maximo(engine, tabla_nombre)
         
-        # Insertar datos
-        df.to_sql(
-            name=tabla_nombre,
-            con=engine,
-            if_exists='append',
-            index=False,
-            chunksize=chunksize,
-            method='multi'
-        )
+        # Obtener columnas con secuencia para usar DEFAULT
+        columnas_con_secuencia_lower = [c.lower() for c in columnas_con_secuencia]
+        
+        # Usar SQLAlchemy Core directamente para insertar con DEFAULT en columnas con secuencia
+        from sqlalchemy import Table, MetaData, insert as sql_insert
+        
+        metadata = MetaData()
+        table = Table(tabla_nombre, metadata, autoload_with=engine, schema='public')
+        
+        # Preparar datos para inserción
+        rows_to_insert = []
+        for _, row in df.iterrows():
+            row_dict = {}
+            # Solo incluir columnas que están en el DataFrame
+            # Convertir NaT (Not a Time) de pandas a None
+            for col in df.columns:
+                val = row[col]
+                if pd.isna(val):
+                    val = None
+                row_dict[col] = val
+            rows_to_insert.append(row_dict)
+        
+        # Insertar en lotes usando SQL directo con nextval() para columnas con secuencia
+        with engine.connect() as conn:
+            # Obtener nombres de secuencias para cada columna con secuencia
+            secuencias_map = {}
+            for col_secuencia in columnas_con_secuencia:
+                seq_name = None
+                try:
+                    # Método 1: Intentar obtener el nombre de la secuencia usando pg_get_serial_sequence
+                    for tabla_variant in [tabla_nombre.upper(), tabla_nombre.lower(), tabla_nombre]:
+                        try:
+                            query_seq = text(f"SELECT pg_get_serial_sequence('{tabla_variant}', '{col_secuencia}')")
+                            seq_name = conn.execute(query_seq).scalar()
+                            if seq_name:
+                                break
+                        except:
+                            continue
+                    
+                    # Método 2: Si pg_get_serial_sequence no funciona, buscar secuencias por nombre
+                    if not seq_name:
+                        # Buscar secuencias que coincidan con el patrón tabla_seq o tabla_columna_seq
+                        patterns = [
+                            f"{tabla_nombre.lower()}_seq",
+                            f"{tabla_nombre.lower()}_{col_secuencia.lower()}_seq",
+                            f"{tabla_nombre.upper()}_seq",
+                            f"{tabla_nombre.upper()}_{col_secuencia.upper()}_seq"
+                        ]
+                        for pattern in patterns:
+                            query_seq_search = text("""
+                                SELECT sequence_name
+                                FROM information_schema.sequences
+                                WHERE sequence_schema = 'public'
+                                    AND sequence_name = :pattern
+                            """)
+                            seq_result = conn.execute(query_seq_search, {"pattern": pattern}).fetchone()
+                            if seq_result:
+                                seq_name = seq_result[0]
+                                # Agregar schema si es necesario
+                                if '.' not in seq_name:
+                                    seq_name = f"public.{seq_name}"
+                                break
+                    
+                    if seq_name:
+                        # Usar el nombre completo de la secuencia (incluyendo schema si existe)
+                        secuencias_map[col_secuencia] = seq_name
+                    else:
+                        # Si no encontramos la secuencia, usar None para indicar que usaremos DEFAULT
+                        logger.warning(f"No se encontró secuencia para {col_secuencia} en {tabla_nombre}, se usará DEFAULT")
+                        secuencias_map[col_secuencia] = None
+                except Exception as e:
+                    # Si falla, usar None para indicar que usaremos DEFAULT
+                    logger.warning(f"Error obteniendo secuencia para {col_secuencia} en {tabla_nombre}: {e}. Se usará DEFAULT")
+                    secuencias_map[col_secuencia] = None
+            
+            # Construir INSERT SQL incluyendo columnas con secuencia usando nextval()
+            columnas_df = list(df.columns)
+            # INCLUIR columnas con secuencia en el INSERT usando nextval()
+            columnas_insert = columnas_df + list(columnas_con_secuencia)
+            
+            for i in range(0, len(rows_to_insert), chunksize):
+                batch = rows_to_insert[i:i+chunksize]
+                
+                # Construir valores para cada fila
+                valores_sql = []
+                for row_dict in batch:
+                    valores_fila = []
+                    # Valores del DataFrame
+                    for col in columnas_df:
+                        val = row_dict.get(col)
+                        col_lower = col.lower()
+                        
+                        # Para columnas "activo", asegurar que nunca sea NULL (convertir a False)
+                        if 'activo' in col_lower:
+                            if val is None or pd.isna(val):
+                                val = False
+                        
+                        # Para columnas "nombre", asegurar que nunca sea NULL (convertir a cadena vacía o generar valor)
+                        if 'nombre' in col_lower:
+                            if val is None or pd.isna(val) or (isinstance(val, str) and val.strip() == ''):
+                                # Generar un nombre por defecto si está vacío
+                                import random
+                                import string
+                                longitud = random.randint(5, 20)
+                                val = ''.join(random.choices(string.ascii_letters + string.digits, k=longitud))
+                        
+                        if val is None:
+                            valores_fila.append("NULL")
+                        elif isinstance(val, str):
+                            # Escapar comillas simples
+                            val_escaped = val.replace("'", "''")
+                            valores_fila.append(f"'{val_escaped}'")
+                        elif isinstance(val, (datetime, pd.Timestamp)):
+                            valores_fila.append(f"'{val}'")
+                        elif pd.isna(val):
+                            valores_fila.append("NULL")
+                        elif isinstance(val, bool):
+                            # Convertir booleanos a PostgreSQL boolean literal
+                            valores_fila.append("TRUE" if val else "FALSE")
+                        else:
+                            valores_fila.append(str(val))
+                    
+                    # Usar nextval() para columnas con secuencia
+                    for col_secuencia in columnas_con_secuencia:
+                        seq_name = secuencias_map.get(col_secuencia)
+                        if seq_name:
+                            # Usar nextval() con el nombre completo de la secuencia
+                            valores_fila.append(f"nextval('{seq_name}')")
+                        else:
+                            # Si no encontramos la secuencia, usar DEFAULT
+                            valores_fila.append("DEFAULT")
+                    
+                    valores_sql.append(f"({', '.join(valores_fila)})")
+                
+                # Construir y ejecutar INSERT SQL
+                # Incluir columnas con secuencia usando nextval() para generar IDs automáticamente
+                columnas_sql = ', '.join([f'"{col}"' for col in columnas_insert])
+                valores_sql_str = ', '.join(valores_sql)
+                # Usar el nombre de tabla en mayúsculas (formato estándar en esta BD)
+                tabla_nombre_upper = tabla_nombre.upper()
+                sql_insert_str = f'INSERT INTO {tabla_nombre_upper} ({columnas_sql}) VALUES {valores_sql_str}'
+                
+                conn.execute(text(sql_insert_str))
+            conn.commit()
         
         # Obtener IDs insertados
         ids = obtener_ids_insertados(engine, tabla_nombre, id_max_antes, len(df))
@@ -796,7 +1110,9 @@ def procesar_tabla_insercion(engine, tabla: str, mapeo_completo: Dict[str, Dict[
         
         # Validar constraints NOT NULL
         constraints = info_tabla['constraints']
-        valido, columna_problema = validar_dataframe_not_null(df, tabla, constraints)
+        # Obtener columnas con secuencia para la validación
+        columnas_con_secuencia = obtener_columnas_con_secuencia(engine, tabla)
+        valido, columna_problema = validar_dataframe_not_null(df, tabla, constraints, engine, columnas_con_secuencia)
         if not valido:
             error_info = {
                 'tabla': tabla,
@@ -923,6 +1239,19 @@ def insertar_1000_registros_principales():
     """
     engine = obtener_engine()
     inicializar_automap(engine)
+    
+    # Importar función de sincronización
+    from ImportExcel import asegurar_autoincrementos
+    
+    # Sincronizar secuencias antes de insertar
+    logger.info("=" * 80)
+    logger.info("Sincronizando secuencias de autoincremento...")
+    logger.info("=" * 80)
+    try:
+        asegurar_autoincrementos(engine)
+        logger.info("Secuencias sincronizadas correctamente")
+    except Exception as e:
+        logger.warning(f"Error sincronizando secuencias: {e}. Continuando...")
     
     # Mapear todas las dependencias y constraints
     logger.info("=" * 80)
