@@ -42,7 +42,7 @@ export interface CertificadoDto {
   dosnMalezasToleranciaCero: number | null;
   dosnMalezasTolerancia: number | null;
   dosnOtrosCultivos: number | null;
-  dosnBrassicaSpp: string | null;
+  dosnBrassicaSpp: number | null;
 
   // Resultados de análisis - Germinación
   germinacionNumeroDias: number | null;

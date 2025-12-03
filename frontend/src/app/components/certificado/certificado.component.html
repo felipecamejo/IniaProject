@@ -165,16 +165,18 @@
             </tbody>
           </table>
         </div>
+        <div class="form-grid"> 
+          <div class="form-field">
+            <label for="purezaClaseMateriaInerte">Clase de materia inerte</label>
+            <input id="purezaClaseMateriaInerte" type="text" [(ngModel)]="purezaClaseMateriaInerte" name="purezaClaseMateriaInerte" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tienePureza }" [value]="purezaClaseMateriaInerte || ''" />
+          </div>
 
-        <div class="form-field">
-          <label for="purezaClaseMateriaInerte">Clase de materia inerte</label>
-          <input id="purezaClaseMateriaInerte" type="text" [(ngModel)]="purezaClaseMateriaInerte" name="purezaClaseMateriaInerte" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tienePureza }" [value]="purezaClaseMateriaInerte || ''" />
+          <div class="form-field">
+            <label for="purezaOtrasSemillasDescripcion">Otras semillas</label>
+            <input id="purezaOtrasSemillasDescripcion" type="text" [(ngModel)]="purezaOtrasSemillasDescripcion" name="purezaOtrasSemillasDescripcion" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tienePureza }" [value]="purezaOtrasSemillasDescripcion || ''" />
+          </div>
         </div>
-
-        <div class="form-field">
-          <label for="purezaOtrasSemillasDescripcion">Otras semillas</label>
-          <input id="purezaOtrasSemillasDescripcion" type="text" [(ngModel)]="purezaOtrasSemillasDescripcion" name="purezaOtrasSemillasDescripcion" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tienePureza }" [value]="purezaOtrasSemillasDescripcion || ''" />
-        </div>
+       
 
         <!-- Determinación de otras semillas por número -->
         <div class="table-section">
@@ -192,12 +194,11 @@
               <label>Nº de semillas de otros cultivos</label>
               <input type="number" [(ngModel)]="dosnOtrosCultivos" name="dosnOtrosCultivos" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnOtrosCultivos ?? ''" />
             </div>
+            <div class="form-field">
+            <label>Determinación de Brassica spp. en {{ dosnGramosAnalizados ?? '' }} g</label>
+            <input id="dosnBrassicaSpp" type="number" [(ngModel)]="dosnBrassicaSpp" name="dosnBrassicaSpp" pInputText />
           </div>
-        </div>
-
-        <div class="form-field">
-          <label for="dosnBrassicaSpp">Determinación de Brassica spp. en {{ dosnGramosAnalizados ?? '' }} g</label>
-          <input id="dosnBrassicaSpp" type="text" [(ngModel)]="dosnBrassicaSpp" name="dosnBrassicaSpp" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnBrassicaSpp || ''" />
+          </div>
         </div>
 
         <!-- Tabla de Germinación -->
