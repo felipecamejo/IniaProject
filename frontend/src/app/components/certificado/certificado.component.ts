@@ -389,7 +389,6 @@ export class CertificadoComponent implements OnInit {
     this.dosnMalezasToleranciaCero = null;
     this.dosnMalezasTolerancia = null;
     this.dosnOtrosCultivos = null;
-    this.dosnBrassicaSpp = dosn.determinacionBrassica ? 'Contiene.' : 'No contiene.';
   }
 
   extraerDatosGerminacion(germinacion: GerminacionDto) {
@@ -585,7 +584,8 @@ export class CertificadoComponent implements OnInit {
         this.dosnMalezasToleranciaCero = certificado.dosnMalezasToleranciaCero ?? null;
         this.dosnMalezasTolerancia = certificado.dosnMalezasTolerancia ?? null;
         this.dosnOtrosCultivos = certificado.dosnOtrosCultivos ?? null;
-        this.dosnBrassicaSpp = certificado.dosnBrassicaSpp || '';
+        this.dosnBrassicaSpp = certificado.dosnBrassicaSpp != null ? String(certificado.dosnBrassicaSpp) : "0";
+
         // Determinar si existe análisis de DOSN
         this.tieneDOSN = this.dosnGramosAnalizados != null;
 
@@ -791,7 +791,7 @@ export class CertificadoComponent implements OnInit {
       dosnMalezasToleranciaCero: this.dosnMalezasToleranciaCero ?? null,
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
-      dosnBrassicaSpp: this.dosnBrassicaSpp || null,
+      dosnBrassicaSpp: null,
       // Resultados de análisis - Germinación
       germinacionNumeroDias: this.germinacionNumeroDias ?? null,
       germinacionPlantulasNormales: this.germinacionPlantulasNormales ?? null,
@@ -900,7 +900,7 @@ export class CertificadoComponent implements OnInit {
       dosnMalezasToleranciaCero: this.dosnMalezasToleranciaCero ?? null,
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
-      dosnBrassicaSpp: this.dosnBrassicaSpp || null,
+      dosnBrassicaSpp: Number(this.dosnBrassicaSpp) || 0,
       // Resultados de análisis - Germinación
       germinacionNumeroDias: this.germinacionNumeroDias ?? null,
       germinacionPlantulasNormales: this.germinacionPlantulasNormales ?? null,
