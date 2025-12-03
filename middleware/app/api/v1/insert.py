@@ -10,8 +10,8 @@ from app.core.responses import crear_respuesta_exito, crear_respuesta_error, obt
 from app.core.security import db_circuit_breaker
 from app.dependencies import GLOBAL_THREAD_POOL
 from app.config import MAX_REQUEST_TIMEOUT
-from database_config import build_connection_string
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
+from app.services.database_service import create_engine_with_pool
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -28,8 +28,7 @@ async def insertar(request: Request):
         # Validar conexión a base de datos antes de proceder con circuit breaker
         try:
             def test_db_connection():
-                conn_str = build_connection_string()
-                engine = create_engine(conn_str)
+                engine = create_engine_with_pool()
                 with engine.connect() as conn:
                     conn.execute(text("SELECT 1"))
             

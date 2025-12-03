@@ -13,7 +13,6 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { CultivoService } from '../../../services/CultivoService';
 import { MalezaService } from '../../../services/MalezaService';
 import { LogService } from '../../../services/LogService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { AuthService } from '../../../services/AuthService';
 
 
@@ -27,8 +26,7 @@ import { AuthService } from '../../../services/AuthService';
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-    MultiSelectModule,
-    ConfirmDialogComponent
+    MultiSelectModule
       ],
       templateUrl: './dosn.component.html',
       styleUrls: ['./dosn.component.scss']

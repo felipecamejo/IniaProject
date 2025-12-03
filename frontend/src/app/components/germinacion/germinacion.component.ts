@@ -10,7 +10,6 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
 import { GerminacionTablasService } from '../../../services/GerminacionTablasService';
 import { GerminacionService } from '../../../services/GerminacionService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { AuthService } from '../../../services/AuthService';
 import { ConteoGerminacionDto } from '../../../models/ConteoGerminacion.dto';
 import { MetodoService } from '../../../services/MetodoService';
@@ -40,8 +39,7 @@ export interface RepeticionGerminacion {
     InputNumberModule,
     ButtonModule,
     MultiSelectModule,
-    TableModule,
-    ConfirmDialogComponent
+    TableModule
   ],
   templateUrl: './germinacion.component.html',
   styleUrl: './germinacion.component.scss'
