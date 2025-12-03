@@ -831,6 +831,17 @@ def export_analisis_filtrados(
             'pureza_pnotatum': 'pureza_pnotatum_id'
         }
         
+        # Mapeo de tipos a nombres de columna active
+        tipo_a_activo_col = {
+            'dosn': 'dosn_activo',
+            'pureza': 'pureza_activo',
+            'germinacion': 'germinacion_activo',
+            'pms': 'pms_activo',
+            'sanitario': 'sanitario_activo',
+            'tetrazolio': 'tetrazolio_activo',
+            'pureza_pnotatum': 'pureza_activo'
+        }
+        
         for tipo_analisis in tipos_analisis:
             tipo_lower = tipo_analisis.lower()
             
@@ -876,6 +887,14 @@ def export_analisis_filtrados(
                     if fecha_hasta:
                         condiciones_where.append(f"{campo_fecha_analisis} <= :fecha_hasta")
                         params['fecha_hasta'] = fecha_hasta
+            
+            # Filtro por active = true (solo exportar análisis activos)
+            activo_col = tipo_a_activo_col.get(tipo_lower)
+            if activo_col:
+                # Verificar que la columna existe
+                columnas_validas, _ = obtener_columnas_validas(session, model)
+                if activo_col in columnas_validas:
+                    condiciones_where.append(f"{activo_col} = true")
             
             # Construir cláusula WHERE completa
             filtro_where = None
@@ -951,13 +970,13 @@ def export_analisis_por_lote(
         
         # Mapeo de tipos de análisis a nombres de tablas y columnas
         tipos_analisis = {
-            'dosn': {'tabla': 'dosn', 'id_col': 'dosn_id', 'recibo_col': 'recibo_id'},
-            'pureza': {'tabla': 'pureza', 'id_col': 'pureza_id', 'recibo_col': 'recibo_id'},
-            'germinacion': {'tabla': 'germinacion', 'id_col': 'germinacion_id', 'recibo_col': 'recibo_id'},
-            'pms': {'tabla': 'pms', 'id_col': 'pms_id', 'recibo_col': 'recibo_id'},
-            'sanitario': {'tabla': 'sanitario', 'id_col': 'sanitario_id', 'recibo_col': 'sanitario_reciboid'},
-            'tetrazolio': {'tabla': 'tetrazolio', 'id_col': 'tetrazolio_id', 'recibo_col': 'recibo_id'},
-            'pureza_pnotatum': {'tabla': 'pureza_pnotatum', 'id_col': 'pureza_pnotatum_id', 'recibo_col': 'recibo_id'}
+            'dosn': {'tabla': 'dosn', 'id_col': 'dosn_id', 'recibo_col': 'recibo_id', 'activo_col': 'dosn_activo'},
+            'pureza': {'tabla': 'pureza', 'id_col': 'pureza_id', 'recibo_col': 'recibo_id', 'activo_col': 'pureza_activo'},
+            'germinacion': {'tabla': 'germinacion', 'id_col': 'germinacion_id', 'recibo_col': 'recibo_id', 'activo_col': 'germinacion_activo'},
+            'pms': {'tabla': 'pms', 'id_col': 'pms_id', 'recibo_col': 'recibo_id', 'activo_col': 'pms_activo'},
+            'sanitario': {'tabla': 'sanitario', 'id_col': 'sanitario_id', 'recibo_col': 'sanitario_reciboid', 'activo_col': 'sanitario_activo'},
+            'tetrazolio': {'tabla': 'tetrazolio', 'id_col': 'tetrazolio_id', 'recibo_col': 'recibo_id', 'activo_col': 'tetrazolio_activo'},
+            'pureza_pnotatum': {'tabla': 'pureza_pnotatum', 'id_col': 'pureza_pnotatum_id', 'recibo_col': 'recibo_id', 'activo_col': 'pureza_activo'}
         }
         
         # Exportar cada tipo de análisis asociado al recibo
@@ -978,9 +997,16 @@ def export_analisis_por_lote(
                 log_step(f"Tabla {tabla_nombre} no tiene columna {recibo_col}, omitiendo...")
                 continue
             
-            # Construir filtro WHERE para filtrar por recibo_id
-            filtro_where = f"{recibo_col} = :recibo_id"
+            # Construir filtro WHERE para filtrar por recibo_id y active = true
+            condiciones_where = [f"{recibo_col} = :recibo_id"]
             filtro_params = {'recibo_id': recibo_id}
+            
+            # Agregar filtro de active = true si la columna existe
+            activo_col = config.get('activo_col')
+            if activo_col and activo_col in columnas_validas:
+                condiciones_where.append(f"{activo_col} = true")
+            
+            filtro_where = " AND ".join(condiciones_where)
             
             # Verificar si hay datos antes de exportar
             query_count = text(f"SELECT COUNT(*) FROM {tabla_nombre} WHERE {filtro_where}")
