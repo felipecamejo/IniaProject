@@ -139,7 +139,7 @@ export class CertificadoComponent implements OnInit {
       // Obtener loteId y reciboId de la ruta (si existen)
       if (params.get('loteId')) this.loteId = Number(params.get('loteId'));
       if (params.get('reciboId')) this.reciboId = Number(params.get('reciboId'));
-      
+
       const idParam = params.get('id');
       this.certificadoId = idParam ? Number(idParam) : 0;
       this.isEditing = this.certificadoId !== 0;
@@ -163,6 +163,10 @@ export class CertificadoComponent implements OnInit {
     this.route.queryParams.subscribe(queryParams => {
       this.isViewing = queryParams['view'] === 'true';
     });
+  }
+
+  getNumeroLote(): string {
+    return this.categoria + " " + this.numeroLote;
   }
 
   verificarCertificadoExistente(): void {
@@ -200,24 +204,23 @@ export class CertificadoComponent implements OnInit {
         this.recibo = recibo;
         this.analisisSolicitados = recibo.analisisSolicitados;
         // Pre-llenar campos del certificado con datos del recibo
-        if (recibo.remitente) this.nombreSolicitante = recibo.remitente;
         if (recibo.especie) this.especie = recibo.especie;
         if (recibo.cultivar) this.cultivar = recibo.cultivar;
         if (recibo.kgLimpios) this.pesoKg = recibo.kgLimpios;
-        
+
         // Obtener loteId del recibo si no está en la ruta
         if (!this.loteId && recibo.loteId) {
           this.loteId = recibo.loteId;
         }
-        
+
         // Cargar datos del lote para asignar automáticamente el número de lote y la categoría
         if (this.loteId) {
           this.cargarDatosLote(this.loteId);
         }
-        
+
         // Determinar qué análisis deben realizarse
         this.determinarAnalisisSolicitados();
-        
+
         // Extraer análisis estándar y el último creado
         this.cargarAnalisisDisponibles();
       },
@@ -338,7 +341,7 @@ export class CertificadoComponent implements OnInit {
             // Filtrar solo análisis estándar si existe el campo
             const germinacionesEstandar = response.germinacion.filter(g => g.estandar === true);
             const germinacionesParaUsar = germinacionesEstandar.length > 0 ? germinacionesEstandar : response.germinacion;
-            
+
             // Ordenar por fechaCreacion descendente y tomar el último creado
             const germinacionOrdenadas = germinacionesParaUsar.sort((a, b) => {
               const fechaA = a.fechaCreacion ? new Date(a.fechaCreacion).getTime() : 0;
@@ -371,7 +374,7 @@ export class CertificadoComponent implements OnInit {
     this.purezaOtrasSemillas = pureza.otrosCultivosPorcentajeRedondeoInase ?? pureza.otrosCultivosPorcentajeRedondeo ?? null;
     this.purezaOtrosCultivos = pureza.otrosCultivosPorcentajeRedondeoInase ?? pureza.otrosCultivosPorcentajeRedondeo ?? null;
     this.purezaMalezas = pureza.malezasPorcentajeRedondeoInase ?? pureza.malezasPorcentajeRedondeo ?? null;
-    this.purezaMalezasToleradas = pureza.malezasToleradasPorcentajeRedondeoInase != null ? 
+    this.purezaMalezasToleradas = pureza.malezasToleradasPorcentajeRedondeoInase != null ?
       pureza.malezasToleradasPorcentajeRedondeoInase.toString() : 'N';
     this.purezaClaseMateriaInerte = pureza.materiaInerteTipoInase ?? pureza.materiaInerteTipo ?? '';
     this.purezaOtrasSemillasDescripcion = 'No contiene.';
@@ -386,7 +389,6 @@ export class CertificadoComponent implements OnInit {
     this.dosnMalezasToleranciaCero = null;
     this.dosnMalezasTolerancia = null;
     this.dosnOtrosCultivos = null;
-    this.dosnBrassicaSpp = dosn.determinacionBrassica ? 'Contiene.' : 'No contiene.';
   }
 
   extraerDatosGerminacion(germinacion: GerminacionDto) {
@@ -488,15 +490,15 @@ export class CertificadoComponent implements OnInit {
     // Guardar loteId y reciboId de la ruta antes de cargar
     const loteIdFromRoute = this.loteId;
     const reciboIdFromRoute = this.reciboId;
-    
+
     this.certificadoService.obtenerCertificado(id).subscribe({
       next: (certificado: CertificadoDto) => {
         console.log('Certificado cargado del backend:', certificado);
-        
+
         // Restaurar loteId y reciboId de la ruta (tienen prioridad)
         if (loteIdFromRoute) this.loteId = loteIdFromRoute;
         if (reciboIdFromRoute) this.reciboId = reciboIdFromRoute;
-        
+
         // Si no hay loteId en la ruta pero el certificado tiene reciboId, obtenerlo del recibo
         if (!this.loteId && certificado.reciboId) {
           this.reciboService.obtenerRecibo(certificado.reciboId).subscribe({
@@ -512,7 +514,7 @@ export class CertificadoComponent implements OnInit {
           // Si ya tenemos loteId, cargar datos del lote
           this.cargarDatosLote(this.loteId);
         }
-        
+
         // Cargar datos generales
         this.nombreSolicitante = certificado.nombreSolicitante || '';
         this.especie = certificado.especie || '';
@@ -531,12 +533,12 @@ export class CertificadoComponent implements OnInit {
         this.tipoCertificado = certificado.tipoCertificado ?? null;
         this.fechaEmision = this.formatearFechaParaInput(certificado.fechaEmision);
         this.firmante = certificado.firmante || '';
-        
+
         // Solo usar reciboId del certificado si no hay uno en la ruta
         if (!this.reciboId && certificado.reciboId) {
           this.reciboId = certificado.reciboId;
         }
-        
+
         // Cargar datos del recibo para extraer el peso y determinar análisis solicitados
         if (this.reciboId) {
           this.reciboService.obtenerRecibo(this.reciboId).subscribe({
@@ -562,7 +564,7 @@ export class CertificadoComponent implements OnInit {
           // Si no hay reciboId, cargar análisis disponibles de todas formas
           this.cargarAnalisisDisponibles();
         }
-        
+
         // Cargar resultados de análisis - Pureza
         this.purezaSemillaPura = certificado.purezaSemillaPura ?? null;
         this.purezaMateriaInerte = certificado.purezaMateriaInerte ?? null;
@@ -576,16 +578,17 @@ export class CertificadoComponent implements OnInit {
         this.purezaOtrasSemillasDescripcion = certificado.purezaOtrasSemillasDescripcion || '';
         // Determinar si existe análisis de pureza
         this.tienePureza = this.purezaSemillaPura != null || this.purezaMateriaInerte != null || this.purezaOtrasSemillas != null || this.purezaOtrosCultivos != null || this.purezaMalezas != null;
-        
+
         // Cargar resultados de análisis - DOSN
         this.dosnGramosAnalizados = certificado.dosnGramosAnalizados ?? null;
         this.dosnMalezasToleranciaCero = certificado.dosnMalezasToleranciaCero ?? null;
         this.dosnMalezasTolerancia = certificado.dosnMalezasTolerancia ?? null;
         this.dosnOtrosCultivos = certificado.dosnOtrosCultivos ?? null;
-        this.dosnBrassicaSpp = certificado.dosnBrassicaSpp || '';
+        this.dosnBrassicaSpp = certificado.dosnBrassicaSpp != null ? String(certificado.dosnBrassicaSpp) : "0";
+
         // Determinar si existe análisis de DOSN
         this.tieneDOSN = this.dosnGramosAnalizados != null;
-        
+
         // Cargar resultados de análisis - Germinación
         this.germinacionNumeroDias = certificado.germinacionNumeroDias ?? null;
         this.germinacionPlantulasNormales = certificado.germinacionPlantulasNormales ?? null;
@@ -598,7 +601,7 @@ export class CertificadoComponent implements OnInit {
         this.germinacionPreTratamiento = certificado.germinacionPreTratamiento || '';
         // Determinar si existe análisis de germinación
         this.tieneGerminacion = this.germinacionNumeroDias != null || this.germinacionPlantulasNormales != null || this.germinacionPlantulasAnormales != null;
-        
+
         console.log('Datos del certificado asignados al formulario');
       },
       error: (err) => {
@@ -610,12 +613,12 @@ export class CertificadoComponent implements OnInit {
 
   formatearFechaParaInput(fecha: string | null): string {
     if (!fecha) return '';
-    
+
     // Si la fecha viene en formato ISO con 'T', usar split (más confiable)
     if (fecha.includes('T')) {
       return fecha.split('T')[0];
     }
-    
+
     // Si no, intentar parsear como Date
     try {
       const date = new Date(fecha);
@@ -788,7 +791,7 @@ export class CertificadoComponent implements OnInit {
       dosnMalezasToleranciaCero: this.dosnMalezasToleranciaCero ?? null,
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
-      dosnBrassicaSpp: this.dosnBrassicaSpp || null,
+      dosnBrassicaSpp: null,
       // Resultados de análisis - Germinación
       germinacionNumeroDias: this.germinacionNumeroDias ?? null,
       germinacionPlantulasNormales: this.germinacionPlantulasNormales ?? null,
@@ -897,7 +900,7 @@ export class CertificadoComponent implements OnInit {
       dosnMalezasToleranciaCero: this.dosnMalezasToleranciaCero ?? null,
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
-      dosnBrassicaSpp: this.dosnBrassicaSpp || null,
+      dosnBrassicaSpp: Number(this.dosnBrassicaSpp) || 0,
       // Resultados de análisis - Germinación
       germinacionNumeroDias: this.germinacionNumeroDias ?? null,
       germinacionPlantulasNormales: this.germinacionPlantulasNormales ?? null,
