@@ -18,6 +18,8 @@ RUN chown -R nodejs:nodejs /app
 USER nodejs
 
 # Instalar dependencias (incluyendo devDependencies para desarrollo)
+# Nota: Las dependencias PDF (jspdf, html2canvas, @types/html2canvas) se instalan
+# automáticamente desde package.json durante este paso
 RUN npm install
 
 # Copiar código fuente

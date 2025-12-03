@@ -8,6 +8,8 @@ WORKDIR /app
 COPY frontend/package*.json ./
 
 # Instalar dependencias (incluyendo devDependencies para build)
+# Nota: Las dependencias PDF (jspdf, html2canvas, @types/html2canvas) se instalan
+# automáticamente desde package.json durante este paso
 RUN npm ci
 
 # Copiar código fuente del frontend
