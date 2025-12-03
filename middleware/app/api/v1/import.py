@@ -128,17 +128,22 @@ async def importar(
             resultado = await procesar_un_archivo(archivos_lista[0], table, upsert, keep_ids)
             
             if resultado["exito"]:
+                datos_respuesta = {
+                    "tabla": resultado["tabla"],
+                    "archivo": resultado["archivo"],
+                    "formato": resultado["formato"],
+                    "insertados": resultado["insertados"],
+                    "actualizados": resultado["actualizados"],
+                    "upsert": upsert,
+                    "keep_ids": keep_ids
+                }
+                # Incluir información de errores si existe
+                if "errores" in resultado:
+                    datos_respuesta["errores"] = resultado["errores"]
+                
                 respuesta_exito = crear_respuesta_exito(
                     mensaje="Importación completada exitosamente",
-                    datos={
-                        "tabla": resultado["tabla"],
-                        "archivo": resultado["archivo"],
-                        "formato": resultado["formato"],
-                        "insertados": resultado["insertados"],
-                        "actualizados": resultado["actualizados"],
-                        "upsert": upsert,
-                        "keep_ids": keep_ids
-                    }
+                    datos=datos_respuesta
                 )
                 return JSONResponse(content=respuesta_exito, status_code=200)
             else:
