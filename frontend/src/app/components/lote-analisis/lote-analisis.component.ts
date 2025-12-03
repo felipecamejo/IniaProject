@@ -5,6 +5,7 @@ import { filter } from 'rxjs/operators';
 import { ReciboService } from '../../../services/ReciboService';
 import { LoteService } from '../../../services/LoteService';
 import { CertificadoService } from '../../../services/CertificadoService';
+import { MiddlewareService } from '../../../services/MiddlewareService';
 import { LoteDto } from '../../../models/Lote.dto';
 import { ReciboDto } from '../../../models/Recibo.dto';
 import { CertificadoDto } from '../../../models/Certificado.dto';
@@ -32,12 +33,16 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   certificadoAEliminar: CertificadoDto | null = null;
   confirmLoading: boolean = false;
 
+  // Propiedades para quick export
+  isExporting: boolean = false;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private reciboService: ReciboService,
     private loteService: LoteService,
-    private certificadoService: CertificadoService
+    private certificadoService: CertificadoService,
+    private middlewareService: MiddlewareService
   ) {}
 
   ngOnInit(): void {
@@ -494,5 +499,70 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
 
   goToListadoLogs() {
     this.router.navigate([`${this.loteId}/${this.reciboId}/listado-logs`]);
+  }
+
+  quickExport(): void {
+    if (!this.loteId) {
+      alert('Error: No se pudo identificar el lote para exportar.');
+      return;
+    }
+
+    if (this.isExporting) {
+      return;
+    }
+
+    this.isExporting = true;
+
+    this.middlewareService.exportarAnalisisPorLote(this.loteId, 'xlsx').subscribe({
+      next: (blob: Blob) => {
+        if (blob.size === 0) {
+          alert('El archivo generado está vacío. No se encontraron análisis para exportar.');
+          this.isExporting = false;
+          return;
+        }
+
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `lote_${this.loteId}_export.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        this.isExporting = false;
+      },
+      error: (error) => {
+        console.error('Error al exportar análisis del lote:', error);
+        let errorMessage = 'Error al exportar los análisis del lote';
+        
+        if (error.error instanceof Blob) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const text = reader.result as string;
+            try {
+              const jsonError = JSON.parse(text);
+              errorMessage = jsonError.mensaje || errorMessage;
+              if (jsonError.detalles) {
+                errorMessage += '\n\nDetalles: ' + jsonError.detalles;
+              }
+            } catch {
+              errorMessage = text || errorMessage;
+            }
+            alert(errorMessage);
+            this.isExporting = false;
+          };
+          reader.readAsText(error.error);
+        } else {
+          if (error.status === 404) {
+            errorMessage = 'No se encontraron análisis asociados a este lote.';
+          } else if (error.status === 0) {
+            errorMessage = 'Error de conexión. Verifique que el servidor esté ejecutándose.';
+          }
+          alert(errorMessage);
+          this.isExporting = false;
+        }
+      }
+    });
   }
 }
