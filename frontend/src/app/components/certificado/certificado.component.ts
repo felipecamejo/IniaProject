@@ -6,6 +6,8 @@ import { CertificadoService } from '../../../services/CertificadoService';
 import { CertificadoDto, TipoCertificado } from '../../../models/Certificado.dto';
 import { DateService } from '../../../services/DateService';
 import { ReciboService } from '../../../services/ReciboService';
+import { EspecieService } from '../../../services/EspecieService';
+import { CultivoService } from '../../../services/CultivoService';
 import { ReciboDto } from '../../../models/Recibo.dto';
 import { LoteService } from '../../../services/LoteService';
 import { LoteDto } from '../../../models/Lote.dto';
@@ -132,6 +134,8 @@ export class CertificadoComponent implements OnInit {
     private purezaService: PurezaService,
     private germinacionService: GerminacionService,
     private dosnService: DOSNService,
+    private especieService: EspecieService,
+    private cultivoService: CultivoService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -206,9 +210,32 @@ export class CertificadoComponent implements OnInit {
       next: (recibo: ReciboDto) => {
         this.recibo = recibo;
         this.analisisSolicitados = recibo.analisisSolicitados;
-        // Pre-llenar campos del certificado con datos del recibo
-        if (recibo.especie) this.especie = recibo.especie;
-        if (recibo.cultivar) this.cultivar = recibo.cultivar;
+        // Obtener nombre de especie por ID
+        if (recibo.especieId) {
+          this.especieService.obtener(recibo.especieId).subscribe({
+            next: (especieDto: any) => {
+              this.especie = especieDto.nombre || '';
+            },
+            error: () => {
+              this.especie = '';
+            }
+          });
+        } else {
+          this.especie = '';
+        }
+        // Obtener nombre de cultivar por ID
+        if (recibo.cultivarId) {
+          this.cultivoService.obtener(recibo.cultivarId).subscribe({
+            next: (cultivarDto: any) => {
+              this.cultivar = cultivarDto.nombre || '';
+            },
+            error: () => {
+              this.cultivar = '';
+            }
+          });
+        } else {
+          this.cultivar = '';
+        }
         if (recibo.kgLimpios) this.pesoKg = recibo.kgLimpios;
 
         // Obtener loteId del recibo si no está en la ruta
@@ -592,7 +619,7 @@ export class CertificadoComponent implements OnInit {
         this.otrasDeterminaciones = certificado.otrasDeterminaciones || '';
         this.nombreFirmante = certificado.nombreFirmante || '';
         this.funcionFirmante = certificado.funcionFirmante || '';
-        
+
         // Determinar si existe análisis de DOSN
         this.tieneDOSN = this.dosnGramosAnalizados != null;
 

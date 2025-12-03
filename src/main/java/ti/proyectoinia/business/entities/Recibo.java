@@ -18,8 +18,13 @@ public class Recibo {
     @Column(name = "NRO_ANALISIS")
     private Integer nroAnalisis;
 
-    @Column(name = "ESPECIE")
-    private String especie;
+    @ManyToOne
+    @JoinColumn(name = "ESPECIE_ID")
+    private Especie especie;
+
+    @ManyToOne
+    @JoinColumn(name = "CULTIVAR_ID")
+    private Cultivo cultivar;
 
     @Column(name = "FICHA")
     private String ficha;
@@ -32,9 +37,6 @@ public class Recibo {
 
     @Column(name = "ORIGEN")
     private String origen;
-
-    @Column(name = "CULTIVAR")
-    private String cultivar;
 
     @Column(name = "DEPOSITO_ID")
     private Long depositoId;

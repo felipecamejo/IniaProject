@@ -21,15 +21,18 @@
 
                 <div class="form-field">
                     <label for="especie">Especie</label>
-                    <input id="especie" type="text" [(ngModel)]="especie" name="especie" pInputText [readonly]="isEditing && isObservador()" />
+                    <select id="especie" [(ngModel)]="selectedEspecieId" name="especieId" [disabled]="isEditing && isObservador()">
+                        <option [value]="null">Seleccionar especie</option>
+                        <option *ngFor="let e of especies" [value]="e.value">{{ e.label }}</option>
+                    </select>
                 </div>
 
                 <div class="form-field">
                     <label for="cultivar">Cultivar</label>
-                    <select id="cultivar" [(ngModel)]="selectedCultivar" name="cultivar" [disabled]="isEditing && isObservador()">
-            <option value="">Seleccionar cultivar</option>
-            <option *ngFor="let c of cultivares || []" [value]="c.value">{{ c.label }}</option>
-          </select>
+                    <select id="cultivar" [(ngModel)]="selectedCultivarId" name="cultivarId" [disabled]="isEditing && isObservador()">
+                        <option [ngValue]="null">Seleccionar cultivar</option>
+                        <option *ngFor="let c of cultivares" [ngValue]="c.value">{{ c.label }}</option>
+                    </select>
                 </div>
 
                 <div class="form-field">
@@ -160,7 +163,7 @@
             <div class="submit-btn" *ngIf="!(isEditing && isObservador())">
                 <button pButton type="submit"
                         [disabled]="errores.length > 0"
-                        [label]="isEditing ? 'Actualizar' : 'Realizar Recibo'"
+                        [label]="isEditing ? 'Editar Recibo' : 'Crear Recibo'"
                         class="p-button-success">
                 </button>
             </div>

@@ -1,0 +1,135 @@
+<div class="container">
+    <!-- Botón de navegación hacia atrás -->
+    <button class="back-button" (click)="goToHome()">
+        <i class="pi pi-arrow-left"></i>
+    </button>
+    
+    <p-card class="card">
+        <ng-template pTemplate="header">
+            <h2 class="title">Listado de Especies</h2>
+        </ng-template>
+
+        <div class="search-section">
+            <div class="search-bar">
+                <input type="text" placeholder="Buscar Especies..." class="search-input" [(ngModel)]="searchText" name="search" />
+            </div>
+            <div class="filter-dropdown">
+                 <div class="submit-btn">
+                    <button pButton type="button" (click)="abrirModal()" label="Crear Especie" class="p-button-primary"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicador de carga -->
+        <div class="loading-message" *ngIf="loading">
+            <div class="loading-content">
+                <i class="pi pi-spin pi-spinner"></i>
+                <p>Cargando Especies...</p>
+            </div>
+        </div>
+
+        <!-- Mensaje de error -->
+        <div class="error-message" *ngIf="error && !loading">
+            <div class="error-content">
+                <i class="pi pi-exclamation-triangle"></i>
+                <h3>Error al cargar</h3>
+                <p>{{ error }}</p>
+                <button pButton type="button" label="Reintentar" class="p-button-secondary" (click)="cargar()"></button>
+            </div>
+        </div>
+
+        <!-- Mensaje cuando no hay elementos -->
+        <div class="no-results-message" *ngIf="!loading && !error && itemsFiltrados.length === 0">
+            <div class="no-results-content">
+                <h3>No se encontraron Especies</h3>
+                <p>No hay Especies que coincidan con los filtros seleccionados.</p>
+                <p>Intenta ajustar los criterios de búsqueda.</p>
+            </div>
+        </div>
+
+        <!-- Lista de elementos filtrados -->
+        <ng-container *ngIf="!loading && !error">
+            <div class="blue-rectangle" 
+                 *ngFor="let item of itemsFiltrados"
+                 >
+            <div class="item-header">
+                <div class="item-info">
+                    <h3 class="item-title">{{ item.nombre }}</h3>
+                </div>
+            </div>
+            <div class="divider-line"></div>
+            <div class="item-content">
+                <div class="item-description">
+                    <p>{{ item.descripcion || 'Sin descripción disponible' }}</p>
+                </div>
+                <div class="item-actions">
+                    <button class="action-button edit-button" (click)="editarItem(item)" title="Editar">
+                        <i class="pi pi-pencil"></i>
+                    </button>
+                    <button class="action-button delete-button" (click)="eliminarItem(item)" title="Eliminar">
+                        <i class="pi pi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paginación -->
+        <div class="pagination" *ngIf="totalPages > 1">
+            <div class="pagination-info">
+                <span>
+                    Mostrando {{ getFirstItemIndex() }} - {{ getLastItemIndex() }} de {{ totalElements }}
+                </span>
+            </div>
+            <div class="pagination-controls">
+                <button class="page-btn" (click)="prevPage()" [disabled]="page === 0">
+                    <i class="pi pi-angle-left"></i>
+                </button>
+                <span class="page-indicator">Página {{ page + 1 }} / {{ totalPages }}</span>
+                <button class="page-btn" (click)="nextPage()" [disabled]="page >= totalPages - 1">
+                    <i class="pi pi-angle-right"></i>
+                </button>
+                <select class="size-select" [ngModel]="size" (ngModelChange)="onPageSizeChange($event)">
+                    <option [value]="10">10</option>
+                    <option [value]="12">12</option>
+                    <option [value]="20">20</option>
+                    <option [value]="50">50</option>
+                </select>
+            </div>
+        </div>
+        </ng-container>
+    
+    </p-card>
+
+    <!-- Modal de Autenticación -->
+    <p-dialog 
+        header="{{ modalTitulo }}" 
+        [(visible)]="mostrarModal" 
+        [modal]="true" 
+        [draggable]="false" 
+        [resizable]="false"
+        [style]="{width: '90vw', maxWidth: '450px'}"
+        styleClass="auth-modal">
+        
+        <form #modalForm="ngForm" (ngSubmit)="onSubmitModal(modalForm)">
+            <div class="modal-form-grid">
+                <div class="modal-form-field">
+                    <label for="modalNombre">Nombre</label>
+                    <input id="modalNombre" type="text" [(ngModel)]="modalNombre" name="modalNombre" pInputText required />
+                </div>
+
+                <div class="modal-form-field">
+                    <label for="modalDescripcion">Descripción (opcional)</label>
+                    <textarea id="modalDescripcion" [(ngModel)]="modalDescripcion" name="modalDescripcion" pInputText rows="4"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-submit-btn">
+                <button pButton type="submit" [disabled]="modalLoading || modalForm.invalid" 
+                        label="{{ modalLoading ? 'Ingresando...' : 'Listo' }}" 
+                        class="p-button-primary"></button>
+            </div>
+
+            <div *ngIf="modalError" class="error">{{ modalError }}</div>
+        </form>
+    </p-dialog>
+</div>

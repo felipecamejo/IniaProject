@@ -3,6 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReciboService } from '../../../services/ReciboService';
 import { LoteService } from '../../../services/LoteService';
+import { EspecieService } from '../../../services/EspecieService';
+import { CultivoService } from '../../../services/CultivoService';
 import { ReciboDto } from '../../../models/Recibo.dto';
 import { ReciboEstado } from '../../../models/enums';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -44,15 +46,10 @@ export class ReciboComponent implements OnInit {
       return this.authService.isObservador();
     }
     
-  // Dropdown options
-  cultivares: Array<{label: string, value: string}> = [
-    { label: 'Cultivar A', value: '1' },
-    { label: 'Cultivar B', value: '2' },
-    { label: 'Cultivar C', value: '3' }
-  ];
-
-  // Propiedades enlazadas con ngModel
-  selectedCultivar: string = '';
+  especies: Array<{label: string, value: number}> = [];
+  cultivares: Array<{label: string, value: number}> = [];
+  selectedEspecieId: number | null = null;
+  selectedCultivarId: number | null = null;
   // Estado del recibo
   estadosOptions: Array<{label: string, value: string | null}> = [
     { label: 'Seleccionar estado', value: null },
@@ -124,16 +121,38 @@ export class ReciboComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private logService: LogService
+    private logService: LogService,
+    private especieService: EspecieService,
+    private cultivoService: CultivoService
   ) {}
 
   ngOnInit(): void {
-    // Debug: Verificar estado de autenticación
     const token = this.authService.token;
-
     if (!token) {
       console.warn('⚠️ No hay token de autenticación. El usuario debe hacer login primero.');
     }
+
+    // Cargar especies usando el servicio inyectado
+    this.especieService.listar().subscribe({
+      next: (especies: any[]) => {
+        this.especies = especies.map(e => ({ label: e.nombre, value: e.id }));
+      },
+      error: (err) => {
+        console.error('Error cargando especies:', err);
+        this.especies = [];
+      }
+    });
+
+    // Cargar cultivares usando el servicio inyectado
+    this.cultivoService.listarCultivos().subscribe({
+      next: (cultivares: any[]) => {
+        this.cultivares = cultivares.map(c => ({ label: c.nombre, value: c.id }));
+      },
+      error: (err) => {
+        console.error('Error cargando cultivares:', err);
+        this.cultivares = [];
+      }
+    });
 
     this.depositoService.listarDepositos().subscribe({
       next: (depositos: DepositoDto[]) => {
@@ -163,7 +182,8 @@ export class ReciboComponent implements OnInit {
   }
 
   inicializarCampos() {
-    this.selectedCultivar = '';
+    this.selectedCultivarId = null;
+    this.selectedEspecieId = null;
     this.kilos = 0;
     // Usar fecha local actual sin problemas de zona horaria
     const today = new Date();
@@ -173,7 +193,7 @@ export class ReciboComponent implements OnInit {
     this.fechaRecibo = `${year}-${month}-${day}`;
     this.nLab = '';
     this.articulo = null;
-    this.especie = '';
+    // ...existing code...
     this.ficha = '';
     this.lote = null;
     this.origen = '';
@@ -205,7 +225,7 @@ export class ReciboComponent implements OnInit {
       this.originalRecibo = recibo;
       this.nLab = recibo.nroAnalisis?.toString() || '';
       this.articulo = recibo.articulo;
-      this.selectedCultivar = recibo.cultivar || '';
+      this.selectedCultivarId = recibo.cultivarId ?? null;
       this.kilos = recibo.kgLimpios || 0;
       // Conservar fecha original al editar, manejando zona horaria local
       if (recibo.fechaRecibo) {
@@ -217,7 +237,7 @@ export class ReciboComponent implements OnInit {
       } else {
         this.fechaRecibo = '';
       }
-      this.especie = recibo.especie || '';
+      this.selectedEspecieId = recibo.especieId || null;
       this.ficha = recibo.ficha || '';
       this.lote = recibo.loteId || null;
       this.origen = recibo.origen || '';
@@ -306,28 +326,28 @@ export class ReciboComponent implements OnInit {
 
   crearRecibo() {
     const payload: ReciboDto = {
-        id: null,
-        nroAnalisis: Number(this.nLab) || null,
-        depositoId: Number(this.selectedDepositoId) || null,
-        estado: this.selectedEstado ?? null,
-        dosnAnalisisId: null,
-        pmsAnalisisId: null,
-        purezaAnalisisId: null,
-        germinacionAnalisisId: null,
-        purezaPNotatumAnalisisId: null,
-        sanitarioAnalisisId: null,
-        tetrazolioAnalisisId: null,
-        especie: this.especie || null,
-        ficha: this.ficha || null,
-        fechaRecibo: DateService.ajustarFecha(this.fechaRecibo),
-        remitente: this.remite || null,
-        origen: this.origen || null,
-        cultivar: this.selectedCultivar || null,
-        loteId: Number(this.lote2) || null,
-        kgLimpios: Number(this.kilos) || null,
-        analisisSolicitados: null,
-        articulo: this.articulo,
-        activo: true
+      id: null,
+      nroAnalisis: Number(this.nLab) || null,
+      depositoId: Number(this.selectedDepositoId) || null,
+      estado: this.selectedEstado ?? null,
+      dosnAnalisisId: null,
+      pmsAnalisisId: null,
+      purezaAnalisisId: null,
+      germinacionAnalisisId: null,
+      purezaPNotatumAnalisisId: null,
+      sanitarioAnalisisId: null,
+      tetrazolioAnalisisId: null,
+      especieId: this.selectedEspecieId,
+      ficha: this.ficha || null,
+      fechaRecibo: DateService.ajustarFecha(this.fechaRecibo),
+      remitente: this.remite || null,
+      origen: this.origen || null,
+      cultivarId: this.selectedCultivarId ?? null,
+      loteId: Number(this.lote2) || null,
+      kgLimpios: Number(this.kilos) || null,
+      analisisSolicitados: null,
+      articulo: this.articulo,
+      activo: true
     };
 
     this.reciboService.crearRecibo(payload).subscribe({
@@ -376,9 +396,7 @@ export class ReciboComponent implements OnInit {
       id: this.reciboId,
       nroAnalisis: Number(this.nLab) || base.nroAnalisis || null,
       depositoId: Number(this.selectedDepositoId) ?? base.depositoId ?? null,
-      // Si la opción por defecto está seleccionada, enviar null como estado
       estado: this.selectedEstado ?? base.estado ?? null,
-      // Mantener arrays existentes si no se reemplazan (usar null por defecto si ninguno existe)
       dosnAnalisisId: (this.dosnAnalisisId ?? base.dosnAnalisisId) ?? null,
       pmsAnalisisId: (this.pmsAnalisisId ?? base.pmsAnalisisId) ?? null,
       purezaAnalisisId: (this.purezaAnalisisId ?? base.purezaAnalisisId) ?? null,
@@ -386,12 +404,12 @@ export class ReciboComponent implements OnInit {
       purezaPNotatumAnalisisId: (this.purezaPNotatumAnalisisId ?? base.purezaPNotatumAnalisisId) ?? null,
       sanitarioAnalisisId: (this.sanitarioAnalisisId ?? base.sanitarioAnalisisId) ?? null,
       tetrazolioAnalisisId: (this.tetrazolioAnalisisId ?? base.tetrazolioAnalisisId) ?? null,
-      especie: this.especie || base.especie || null,
+      especieId: this.selectedEspecieId ?? base.especieId ?? null,
       ficha: this.ficha || base.ficha || null,
       fechaRecibo: DateService.ajustarFecha(this.fechaRecibo) || (base.fechaRecibo ?? new Date().toISOString()),
       remitente: this.remite || base.remitente || null,
       origen: this.origen || base.origen || null,
-      cultivar: this.selectedCultivar || base.cultivar || null,
+      cultivarId: this.selectedCultivarId ?? base.cultivarId ?? null,
       loteId: Number(this.lote2) || base.loteId || null,
       kgLimpios: Number(this.kilos) || base.kgLimpios || null,
       analisisSolicitados: base.analisisSolicitados || null,
