@@ -87,9 +87,6 @@ public class Pureza {
     @Column(name = "OTROS_CULTIVO")
     private Float otrosCultivo;
 
-    @Column(name = "FECHA_ESTANDAR")
-    private Date fechaEstandar;
-
     @Column(name = "ESTANDAR")
     private boolean estandar;
 
