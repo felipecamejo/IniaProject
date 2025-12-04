@@ -45,7 +45,7 @@ public class LoteSecurityTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeCrearLote() throws Exception {
-        when(loteService.crearLote(any(LoteDto.class))).thenReturn(1L);
+        when(loteService.crearLote(any(LoteDto.class))).thenReturn(String.valueOf(1L));
 
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -127,7 +127,7 @@ public class LoteSecurityTest {
         LoteDto dto = new LoteDto();
         dto.setId(1L);
 
-        when(loteService.editarLote(any(LoteDto.class))).thenReturn(1L);
+        when(loteService.editarLote(any(LoteDto.class))).thenReturn(String.valueOf(1L));
 
         mockMvc.perform(put(apiUrl + "/editar")
                         .contentType(MediaType.APPLICATION_JSON)

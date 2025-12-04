@@ -25,6 +25,10 @@ export interface CertificadoDto {
   reciboId: number | null;
   activo: boolean;
 
+  nombreFirmante: string | null;
+  funcionFirmante: string | null;
+  otrasDeterminaciones: string | null;
+
   // Resultados de análisis - Pureza
   purezaSemillaPura: number | null;
   purezaMateriaInerte: number | null;

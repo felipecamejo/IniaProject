@@ -38,9 +38,6 @@ public class LoteController {
     )
     public ResponseEntity<String> crearLote(@RequestBody LoteDto loteDto) {
         if (loteDto.getNombre() != null && !loteDto.getNombre().trim().isEmpty()) {
-            if (loteDto.getNombre().matches(".*\\d.*")) {
-                return new ResponseEntity<>("El nombre del Lote no puede contener números", HttpStatus.BAD_REQUEST);
-            }
             loteDto.setId(null);
             String response = this.loteService.crearLote(loteDto);
             return new ResponseEntity<>(response, HttpStatus.CREATED);

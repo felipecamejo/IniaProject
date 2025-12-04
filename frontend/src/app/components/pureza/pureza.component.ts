@@ -1296,20 +1296,12 @@ export class PurezaComponent implements OnInit {
 
       const hoy = new Date();
       const fechaMedicion = this.fechaMedicion ? new Date(this.fechaMedicion) : null;
-      const fechaInase = this.fechaInase ? new Date(this.fechaInase) : null;
-      const fechaInia = this.fechaInia ? new Date(this.fechaInia) : null;
 
+      // Validaciones de fechas futuras eliminadas para permitir fechas futuras
+      // Solo se mantiene la validación de fechaMedicion si es necesaria
       if (fechaMedicion != null && fechaMedicion > hoy) {
         this.errores.push('La fecha no puede ser mayor a la fecha actual.');
       }
-
-      if (fechaInase != null && fechaInase > hoy) {
-        this.errores.push('La fecha INASE no puede ser mayor a la fecha actual.');
-      }
-
-      if (fechaInia != null && fechaInia > hoy) {
-        this.errores.push('La fecha INIA no puede ser mayor a la fecha actual.');
-      } 
       
       // Validar que todos los valores de gramos no sean negativos
       this.validarGramos();
@@ -1318,10 +1310,8 @@ export class PurezaComponent implements OnInit {
     }
 
     validarFecha(fecha: string | null): boolean {
-      if (!fecha) return false;
-      const selectedDate = new Date(fecha);
-      const today = new Date();
-      return selectedDate >= today;
+      // Siempre retornar false para permitir fechas futuras
+      return false;
     }
 
 }

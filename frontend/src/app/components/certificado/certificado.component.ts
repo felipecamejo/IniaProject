@@ -6,6 +6,8 @@ import { CertificadoService } from '../../../services/CertificadoService';
 import { CertificadoDto, TipoCertificado } from '../../../models/Certificado.dto';
 import { DateService } from '../../../services/DateService';
 import { ReciboService } from '../../../services/ReciboService';
+import { EspecieService } from '../../../services/EspecieService';
+import { CultivoService } from '../../../services/CultivoService';
 import { ReciboDto } from '../../../models/Recibo.dto';
 import { LoteService } from '../../../services/LoteService';
 import { LoteDto } from '../../../models/Lote.dto';
@@ -15,6 +17,8 @@ import { DOSNService } from '../../../services/DOSNService';
 import { PurezaDto } from '../../../models/Pureza.dto';
 import { GerminacionDto } from '../../../models/Germinacion.dto';
 import { DOSNDto } from '../../../models/DOSN.dto';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -43,6 +47,9 @@ export class CertificadoComponent implements OnInit {
   nombreSolicitante: string = '';
   especie: string = '';
   cultivar: string = '';
+  otrasDeterminaciones: string = '';
+  nombreFirmante: string = '';
+  funcionFirmante: string = '';
   categoria: string = '';
   responsableMuestreo: string = '';
   fechaMuestreo: string = '';
@@ -121,6 +128,7 @@ export class CertificadoComponent implements OnInit {
   isFechaIngresoInvalida: boolean = false;
   isFechaFinalizacionInvalida: boolean = false;
   isFechaEmisionInvalida: boolean = false;
+  isExportingPDF: boolean = false;
 
   constructor(
     private certificadoService: CertificadoService,
@@ -129,6 +137,8 @@ export class CertificadoComponent implements OnInit {
     private purezaService: PurezaService,
     private germinacionService: GerminacionService,
     private dosnService: DOSNService,
+    private especieService: EspecieService,
+    private cultivoService: CultivoService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -203,9 +213,32 @@ export class CertificadoComponent implements OnInit {
       next: (recibo: ReciboDto) => {
         this.recibo = recibo;
         this.analisisSolicitados = recibo.analisisSolicitados;
-        // Pre-llenar campos del certificado con datos del recibo
-        if (recibo.especie) this.especie = recibo.especie;
-        if (recibo.cultivar) this.cultivar = recibo.cultivar;
+        // Obtener nombre de especie por ID
+        if (recibo.especieId) {
+          this.especieService.obtener(recibo.especieId).subscribe({
+            next: (especieDto: any) => {
+              this.especie = especieDto.nombre || 'Sin Especie';
+            },
+            error: () => {
+              this.especie = 'Sin Especie';
+            }
+          });
+        } else {
+          this.especie = 'Sin Especie';
+        }
+        // Obtener nombre de cultivar por ID
+        if (recibo.cultivarId) {
+          this.cultivoService.obtener(recibo.cultivarId).subscribe({
+            next: (cultivarDto: any) => {
+              this.cultivar = cultivarDto.nombre || 'Sin Cultivar';
+            },
+            error: () => {
+              this.cultivar = 'Sin Cultivar';
+            }
+          });
+        } else {
+          this.cultivar = 'Sin Cultivar';
+        }
         if (recibo.kgLimpios) this.pesoKg = recibo.kgLimpios;
 
         // Obtener loteId del recibo si no está en la ruta
@@ -517,8 +550,8 @@ export class CertificadoComponent implements OnInit {
 
         // Cargar datos generales
         this.nombreSolicitante = certificado.nombreSolicitante || '';
-        this.especie = certificado.especie || '';
-        this.cultivar = certificado.cultivar || '';
+        this.especie = certificado.especie || 'Sin Especie';
+        this.cultivar = certificado.cultivar || 'Sin Cultivar';
         // Si no hay categoría en el certificado, se cargará desde el lote en cargarDatosLote
         this.categoria = certificado.categoria || '';
         this.responsableMuestreo = certificado.responsableMuestreo || '';
@@ -585,6 +618,10 @@ export class CertificadoComponent implements OnInit {
         this.dosnMalezasTolerancia = certificado.dosnMalezasTolerancia ?? null;
         this.dosnOtrosCultivos = certificado.dosnOtrosCultivos ?? null;
         this.dosnBrassicaSpp = certificado.dosnBrassicaSpp != null ? String(certificado.dosnBrassicaSpp) : "0";
+
+        this.otrasDeterminaciones = certificado.otrasDeterminaciones || '';
+        this.nombreFirmante = certificado.nombreFirmante || '';
+        this.funcionFirmante = certificado.funcionFirmante || '';
 
         // Determinar si existe análisis de DOSN
         this.tieneDOSN = this.dosnGramosAnalizados != null;
@@ -791,7 +828,10 @@ export class CertificadoComponent implements OnInit {
       dosnMalezasToleranciaCero: this.dosnMalezasToleranciaCero ?? null,
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
-      dosnBrassicaSpp: null,
+      dosnBrassicaSpp: Number(this.dosnBrassicaSpp) ?? null,
+      otrasDeterminaciones: this.otrasDeterminaciones || null,
+      nombreFirmante: this.nombreFirmante || null,
+      funcionFirmante: this.funcionFirmante || null,
       // Resultados de análisis - Germinación
       germinacionNumeroDias: this.germinacionNumeroDias ?? null,
       germinacionPlantulasNormales: this.germinacionPlantulasNormales ?? null,
@@ -901,6 +941,9 @@ export class CertificadoComponent implements OnInit {
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
       dosnBrassicaSpp: Number(this.dosnBrassicaSpp) || 0,
+      otrasDeterminaciones: this.otrasDeterminaciones || null,
+      nombreFirmante: this.nombreFirmante || null,
+      funcionFirmante: this.funcionFirmante || null,
       // Resultados de análisis - Germinación
       germinacionNumeroDias: this.germinacionNumeroDias ?? null,
       germinacionPlantulasNormales: this.germinacionPlantulasNormales ?? null,
@@ -936,6 +979,76 @@ export class CertificadoComponent implements OnInit {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${day}/${month}/${year}`;
+  }
+
+  /**
+   * Exporta el certificado a PDF
+   */
+  exportarAPDF(): void {
+    if (!this.certificadoId || this.certificadoId === 0) {
+      alert('No hay certificado para exportar. Por favor, guarde el certificado primero.');
+      return;
+    }
+
+    this.isExportingPDF = true;
+
+    // Obtener el elemento del certificado
+    const certificadoElement = document.querySelector('.certificado-container') as HTMLElement;
+    
+    if (!certificadoElement) {
+      alert('Error: No se pudo encontrar el contenido del certificado.');
+      this.isExportingPDF = false;
+      return;
+    }
+
+    // Configurar opciones para html2canvas
+    const options = {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      width: certificadoElement.scrollWidth,
+      height: certificadoElement.scrollHeight
+    };
+
+    // Convertir el HTML a canvas
+    html2canvas(certificadoElement, options).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Calcular dimensiones del PDF
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+
+      // Crear PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      let position = 0;
+
+      // Agregar primera página
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Agregar páginas adicionales si es necesario
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // Generar nombre del archivo
+      const fileName = `Certificado_${this.numeroCertificado || 'N' + this.certificadoId}_${new Date().getTime()}.pdf`;
+      
+      // Descargar el PDF
+      pdf.save(fileName);
+      
+      this.isExportingPDF = false;
+    }).catch((error) => {
+      console.error('Error al generar PDF:', error);
+      alert('Error al generar el PDF. Por favor, intente nuevamente.');
+      this.isExportingPDF = false;
+    });
   }
 
   onCancel() {
