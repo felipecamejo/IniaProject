@@ -12,7 +12,6 @@ export interface CertificadoDto {
   responsableMuestreo: string | null;
   fechaMuestreo: string | null; // ISO string
   numeroLote: string | null;
-  pesoKg: number;
   numeroEnvases: number | null;
   fechaIngresoLaboratorio: string | null; // ISO string
   fechaFinalizacionAnalisis: string | null; // ISO string

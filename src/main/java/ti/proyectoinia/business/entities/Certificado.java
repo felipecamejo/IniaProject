@@ -39,9 +39,6 @@ public class Certificado {
     @Column(name = "NUMERO_LOTE")
     private String numeroLote;
 
-    @Column(name = "PESO_KG")
-    private Float pesoKg;
-
     @Column(name = "NUMERO_ENVASES")
     private Integer numeroEnvases;
 

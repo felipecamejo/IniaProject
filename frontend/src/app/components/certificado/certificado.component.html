@@ -297,7 +297,7 @@
         <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
       </div>
 
-      <div class="submit-btn" *ngIf="!isViewing">
+      <div class="submit-btn" *ngIf="!isViewing && viewSeleccionarImagenFirma">
         <button  pButton type="submit" [disabled]="errores.length > 0"
                 [label]="isEditing ? 'Actualizar' : 'Crear Certificado'"
                 class="p-button-success"></button>
@@ -316,6 +316,7 @@
     <!-- Botón de Exportar a PDF -->
     <div class="pdf-export-btn">
       <button pButton 
+              *ngIf="viewSeleccionarImagenFirma"
               type="button" 
               (click)="exportarAPDF()"
               [disabled]="!certificadoId || certificadoId === 0 || isExportingPDF"

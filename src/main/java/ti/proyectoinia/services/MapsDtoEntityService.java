@@ -1900,7 +1900,6 @@ public class MapsDtoEntityService {
         dto.setResponsableMuestreo(certificado.getResponsableMuestreo());
         dto.setFechaMuestreo(certificado.getFechaMuestreo());
         dto.setNumeroLote(certificado.getNumeroLote());
-        dto.setPesoKg(certificado.getPesoKg());
         dto.setNumeroEnvases(certificado.getNumeroEnvases());
         dto.setFechaIngresoLaboratorio(certificado.getFechaIngresoLaboratorio());
         dto.setFechaFinalizacionAnalisis(certificado.getFechaFinalizacionAnalisis());
@@ -1972,7 +1971,6 @@ public class MapsDtoEntityService {
         certificado.setResponsableMuestreo(dto.getResponsableMuestreo());
         certificado.setFechaMuestreo(dto.getFechaMuestreo());
         certificado.setNumeroLote(dto.getNumeroLote());
-        certificado.setPesoKg(dto.getPesoKg());
         certificado.setNumeroEnvases(dto.getNumeroEnvases());
         certificado.setFechaIngresoLaboratorio(dto.getFechaIngresoLaboratorio());
         certificado.setFechaFinalizacionAnalisis(dto.getFechaFinalizacionAnalisis());

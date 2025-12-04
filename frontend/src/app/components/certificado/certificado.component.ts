@@ -196,6 +196,8 @@ export class CertificadoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Siempre mostrar los botones al cargar la página
+    this.viewSeleccionarImagenFirma = true;
     // Obtener parámetros de la ruta
     this.route.paramMap.subscribe(params => {
       // Obtener loteId y reciboId de la ruta (si existen)
@@ -620,32 +622,28 @@ export class CertificadoComponent implements OnInit {
         // Adaptación: si el backend retorna una cadena base64, mostrarla como imagen
         if (typeof certificado.firmante === 'string' && (certificado.firmante as string).length > 0) {
           const firmanteStr = certificado.firmante as string;
-          // Si la cadena ya tiene el prefijo 'data:image', usarla directamente
           if (firmanteStr.startsWith('data:image')) {
             this.firmantePreviewUrl = firmanteStr;
           } else {
-            // Si es solo base64, agregar el prefijo para mostrar como imagen PNG
             this.firmantePreviewUrl = 'data:image/png;base64,' + firmanteStr;
           }
-          // Convertir base64 a Uint8Array para mantener la lógica interna
           let base64Data = firmanteStr;
           if (base64Data.startsWith('data:image')) {
             base64Data = base64Data.split(',')[1];
           }
           this.firmante = this.base64ToUint8Array(base64Data);
           this.firmantePreviewName = 'Firma cargada';
-          this.viewSeleccionarImagenFirma = false;
         } else if (Array.isArray(certificado.firmante) && (certificado.firmante as Array<any>).length > 0) {
           this.firmante = new Uint8Array(certificado.firmante as Array<number>);
           this.firmantePreviewUrl = this.uint8ArrayToBase64Image(this.firmante);
           this.firmantePreviewName = 'Firma cargada';
-          this.viewSeleccionarImagenFirma = false;
         } else {
           this.firmante = new Uint8Array(0);
           this.firmantePreviewUrl = null;
           this.firmantePreviewName = '';
-          this.viewSeleccionarImagenFirma = true;
         }
+        // Siempre mostrar los botones al cargar
+        this.viewSeleccionarImagenFirma = true;
   
 
         // Solo usar reciboId del certificado si no hay uno en la ruta
@@ -888,7 +886,6 @@ export class CertificadoComponent implements OnInit {
       responsableMuestreo: this.responsableMuestreo || null,
       fechaMuestreo: DateService.ajustarFecha(this.fechaMuestreo),
       numeroLote: this.numeroLote || null,
-      pesoKg: this.pesoKg ?? null,
       numeroEnvases: this.numeroEnvases ?? null,
       fechaIngresoLaboratorio: DateService.ajustarFecha(this.fechaIngresoLaboratorio),
       fechaFinalizacionAnalisis: DateService.ajustarFecha(this.fechaFinalizacionAnalisis),
@@ -1004,7 +1001,6 @@ export class CertificadoComponent implements OnInit {
       responsableMuestreo: this.responsableMuestreo || null,
       fechaMuestreo: DateService.ajustarFecha(this.fechaMuestreo),
       numeroLote: this.numeroLote || null,
-      pesoKg: this.pesoKg ?? null,
       numeroEnvases: this.numeroEnvases ?? null,
       fechaIngresoLaboratorio: DateService.ajustarFecha(this.fechaIngresoLaboratorio),
       fechaFinalizacionAnalisis: DateService.ajustarFecha(this.fechaFinalizacionAnalisis),
@@ -1086,31 +1082,29 @@ export class CertificadoComponent implements OnInit {
       return;
     }
 
-    this.viewSeleccionarImagenFirma = false;
-
     this.isExportingPDF = true;
 
-    // Obtener el elemento del certificado
-    const certificadoElement = document.querySelector('.certificado-container') as HTMLElement;
-    
-    if (!certificadoElement) {
-      alert('Error: No se pudo encontrar el contenido del certificado.');
-      this.isExportingPDF = false;
-      return;
-    }
+    // Ocultar los botones justo antes de capturar el PDF
+    this.viewSeleccionarImagenFirma = false;
 
-    // Configurar opciones para html2canvas
-    const options = {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: '#ffffff',
-      width: certificadoElement.scrollWidth,
-      height: certificadoElement.scrollHeight
-    };
-
-    // Convertir el HTML a canvas
-    html2canvas(certificadoElement, options).then((canvas: HTMLCanvasElement) => {
+    // Esperar a que el DOM se actualice antes de capturar
+    setTimeout(() => {
+      const certificadoElement = document.querySelector('.certificado-container') as HTMLElement;
+      if (!certificadoElement) {
+        alert('Error: No se pudo encontrar el contenido del certificado.');
+        this.isExportingPDF = false;
+        this.viewSeleccionarImagenFirma = true;
+        return;
+      }
+      const options = {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        width: certificadoElement.scrollWidth,
+        height: certificadoElement.scrollHeight
+      };
+      html2canvas(certificadoElement, options).then((canvas: HTMLCanvasElement) => {
       const imgData = canvas.toDataURL('image/png');
       
       // Calcular dimensiones del PDF
@@ -1142,13 +1136,14 @@ export class CertificadoComponent implements OnInit {
       pdf.save(fileName);
 
       this.viewSeleccionarImagenFirma = true;
-      
       this.isExportingPDF = false;
     }).catch((error: any) => {
       console.error('Error al generar PDF:', error);
       alert('Error al generar el PDF. Por favor, intente nuevamente.');
       this.isExportingPDF = false;
+      this.viewSeleccionarImagenFirma = true;
     });
+  }, 0);
   }
 
   onCancel() {

@@ -19,7 +19,6 @@ public class CertificadoDto {
     private String responsableMuestreo;
     private Date fechaMuestreo;
     private String numeroLote;
-    private Float pesoKg;
     private Integer numeroEnvases;
 
     // Datos del laboratorio
