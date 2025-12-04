@@ -78,4 +78,6 @@ public class GerminacionDto {
     private Date fechaCreacion;
 
     private Date fechaRepeticion;
+
+    private Date fechaINASE;
 }

@@ -109,4 +109,7 @@ public class Germinacion {
 
     @Column(name = "GERMINACION_FECHA_REPETICION")
     private Date fechaRepeticion;
+
+    @Column(name = "GERMINACION_FECHA_INASE")
+    private Date fechaINASE;
 }

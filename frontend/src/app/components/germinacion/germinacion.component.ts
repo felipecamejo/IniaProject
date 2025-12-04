@@ -73,18 +73,21 @@ export class GerminacionComponent implements OnInit {
     if (prevKey) {
       this.tratamientosData[prevKey] = this.tratamientosData[prevKey] || {
         comentarios: '', numSemillas: '', metodo: '', temperatura: '', preFrio: '', preTratamiento: '', productoDosis: '',
-        fechas: { inicio: '', conteos: [] }, inia: {}, inase: {}, repeticiones: []
+        fechas: { inicio: '', conteos: [] }, inia: {}, inase: {}, repeticiones: [], fechaINASE: ''
       } as any;
       this.tratamientosData[prevKey].repeticiones = JSON.parse(JSON.stringify(this.repeticiones));
+      this.tratamientosData[prevKey].fechaINASE = this.fechaINASE;
     }
 
     // Cargar repeticiones del tratamiento seleccionado
     const data = this.tratamientosData[currKey];
     if (data && Array.isArray(data.repeticiones) && data.repeticiones.length > 0) {
       this.repeticiones = JSON.parse(JSON.stringify(data.repeticiones));
+      this.fechaINASE = data.fechaINASE || '';
     } else {
       this.repeticiones = [this.nuevaRepeticion(1)];
       this.repeticiones[0].normales = Array(this.fechas.conteos.length).fill(0);
+      this.fechaINASE = '';
     }
     this.syncNormalesConConteos();
     // Actualizar el valor anterior (mantener etiqueta UI para el selector pero normalizamos al leer)
@@ -171,12 +174,14 @@ export class GerminacionComponent implements OnInit {
     inia: any;
     inase: any;
     repeticiones: RepeticionGerminacion[];
+    fechaINASE: string;
   }} = {};
 
   // Variables actuales (se actualizan según el tratamiento seleccionado)
   comentarios: string = '';
   estandar: boolean = false;
   repetido: boolean = false;
+  fechaINASE: string = '';
 
   // Variables para el diálogo de confirmación
   mostrarConfirmEstandar: boolean = false;
@@ -340,6 +345,13 @@ export class GerminacionComponent implements OnInit {
       const dd = String(fechaInicio.getDate()).padStart(2, '0');
       return `${yyyy}-${mm}-${dd}`;
     }
+
+      // Días de pre-frío: solo los días extraídos del selector de pre-frío
+      get diasDuracionPreFrio(): number {
+        if (!this.preFrio || this.preFrio === 'No') return 0;
+        const diasMatch = this.preFrio.match(/(\d+)/);
+        return diasMatch ? parseInt(diasMatch[1], 10) : 0;
+      }
 
       // N° de Dias: suma de totalDias y días de pre-frío
       get numeroDias(): number {
@@ -732,7 +744,8 @@ export class GerminacionComponent implements OnInit {
             'id','reciboId','fechaInicio','fechaFinal','nroDias','totalDias',
             'nroSemillaPorRepeticion','temperatura','tratamiento','comentarios',
             'pNormalINIA','pAnormalINIA','pMuertasINIA','pFrescasINIA','semillasDurasINIA','germinacionINIA',
-            'pNormalINASE','pAnormalINASE','pMuertasINASE','pFrescasINASE','semillasDurasINASE','germinacionINASE'
+            'pNormalINASE','pAnormalINASE','pMuertasINASE','pFrescasINASE','semillasDurasINASE','germinacionINASE',
+            'fechaINASE'
           ]);
           console.table(resumenBasico);
 
@@ -785,6 +798,7 @@ export class GerminacionComponent implements OnInit {
         this.comentarios = dto?.comentarios ?? '';
         this.estandar = dto?.estandar ?? false;
         this.repetido = dto?.repetido ?? false;
+        this.fechaINASE = this.toDateOnlyString(dto?.fechaINASE);
         // Guardar valores originales para deshabilitar checkboxes si ya están marcados
         this.estandarOriginal = dto?.estandar ?? false;
         this.repetidoOriginal = dto?.repetido ?? false;
@@ -875,6 +889,7 @@ export class GerminacionComponent implements OnInit {
     this.preTratamiento = '';
     this.productoDosis = '';
     this.tratamientoSemillas = '';
+    this.fechaINASE = '';
 
 
     this.fechas = {
@@ -1042,6 +1057,7 @@ export class GerminacionComponent implements OnInit {
       repetido: this.repetido || false,
       fechaCreacion: null,
       fechaRepeticion: null,
+      fechaINASE: this.fechaINASE || null,
     });
     const payload: any = buildPayload(false);
 
@@ -1060,17 +1076,23 @@ export class GerminacionComponent implements OnInit {
         next: () => {
           // Luego persistir conteos/repeticiones/normales/finales para TODOS los tratamientos con datos
           this.persistirTodosLosTratamientos(gid, () => {
-            this.cargarResumenBackend(gid);
+            // Log opcional
+            const loteId = this.route.snapshot.paramMap.get('loteId');
+            if (gid != null) {
+              this.logService.crearLog(loteId ? parseInt(loteId) : 0, Number(gid), 'Germinacion', 'actualizada').subscribe();
+            }
+            
+            // Redirigir al listado de germinación del lote/recibo
+            if (this.loteId && this.reciboId) {
+              this.router.navigate([this.loteId, this.reciboId, 'listado-germinacion']);
+            } else {
+              this.router.navigate(['/listado-germinacion']);
+            }
           });
-
-          const loteId = this.route.snapshot.paramMap.get('loteId');
-
-          if (gid != null) {
-            this.logService.crearLog(loteId ? parseInt(loteId) : 0, Number(gid), 'Germinacion', 'actualizada').subscribe();
-          }
         },
         error: (err) => {
           console.error('VALIDACION ERROR: Error actualizando germinación en backend:', err);
+          alert('Error al actualizar la germinación. Por favor intente nuevamente.');
         }
       });
       return;
@@ -1101,10 +1123,12 @@ export class GerminacionComponent implements OnInit {
           });
         } else {
           console.error('VALIDACION ERROR: No se pudo parsear el ID de creación de germinación. Respuesta:', text);
+          alert('Error: No se pudo obtener el ID de la germinación creada');
         }
       },
       error: (err) => {
         console.error('VALIDACION ERROR: Error creando germinación en backend:', err);
+        alert('Error al crear la germinación. Por favor intente nuevamente.');
       }
     });
   }

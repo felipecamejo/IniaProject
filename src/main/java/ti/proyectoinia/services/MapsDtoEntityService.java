@@ -232,6 +232,7 @@ public class MapsDtoEntityService {
         dto.setRepetido(germinacion.isRepetido());
         dto.setFechaCreacion(germinacion.getFechaCreacion());
         dto.setFechaRepeticion(germinacion.getFechaRepeticion());
+        dto.setFechaINASE(germinacion.getFechaINASE());
         dto.setEstandar(germinacion.isEstandar());
 
 
@@ -296,6 +297,7 @@ public class MapsDtoEntityService {
         germinacion.setActivo(dto.isActivo());
         germinacion.setFechaCreacion(dto.getFechaCreacion());
         germinacion.setFechaRepeticion(dto.getFechaRepeticion());
+        germinacion.setFechaINASE(dto.getFechaINASE());
         germinacion.setEstandar(dto.isEstandar());
 
     // Validar y obtener el recibo si existe
