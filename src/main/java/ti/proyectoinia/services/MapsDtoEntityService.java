@@ -370,19 +370,27 @@ public class MapsDtoEntityService {
         recibo.setArticulo(dto.getArticulo());
         recibo.setActivo(dto.isActivo());
 
-        if (dto.getEspecieId() != null){
-            recibo.setEspecie(especieRepository.findById(dto.getEspecieId()).orElse(null));
-        }else{
+        // Validar especie
+        if (dto.getEspecieId() != null) {
+            var especie = especieRepository.findById(dto.getEspecieId()).orElse(null);
+            if (especie == null) {
+                throw new IllegalArgumentException("La especie con ID " + dto.getEspecieId() + " no existe");
+            }
+            recibo.setEspecie(especie);
+        } else {
             recibo.setEspecie(null);
         }
 
-        if (dto.getCultivarId() != null){
-            recibo.setCultivar(cultivoRepository.findById(dto.getCultivarId()).orElse(null));
-        }else{
+        // Validar cultivar
+        if (dto.getCultivarId() != null) {
+            var cultivar = cultivoRepository.findById(dto.getCultivarId()).orElse(null);
+            if (cultivar == null) {
+                throw new IllegalArgumentException("El cultivar con ID " + dto.getCultivarId() + " no existe");
+            }
+            recibo.setCultivar(cultivar);
+        } else {
             recibo.setCultivar(null);
         }
-
-        recibo.setCultivar(cultivoRepository.findById(dto.getCultivarId()).orElse(null));
 
         // Mapear listas de IDs a listas de entidades (requiere repositorios para cada entidad)
         // Ejemplo: recibo.setDosnAnalisis(dto.getDosnAnalisisId() != null ? dto.getDosnAnalisisId().stream().map(id -> dosnRepository.findById(id).orElse(null)).filter(Objects::nonNull).collect(Collectors.toList()) : null);

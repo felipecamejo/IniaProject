@@ -214,27 +214,27 @@ export class CertificadoComponent implements OnInit {
         if (recibo.especieId) {
           this.especieService.obtener(recibo.especieId).subscribe({
             next: (especieDto: any) => {
-              this.especie = especieDto.nombre || '';
+              this.especie = especieDto.nombre || 'Sin Especie';
             },
             error: () => {
-              this.especie = '';
+              this.especie = 'Sin Especie';
             }
           });
         } else {
-          this.especie = '';
+          this.especie = 'Sin Especie';
         }
         // Obtener nombre de cultivar por ID
         if (recibo.cultivarId) {
           this.cultivoService.obtener(recibo.cultivarId).subscribe({
             next: (cultivarDto: any) => {
-              this.cultivar = cultivarDto.nombre || '';
+              this.cultivar = cultivarDto.nombre || 'Sin Cultivar';
             },
             error: () => {
-              this.cultivar = '';
+              this.cultivar = 'Sin Cultivar';
             }
           });
         } else {
-          this.cultivar = '';
+          this.cultivar = 'Sin Cultivar';
         }
         if (recibo.kgLimpios) this.pesoKg = recibo.kgLimpios;
 
@@ -547,8 +547,8 @@ export class CertificadoComponent implements OnInit {
 
         // Cargar datos generales
         this.nombreSolicitante = certificado.nombreSolicitante || '';
-        this.especie = certificado.especie || '';
-        this.cultivar = certificado.cultivar || '';
+        this.especie = certificado.especie || 'Sin Especie';
+        this.cultivar = certificado.cultivar || 'Sin Cultivar';
         // Si no hay categoría en el certificado, se cargará desde el lote en cargarDatosLote
         this.categoria = certificado.categoria || '';
         this.responsableMuestreo = certificado.responsableMuestreo || '';
