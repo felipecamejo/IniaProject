@@ -20,7 +20,7 @@ export interface CertificadoDto {
   numeroCertificado: string | null;
   tipoCertificado: TipoCertificado | null;
   fechaEmision: string | null; // ISO string
-  firmante: string | null;
+  firmante: Uint8Array | number[];
   fechaFirma: string | null; // ISO string
   reciboId: number | null;
   activo: boolean;

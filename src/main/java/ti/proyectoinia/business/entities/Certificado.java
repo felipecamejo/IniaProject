@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.util.Date;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 @Entity
 @Data
 @Table(name = "CERTIFICADO")
@@ -63,8 +66,9 @@ public class Certificado {
     @Column(name = "FECHA_EMISION")
     private Date fechaEmision;
 
-    @Column(name = "FIRMANTE")
-    private String firmante;
+    @Column(columnDefinition = "BYTEA", nullable = false)
+    @JdbcTypeCode(SqlTypes.BINARY)
+    private byte[] firmante = new byte[0];
 
     @Column(name = "FECHA_FIRMA")
     private Date fechaFirma;

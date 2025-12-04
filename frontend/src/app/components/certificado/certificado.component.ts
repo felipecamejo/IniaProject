@@ -44,6 +44,7 @@ import { TableModule } from 'primeng/table';
 })
 export class CertificadoComponent implements OnInit {
   // Propiedades del formulario
+  viewSeleccionarImagenFirma: boolean = true;
   nombreSolicitante: string = '';
   especie: string = '';
   cultivar: string = '';
@@ -62,7 +63,56 @@ export class CertificadoComponent implements OnInit {
   numeroCertificado: string = '';
   tipoCertificado: TipoCertificado | null = null;
   fechaEmision: string = '';
-  firmante: string = '';
+  firmante: Uint8Array = new Uint8Array(0);
+  firmantePreviewUrl: string | null = null;
+  firmantePreviewName: string = '';
+  /**
+   * Maneja la selección de imagen para la firma digital.
+   */
+  onFirmaImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.firmantePreviewName = file.name;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const base64 = e.target.result as string;
+        this.firmantePreviewUrl = base64;
+        // Extraer solo la parte base64 si es dataURL
+        let base64Data = base64;
+        if (base64.startsWith('data:')) {
+          base64Data = base64.split(',')[1];
+        }
+        this.firmante = this.base64ToUint8Array(base64Data);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  /**
+   * Convierte un string base64 a Uint8Array
+   */
+  base64ToUint8Array(base64: string): Uint8Array {
+    const binaryString = window.atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+  }
+
+  /**
+   * Convierte un Uint8Array a una imagen base64 para mostrar preview
+   */
+  uint8ArrayToBase64Image(uint8: Uint8Array): string {
+    let binary = '';
+    for (let i = 0; i < uint8.length; i++) {
+      binary += String.fromCharCode(uint8[i]);
+    }
+    const base64 = window.btoa(binary);
+    return 'data:image/png;base64,' + base64;
+  }
 
   certificadoId: number = 0;
   loteId: number | null = null;
@@ -510,7 +560,7 @@ export class CertificadoComponent implements OnInit {
     this.numeroCertificado = '';
     this.tipoCertificado = null;
     this.fechaEmision = fechaHoy;
-    this.firmante = '';
+    this.firmante = new Uint8Array(0);
 
     // Inicializar valores por defecto de análisis
     this.inicializarValoresPorDefectoPureza();
@@ -565,7 +615,36 @@ export class CertificadoComponent implements OnInit {
         this.numeroCertificado = certificado.numeroCertificado || '';
         this.tipoCertificado = certificado.tipoCertificado ?? null;
         this.fechaEmision = this.formatearFechaParaInput(certificado.fechaEmision);
-        this.firmante = certificado.firmante || '';
+        // Adaptación: si el backend retorna una cadena base64, mostrarla como imagen
+        if (typeof certificado.firmante === 'string' && (certificado.firmante as string).length > 0) {
+          const firmanteStr = certificado.firmante as string;
+          // Si la cadena ya tiene el prefijo 'data:image', usarla directamente
+          if (firmanteStr.startsWith('data:image')) {
+            this.firmantePreviewUrl = firmanteStr;
+          } else {
+            // Si es solo base64, agregar el prefijo para mostrar como imagen PNG
+            this.firmantePreviewUrl = 'data:image/png;base64,' + firmanteStr;
+          }
+          // Convertir base64 a Uint8Array para mantener la lógica interna
+          let base64Data = firmanteStr;
+          if (base64Data.startsWith('data:image')) {
+            base64Data = base64Data.split(',')[1];
+          }
+          this.firmante = this.base64ToUint8Array(base64Data);
+          this.firmantePreviewName = 'Firma cargada';
+          this.viewSeleccionarImagenFirma = false;
+        } else if (Array.isArray(certificado.firmante) && (certificado.firmante as Array<any>).length > 0) {
+          this.firmante = new Uint8Array(certificado.firmante as Array<number>);
+          this.firmantePreviewUrl = this.uint8ArrayToBase64Image(this.firmante);
+          this.firmantePreviewName = 'Firma cargada';
+          this.viewSeleccionarImagenFirma = false;
+        } else {
+          this.firmante = new Uint8Array(0);
+          this.firmantePreviewUrl = null;
+          this.firmantePreviewName = '';
+          this.viewSeleccionarImagenFirma = true;
+        }
+  
 
         // Solo usar reciboId del certificado si no hay uno en la ruta
         if (!this.reciboId && certificado.reciboId) {
@@ -808,7 +887,7 @@ export class CertificadoComponent implements OnInit {
       numeroCertificado: this.numeroCertificado || null,
       tipoCertificado: this.tipoCertificado ?? null,
       fechaEmision: DateService.ajustarFecha(this.fechaEmision),
-      firmante: this.firmante || null,
+      firmante: this.firmante,
       fechaFirma: null,
       reciboId: this.reciboId ?? null,
       activo: true,
@@ -844,6 +923,9 @@ export class CertificadoComponent implements OnInit {
       germinacionPreTratamiento: this.germinacionPreTratamiento || null
     };
 
+    console.log('Payload crear certificado:', payload);
+    // Solución: enviar null si la firma está vacía, si no enviar como array de números
+    payload.firmante = (this.firmante && this.firmante.length > 0) ? Array.from(this.firmante) : [];
     this.certificadoService.crearCertificado(payload).subscribe({
       next: (certificadoCreado: CertificadoDto) => {
         console.log('Certificado creado:', certificadoCreado);
@@ -920,7 +1002,7 @@ export class CertificadoComponent implements OnInit {
       numeroCertificado: this.numeroCertificado || null,
       tipoCertificado: this.tipoCertificado ?? null,
       fechaEmision: DateService.ajustarFecha(this.fechaEmision),
-      firmante: this.firmante || null,
+      firmante: this.firmante,
       fechaFirma: null,
       reciboId: this.reciboId ?? null,
       activo: true,
@@ -956,6 +1038,9 @@ export class CertificadoComponent implements OnInit {
       germinacionPreTratamiento: this.germinacionPreTratamiento || null
     };
 
+    console.log('Payload editar certificado:', payload);
+    // Solución: enviar null si la firma está vacía, si no enviar como array de números
+    payload.firmante = (this.firmante && this.firmante.length > 0) ? Array.from(this.firmante) : [];
     this.certificadoService.editarCertificado(payload).subscribe({
       next: (mensaje: string) => {
         console.log('Certificado actualizado:', mensaje);
@@ -990,6 +1075,8 @@ export class CertificadoComponent implements OnInit {
       return;
     }
 
+    this.viewSeleccionarImagenFirma = false;
+
     this.isExportingPDF = true;
 
     // Obtener el elemento del certificado
@@ -1012,7 +1099,7 @@ export class CertificadoComponent implements OnInit {
     };
 
     // Convertir el HTML a canvas
-    html2canvas(certificadoElement, options).then((canvas) => {
+    html2canvas(certificadoElement, options).then((canvas: HTMLCanvasElement) => {
       const imgData = canvas.toDataURL('image/png');
       
       // Calcular dimensiones del PDF
@@ -1042,9 +1129,11 @@ export class CertificadoComponent implements OnInit {
       
       // Descargar el PDF
       pdf.save(fileName);
+
+      this.viewSeleccionarImagenFirma = true;
       
       this.isExportingPDF = false;
-    }).catch((error) => {
+    }).catch((error: any) => {
       console.error('Error al generar PDF:', error);
       alert('Error al generar el PDF. Por favor, intente nuevamente.');
       this.isExportingPDF = false;

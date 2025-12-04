@@ -258,10 +258,16 @@
                    [ngClass]="{ 'input-error': isFechaEmisionInvalida }" [readonly]="isViewing" />
           </div>
 
+
           <div class="form-field">
             <label for="firmante">Firma Digital</label>
-            <input id="firmante" type="text" [(ngModel)]="firmante" name="firmante" pInputText [readonly]="isViewing" />
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              
+              <input type="file" *ngIf="viewSeleccionarImagenFirma" accept="image/*" (change)="onFirmaImageSelected($event)" [disabled]="isViewing" />
+            </div>
+            <img *ngIf="firmantePreviewUrl" [src]="firmantePreviewUrl" alt="Preview firma" style="max-width: 200px; max-height: 80px; border: 1px solid #ccc; margin-top: 0.5rem;" />
           </div>
+          
 
           <div class="form-field">
             <label for="firmante">Nombre</label>

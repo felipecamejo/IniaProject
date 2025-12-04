@@ -1907,7 +1907,9 @@ public class MapsDtoEntityService {
         dto.setNumeroCertificado(certificado.getNumeroCertificado());
         dto.setTipoCertificado(certificado.getTipoCertificado());
         dto.setFechaEmision(certificado.getFechaEmision());
-        dto.setFirmante(certificado.getFirmante());
+
+        dto.setFirmante(certificado.getFirmante() != null ? certificado.getFirmante() : new byte[0]);
+        
         dto.setFechaFirma(certificado.getFechaFirma());
         dto.setActivo(certificado.isActivo());
         dto.setOtrasDeterminaciones(certificado.getOtrasDeterminaciones());
@@ -1976,7 +1978,9 @@ public class MapsDtoEntityService {
         certificado.setNumeroCertificado(dto.getNumeroCertificado());
         certificado.setTipoCertificado(dto.getTipoCertificado());
         certificado.setFechaEmision(dto.getFechaEmision());
-        certificado.setFirmante(dto.getFirmante());
+        
+        certificado.setFirmante(dto.getFirmante() == null || dto.getFirmante().length == 0 ? new byte[0] : dto.getFirmante());
+
         certificado.setFechaFirma(dto.getFechaFirma());
         certificado.setActivo(dto.isActivo());
 

@@ -31,7 +31,7 @@ public class CertificadoDto {
     private String numeroCertificado;
     private TipoCertificado tipoCertificado;
     private Date fechaEmision;
-    private String firmante;
+    private byte[] firmante;
     private Date fechaFirma;
 
     private Long reciboId;
