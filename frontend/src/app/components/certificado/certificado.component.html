@@ -292,6 +292,17 @@
       <p class="footer-note">N=no analizado|TR=&lt;0,05%</p>
     </div>
 
+    <!-- Botón de Exportar a PDF -->
+    <div class="pdf-export-btn">
+      <button pButton 
+              type="button" 
+              (click)="exportarAPDF()"
+              [disabled]="!certificadoId || certificadoId === 0 || isExportingPDF"
+              [label]="isExportingPDF ? 'Generando PDF...' : 'Exportar a PDF'"
+              icon="pi pi-file-pdf"
+              class="p-button-warning">
+      </button>
+    </div>
 
   </div>
 </div>

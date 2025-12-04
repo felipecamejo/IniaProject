@@ -15,6 +15,8 @@ import { DOSNService } from '../../../services/DOSNService';
 import { PurezaDto } from '../../../models/Pureza.dto';
 import { GerminacionDto } from '../../../models/Germinacion.dto';
 import { DOSNDto } from '../../../models/DOSN.dto';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -121,6 +123,7 @@ export class CertificadoComponent implements OnInit {
   isFechaIngresoInvalida: boolean = false;
   isFechaFinalizacionInvalida: boolean = false;
   isFechaEmisionInvalida: boolean = false;
+  isExportingPDF: boolean = false;
 
   constructor(
     private certificadoService: CertificadoService,
@@ -936,6 +939,76 @@ export class CertificadoComponent implements OnInit {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${day}/${month}/${year}`;
+  }
+
+  /**
+   * Exporta el certificado a PDF
+   */
+  exportarAPDF(): void {
+    if (!this.certificadoId || this.certificadoId === 0) {
+      alert('No hay certificado para exportar. Por favor, guarde el certificado primero.');
+      return;
+    }
+
+    this.isExportingPDF = true;
+
+    // Obtener el elemento del certificado
+    const certificadoElement = document.querySelector('.certificado-container') as HTMLElement;
+    
+    if (!certificadoElement) {
+      alert('Error: No se pudo encontrar el contenido del certificado.');
+      this.isExportingPDF = false;
+      return;
+    }
+
+    // Configurar opciones para html2canvas
+    const options = {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      width: certificadoElement.scrollWidth,
+      height: certificadoElement.scrollHeight
+    };
+
+    // Convertir el HTML a canvas
+    html2canvas(certificadoElement, options).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Calcular dimensiones del PDF
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+
+      // Crear PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      let position = 0;
+
+      // Agregar primera página
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Agregar páginas adicionales si es necesario
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // Generar nombre del archivo
+      const fileName = `Certificado_${this.numeroCertificado || 'N' + this.certificadoId}_${new Date().getTime()}.pdf`;
+      
+      // Descargar el PDF
+      pdf.save(fileName);
+      
+      this.isExportingPDF = false;
+    }).catch((error) => {
+      console.error('Error al generar PDF:', error);
+      alert('Error al generar el PDF. Por favor, intente nuevamente.');
+      this.isExportingPDF = false;
+    });
   }
 
   onCancel() {
