@@ -27,6 +27,19 @@ public class TetrazolioDto {
     
     private Date fecha;
     
+    // Segundo conjunto de datos (para tabla de detalles)
+    private Integer nroSemillasPorRepeticion2;
+    
+    private PreTratamiento pretratamiento2;
+    
+    private String concentracion2;
+    
+    private String tincionHoras2;
+    
+    private String tincionGrados2;
+    
+    private Date fecha2;
+    
     private String viables;
     
     private String noViables;

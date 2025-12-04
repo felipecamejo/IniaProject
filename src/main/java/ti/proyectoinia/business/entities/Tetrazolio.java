@@ -37,6 +37,26 @@ public class Tetrazolio {
     @Column(name = "TETRAZOLIO_FECHA")
     private Date fecha;
 
+    // Segundo conjunto de datos (para tabla de detalles)
+    @Column(name = "TETRAZOLIO_NRO_SEMILLAS_POR_REPETICION_2")
+    private Integer nroSemillasPorRepeticion2;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "PRETRATAMIENTO_2")
+    private PreTratamiento pretratamiento2;
+
+    @Column(name = "CONCENTRACION_2")
+    private Float concentracion2;
+
+    @Column(name = "TINCION_HS_2")
+    private Float tincionHoras2;
+
+    @Column(name = "TINCION_GRADOS_2")
+    private Float tincionGrados2;
+
+    @Column(name = "TETRAZOLIO_FECHA_2")
+    private Date fecha2;
+
     @Column(name = "TETRAZOLIO_VIABLES")
     private Float viables;
 

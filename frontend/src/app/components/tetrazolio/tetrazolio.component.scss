@@ -426,6 +426,21 @@
   box-shadow: 0 0 0 2px rgba(218, 105, 106, 0.1) !important;
 }
 
+/* Estilos para advertencias */
+.warning-container {
+  background-color: #fffbeb;
+  border-left: 4px solid #f59e0b;
+  padding: 1rem;
+  margin-top: 1rem;
+  border-radius: 4px;
+}
+
+.warning-message {
+  color: #92400e;
+  margin: 0.25rem 0;
+  font-size: 0.95rem;
+}
+
 /* Estilos para la tabla de reporte */
 .reporte-table {
   .reporte-header {

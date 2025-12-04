@@ -114,16 +114,16 @@
                             <td>{{ rep.numero }}</td>
                             <td>
                                 <input type="number" [ngModel]="rep.viables" (ngModelChange)="onRepeticionChange($index, 'viables', $event)" name="viables{{$index}}"
-                                    [ngClass]="{ 'input-error': rep.viables !== null && rep.viables !== undefined && rep.viables < 0  }"
+                                    [ngClass]="{ 'input-error': (rep.viables !== null && rep.viables !== undefined && rep.viables < 0) || excedeSemillasRepeticion(rep) }"
                                     [disabled]="isReadonly"/>
                             </td>
                             <td>
                                 <input type="number" [ngModel]="rep.noViables" (ngModelChange)="onRepeticionChange($index, 'noViables', $event)" name="noViables{{$index}}"
-                                    [ngClass]="{ 'input-error': rep.noViables !== null && rep.noViables !== undefined && rep.noViables < 0 }" [disabled]="isReadonly" />
+                                    [ngClass]="{ 'input-error': (rep.noViables !== null && rep.noViables !== undefined && rep.noViables < 0) || excedeSemillasRepeticion(rep) }" [disabled]="isReadonly" />
                             </td>
                             <td>
                                 <input type="number" [ngModel]="rep.duras" (ngModelChange)="onRepeticionChange($index, 'duras', $event)" name="duras{{$index}}"
-                                    [ngClass]="{ 'input-error': rep.duras !== null && rep.duras !== undefined && rep.duras < 0 }" [disabled]="isReadonly" />
+                                    [ngClass]="{ 'input-error': (rep.duras !== null && rep.duras !== undefined && rep.duras < 0) || excedeSemillasRepeticion(rep) }" [disabled]="isReadonly" />
                             </td>
                             <td>
                                 <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="eliminarRepeticion($index)" [disabled]="repeticiones.length === 1" title="Eliminar"></button>
@@ -142,16 +142,16 @@
                         </tr>
                         <tr>
                             <td class="footer-label">Prom. sin redondeo</td>
-                            <td><input type="number" [value]="getPromedioViables(false)" readonly [disabled]="isReadonly" /></td>
-                            <td><input type="number" [value]="getPromedioNoViables(false)" readonly [disabled]="isReadonly" /></td>
-                            <td><input type="number" [value]="getPromedioDuras(false)" readonly [disabled]="isReadonly" /></td>
+                            <td><input type="number" [value]="getPromedioViables()" readonly [disabled]="isReadonly" /></td>
+                            <td><input type="number" [value]="getPromedioNoViables()" readonly [disabled]="isReadonly" /></td>
+                            <td><input type="number" [value]="getPromedioDuras()" readonly [disabled]="isReadonly" /></td>
                             <td></td>
                         </tr>
                         <tr>
                             <td class="footer-label">Prom. redondeado</td>
-                            <td><input type="number" [value]="getPromedioViables(true)" readonly [disabled]="isReadonly" /></td>
-                            <td><input type="number" [value]="getPromedioNoViables(true)" readonly [disabled]="isReadonly" /></td>
-                            <td><input type="number" [value]="getPromedioDuras(true)" readonly [disabled]="isReadonly" /></td>
+                            <td><input type="number" [(ngModel)]="promedioViablesRedondeado" name="promedioViablesRedondeado" [readonly]="isReadonly" /></td>
+                            <td><input type="number" [(ngModel)]="promedioNoViablesRedondeado" name="promedioNoViablesRedondeado" [readonly]="isReadonly" /></td>
+                            <td><input type="number" [(ngModel)]="promedioDurasRedondeado" name="promedioDurasRedondeado" [readonly]="isReadonly" /></td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -164,6 +164,74 @@
             <!-- Resumen por repetición (por tabla) -->
             <!-- Eliminado el resumen global; se muestra por cada Rn -->
 
+
+            <!-- ===== SEGUNDO CONJUNTO DE PARÁMETROS ===== -->
+            <h3 style="margin-top:2.5rem;">Parámetros de Tetrazolio para Detalle de Semillas</h3>
+            <div class="form-grid">
+                <!-- Cantidad de semillas 2 -->
+                <div class="form-field">
+                    <label for="cantidadSemillas2">Cantidad de semillas</label>
+                    <select id="cantidadSemillas2" [(ngModel)]="cantidadSemillas2" name="cantidadSemillas2" (change)="manejarProblemas()"
+                        [disabled]="isReadonly">
+                        <option [ngValue]="null">Seleccionar...</option>
+                        <option [ngValue]="25">25</option>
+                        <option [ngValue]="50">50</option>
+                        <option [ngValue]="100">100</option>
+                    </select>
+                    <span *ngIf="cantidadSemillas2 !== null && cantidadSemillas2 !== undefined && cantidadSemillas2 < 0" class="error-message">Se debe seleccionar un valor positivo.</span>
+                </div>
+
+                <!-- Pretratamiento 2 -->
+                <div class="form-field">
+                    <label for="pretratamiento2">Pretratamiento</label>
+                    <select id="pretratamiento2" [(ngModel)]="selectedPretratamiento2" name="pretratamiento2" (change)="manejarProblemas()"
+                        [disabled]="isReadonly">
+                        <option [ngValue]="null">Seleccionar...</option>
+                        <option *ngFor="let opt of pretratamientoOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+                    </select>
+                    @if (selectedPretratamiento2 === 'custom') {
+                    <input type="text" pInputText [(ngModel)]="pretratamientoCustom2" name="pretratamientoCustom2" placeholder="Especificar pretratamiento" style="margin-top:0.5rem;" [disabled]="isReadonly" />
+                    }
+                </div>
+
+                <!-- Concentración 2 -->
+                <div class="form-field">
+                    <label for="concentracion2">Concentración (%)</label>
+                    <select id="concentracion2" [(ngModel)]="selectedConcentracion2" name="concentracion2" (change)="manejarProblemas()"
+                        [disabled]="isReadonly">
+                        <option [ngValue]="null">Seleccionar...</option>
+                        <option *ngFor="let opt of concentracionOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+                    </select>
+                    @if (selectedConcentracion2 === 'custom') {
+                    <input type="number" pInputText [(ngModel)]="concentracionCustom2" name="concentracionCustom2" placeholder="Especificar concentración (%)" style="margin-top:0.5rem;" [disabled]="isReadonly" />
+                    }
+                </div>
+
+                <!-- Tinción (hs) 2 -->
+                <div class="form-field">
+                    <label for="tincionHs2">Tinción (hs)</label>
+                    <select id="tincionHs2" [(ngModel)]="selectedTincionHs2" name="tincionHs2" (change)="manejarProblemas()"
+                        [disabled]="isReadonly">
+                        <option [ngValue]="null">Seleccionar...</option>
+                        <option *ngFor="let opt of tincionHsOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+                    </select>
+                    @if (selectedTincionHs2 === 'custom') {
+                    <input type="number" pInputText [(ngModel)]="tincionHsCustom2" name="tincionHsCustom2" placeholder="Especificar tinción (hs)" style="margin-top:0.5rem;" [disabled]="isReadonly" />
+                    }
+                </div>
+
+                <!-- Tinción (°C) 2 -->
+                <div class="form-field">
+                    <label for="tincionC2">Tinción (°C)</label>
+                    <input type="number" pInputText id="tincionC2" [(ngModel)]="tincionC2" name="tincionC2" placeholder="Ej: 40" [disabled]="isReadonly" />
+                </div>
+
+                <!-- Fecha 2 -->
+                <div class="form-field">
+                    <label for="fecha2">Fecha</label>
+                    <input type="date" pInputText id="fecha2" [(ngModel)]="fecha2" name="fecha2" [disabled]="isReadonly" />
+                </div>
+            </div>
 
             <!-- Nueva tabla de detalles de semillas -->
             <h3 style="margin-top:2.5rem;">Detalle de semillas y daños</h3>
@@ -260,7 +328,7 @@
                         </tr>
                         <tr>
                             <td class="footer-label">Suma</td>
-                            <td><input type="number" [value]="getSumaTotal(det)" readonly [disabled]="isReadonly"/></td>
+                            <td><input type="number" [value]="getSumaTotal(det)" readonly [disabled]="isReadonly" [ngClass]="{ 'input-error': excedeSemillasDetalle(det) }"/></td>
                             <td></td>
                             <td></td>
                             <td></td>
@@ -438,6 +506,14 @@
                     {{ errores.length === 1 ? '1 error encontrado' : errores.length + ' errores encontrados' }}
                 </p>
                 <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
+            </div>
+
+            <!-- Mensajes de advertencia (no bloquean el envío) -->
+            <div *ngIf="advertencias && advertencias.length > 0" class="warning-container">
+                <p class="warning-message">
+                    {{ advertencias.length === 1 ? '1 advertencia' : advertencias.length + ' advertencias' }}
+                </p>
+                <p *ngFor="let advertencia of advertencias" class="warning-message">{{ advertencia }}</p>
             </div>
 
 

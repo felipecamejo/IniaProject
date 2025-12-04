@@ -1359,6 +1359,17 @@ public class MapsDtoEntityService {
         dto.setTincionHoras(tetrazolio.getTincionHoras() != null ? tetrazolio.getTincionHoras().toString() : null);
         dto.setTincionGrados(tetrazolio.getTincionGrados() != null ? tetrazolio.getTincionGrados().toString() : null);
         dto.setFecha(tetrazolio.getFecha());
+        
+        // Segundo conjunto de datos
+        dto.setNroSemillasPorRepeticion2(tetrazolio.getNroSemillasPorRepeticion2());
+        if (tetrazolio.getPretratamiento2() != null) {
+            dto.setPretratamiento2(tetrazolio.getPretratamiento2());
+        }
+        dto.setConcentracion2(tetrazolio.getConcentracion2() != null ? tetrazolio.getConcentracion2().toString() : null);
+        dto.setTincionHoras2(tetrazolio.getTincionHoras2() != null ? tetrazolio.getTincionHoras2().toString() : null);
+        dto.setTincionGrados2(tetrazolio.getTincionGrados2() != null ? tetrazolio.getTincionGrados2().toString() : null);
+        dto.setFecha2(tetrazolio.getFecha2());
+        
         dto.setViables(tetrazolio.getViables() != null ? tetrazolio.getViables().toString() : null);
         dto.setNoViables(tetrazolio.getNoViables() != null ? tetrazolio.getNoViables().toString() : null);
         dto.setDuras(tetrazolio.getDuras() != null ? tetrazolio.getDuras().toString() : null);
@@ -1415,6 +1426,17 @@ public class MapsDtoEntityService {
         tetrazolio.setTincionHoras(dto.getTincionHoras() != null ? Float.parseFloat(dto.getTincionHoras()) : null);
         tetrazolio.setTincionGrados(dto.getTincionGrados() != null ? Float.parseFloat(dto.getTincionGrados()) : null);
         tetrazolio.setFecha(dto.getFecha());
+        
+        // Segundo conjunto de datos
+        tetrazolio.setNroSemillasPorRepeticion2(dto.getNroSemillasPorRepeticion2());
+        if (dto.getPretratamiento2() != null) {
+            tetrazolio.setPretratamiento2(dto.getPretratamiento2());
+        }
+        tetrazolio.setConcentracion2(dto.getConcentracion2() != null ? Float.parseFloat(dto.getConcentracion2()) : null);
+        tetrazolio.setTincionHoras2(dto.getTincionHoras2() != null ? Float.parseFloat(dto.getTincionHoras2()) : null);
+        tetrazolio.setTincionGrados2(dto.getTincionGrados2() != null ? Float.parseFloat(dto.getTincionGrados2()) : null);
+        tetrazolio.setFecha2(dto.getFecha2());
+        
         tetrazolio.setViables(dto.getViables() != null ? Float.parseFloat(dto.getViables()) : null);
         tetrazolio.setNoViables(dto.getNoViables() != null ? Float.parseFloat(dto.getNoViables()) : null);
         tetrazolio.setDuras(dto.getDuras() != null ? Float.parseFloat(dto.getDuras()) : null);

@@ -58,6 +58,7 @@ export class TetrazolioComponent implements OnInit {
 
   // Agregar propiedades para manejar errores
   errores: string[] = [];
+  advertencias: string[] = [];
 
   // Pretratamiento: seleccionar o especificar
   pretratamientoOptions: { label: string; value: any }[] = [
@@ -99,6 +100,17 @@ export class TetrazolioComponent implements OnInit {
   // Fecha (yyyy-MM-dd)
   fecha: string | null = null;
 
+  // ===== SEGUNDO CONJUNTO DE DATOS (para tabla de detalles) =====
+  cantidadSemillas2: number | null = null;
+  selectedPretratamiento2: string | 'custom' | null = null;
+  pretratamientoCustom2: string = '';
+  selectedConcentracion2: number | 'custom' | null = null;
+  concentracionCustom2: number | null = null;
+  selectedTincionHs2: number | 'custom' | null = null;
+  tincionHsCustom2: number | null = null;
+  tincionC2: number | null = null;
+  fecha2: string | null = null;
+
   // Variables para manejar navegación
   isEditing: boolean = false;
   isViewing: boolean = false;
@@ -112,6 +124,11 @@ export class TetrazolioComponent implements OnInit {
   // Variables para controlar si ya está marcado (no se puede cambiar)
   estandarOriginal: boolean = false;
   repetidoOriginal: boolean = false;
+
+  // Promedios redondeados (ingresados manualmente por el usuario)
+  promedioViablesRedondeado: number = 0;
+  promedioNoViablesRedondeado: number = 0;
+  promedioDurasRedondeado: number = 0;
 
   // Getters para deshabilitar checkboxes si ya están marcados
   get estandarDeshabilitado(): boolean {
@@ -566,6 +583,23 @@ export class TetrazolioComponent implements OnInit {
       det.noViables.total;
   }
 
+  // Verificar si una repetición excede la cantidad de semillas
+  excedeSemillasRepeticion(rep: RepeticionTetrazolio): boolean {
+    if (this.cantidadSemillas === null || this.cantidadSemillas === undefined) {
+      return false;
+    }
+    const suma = (rep.viables || 0) + (rep.noViables || 0) + (rep.duras || 0);
+    return suma > this.cantidadSemillas;
+  }
+
+  // Verificar si una tabla de detalles excede la cantidad de semillas 2
+  excedeSemillasDetalle(det: DetalleSemillas): boolean {
+    if (this.cantidadSemillas2 === null || this.cantidadSemillas2 === undefined) {
+      return false;
+    }
+    return this.getSumaTotal(det) > this.cantidadSemillas2;
+  }
+
   // Semillas viables: suma de todas las filas menos no viables
   getSemillasViablesTotal(det: DetalleSemillas): number {
     return det.viablesSinDefectos.total + det.viablesLeves.total +
@@ -659,17 +693,18 @@ export class TetrazolioComponent implements OnInit {
     return total.toString();
   }
 
-  getPromedioViables(redondear: boolean): string {
+  // Promedios sin redondeo (calculados)
+  getPromedioViables(): string {
     const prom = this.repeticiones.reduce((acc, rep) => acc + (Number(rep.viables) || 0), 0) / this.repeticiones.length;
-    return redondear ? Math.round(prom).toString() : prom.toFixed(2);
+    return prom.toFixed(2);
   }
-  getPromedioNoViables(redondear: boolean): string {
+  getPromedioNoViables(): string {
     const prom = this.repeticiones.reduce((acc, rep) => acc + (Number(rep.noViables) || 0), 0) / this.repeticiones.length;
-    return redondear ? Math.round(prom).toString() : prom.toFixed(2);
+    return prom.toFixed(2);
   }
-  getPromedioDuras(redondear: boolean): string {
+  getPromedioDuras(): string {
     const prom = this.repeticiones.reduce((acc, rep) => acc + (Number(rep.duras) || 0), 0) / this.repeticiones.length;
-    return redondear ? Math.round(prom).toString() : prom.toFixed(2);
+    return prom.toFixed(2);
   }
 
   // Método para sincronizar cambios desde los inputs
@@ -858,6 +893,64 @@ export class TetrazolioComponent implements OnInit {
         this.estandarOriginal = item.estandar || false;
         this.repetidoOriginal = item.repetido || false;
 
+        // Cargar promedio redondeado si existe
+        if (item.promedio) {
+          this.promedioViablesRedondeado = parseFloat(item.promedio);
+        }
+
+        // ===== CARGAR SEGUNDO CONJUNTO DE DATOS =====
+        this.cantidadSemillas2 = (item as any).nroSemillasPorRepeticion2 ?? null;
+
+        if ((item as any).pretratamiento2) {
+          const pretratamientoValue2 = String((item as any).pretratamiento2);
+          const ptOption2 = this.pretratamientoOptions.find(o => o.value === pretratamientoValue2);
+          if (ptOption2) {
+            this.selectedPretratamiento2 = pretratamientoValue2;
+          } else {
+            this.selectedPretratamiento2 = null;
+          }
+        } else {
+          this.selectedPretratamiento2 = null;
+        }
+
+        const concValue2 = (item as any).concentracion2 ? parseFloat((item as any).concentracion2) : null;
+        const concOption2 = this.concentracionOptions.find(o => o.value === concValue2);
+        if (concOption2) {
+          this.selectedConcentracion2 = concValue2 as number;
+        } else if (concValue2 !== null && concValue2 !== undefined) {
+          this.selectedConcentracion2 = 'custom';
+          this.concentracionCustom2 = concValue2;
+        }
+
+        const thValue2 = (item as any).tincionHoras2 ? parseFloat((item as any).tincionHoras2) : null;
+        const thOption2 = this.tincionHsOptions.find(o => o.value === thValue2);
+        if (thOption2) {
+          this.selectedTincionHs2 = thValue2 as number;
+        } else if (thValue2 !== null && thValue2 !== undefined) {
+          this.selectedTincionHs2 = 'custom';
+          this.tincionHsCustom2 = thValue2;
+        }
+
+        this.tincionC2 = (item as any).tincionGrados2 ? parseFloat((item as any).tincionGrados2) : null;
+
+        if ((item as any).fecha2) {
+          try {
+            const dateObj2 = new Date((item as any).fecha2);
+            if (isNaN(dateObj2.getTime())) {
+              console.warn('Fecha2 inválida recibida:', (item as any).fecha2);
+              this.fecha2 = null;
+            } else {
+              this.fecha2 = dateObj2.toISOString().split('T')[0];
+              console.log('Fecha2 convertida para input HTML:', this.fecha2);
+            }
+          } catch (error) {
+            console.warn('Error convirtiendo fecha2:', error, 'Valor original:', (item as any).fecha2);
+            this.fecha2 = null;
+          }
+        } else {
+          this.fecha2 = null;
+        }
+
         // Si hay datos de daños en el DTO, los cargamos en la primera tabla R1
         const d = this.detalles[0];
         if (d) {
@@ -1040,7 +1133,7 @@ export class TetrazolioComponent implements OnInit {
       noViables: this.getTotalNoViables(),
       duras: this.getTotalDuras(),
       total: (parseFloat(this.getTotalViables()) + parseFloat(this.getTotalNoViables()) + parseFloat(this.getTotalDuras())).toString(),
-      promedio: this.getPromedioViables(false),
+      promedio: this.promedioViablesRedondeado.toString(),
       estandar: this.estandar || false,
       repetido: this.repetido || false,
       activo: true,
@@ -1052,37 +1145,29 @@ export class TetrazolioComponent implements OnInit {
       tetrazolioData.id = this.editingId;
     }
 
-    // Agregar campos nuevos si están definidos
-    if (this.cantidadSemillas !== null && this.cantidadSemillas !== undefined) {
-      // Preferimos guardar por repetición si aplica
-      (tetrazolioData as any).nroSemillasPorRepeticion = this.cantidadSemillas;
-    }
+    // ===== PRIMER CONJUNTO DE DATOS =====
+    // Siempre enviar estos campos (incluso si son null) para que se guarden correctamente
+    (tetrazolioData as any).nroSemillasPorRepeticion = this.cantidadSemillas;
 
-    // Pretratamiento: crear objeto PreTratamiento completo
+    // Pretratamiento
     if (this.selectedPretratamiento && this.selectedPretratamiento !== 'custom') {
       (tetrazolioData as any).pretratamiento = this.selectedPretratamiento;
     } else if (this.selectedPretratamiento === 'custom' && this.pretratamientoCustom.trim()) {
       (tetrazolioData as any).pretratamiento = 'OTRO';
-    } else if (this.selectedPretratamiento === null || this.selectedPretratamiento === undefined) {
-      (tetrazolioData as any).pretratamiento = 'NINGUNO';
+    } else {
+      (tetrazolioData as any).pretratamiento = null;
     }
 
     // Concentración
     const conc = this.selectedConcentracion === 'custom' ? this.concentracionCustom : this.selectedConcentracion;
-    if (conc !== null && conc !== undefined) {
-      (tetrazolioData as any).concentracion = conc.toString();
-    }
+    (tetrazolioData as any).concentracion = (conc !== null && conc !== undefined) ? conc.toString() : null;
 
     // Tinción horas
     const th = this.selectedTincionHs === 'custom' ? this.tincionHsCustom : this.selectedTincionHs;
-    if (th !== null && th !== undefined) {
-      (tetrazolioData as any).tincionHoras = th.toString();
-    }
+    (tetrazolioData as any).tincionHoras = (th !== null && th !== undefined) ? th.toString() : null;
 
     // Tinción grados
-    if (this.tincionC !== null && this.tincionC !== undefined) {
-      (tetrazolioData as any).tincionGrados = this.tincionC.toString();
-    }
+    (tetrazolioData as any).tincionGrados = (this.tincionC !== null && this.tincionC !== undefined) ? this.tincionC.toString() : null;
 
     // Fecha - convertir string a Date para el backend
     if (this.fecha) {
@@ -1098,10 +1183,53 @@ export class TetrazolioComponent implements OnInit {
         console.error('Error convirtiendo fecha:', error);
         console.log('Fecha original:', this.fecha);
       }
+    } else {
+      (tetrazolioData as any).fecha = null;
+    }
+
+    // ===== SEGUNDO CONJUNTO DE DATOS =====
+    // Siempre enviar estos campos (incluso si son null) para que se guarden correctamente
+    (tetrazolioData as any).nroSemillasPorRepeticion2 = this.cantidadSemillas2;
+
+    // Pretratamiento 2
+    if (this.selectedPretratamiento2 && this.selectedPretratamiento2 !== 'custom') {
+      (tetrazolioData as any).pretratamiento2 = this.selectedPretratamiento2;
+    } else if (this.selectedPretratamiento2 === 'custom' && this.pretratamientoCustom2.trim()) {
+      (tetrazolioData as any).pretratamiento2 = 'OTRO';
+    } else {
+      (tetrazolioData as any).pretratamiento2 = null;
+    }
+
+    // Concentración 2
+    const conc2 = this.selectedConcentracion2 === 'custom' ? this.concentracionCustom2 : this.selectedConcentracion2;
+    (tetrazolioData as any).concentracion2 = (conc2 !== null && conc2 !== undefined) ? conc2.toString() : null;
+
+    // Tinción horas 2
+    const th2 = this.selectedTincionHs2 === 'custom' ? this.tincionHsCustom2 : this.selectedTincionHs2;
+    (tetrazolioData as any).tincionHoras2 = (th2 !== null && th2 !== undefined) ? th2.toString() : null;
+
+    // Tinción grados 2
+    (tetrazolioData as any).tincionGrados2 = (this.tincionC2 !== null && this.tincionC2 !== undefined) ? this.tincionC2.toString() : null;
+
+    // Fecha 2
+    if (this.fecha2) {
+      try {
+        const fechaDate2 = new Date(this.fecha2 + 'T00:00:00.000Z');
+        (tetrazolioData as any).fecha2 = fechaDate2;
+        console.log('Fecha2 original (string):', this.fecha2);
+        console.log('Fecha2 convertida para envío (Date):', fechaDate2);
+      } catch (error) {
+        console.error('Error convirtiendo fecha2:', error);
+      }
+    } else {
+      (tetrazolioData as any).fecha2 = null;
     }
 
     // Agregar reporte al DTO
     tetrazolioData.reporte = this.reporte;
+
+    console.log('=== PAYLOAD COMPLETO DE TETRAZOLIO ===');
+    console.log('Datos completos a enviar:', JSON.stringify(tetrazolioData, null, 2));
 
     if (this.isEditing && this.editingId) {
       // Actualizar Tetrazolio existente
@@ -1274,6 +1402,7 @@ export class TetrazolioComponent implements OnInit {
 
   manejarProblemas(): boolean {
     this.errores = []; // Reiniciar errores
+    this.advertencias = []; // Reiniciar advertencias
 
     // Validar cantidadSemillas
     if (this.cantidadSemillas !== null && this.cantidadSemillas !== undefined && this.cantidadSemillas < 0) {
@@ -1293,6 +1422,13 @@ export class TetrazolioComponent implements OnInit {
           this.errores.push(`La repetición ${index + 1} tiene valores negativos. Los valores no pueden ser menores que cero`);
         }
 
+        // ADVERTENCIA: Verificar si la suma de viables + noViables + duras supera cantidadSemillas (PRIMER select)
+        if (this.cantidadSemillas !== null && this.cantidadSemillas !== undefined) {
+          const sumaRepeticion = (rep.viables || 0) + (rep.noViables || 0) + (rep.duras || 0);
+          if (sumaRepeticion > this.cantidadSemillas) {
+            this.advertencias.push(`⚠️ Repetición ${index + 1}: La suma de semillas (${sumaRepeticion}) supera la cantidad del primer parámetro (${this.cantidadSemillas})`);
+          }
+        }
       });
     }
 
@@ -1318,6 +1454,14 @@ export class TetrazolioComponent implements OnInit {
             this.errores.push(`La tabla ${tablaIndex + 1} en ${cat.nombre} tiene valores negativos. Los valores no pueden ser menores que cero`);
           }
         });
+
+        // ADVERTENCIA: Verificar si la suma total de semillas supera cantidadSemillas2 (SEGUNDO select)
+        if (this.cantidadSemillas2 !== null && this.cantidadSemillas2 !== undefined) {
+          const sumaDetalle = this.getSumaTotal(det);
+          if (sumaDetalle > this.cantidadSemillas2) {
+            this.advertencias.push(`⚠️ Tabla Detalle de semillas y Daños ${tablaIndex + 1}: La suma de semillas (${sumaDetalle}) supera la cantidad del segundo parámetro (${this.cantidadSemillas2})`);
+          }
+        }
       });
     }
 
