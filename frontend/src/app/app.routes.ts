@@ -35,6 +35,7 @@ import { CertificadoComponent } from './components/certificado/certificado.compo
 import { ListadoCertificadosComponent } from './components/listado-certificados/listado-certificados.component'; 
 import { ListadoLogsComponent } from './components/listado-logs/listado-logs.components';
 import { ExcelMiddlewareComponent } from './components/excel-middleware/excel-middleware.component';
+import { ListadoEspeciesComponent } from './components/listado-especies/listado-especies.component';
 
 export const routes: Routes = [
     // Ruta pública (sin autenticación)
@@ -56,6 +57,8 @@ export const routes: Routes = [
     { path : 'listado-hongos', component: ListadoHongosComponent, canActivate: [authGuard] },
     { path : 'listado-cultivos', component: ListadoCultivosComponent, canActivate: [authGuard] },
     { path : 'listado-certificados', component: ListadoCertificadosComponent, canActivate: [authGuard] },
+    { path : 'listado-certificados', component: ListadoCertificadosComponent, canActivate: [authGuard] },
+    { path : 'listado-especies', component: ListadoEspeciesComponent, canActivate: [authGuard] },
     
     { path : ':loteId/:reciboId/listado-logs', component: ListadoLogsComponent, canActivate: [authGuard] },
 

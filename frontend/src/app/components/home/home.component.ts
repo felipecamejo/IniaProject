@@ -37,7 +37,9 @@ export class HomeComponent {
     return this.isAdmin || this.isAnalista;
   }
 
-
+  goToListadoEspecies() {
+    this.router.navigate(['/listado-especies']);
+  }
 
   goToListadoLotes() {
     this.router.navigate(['/listado-lotes']);

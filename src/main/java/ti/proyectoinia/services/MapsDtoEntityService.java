@@ -30,6 +30,8 @@ public class MapsDtoEntityService {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private LoteRepository loteRepository;
+    @Autowired
+    private EspecieRepository especieRepository;
 
     // Formato ISO simple para fechas tipo "2024-01-15T10:30:00"
     private static final DateTimeFormatter ISO_LOCAL_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -315,12 +317,10 @@ public class MapsDtoEntityService {
         dto.setNroAnalisis(recibo.getNroAnalisis());
         dto.setDepositoId(recibo.getDepositoId());
         dto.setEstado(recibo.getEstado());
-        dto.setEspecie(recibo.getEspecie());
         dto.setFicha(recibo.getFicha());
         dto.setFechaRecibo(recibo.getFechaRecibo());
         dto.setRemitente(recibo.getRemitente());
         dto.setOrigen(recibo.getOrigen());
-        dto.setCultivar(recibo.getCultivar());
         dto.setLoteId(recibo.getLoteId());
         dto.setKgLimpios(recibo.getKgLimpios());
         dto.setAnalisisSolicitados(recibo.getAnalisisSolicitados());
@@ -334,10 +334,24 @@ public class MapsDtoEntityService {
         dto.setPurezaPNotatumAnalisisId(recibo.getPurezaPNotatumAnalisis() != null ? recibo.getPurezaPNotatumAnalisis().stream().map(PurezaPNotatum::getId).collect(Collectors.toList()) : null);
         dto.setSanitarioAnalisisId(recibo.getSanitarioAnalisis() != null ? recibo.getSanitarioAnalisis().stream().map(Sanitario::getId).collect(Collectors.toList()) : null);
         dto.setTetrazolioAnalisisId(recibo.getTetrazolioAnalisis() != null ? recibo.getTetrazolioAnalisis().stream().map(Tetrazolio::getId).collect(Collectors.toList()) : null);
+
+
+        if (recibo.getEspecie() != null){
+            dto.setEspecieId(recibo.getEspecie().getId());
+        }else{
+            dto.setEspecieId(null);
+        }
+
+        if (recibo.getCultivar() != null){
+            dto.setCultivarId(recibo.getCultivar().getId());
+        }else{
+            dto.setCultivarId(null);
+        }
+
         return dto;
     }
 
-    public ti.proyectoinia.business.entities.Recibo mapToEntityRecibo(ti.proyectoinia.dtos.ReciboDto dto) {
+    public Recibo mapToEntityRecibo(ti.proyectoinia.dtos.ReciboDto dto) {
         if (dto == null) {
             return null;
         }
@@ -346,17 +360,38 @@ public class MapsDtoEntityService {
         recibo.setNroAnalisis(dto.getNroAnalisis());
         recibo.setDepositoId(dto.getDepositoId());
         recibo.setEstado(dto.getEstado());
-        recibo.setEspecie(dto.getEspecie());
         recibo.setFicha(dto.getFicha());
         recibo.setFechaRecibo(dto.getFechaRecibo());
         recibo.setRemitente(dto.getRemitente());
         recibo.setOrigen(dto.getOrigen());
-        recibo.setCultivar(dto.getCultivar());
         recibo.setLoteId(dto.getLoteId());
         recibo.setKgLimpios(dto.getKgLimpios());
         recibo.setAnalisisSolicitados(dto.getAnalisisSolicitados());
         recibo.setArticulo(dto.getArticulo());
         recibo.setActivo(dto.isActivo());
+
+        // Validar especie
+        if (dto.getEspecieId() != null) {
+            var especie = especieRepository.findById(dto.getEspecieId()).orElse(null);
+            if (especie == null) {
+                throw new IllegalArgumentException("La especie con ID " + dto.getEspecieId() + " no existe");
+            }
+            recibo.setEspecie(especie);
+        } else {
+            recibo.setEspecie(null);
+        }
+
+        // Validar cultivar
+        if (dto.getCultivarId() != null) {
+            var cultivar = cultivoRepository.findById(dto.getCultivarId()).orElse(null);
+            if (cultivar == null) {
+                throw new IllegalArgumentException("El cultivar con ID " + dto.getCultivarId() + " no existe");
+            }
+            recibo.setCultivar(cultivar);
+        } else {
+            recibo.setCultivar(null);
+        }
+
         // Mapear listas de IDs a listas de entidades (requiere repositorios para cada entidad)
         // Ejemplo: recibo.setDosnAnalisis(dto.getDosnAnalisisId() != null ? dto.getDosnAnalisisId().stream().map(id -> dosnRepository.findById(id).orElse(null)).filter(Objects::nonNull).collect(Collectors.toList()) : null);
         // Repetir para cada lista de análisis y humedades
@@ -1875,6 +1910,9 @@ public class MapsDtoEntityService {
         dto.setFirmante(certificado.getFirmante());
         dto.setFechaFirma(certificado.getFechaFirma());
         dto.setActivo(certificado.isActivo());
+        dto.setOtrasDeterminaciones(certificado.getOtrasDeterminaciones());
+        dto.setNombreFirmante(certificado.getNombreFirmante());
+        dto.setFuncionFirmante(certificado.getFuncionFirmante());
         
         // Mapear relación con Recibo
         if (certificado.getRecibo() != null) {
@@ -1941,6 +1979,10 @@ public class MapsDtoEntityService {
         certificado.setFirmante(dto.getFirmante());
         certificado.setFechaFirma(dto.getFechaFirma());
         certificado.setActivo(dto.isActivo());
+
+        certificado.setOtrasDeterminaciones(dto.getOtrasDeterminaciones());
+        certificado.setNombreFirmante(dto.getNombreFirmante());
+        certificado.setFuncionFirmante(dto.getFuncionFirmante());
         
         // Vincular recibo si viene en el DTO
         Recibo recibo = getValidRecibo(dto.getReciboId());
@@ -1977,5 +2019,23 @@ public class MapsDtoEntityService {
         certificado.setGerminacionPreTratamiento(dto.getGerminacionPreTratamiento());
 
         return certificado;
+    }
+
+    public Especie maptoEntityEspecie(EspecieDto dto){
+        Especie entity = new Especie();
+        entity.setId(dto.getId());
+        entity.setNombre(dto.getNombre());
+        entity.setDescripcion(dto.getDescripcion());
+        entity.setActivo(dto.isActivo());
+        return entity;
+    }
+
+    public EspecieDto maptoDtoEspecie(Especie entity){
+        EspecieDto dto = new EspecieDto();
+        dto.setId(entity.getId());
+        dto.setNombre(entity.getNombre());
+        dto.setDescripcion(entity.getDescripcion());
+        dto.setActivo(entity.isActivo());
+        return dto;
     }
 }

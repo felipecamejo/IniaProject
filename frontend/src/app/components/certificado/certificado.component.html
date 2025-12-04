@@ -195,9 +195,9 @@
               <input type="number" [(ngModel)]="dosnOtrosCultivos" name="dosnOtrosCultivos" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnOtrosCultivos ?? ''" />
             </div>
             <div class="form-field">
-            <label>Determinación de Brassica spp. en {{ dosnGramosAnalizados ?? '' }} g</label>
+            <label>Determinación de Brassica spp. (g)</label>
             <input id="dosnBrassicaSpp" type="number" [(ngModel)]="dosnBrassicaSpp" name="dosnBrassicaSpp" pInputText />
-          </div>
+            </div>
           </div>
         </div>
 
@@ -235,6 +235,13 @@
         </div>
       </div>
 
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Otras Determinaciones</label>
+          <input id="otrasDeterminaciones" type="text" [(ngModel)]="otrasDeterminaciones" name="otrasDeterminaciones" pInputText />
+        </div>
+      </div>
+        
       <!-- INFORMACIÓN DEL CERTIFICADO -->
       <div class="section-certificado">
         <h3 class="section-title-certificado">INFORMACIÓN DEL CERTIFICADO</h3>
@@ -252,18 +259,18 @@
           </div>
 
           <div class="form-field">
-            <label for="firmante">Firmante</label>
+            <label for="firmante">Firma Digital</label>
             <input id="firmante" type="text" [(ngModel)]="firmante" name="firmante" pInputText [readonly]="isViewing" />
           </div>
 
           <div class="form-field">
             <label for="firmante">Nombre</label>
-            <input id="firmante1" type="text" [(ngModel)]="firmante" name="firmante" pInputText [readonly]="isViewing" />
+            <input id="firmante1" type="text" [(ngModel)]="nombreFirmante" name="nombreFirmante" pInputText [readonly]="isViewing" />
           </div>
 
           <div class="form-field">
             <label for="firmante">Función</label>
-            <input id="firmante2" type="text" [(ngModel)]="firmante" name="firmante" pInputText [readonly]="isViewing" />
+            <input id="firmante2" type="text" [(ngModel)]="funcionFirmante" name="funcionFirmante" pInputText [readonly]="isViewing" />
           </div>
 
         </div>

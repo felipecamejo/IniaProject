@@ -6,16 +6,16 @@
     
     <p-card class="card">
         <ng-template pTemplate="header">
-            <h2 class="title">Listado de Cultivares</h2>
+            <h2 class="title">Listado de Especies</h2>
         </ng-template>
 
         <div class="search-section">
             <div class="search-bar">
-                <input type="text" placeholder="Buscar Cultivares..." class="search-input" [(ngModel)]="searchText" name="search" />
+                <input type="text" placeholder="Buscar Especies..." class="search-input" [(ngModel)]="searchText" name="search" />
             </div>
             <div class="filter-dropdown">
                  <div class="submit-btn">
-                    <button pButton type="button" (click)="abrirModal()" label="Crear Cultivar" class="p-button-primary"></button>
+                    <button pButton type="button" (click)="abrirModal()" label="Crear Especie" class="p-button-primary"></button>
                 </div>
             </div>
         </div>
@@ -24,7 +24,7 @@
         <div class="loading-message" *ngIf="loading">
             <div class="loading-content">
                 <i class="pi pi-spin pi-spinner"></i>
-                <p>Cargando cultivares...</p>
+                <p>Cargando Especies...</p>
             </div>
         </div>
 
@@ -34,15 +34,15 @@
                 <i class="pi pi-exclamation-triangle"></i>
                 <h3>Error al cargar</h3>
                 <p>{{ error }}</p>
-                <button pButton type="button" label="Reintentar" class="p-button-secondary" (click)="cargarCultivos()"></button>
+                <button pButton type="button" label="Reintentar" class="p-button-secondary" (click)="cargar()"></button>
             </div>
         </div>
 
         <!-- Mensaje cuando no hay elementos -->
         <div class="no-results-message" *ngIf="!loading && !error && itemsFiltrados.length === 0">
             <div class="no-results-content">
-                <h3>No se encontraron Cultivares</h3>
-                <p>No hay cultivares que coincidan con los filtros seleccionados.</p>
+                <h3>No se encontraron Especies</h3>
+                <p>No hay Especies que coincidan con los filtros seleccionados.</p>
                 <p>Intenta ajustar los criterios de búsqueda.</p>
             </div>
         </div>

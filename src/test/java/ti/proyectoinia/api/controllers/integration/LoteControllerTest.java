@@ -72,7 +72,7 @@ public class LoteControllerTest {
         LoteDto input = new LoteDto();
         input.setId(null);
 
-        Mockito.when(service.crearLote(any(LoteDto.class))).thenReturn(1L);
+        Mockito.when(service.crearLote(any(LoteDto.class))).thenReturn(String.valueOf(1L));
 
         mockMvc.perform(post(baseUrl + "/crear")
                         .with(csrf())
@@ -88,7 +88,7 @@ public class LoteControllerTest {
         LoteDto input = new LoteDto();
         input.setId(1L);
 
-        Mockito.when(service.editarLote(any(LoteDto.class))).thenReturn(input.getId());
+        Mockito.when(service.editarLote(any(LoteDto.class))).thenReturn(String.valueOf(input.getId()));
 
         mockMvc.perform(put(baseUrl + "/editar")
                         .with(csrf())
