@@ -34,6 +34,8 @@ public class CertificadoDto {
     private byte[] firmante;
     private Date fechaFirma;
 
+    private boolean brassicaContiene;
+
     private Long reciboId;
 
     private boolean activo;

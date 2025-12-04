@@ -1892,6 +1892,7 @@ public class MapsDtoEntityService {
 
         CertificadoDto dto = new CertificadoDto();
         dto.setId(certificado.getId());
+        dto.setBrassicaContiene(certificado.isBrassicaContiene());
         dto.setNombreSolicitante(certificado.getNombreSolicitante());
         dto.setEspecie(certificado.getEspecie());
         dto.setCultivar(certificado.getCultivar());
@@ -1963,6 +1964,7 @@ public class MapsDtoEntityService {
 
         Certificado certificado = new Certificado();
         certificado.setId(dto.getId());
+        certificado.setBrassicaContiene(dto.isBrassicaContiene());
         certificado.setNombreSolicitante(dto.getNombreSolicitante());
         certificado.setEspecie(dto.getEspecie());
         certificado.setCultivar(dto.getCultivar());

@@ -55,7 +55,7 @@ export class CertificadoComponent implements OnInit {
   responsableMuestreo: string = '';
   fechaMuestreo: string = '';
   numeroLote: string = '';
-  pesoKg: number | null = null;
+  pesoKg: number = 0;
   numeroEnvases: number | null = null;
   fechaIngresoLaboratorio: string = '';
   fechaFinalizacionAnalisis: string = '';
@@ -134,6 +134,8 @@ export class CertificadoComponent implements OnInit {
   debeRealizarDOSN: boolean = false;
   debeRealizarGerminacion: boolean = false;
 
+  brassicaContiene: boolean = false;
+
   // Resultados de análisis (por defecto, luego se extraerán de los análisis)
   // Pureza
   purezaSemillaPura: number | null = null;
@@ -152,7 +154,7 @@ export class CertificadoComponent implements OnInit {
   dosnMalezasToleranciaCero: number | null = null;
   dosnMalezasTolerancia: number | null = null;
   dosnOtrosCultivos: number | null = null;
-  dosnBrassicaSpp: string = '';
+  dosnBrassicaSpp: number = 0;
 
   // Germinación
   germinacionNumeroDias: number | null = null;
@@ -289,7 +291,7 @@ export class CertificadoComponent implements OnInit {
         } else {
           this.cultivar = 'Sin Cultivar';
         }
-        if (recibo.kgLimpios) this.pesoKg = recibo.kgLimpios;
+        this.pesoKg = recibo.kgLimpios ?? 0;
 
         // Obtener loteId del recibo si no está en la ruta
         if (!this.loteId && recibo.loteId) {
@@ -521,7 +523,7 @@ export class CertificadoComponent implements OnInit {
     this.dosnMalezasToleranciaCero = null;
     this.dosnMalezasTolerancia = null;
     this.dosnOtrosCultivos = null;
-    this.dosnBrassicaSpp = '';
+
   }
 
   inicializarValoresPorDefectoGerminacion() {
@@ -552,7 +554,7 @@ export class CertificadoComponent implements OnInit {
     this.responsableMuestreo = '';
     this.fechaMuestreo = fechaHoy;
     this.numeroLote = '';
-    this.pesoKg = null;
+    this.pesoKg = 0;
     this.numeroEnvases = null;
     this.fechaIngresoLaboratorio = fechaHoy;
     this.fechaFinalizacionAnalisis = fechaHoy;
@@ -658,9 +660,7 @@ export class CertificadoComponent implements OnInit {
               this.recibo = recibo;
               this.analisisSolicitados = recibo.analisisSolicitados;
               // Extraer el peso del recibo
-              if (recibo.kgLimpios) {
-                this.pesoKg = recibo.kgLimpios;
-              }
+              this.pesoKg = recibo.kgLimpios ?? 0;
               // Determinar qué análisis deben realizarse
               this.determinarAnalisisSolicitados();
               // Cargar análisis disponibles para verificar si existen análisis estándar
@@ -696,7 +696,16 @@ export class CertificadoComponent implements OnInit {
         this.dosnMalezasToleranciaCero = certificado.dosnMalezasToleranciaCero ?? null;
         this.dosnMalezasTolerancia = certificado.dosnMalezasTolerancia ?? null;
         this.dosnOtrosCultivos = certificado.dosnOtrosCultivos ?? null;
-        this.dosnBrassicaSpp = certificado.dosnBrassicaSpp != null ? String(certificado.dosnBrassicaSpp) : "0";
+        // Asignar correctamente dosnBrassicaSpp, permitiendo 0 y valores positivos, y forzando a number
+        if (certificado.dosnBrassicaSpp !== undefined && certificado.dosnBrassicaSpp !== null) {
+          const val = Number(certificado.dosnBrassicaSpp);
+          this.dosnBrassicaSpp = isNaN(val) ? 0 : val;
+        } else {
+          this.dosnBrassicaSpp = 0;
+        }
+
+        // Asignar correctamente brassicaContiene, permitiendo true/false del backend
+        this.brassicaContiene = (typeof certificado.brassicaContiene === 'boolean') ? certificado.brassicaContiene : false;
 
         this.otrasDeterminaciones = certificado.otrasDeterminaciones || '';
         this.nombreFirmante = certificado.nombreFirmante || '';
@@ -891,6 +900,7 @@ export class CertificadoComponent implements OnInit {
       fechaFirma: null,
       reciboId: this.reciboId ?? null,
       activo: true,
+      brassicaContiene: this.brassicaContiene ?? false,
       // Resultados de análisis - Pureza
       purezaSemillaPura: this.purezaSemillaPura ?? null,
       purezaMateriaInerte: this.purezaMateriaInerte ?? null,
@@ -1006,6 +1016,7 @@ export class CertificadoComponent implements OnInit {
       fechaFirma: null,
       reciboId: this.reciboId ?? null,
       activo: true,
+      brassicaContiene: this.brassicaContiene ?? false,
       // Resultados de análisis - Pureza
       purezaSemillaPura: this.purezaSemillaPura ?? null,
       purezaMateriaInerte: this.purezaMateriaInerte ?? null,

@@ -81,6 +81,9 @@ public class Certificado {
     @JoinColumn(name = "RECIBO_ID")
     private Recibo recibo;
 
+    @Column(name = "BRASSICA_CONTIENE")
+    private boolean brassicaContiene;
+
     // Resultados de análisis - Pureza
     @Column(name = "PUREZA_SEMILLA_PURA")
     private Float purezaSemillaPura;
