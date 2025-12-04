@@ -365,7 +365,6 @@ export class PurezaComponent implements OnInit {
   materiaInerteTipo: string = '';
   materiaInerteTipoInase: string = '';
   
-  fechaEstandar: string = '';
   estandar: boolean = false;
   activo: boolean = true;
 
@@ -768,7 +767,6 @@ export class PurezaComponent implements OnInit {
     malezasToleranciaCeroPorcentajeRedondeo: 0,
     malezasToleranciaCeroPorcentajeRedondeoInase: 0,
     otrosCultivo: 0,
-    fechaEstandar: null,
     estandar: false,
     activo: true,
     reciboId: null,
@@ -936,7 +934,6 @@ export class PurezaComponent implements OnInit {
         // Fechas
         this.fechaInia = item.fechaInia ? item.fechaInia.split('T')[0] : null;
         this.fechaInase = item.fechaInase ? item.fechaInase.split('T')[0] : null;
-        this.fechaEstandar = item.fechaEstandar ? item.fechaEstandar.split('T')[0] : '';
         
         // Campos INIA - Gramos
         this.pesoInicialGr = item.pesoInicial || 0;
@@ -1082,7 +1079,6 @@ export class PurezaComponent implements OnInit {
     
     // Otros campos
     this.otrosCultivoField = 0;
-    this.fechaEstandar = '';
     this.estandar = false;
     this.repetido = false;
     this.estandarOriginal = false;
@@ -1231,7 +1227,6 @@ export class PurezaComponent implements OnInit {
       malezasToleranciaCeroId: this.selectedMalezasCero.length > 0 ? this.selectedMalezasCero : null,
       cultivosId: this.selectedCultivos.length > 0 ? this.selectedCultivos : null,
 
-      fechaEstandar: this.fechaEstandar ? this.convertirFechaAISO(this.fechaEstandar) : null,
       estandar: this.estandar || false,
       activo: this.activo !== undefined ? this.activo : true,
       reciboId: this.getReciboId(),

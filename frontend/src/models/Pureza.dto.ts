@@ -46,8 +46,6 @@ export interface PurezaDto {
   malezasToleranciaCeroId: number[] | null;
   cultivosId: number[] | null;
 
-
-  fechaEstandar: string | null;
   estandar: boolean;
   activo: boolean;
   reciboId: number | null;
