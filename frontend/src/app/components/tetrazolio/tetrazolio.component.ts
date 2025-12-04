@@ -306,26 +306,167 @@ export class TetrazolioComponent implements OnInit {
     return this.getClasificacionNoViables(pct);
   }
 
-  // Cálculos automáticos para Viabilidad y Vigor Acumulado en el reporte
+  // --- Cálculos automáticos del reporte (promedio de todas las tablas) ---
+  
+  // Calcular porcentaje promedio de una categoría específica
+  private getPorcentajePromedioCategoria(categoria: 'viablesSinDefectos' | 'viablesLeves' | 'viablesModerados' | 'viablesSeveros' | 'noViables'): number {
+    if (!this.detalles || this.detalles.length === 0) return 0;
+    
+    let sumaPorcentajes = 0;
+    let tablasValidas = 0;
+    
+    for (const det of this.detalles) {
+      const total = this.getSumaTotal(det);
+      if (total > 0) {
+        const cantidad = det[categoria].total || 0;
+        const porcentaje = (cantidad / total) * 100;
+        sumaPorcentajes += porcentaje;
+        tablasValidas++;
+      }
+    }
+    
+    if (tablasValidas === 0) return 0;
+    return sumaPorcentajes / tablasValidas;
+  }
+
+  // Calcular promedio de porcentaje de daños para una categoría y tipo de daño específico
+  private getPromedioDaniosPorcentaje(categoria: 'viablesSinDefectos' | 'viablesLeves' | 'viablesModerados' | 'viablesSeveros' | 'noViables', tipoDanio: 'mecanico' | 'ambiente' | 'chinches' | 'fracturas' | 'otros' | 'duras'): number {
+    if (!this.detalles || this.detalles.length === 0) return 0;
+    
+    let sumaPorcentajes = 0;
+    let tablasValidas = 0;
+    
+    for (const det of this.detalles) {
+      const total = this.getSumaTotal(det);
+      if (total > 0) {
+        const cantidadDanio = det[categoria][tipoDanio] || 0;
+        const porcentaje = (cantidadDanio / total) * 100;
+        sumaPorcentajes += porcentaje;
+        tablasValidas++;
+      }
+    }
+    
+    if (tablasValidas === 0) return 0;
+    return sumaPorcentajes / tablasValidas;
+  }
+
+  // Funciones para obtener porcentajes promedio del reporte
+  getVigorAltoReportePct(): number {
+    return this.getPorcentajePromedioCategoria('viablesSinDefectos');
+  }
+
+  getVigorMedioReportePct(): number {
+    return this.getPorcentajePromedioCategoria('viablesLeves');
+  }
+
+  getVigorBajoReportePct(): number {
+    return this.getPorcentajePromedioCategoria('viablesModerados');
+  }
+
+  getLimiteCriticoReportePct(): number {
+    return this.getPorcentajePromedioCategoria('viablesSeveros');
+  }
+
+  getNoViablesReportePct(): number {
+    return this.getPorcentajePromedioCategoria('noViables');
+  }
+
   getViabilidadReportePct(): number {
-    const a = Number(this.reporte.vigorAlto.porcentaje) || 0;
-    const m = Number(this.reporte.vigorMedio.porcentaje) || 0;
-    const b = Number(this.reporte.vigorBajo.porcentaje) || 0;
+    const a = this.getVigorAltoReportePct();
+    const m = this.getVigorMedioReportePct();
+    const b = this.getVigorBajoReportePct();
     return a + m + b;
   }
 
   getVigorAcumuladoReportePct(): number {
-    const a = Number(this.reporte.vigorAlto.porcentaje) || 0;
-    const m = Number(this.reporte.vigorMedio.porcentaje) || 0;
+    const a = this.getVigorAltoReportePct();
+    const m = this.getVigorMedioReportePct();
     return a + m;
+  }
+
+  // Calcular daños de Viabilidad (suma de Vigor Alto + Medio + Bajo)
+  private getDaniosViabilidad(tipoDanio: 'mecanico' | 'ambiente' | 'chinches' | 'fracturas' | 'otros' | 'duras'): number {
+    const alto = this.getPromedioDaniosPorcentaje('viablesSinDefectos', tipoDanio);
+    const medio = this.getPromedioDaniosPorcentaje('viablesLeves', tipoDanio);
+    const bajo = this.getPromedioDaniosPorcentaje('viablesModerados', tipoDanio);
+    return alto + medio + bajo;
+  }
+
+  // Calcular daños de Vigor Acumulado (suma de Vigor Alto + Medio)
+  private getDaniosVigorAcumulado(tipoDanio: 'mecanico' | 'ambiente' | 'chinches' | 'fracturas' | 'otros' | 'duras'): number {
+    const alto = this.getPromedioDaniosPorcentaje('viablesSinDefectos', tipoDanio);
+    const medio = this.getPromedioDaniosPorcentaje('viablesLeves', tipoDanio);
+    return alto + medio;
   }
 
   // Método para actualizar cálculos automáticos cuando cambian los valores
   actualizarCalculosReporte() {
-    // Actualizar Viabilidad
+    // Actualizar todos los porcentajes del reporte automáticamente
+    this.reporte.vigorAlto.porcentaje = this.getVigorAltoReportePct();
+    this.reporte.vigorMedio.porcentaje = this.getVigorMedioReportePct();
+    this.reporte.vigorBajo.porcentaje = this.getVigorBajoReportePct();
+    this.reporte.limiteCritico.porcentaje = this.getLimiteCriticoReportePct();
+    this.reporte.noViables.porcentaje = this.getNoViablesReportePct();
+    // Actualizar Viabilidad y Vigor Acumulado
     this.reporte.viabilidad.porcentaje = this.getViabilidadReportePct();
-    // Actualizar Vigor Acumulado
     this.reporte.vigorAcumulado.porcentaje = this.getVigorAcumuladoReportePct();
+    
+    // Actualizar daños automáticamente (promedio de todas las tablas)
+    // Vigor Alto
+    this.reporte.vigorAlto.danios.mecanicos = this.getPromedioDaniosPorcentaje('viablesSinDefectos', 'mecanico');
+    this.reporte.vigorAlto.danios.ambiente = this.getPromedioDaniosPorcentaje('viablesSinDefectos', 'ambiente');
+    this.reporte.vigorAlto.danios.chinches = this.getPromedioDaniosPorcentaje('viablesSinDefectos', 'chinches');
+    this.reporte.vigorAlto.danios.fracturas = this.getPromedioDaniosPorcentaje('viablesSinDefectos', 'fracturas');
+    this.reporte.vigorAlto.danios.otros = this.getPromedioDaniosPorcentaje('viablesSinDefectos', 'otros');
+    this.reporte.vigorAlto.danios.duras = this.getPromedioDaniosPorcentaje('viablesSinDefectos', 'duras');
+    
+    // Vigor Medio
+    this.reporte.vigorMedio.danios.mecanicos = this.getPromedioDaniosPorcentaje('viablesLeves', 'mecanico');
+    this.reporte.vigorMedio.danios.ambiente = this.getPromedioDaniosPorcentaje('viablesLeves', 'ambiente');
+    this.reporte.vigorMedio.danios.chinches = this.getPromedioDaniosPorcentaje('viablesLeves', 'chinches');
+    this.reporte.vigorMedio.danios.fracturas = this.getPromedioDaniosPorcentaje('viablesLeves', 'fracturas');
+    this.reporte.vigorMedio.danios.otros = this.getPromedioDaniosPorcentaje('viablesLeves', 'otros');
+    this.reporte.vigorMedio.danios.duras = this.getPromedioDaniosPorcentaje('viablesLeves', 'duras');
+    
+    // Vigor Bajo
+    this.reporte.vigorBajo.danios.mecanicos = this.getPromedioDaniosPorcentaje('viablesModerados', 'mecanico');
+    this.reporte.vigorBajo.danios.ambiente = this.getPromedioDaniosPorcentaje('viablesModerados', 'ambiente');
+    this.reporte.vigorBajo.danios.chinches = this.getPromedioDaniosPorcentaje('viablesModerados', 'chinches');
+    this.reporte.vigorBajo.danios.fracturas = this.getPromedioDaniosPorcentaje('viablesModerados', 'fracturas');
+    this.reporte.vigorBajo.danios.otros = this.getPromedioDaniosPorcentaje('viablesModerados', 'otros');
+    this.reporte.vigorBajo.danios.duras = this.getPromedioDaniosPorcentaje('viablesModerados', 'duras');
+    
+    // Límite Crítico
+    this.reporte.limiteCritico.danios.mecanicos = this.getPromedioDaniosPorcentaje('viablesSeveros', 'mecanico');
+    this.reporte.limiteCritico.danios.ambiente = this.getPromedioDaniosPorcentaje('viablesSeveros', 'ambiente');
+    this.reporte.limiteCritico.danios.chinches = this.getPromedioDaniosPorcentaje('viablesSeveros', 'chinches');
+    this.reporte.limiteCritico.danios.fracturas = this.getPromedioDaniosPorcentaje('viablesSeveros', 'fracturas');
+    this.reporte.limiteCritico.danios.otros = this.getPromedioDaniosPorcentaje('viablesSeveros', 'otros');
+    this.reporte.limiteCritico.danios.duras = this.getPromedioDaniosPorcentaje('viablesSeveros', 'duras');
+    
+    // No viables
+    this.reporte.noViables.danios.mecanicos = this.getPromedioDaniosPorcentaje('noViables', 'mecanico');
+    this.reporte.noViables.danios.ambiente = this.getPromedioDaniosPorcentaje('noViables', 'ambiente');
+    this.reporte.noViables.danios.chinches = this.getPromedioDaniosPorcentaje('noViables', 'chinches');
+    this.reporte.noViables.danios.fracturas = this.getPromedioDaniosPorcentaje('noViables', 'fracturas');
+    this.reporte.noViables.danios.otros = this.getPromedioDaniosPorcentaje('noViables', 'otros');
+    this.reporte.noViables.danios.duras = this.getPromedioDaniosPorcentaje('noViables', 'duras');
+    
+    // Viabilidad (suma de Vigor Alto + Medio + Bajo)
+    this.reporte.viabilidad.danios.mecanicos = this.getDaniosViabilidad('mecanico');
+    this.reporte.viabilidad.danios.ambiente = this.getDaniosViabilidad('ambiente');
+    this.reporte.viabilidad.danios.chinches = this.getDaniosViabilidad('chinches');
+    this.reporte.viabilidad.danios.fracturas = this.getDaniosViabilidad('fracturas');
+    this.reporte.viabilidad.danios.otros = this.getDaniosViabilidad('otros');
+    this.reporte.viabilidad.danios.duras = this.getDaniosViabilidad('duras');
+    
+    // Vigor Acumulado (suma de Vigor Alto + Medio)
+    this.reporte.vigorAcumulado.danios.mecanicos = this.getDaniosVigorAcumulado('mecanico');
+    this.reporte.vigorAcumulado.danios.ambiente = this.getDaniosVigorAcumulado('ambiente');
+    this.reporte.vigorAcumulado.danios.chinches = this.getDaniosVigorAcumulado('chinches');
+    this.reporte.vigorAcumulado.danios.fracturas = this.getDaniosVigorAcumulado('fracturas');
+    this.reporte.vigorAcumulado.danios.otros = this.getDaniosVigorAcumulado('otros');
+    this.reporte.vigorAcumulado.danios.duras = this.getDaniosVigorAcumulado('duras');
   }
 
   // Suma de N° de semillas (todas las filas)
@@ -367,6 +508,7 @@ export class TetrazolioComponent implements OnInit {
     if (this.detalles.length >= 8) return;
     const base = this.detalles[this.detalles.length - 1] || this.crearDetalleVacio();
     this.detalles.push(this.clonarDetalle(base));
+    this.actualizarCalculosReporte();
   }
 
   eliminarTablaDetalle(index: number) {
@@ -374,6 +516,7 @@ export class TetrazolioComponent implements OnInit {
     if (index <= 0) return;
     if (this.detalles.length <= 1) return;
     this.detalles.splice(index, 1);
+    this.actualizarCalculosReporte();
   }
 
   agregarRepeticion() {
@@ -727,10 +870,14 @@ export class TetrazolioComponent implements OnInit {
         } else {
           this.detalles = [this.crearDetalleVacio()];
         }
+        // Actualizar reporte automáticamente después de cargar detalles
+        this.actualizarCalculosReporte();
       },
       error: (err) => {
         console.error('Error obteniendo detalles:', err);
         this.detalles = [this.crearDetalleVacio()];
+        // Actualizar reporte incluso en caso de error
+        this.actualizarCalculosReporte();
       }
     });
   }
