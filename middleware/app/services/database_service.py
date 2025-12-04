@@ -84,6 +84,7 @@ def create_engine_safe(connection_string: Optional[str] = None, **kwargs):
     connect_args = kwargs.get('connect_args', {})
     if 'client_encoding' not in connect_args:
         connect_args['client_encoding'] = 'UTF8'
+    # Configurar opciones de PostgreSQL para forzar UTF-8
     if 'options' not in connect_args:
         connect_args['options'] = '-c client_encoding=UTF8'
     kwargs['connect_args'] = connect_args
@@ -94,6 +95,18 @@ def create_engine_safe(connection_string: Optional[str] = None, **kwargs):
     
     try:
         # Intentar crear el engine
+        # Configurar el entorno para manejar errores de codificación de manera robusta
+        import sys
+        import io
+        # Configurar stderr para manejar errores de codificación
+        if hasattr(sys, 'stderr'):
+            # Asegurar que stderr puede manejar caracteres especiales
+            if not isinstance(sys.stderr, io.TextIOWrapper) or sys.stderr.encoding != 'utf-8':
+                try:
+                    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+                except (AttributeError, ValueError):
+                    pass  # No se puede modificar stderr, continuar
+        
         engine = create_engine(connection_string, **kwargs)
         logger.debug(f"Engine creado exitosamente con codificación UTF-8")
         return engine

@@ -45,6 +45,21 @@ export class MiddlewareService {
   }
 
   /**
+   * Exporta todos los análisis asociados a un lote (Quick Export)
+   * @param loteId ID del lote
+   * @param formato Formato de exportación ('xlsx' o 'csv')
+   * @returns Observable con el archivo ZIP como blob
+   */
+  exportarAnalisisPorLote(loteId: number, formato: string = 'xlsx'): Observable<Blob> {
+    const params = new HttpParams().set('formato', formato);
+    
+    return this.http.post(`/middleware/exportar-lote/${loteId}`, {}, {
+      responseType: 'blob',
+      params: params
+    });
+  }
+
+  /**
    * Importa uno o varios archivos Excel/CSV a la base de datos
    * @param files Archivo(s) Excel/CSV (.xlsx, .xls o .csv)
    * @returns Observable con la respuesta del servidor

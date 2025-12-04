@@ -95,8 +95,13 @@ from database_config import build_connection_string
 
 def obtener_engine():
     """Obtiene un engine de SQLAlchemy configurado."""
-    connection_string = build_connection_string()
-    return create_engine(connection_string)
+    try:
+        from app.services.database_service import create_engine_with_pool
+        return create_engine_with_pool()
+    except ImportError:
+        # Fallback si no está disponible el servicio
+        connection_string = build_connection_string()
+        return create_engine(connection_string)
 
 # ================================
 # MÓDULO: AUTOMAPEO DE MODELOS
@@ -460,12 +465,23 @@ def read_rows_from_xlsx(ruta_archivo: str, max_rows: Optional[int] = None) -> Tu
         wb = load_workbook(ruta_archivo, data_only=True)
         ws = wb.active
         
+        # Validar que el archivo tiene contenido
+        if ws.max_row == 0 or ws.max_column == 0:
+            wb.close()
+            raise ValueError("El archivo Excel está vacío o no tiene datos")
+        
         # Leer encabezados (primera fila)
         if ws.max_row > 0:
             for col in range(1, ws.max_column + 1):
                 celda = ws.cell(row=1, column=col)
                 valor = celda.value
                 headers.append(str(valor).strip() if valor is not None else f"Columna_{col}")
+        
+        # Validar que hay headers válidos
+        headers_validos = [h for h in headers if h and h.strip() and not h.startswith("Columna_")]
+        if len(headers_validos) < 3:
+            wb.close()
+            raise ValueError(f"El archivo Excel no tiene suficientes encabezados válidos. Encontrados: {len(headers_validos)}, mínimo requerido: 3")
         
         # Leer filas de datos
         start_row = 2
@@ -481,6 +497,14 @@ def read_rows_from_xlsx(ruta_archivo: str, max_rows: Optional[int] = None) -> Tu
             rows.append(fila)
         
         wb.close()
+        
+        # Validar que hay datos (solo si no es max_rows limitado)
+        if not max_rows:
+            filas_con_datos = [f for f in rows if any(v is not None and str(v).strip() for v in f)]
+            if not filas_con_datos:
+                logger.warning("El archivo Excel tiene encabezados pero no tiene filas con datos")
+    except ValueError:
+        raise
     except Exception as e:
         logger.error(f"Error leyendo archivo Excel: {e}")
         raise
@@ -501,13 +525,25 @@ def read_rows_from_csv(ruta_archivo: str, max_rows: Optional[int] = None) -> Tup
                 headers = next(reader)
                 headers = [h.strip() if h else f"Columna_{i+1}" for i, h in enumerate(headers)]
             except StopIteration:
-                pass
+                raise ValueError("El archivo CSV está vacío")
+            
+            # Validar que hay headers válidos
+            headers_validos = [h for h in headers if h and h.strip() and not h.startswith("Columna_")]
+            if len(headers_validos) < 3:
+                raise ValueError(f"El archivo CSV no tiene suficientes encabezados válidos. Encontrados: {len(headers_validos)}, mínimo requerido: 3")
             
             # Leer filas de datos
             for i, fila in enumerate(reader):
                 if max_rows and i >= max_rows:
                     break
                 rows.append(fila)
+            
+            # Validar que hay datos
+            filas_con_datos = [f for f in rows if any(v is not None and str(v).strip() for v in f)]
+            if not filas_con_datos:
+                logger.warning("El archivo CSV tiene encabezados pero no tiene filas con datos")
+    except ValueError:
+        raise
     except Exception as e:
         logger.error(f"Error leyendo archivo CSV: {e}")
         raise
@@ -540,6 +576,96 @@ def normalize_header_names(headers: List[str]) -> List[str]:
 # ================================
 # MÓDULO: DETECCIÓN DE TABLAS
 # ================================
+
+# Mapeo de nombres de archivos a tablas (para mejorar detección automática)
+MAPEO_NOMBRES_ARCHIVOS = {
+    # Tablas principales (coinciden con nombre de archivo)
+    'autocompletado': 'autocompletado',
+    'certificado': 'certificado',
+    'conteo_germinacion': 'conteo_germinacion',
+    'cultivo': 'cultivo',
+    'deposito': 'deposito',
+    'dosn': 'dosn',
+    'dosn_cultivo': 'dosn_cultivo',
+    'dosn_maleza': 'dosn_maleza',
+    'germinacion': 'germinacion',
+    'germinacion_curada_laboratorio': 'germinacion_curada_laboratorio',
+    'germinacion_curada_planta': 'germinacion_curada_planta',
+    'germinacion_normal_por_conteo': 'germinacion_normal_por_conteo',
+    'germinacion_sin_curar': 'germinacion_sin_curar',
+    'gramos_pms': 'gramos_pms',
+    'hongo': 'hongo',
+    'humedad_recibo': 'humedad_recibo',
+    'lote': 'lote',
+    'maleza': 'maleza',
+    'metodo': 'metodo',
+    'pms': 'pms',
+    'pureza': 'pureza',
+    'pureza_pnotatum': 'pureza_pnotatum',
+    'recibo': 'recibo',
+    'repeticiones_pureza_pnotatum': 'repeticiones_pureza_pnotatum',
+    'sanitario': 'sanitario',
+    'sanitario_hongo': 'sanitario_hongo',
+    'tetrazolio': 'tetrazolio',
+    'tetrazolio_detalle_semillas': 'tetrazolio_detalle_semillas',
+    'usuario': 'usuario',
+    'usuario_lote': 'usuario_lote',
+    'viabilidad_reps_tetrazolio': 'viabilidad_reps_tetrazolio',
+    'logs': 'logs',
+    
+    # Variantes de dosn_cultivo (todos van a dosn_cultivo)
+    'dosn_cultivo_inase': 'dosn_cultivo',
+    'dosn_cultivo_inia': 'dosn_cultivo',
+    
+    # Variantes de dosn_maleza (todos van a dosn_maleza)
+    'dosn_maleza_normal_inase': 'dosn_maleza',
+    'dosn_maleza_normal_inia': 'dosn_maleza',
+    'dosn_maleza_tolerada_inase': 'dosn_maleza',
+    'dosn_maleza_tolerada_inia': 'dosn_maleza',
+    'dosn_maleza_tolerancia_cero_inase': 'dosn_maleza',
+    'dosn_maleza_tolerancia_cero_inia': 'dosn_maleza',
+    
+    # Variantes de pureza_maleza (todos van a pureza_maleza)
+    'pureza_maleza_normal': 'pureza_maleza',
+    'pureza_maleza_tolerada': 'pureza_maleza',
+    'pureza_maleza_tolerancia_cero': 'pureza_maleza',
+}
+
+def detectar_tabla_por_nombre_archivo(nombre_archivo: str) -> Optional[str]:
+    """
+    Detecta la tabla destino basándose en el nombre del archivo.
+    
+    Args:
+        nombre_archivo: Nombre del archivo (con o sin extensión)
+    
+    Returns:
+        Nombre de la tabla detectada o None si no se encuentra
+    """
+    if not nombre_archivo:
+        return None
+    
+    # Extraer nombre sin extensión
+    nombre_sin_ext = os.path.splitext(nombre_archivo)[0].lower().strip()
+    
+    # Buscar en mapeo directo
+    if nombre_sin_ext in MAPEO_NOMBRES_ARCHIVOS:
+        tabla_mapeada = MAPEO_NOMBRES_ARCHIVOS[nombre_sin_ext]
+        logger.debug(f"Tabla detectada por mapeo de nombre: '{nombre_sin_ext}' -> '{tabla_mapeada}'")
+        return tabla_mapeada
+    
+    # Buscar coincidencias parciales (para casos como "dosn_cultivo_inase.xlsx")
+    for nombre_archivo_mapeo, tabla in MAPEO_NOMBRES_ARCHIVOS.items():
+        if nombre_archivo_mapeo in nombre_sin_ext or nombre_sin_ext in nombre_archivo_mapeo:
+            logger.debug(f"Tabla detectada por coincidencia parcial: '{nombre_sin_ext}' -> '{tabla}' (mapeo: '{nombre_archivo_mapeo}')")
+            return tabla
+    
+    # Si no hay mapeo, verificar si el nombre coincide directamente con una tabla en MODELS
+    if nombre_sin_ext in MODELS:
+        logger.debug(f"Tabla detectada por nombre directo en MODELS: '{nombre_sin_ext}'")
+        return nombre_sin_ext
+    
+    return None
+
 def detectar_tipo_analisis_por_contenido(ruta_archivo: str) -> Optional[str]:
     """Detecta el tipo de análisis basándose en el contenido del archivo."""
     try:
@@ -1250,6 +1376,11 @@ def import_one_file(session, model, ruta_archivo: str, formato: str, upsert: boo
 def _detectar_modelo_para_archivo(ruta_archivo: str, formato: str, tabla_cli: Optional[str]) -> Tuple[str, Any]:
     """
     Determina el modelo de destino para un archivo dado.
+    Usa una estrategia en cascada:
+    1. Tabla especificada explícitamente (tabla_cli)
+    2. Detección por nombre de archivo (mapeo)
+    3. Detección por tipo de análisis (contenido)
+    4. Detección por columnas del archivo
 
     Args:
         ruta_archivo: Ruta del archivo a importar.
@@ -1262,18 +1393,44 @@ def _detectar_modelo_para_archivo(ruta_archivo: str, formato: str, tabla_cli: Op
     Raises:
         ValueError: Si no se puede determinar la tabla destino.
     """
+    # Estrategia 1: Tabla especificada explícitamente
     if tabla_cli:
         try:
             modelo = obtener_modelo(tabla_cli)
+            logger.info(f"Usando tabla especificada explícitamente: '{tabla_cli}'")
             return tabla_cli, modelo
         except Exception as exc:
             raise ValueError(f"No se pudo obtener el modelo para la tabla '{tabla_cli}': {exc}") from exc
 
+    # Estrategia 2: Detección por nombre de archivo
+    nombre_archivo = os.path.basename(ruta_archivo)
+    tabla_por_nombre = detectar_tabla_por_nombre_archivo(nombre_archivo)
+    if tabla_por_nombre:
+        try:
+            modelo = obtener_modelo(tabla_por_nombre)
+            logger.info(f"Tabla detectada por nombre de archivo: '{tabla_por_nombre}' (archivo: '{nombre_archivo}')")
+            return tabla_por_nombre, modelo
+        except Exception as exc:
+            logger.warning(f"Tabla detectada por nombre '{tabla_por_nombre}' pero no se pudo obtener modelo: {exc}. Continuando con otras estrategias...")
+
+    # Estrategia 3: Detección por tipo de análisis (contenido)
     try:
         tipo_analisis = detectar_tipo_analisis_por_contenido(ruta_archivo)
-    except Exception:
+        if tipo_analisis:
+            logger.info(f"Tipo de análisis detectado por contenido: '{tipo_analisis}'")
+            # Si el tipo de análisis coincide con una tabla, usarla
+            if tipo_analisis in MODELS:
+                try:
+                    modelo = obtener_modelo(tipo_analisis)
+                    logger.info(f"Tabla detectada por tipo de análisis: '{tipo_analisis}'")
+                    return tipo_analisis, modelo
+                except Exception as exc:
+                    logger.warning(f"Tipo de análisis '{tipo_analisis}' detectado pero no se pudo obtener modelo: {exc}")
+    except Exception as exc:
+        logger.debug(f"Error detectando tipo de análisis por contenido: {exc}")
         tipo_analisis = None
 
+    # Estrategia 4: Detección por columnas del archivo
     try:
         if formato == 'xlsx':
             headers, _ = read_rows_from_xlsx(ruta_archivo, max_rows=1)
@@ -1283,14 +1440,65 @@ def _detectar_modelo_para_archivo(ruta_archivo: str, formato: str, tabla_cli: Op
         raise ValueError(f"No se pudieron leer encabezados del archivo: {exc}") from exc
 
     if not headers:
-        raise ValueError("El archivo no contiene encabezados para detectar la tabla destino")
+        # Generar mensaje de error más descriptivo
+        sugerencias = []
+        if nombre_archivo:
+            nombre_sin_ext = os.path.splitext(nombre_archivo)[0].lower()
+            # Buscar tablas similares
+            tablas_similares = [t for t in MODELS.keys() if nombre_sin_ext in t or t in nombre_sin_ext]
+            if tablas_similares:
+                sugerencias = tablas_similares[:5]
+        
+        mensaje_error = "El archivo no contiene encabezados para detectar la tabla destino."
+        if sugerencias:
+            mensaje_error += f" Tablas sugeridas basadas en el nombre del archivo: {', '.join(sugerencias)}"
+        raise ValueError(mensaje_error)
 
     tabla_detectada = detectar_tabla_por_columnas(None, headers, tipo_analisis)
     if not tabla_detectada:
-        raise ValueError("No se pudo detectar automáticamente la tabla destino. Especifica una con '--table'.")
+        # Generar mensaje de error más descriptivo con sugerencias
+        sugerencias = []
+        
+        # Buscar tablas con columnas similares
+        headers_lower = [h.lower() for h in headers if h]
+        mejor_coincidencia = None
+        mejor_puntuacion = 0
+        
+        for tabla_nombre, model in MODELS.items():
+            try:
+                columnas_modelo = [c.name.lower() for c in model.__table__.columns]
+                coincidencias = sum(1 for h in headers_lower if h in columnas_modelo)
+                puntuacion = coincidencias / len(headers_lower) if headers_lower else 0
+                
+                if puntuacion > mejor_puntuacion:
+                    mejor_puntuacion = puntuacion
+                    mejor_coincidencia = tabla_nombre
+                
+                # Agregar a sugerencias si tiene al menos 20% de coincidencia
+                if puntuacion >= 0.2:
+                    sugerencias.append((tabla_nombre, puntuacion))
+            except Exception:
+                continue
+        
+        # Ordenar sugerencias por puntuación
+        sugerencias.sort(key=lambda x: x[1], reverse=True)
+        sugerencias_nombres = [t[0] for t in sugerencias[:5]]
+        
+        mensaje_error = f"No se pudo detectar automáticamente la tabla destino. Columnas encontradas: {', '.join(headers[:10])}"
+        if sugerencias_nombres:
+            mensaje_error += f" Tablas sugeridas (por similitud de columnas): {', '.join(sugerencias_nombres)}"
+        if nombre_archivo:
+            nombre_sin_ext = os.path.splitext(nombre_archivo)[0].lower()
+            tablas_por_nombre = [t for t in MODELS.keys() if nombre_sin_ext in t or t in nombre_sin_ext]
+            if tablas_por_nombre:
+                mensaje_error += f" Tablas sugeridas (por nombre de archivo): {', '.join(tablas_por_nombre[:3])}"
+        mensaje_error += " Especifica una tabla con '--table' o renombra el archivo para que coincida con el nombre de la tabla."
+        
+        raise ValueError(mensaje_error)
 
     try:
         modelo = obtener_modelo(tabla_detectada)
+        logger.info(f"Tabla detectada por columnas: '{tabla_detectada}'")
     except Exception as exc:
         raise ValueError(f"No se pudo obtener el modelo para la tabla detectada '{tabla_detectada}': {exc}") from exc
 

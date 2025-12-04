@@ -14,6 +14,7 @@ from sqlalchemy.orm import sessionmaker
 from ExportExcel import (
     export_selected_tables,
     export_analisis_filtrados,
+    export_analisis_por_lote,
     parsear_analisis_ids,
     obtener_engine,
     inicializar_automap,
@@ -267,4 +268,44 @@ def crear_zip_exportacion(tmp_dir: str, request_id: str) -> bytes:
         raise HTTPException(status_code=500, detail=respuesta_error)
     
     return zip_bytes
+
+
+def exportar_por_lote(
+    request_id: str,
+    tmp_dir: str,
+    lote_id: int,
+    formato: str
+) -> List[str]:
+    """
+    Exporta todos los análisis asociados a un lote específico.
+    Retorna lista de archivos generados.
+    """
+    logger.info(f"[{request_id}] Exportando análisis para lote {lote_id}")
+    
+    # Inicializar engine y sesión
+    engine = obtener_engine()
+    inicializar_automap(engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    
+    try:
+        # Ejecutar exportación por lote
+        archivos_generados = export_analisis_por_lote(
+            session=session,
+            lote_id=lote_id,
+            output_dir=tmp_dir,
+            fmt=formato
+        )
+        
+        if not archivos_generados:
+            respuesta_error = crear_respuesta_error(
+                mensaje="No se generaron archivos de exportación",
+                codigo=404,
+                detalles=f"No se encontraron análisis asociados al lote {lote_id}"
+            )
+            raise HTTPException(status_code=404, detail=respuesta_error)
+        
+        return [os.path.basename(f) for f in archivos_generados]
+    finally:
+        session.close()
 

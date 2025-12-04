@@ -87,12 +87,13 @@
     <div class="certificado-button-container">
 
       <div class="certificado-main-button">
-        <div class="analisis-button certificado-button"
-             (click)="goToListadoLogs()">
+        <div class="analisis-button certificado-button" 
+             [class.disabled]="isExporting || !loteId"
+             (click)="quickExport()">
           <div class="button-circle rosa">
-            <img src="assets/excel.svg" alt="Historial" class="button-icon" />
+            <img src="assets/excel.svg" alt="Exportar" class="button-icon" />
           </div>
-          <span class="button-text">Exportación</span>
+          <span class="button-text">{{ isExporting ? 'Exportando...' : 'Quick Export' }}</span>
         </div>
       </div>
 

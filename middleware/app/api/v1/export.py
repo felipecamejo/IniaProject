@@ -14,6 +14,7 @@ from app.services.export_service import (
     validar_conexion_bd,
     exportar_con_filtros,
     exportar_tradicional,
+    exportar_por_lote,
     crear_zip_exportacion
 )
 
@@ -143,6 +144,91 @@ async def exportar(
     except Exception as e:
         request_id = getattr(request.state, "request_id", "unknown")
         logger.error(f"[{request_id}] Error inesperado durante exportación: {e}", exc_info=True)
+        if tmp_dir:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+        respuesta_error = crear_respuesta_error(
+            mensaje="Error inesperado durante la exportación",
+            codigo=500,
+            detalles=str(e)
+        )
+        raise HTTPException(status_code=500, detail=respuesta_error)
+
+
+@router.post("/exportar-lote/{lote_id}", tags=["Exportación"], summary="Quick Export por Lote",
+         description="Endpoint para exportar rápidamente todos los análisis asociados a un lote. Retorna archivo ZIP")
+async def exportar_por_lote_id(
+    request: Request,
+    lote_id: int,
+    formato: str = Query(default="xlsx", pattern="^(xlsx|csv)$"),
+):
+    """Endpoint para exportar todos los análisis asociados a un lote específico. Retorna archivo ZIP."""
+    request_id = getattr(request.state, "request_id", "unknown")
+    tmp_dir = None
+    try:
+        logger.info(f"[{request_id}] Iniciando quick export para lote {lote_id}. Formato: {formato}")
+        
+        # Validar conexión a base de datos con circuit breaker
+        validar_conexion_bd(request_id)
+        
+        # Crear directorio temporal
+        try:
+            tmp_dir = tempfile.mkdtemp(prefix="inia_export_lote_")
+            logger.info(f"[{request_id}] Directorio temporal creado: {tmp_dir}")
+        except Exception as dir_error:
+            respuesta_error = crear_respuesta_error(
+                mensaje="No se pudo crear directorio temporal",
+                codigo=500,
+                detalles=f"Error al crear directorio temporal: {str(dir_error)}"
+            )
+            raise HTTPException(status_code=500, detail=respuesta_error)
+        
+        # Exportar análisis del lote
+        try:
+            files_generated = exportar_por_lote(
+                request_id=request_id,
+                tmp_dir=tmp_dir,
+                lote_id=lote_id,
+                formato=formato
+            )
+            logger.info(f"[{request_id}] Se generaron {len(files_generated)} archivo(s) para lote {lote_id}")
+        except HTTPException:
+            if tmp_dir:
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+            raise
+        
+        # Verificar que se generaron archivos
+        files_generated = [f for f in os.listdir(tmp_dir) if f.endswith(('.xlsx', '.csv'))]
+        if not files_generated:
+            respuesta_error = crear_respuesta_error(
+                mensaje="No se generaron archivos de exportación",
+                codigo=404,
+                detalles=f"No se encontraron análisis asociados al lote {lote_id}"
+            )
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+            raise HTTPException(status_code=404, detail=respuesta_error)
+        
+        # Crear ZIP y obtener bytes
+        zip_bytes = crear_zip_exportacion(tmp_dir, request_id)
+        
+        logger.info(f"[{request_id}] Quick export completado exitosamente para lote {lote_id}. Tamaño del ZIP: {len(zip_bytes)} bytes, {len(files_generated)} archivo(s)")
+        
+        # Limpiar archivos temporales
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+        
+        # Devolver el archivo ZIP como respuesta binaria
+        return Response(
+            content=zip_bytes,
+            media_type="application/zip",
+            headers={"Content-Disposition": f"attachment; filename=lote_{lote_id}_export.zip"}
+        )
+        
+    except HTTPException:
+        if tmp_dir:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+        raise
+    except Exception as e:
+        request_id = getattr(request.state, "request_id", "unknown")
+        logger.error(f"[{request_id}] Error inesperado durante quick export: {e}", exc_info=True)
         if tmp_dir:
             shutil.rmtree(tmp_dir, ignore_errors=True)
         respuesta_error = crear_respuesta_error(
