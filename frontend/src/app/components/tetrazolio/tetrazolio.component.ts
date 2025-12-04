@@ -448,26 +448,12 @@ export class TetrazolioComponent implements OnInit {
     return sumaVigor / tablasValidas;
   }
 
-  // Calcular Vigor Acumulado: promedio del vigor de tablas con categoría Alto o Medio
+  // Calcular Vigor Acumulado: suma de Vigor Alto + Medio + Bajo
   getVigorAcumuladoReportePct(): number {
-    if (!this.detalles || this.detalles.length === 0) return 0;
-    
-    let sumaVigor = 0;
-    let tablasValidas = 0;
-    
-    for (const det of this.detalles) {
-      const vigorTabla = this.getVigorTabla(det);
-      const categoriaTabla = this.clasificarVigorEnCategoria(vigorTabla);
-      
-      // Solo incluir tablas con vigor Alto o Medio
-      if (categoriaTabla === 'vigorAlto' || categoriaTabla === 'vigorMedio') {
-        sumaVigor += vigorTabla;
-        tablasValidas++;
-      }
-    }
-    
-    if (tablasValidas === 0) return 0;
-    return sumaVigor / tablasValidas;
+    const alto = this.getVigorAltoReportePct();
+    const medio = this.getVigorMedioReportePct();
+    const bajo = this.getVigorBajoReportePct();
+    return alto + medio + bajo;
   }
 
   // Calcular daños de Viabilidad (promedio de todas las tablas viables)
@@ -495,34 +481,12 @@ export class TetrazolioComponent implements OnInit {
     return sumaPorcentajes / tablasValidas;
   }
 
-  // Calcular daños de Vigor Acumulado (promedio de tablas con vigor Alto y Medio)
+  // Calcular daños de Vigor Acumulado: suma de daños de Vigor Alto + Medio + Bajo
   private getDaniosVigorAcumulado(tipoDanio: 'mecanico' | 'ambiente' | 'chinches' | 'fracturas' | 'otros' | 'duras'): number {
-    if (!this.detalles || this.detalles.length === 0) return 0;
-    
-    let sumaPorcentajes = 0;
-    let tablasValidas = 0;
-    
-    for (const det of this.detalles) {
-      const vigorTabla = this.getVigorTabla(det);
-      const categoriaTabla = this.clasificarVigorEnCategoria(vigorTabla);
-      
-      // Solo incluir tablas con vigor Alto o Medio
-      if (categoriaTabla === 'vigorAlto' || categoriaTabla === 'vigorMedio') {
-        const total = this.getSumaTotal(det);
-        if (total > 0) {
-          // Sumar daños de semillas viables (sin defectos + leves + moderados)
-          const danioTotal = (det.viablesSinDefectos[tipoDanio] || 0) +
-                            (det.viablesLeves[tipoDanio] || 0) +
-                            (det.viablesModerados[tipoDanio] || 0);
-          const porcentaje = (danioTotal / total) * 100;
-          sumaPorcentajes += porcentaje;
-          tablasValidas++;
-        }
-      }
-    }
-    
-    if (tablasValidas === 0) return 0;
-    return sumaPorcentajes / tablasValidas;
+    const alto = this.getPromedioDaniosPorCategoriaVigor('vigorAlto', tipoDanio);
+    const medio = this.getPromedioDaniosPorCategoriaVigor('vigorMedio', tipoDanio);
+    const bajo = this.getPromedioDaniosPorCategoriaVigor('vigorBajo', tipoDanio);
+    return alto + medio + bajo;
   }
 
   // Método para actualizar cálculos automáticos cuando cambian los valores
