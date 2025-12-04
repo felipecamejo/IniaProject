@@ -12,7 +12,11 @@ $ErrorActionPreference = "Stop"
 # Auto-detect ProjectRoot if not provided
 if ([string]::IsNullOrEmpty($ProjectRoot)) {
     # Get script directory (PowerShell/)
-    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    if ($PSScriptRoot) {
+        $scriptDir = $PSScriptRoot
+    } else {
+        $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    }
     # Navigate to project root (one level up from PowerShell/)
     $ProjectRoot = Split-Path -Parent $scriptDir
     Write-Host "Auto-detectando ProjectRoot: $ProjectRoot" -ForegroundColor Gray
@@ -39,7 +43,7 @@ if (-not (Test-Path "package.json")) {
     exit 1
 }
 
-# Función para verificar si un comando está disponible
+# Funcion para verificar si un comando esta disponible
 function Test-Command {
     param([Parameter(Mandatory=$true)][string]$Name)
     $null -ne (Get-Command $Name -ErrorAction SilentlyContinue)
@@ -47,14 +51,14 @@ function Test-Command {
 
 # Verificar Node.js
 if (-not (Test-Command -Name 'node')) {
-    Write-Error "Node.js no está instalado o no está en PATH. Instala Node 18+ (recomendado 20 LTS)."
+    Write-Error "Node.js no esta instalado o no esta en PATH. Instala Node 18+ (recomendado 20 LTS)."
     Pop-Location
     exit 1
 }
 
 # Verificar npm
 if (-not (Test-Command -Name 'npm')) {
-    Write-Error "npm no está instalado o no está en PATH."
+    Write-Error "npm no esta instalado o no esta en PATH."
     Pop-Location
     exit 1
 }
@@ -62,7 +66,7 @@ if (-not (Test-Command -Name 'npm')) {
 # Verificar versión de Node.js
 function Get-NodeVersionMajorMinor {
     try {
-        $raw = (& node --version).Trim()  # e.g. v20.11.1
+        $raw = (& node --version).Trim()
         if ($raw -match '^v(\d+)\.(\d+)\.(\d+)$') {
             return @{ Major = [int]$Matches[1]; Minor = [int]$Matches[2]; Patch = [int]$Matches[3]; Raw = $raw }
         }
@@ -84,42 +88,38 @@ if ($null -eq $ver) {
     Write-Host "Node detectado: $($ver.Raw)" -ForegroundColor Green
 }
 
-# Verificar si las dependencias ya están instaladas
+# Verificar si las dependencias ya estan instaladas
 Write-Host "`nVerificando dependencias instaladas..." -ForegroundColor Cyan
 
 $dependenciasFaltantes = @()
-$dependenciasInstaladas = @()
 
 # Verificar jspdf
 if (Test-Path "node_modules/jspdf") {
-    Write-Host "  ✓ jspdf ya está instalado" -ForegroundColor Green
-    $dependenciasInstaladas += "jspdf"
+    Write-Host "  [OK] jspdf ya esta instalado" -ForegroundColor Green
 } else {
-    Write-Host "  ✗ jspdf no está instalado" -ForegroundColor Yellow
+    Write-Host "  [X] jspdf no esta instalado" -ForegroundColor Yellow
     $dependenciasFaltantes += "jspdf"
 }
 
 # Verificar html2canvas
 if (Test-Path "node_modules/html2canvas") {
-    Write-Host "  ✓ html2canvas ya está instalado" -ForegroundColor Green
-    $dependenciasInstaladas += "html2canvas"
+    Write-Host "  [OK] html2canvas ya esta instalado" -ForegroundColor Green
 } else {
-    Write-Host "  ✗ html2canvas no está instalado" -ForegroundColor Yellow
+    Write-Host "  [X] html2canvas no esta instalado" -ForegroundColor Yellow
     $dependenciasFaltantes += "html2canvas"
 }
 
 # Verificar @types/html2canvas
 if (Test-Path "node_modules/@types/html2canvas") {
-    Write-Host "  ✓ @types/html2canvas ya está instalado" -ForegroundColor Green
-    $dependenciasInstaladas += "@types/html2canvas"
+    Write-Host "  [OK] @types/html2canvas ya esta instalado" -ForegroundColor Green
 } else {
-    Write-Host "  ✗ @types/html2canvas no está instalado" -ForegroundColor Yellow
+    Write-Host "  [X] @types/html2canvas no esta instalado" -ForegroundColor Yellow
     $dependenciasFaltantes += "@types/html2canvas"
 }
 
-# Si todas las dependencias están instaladas, verificar que se puedan importar
+# Si todas las dependencias estan instaladas, verificar que se puedan importar
 if ($dependenciasFaltantes.Count -eq 0) {
-    Write-Host "`nTodas las dependencias están instaladas. Verificando importación..." -ForegroundColor Cyan
+    Write-Host "`nTodas las dependencias estan instaladas. Verificando importacion..." -ForegroundColor Cyan
     
     # Crear un script temporal para verificar las importaciones
     $testScript = @'
@@ -179,25 +179,27 @@ if (warnings.length > 0) {
 '@
 
     $testScriptPath = Join-Path (Get-Location) "verify-pdf-deps.js"
+    
     try {
         $testScript | Out-File -FilePath $testScriptPath -Encoding UTF8
         $output = & node $testScriptPath 2>&1
         Write-Host $output
         
         if ($LASTEXITCODE -ne 0) {
-            Write-Warning "Algunas dependencias tienen problemas, pero se intentará reinstalar."
+            Write-Warning "Algunas dependencias tienen problemas, pero se intentara reinstalar."
             $dependenciasFaltantes = @("jspdf", "html2canvas", "@types/html2canvas")
         } else {
-            Write-Host "`n✓ Todas las dependencias están correctamente instaladas y funcionando." -ForegroundColor Green
-            Remove-Item $testScriptPath -ErrorAction SilentlyContinue
+            Write-Host "`nTodas las dependencias estan correctamente instaladas y funcionando." -ForegroundColor Green
+            if (Test-Path $testScriptPath) {
+                Remove-Item $testScriptPath -ErrorAction SilentlyContinue
+            }
             Pop-Location
             Write-Host "`n=== SETUP COMPLETADO ===" -ForegroundColor Green
-            Write-Host "Las bibliotecas PDF están listas para usar." -ForegroundColor White
+            Write-Host "Las bibliotecas PDF estan listas para usar." -ForegroundColor White
             exit 0
         }
     } catch {
         Write-Warning "No se pudo verificar las importaciones: $($_.Exception.Message)"
-        Remove-Item $testScriptPath -ErrorAction SilentlyContinue
     } finally {
         if (Test-Path $testScriptPath) {
             Remove-Item $testScriptPath -ErrorAction SilentlyContinue
@@ -209,45 +211,34 @@ if (warnings.length > 0) {
 if ($dependenciasFaltantes.Count -gt 0) {
     Write-Host "`nInstalando dependencias faltantes..." -ForegroundColor Cyan
     
-    # Función para ejecutar npm de forma segura
-    function Invoke-NpmCommand {
-        param([string[]]$Arguments)
-        try {
-            $originalErrorAction = $ErrorActionPreference
-            $ErrorActionPreference = 'Continue'
-            
-            $cmdArgs = "npm " + ($Arguments -join ' ')
-            $process = Start-Process -FilePath "cmd" -ArgumentList "/c", $cmdArgs -Wait -PassThru -NoNewWindow
-            return $process.ExitCode
-        } catch {
-            Write-Warning "Error ejecutando npm: $($_.Exception.Message)"
-            return 1
-        } finally {
-            $ErrorActionPreference = $originalErrorAction
-        }
-    }
-    
     # Verificar si existe package-lock.json para usar npm ci
     $useCi = Test-Path "package-lock.json"
     
+    $originalErrorAction = $ErrorActionPreference
     try {
+        Write-Host "Instalando todas las dependencias..." -ForegroundColor Cyan
+        $ErrorActionPreference = 'Continue'
+        
         if ($useCi) {
             Write-Host "Usando npm ci (lockfile encontrado)..." -ForegroundColor Gray
-            $exitCode = Invoke-NpmCommand -Arguments @('ci')
+            & npm ci 2>&1 | ForEach-Object { Write-Host $_ }
+            $exitCode = $LASTEXITCODE
             if ($exitCode -ne 0) {
-                Write-Warning "npm ci falló, intentando con npm install..."
-                $exitCode = Invoke-NpmCommand -Arguments @('install')
+                Write-Warning "npm ci fallo, intentando con npm install..."
+                & npm install 2>&1 | ForEach-Object { Write-Host $_ }
+                $exitCode = $LASTEXITCODE
             }
         } else {
             Write-Host "Usando npm install..." -ForegroundColor Gray
-            $exitCode = Invoke-NpmCommand -Arguments @('install')
+            & npm install 2>&1 | ForEach-Object { Write-Host $_ }
+            $exitCode = $LASTEXITCODE
         }
         
         if ($exitCode -ne 0) {
             throw "npm install falló con código $exitCode"
         }
         
-        Write-Host "✓ Dependencias instaladas correctamente" -ForegroundColor Green
+        Write-Host "`n[OK] Dependencias instaladas correctamente" -ForegroundColor Green
         
     } catch {
         Write-Error "Error al instalar dependencias: $($_.Exception.Message)"
@@ -256,30 +247,32 @@ if ($dependenciasFaltantes.Count -gt 0) {
         Write-Host "  npm install" -ForegroundColor White
         Pop-Location
         exit 1
+    } finally {
+        $ErrorActionPreference = $originalErrorAction
     }
     
     # Verificar nuevamente después de la instalación
-    Write-Host "`nVerificando instalación..." -ForegroundColor Cyan
+    Write-Host "`nVerificando instalacion..." -ForegroundColor Cyan
     $todasInstaladas = $true
     
     if (-not (Test-Path "node_modules/jspdf")) {
-        Write-Error "jspdf no se instaló correctamente"
+        Write-Error "jspdf no se instalo correctamente"
         $todasInstaladas = $false
     } else {
-        Write-Host "  ✓ jspdf instalado" -ForegroundColor Green
+        Write-Host "  jspdf instalado" -ForegroundColor Green
     }
     
     if (-not (Test-Path "node_modules/html2canvas")) {
-        Write-Error "html2canvas no se instaló correctamente"
+        Write-Error "html2canvas no se instalo correctamente"
         $todasInstaladas = $false
     } else {
-        Write-Host "  ✓ html2canvas instalado" -ForegroundColor Green
+        Write-Host "  html2canvas instalado" -ForegroundColor Green
     }
     
     if (-not (Test-Path "node_modules/@types/html2canvas")) {
-        Write-Warning "  ⚠ @types/html2canvas no se instaló (opcional para desarrollo)"
+        Write-Warning "  @types/html2canvas no se instalo (opcional para desarrollo)"
     } else {
-        Write-Host "  ✓ @types/html2canvas instalado" -ForegroundColor Green
+        Write-Host "  @types/html2canvas instalado" -ForegroundColor Green
     }
     
     if (-not $todasInstaladas) {
@@ -290,12 +283,12 @@ if ($dependenciasFaltantes.Count -gt 0) {
 }
 
 Write-Host "`n=== SETUP COMPLETADO ===" -ForegroundColor Green
-Write-Host "Las bibliotecas PDF están listas para usar:" -ForegroundColor White
+Write-Host "Las bibliotecas PDF estan listas para usar:" -ForegroundColor White
 Write-Host "  - jspdf: para generar archivos PDF" -ForegroundColor Gray
 Write-Host "  - html2canvas: para capturar el HTML como imagen" -ForegroundColor Gray
 Write-Host "  - @types/html2canvas: tipos TypeScript (desarrollo)" -ForegroundColor Gray
-Write-Host "`nPara usar en Docker, las dependencias se instalarán automáticamente" -ForegroundColor Yellow
-Write-Host "  al reconstruir la imagen con: docker-compose build frontend" -ForegroundColor Gray
+Write-Host ""
+Write-Host "Para usar en Docker, las dependencias se instalaran automaticamente" -ForegroundColor Yellow
+Write-Host "  al reconstruir la imagen con docker-compose build frontend" -ForegroundColor Gray
 
 Pop-Location
-

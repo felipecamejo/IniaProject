@@ -19,7 +19,6 @@ public class CertificadoDto {
     private String responsableMuestreo;
     private Date fechaMuestreo;
     private String numeroLote;
-    private Float pesoKg;
     private Integer numeroEnvases;
 
     // Datos del laboratorio
@@ -31,8 +30,10 @@ public class CertificadoDto {
     private String numeroCertificado;
     private TipoCertificado tipoCertificado;
     private Date fechaEmision;
-    private String firmante;
+    private byte[] firmante;
     private Date fechaFirma;
+
+    private boolean brassicaContiene;
 
     private Long reciboId;
 

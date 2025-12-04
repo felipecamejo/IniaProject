@@ -77,7 +77,7 @@
             <label for="pesoKg">Peso (kg)</label>
             <span *ngIf="pesoKg != null && pesoKg < 0" class="error-message">El peso no puede ser negativo.</span>
             <input id="pesoKg" type="number" [(ngModel)]="pesoKg" name="pesoKg" pInputText
-                   [ngClass]="{ 'input-error': pesoKg != null && pesoKg < 0 }" [readonly]="isViewing" />
+                   [ngClass]="{ 'input-error': pesoKg != null && pesoKg < 0 }" [readonly]="true" />
           </div>
 
           <div class="form-field">
@@ -195,8 +195,16 @@
               <input type="number" [(ngModel)]="dosnOtrosCultivos" name="dosnOtrosCultivos" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnOtrosCultivos ?? ''" />
             </div>
             <div class="form-field">
-            <label>Determinación de Brassica spp. (g)</label>
-            <input id="dosnBrassicaSpp" type="number" [(ngModel)]="dosnBrassicaSpp" name="dosnBrassicaSpp" pInputText />
+              <label>Determinación de Brassica spp. (g)</label>
+              <input id="dosnBrassicaSpp" type="number" [(ngModel)]="dosnBrassicaSpp" name="dosnBrassicaSpp" pInputText />
+            </div>
+
+            <div class="checkbox-item">
+              <input type="checkbox" id="brassica-checkbox" [(ngModel)]="brassicaContiene" name="brassicaContiene" class="custom-checkbox" [disabled]="isViewing" />
+              <label for="brassica-checkbox" style="gap: 0.5rem" class="checkbox-label">
+                <span class="checkbox-text">Contiene Brassica spp.</span>
+                <span class="checkmark" ></span>
+              </label>
             </div>
           </div>
         </div>
@@ -258,10 +266,16 @@
                    [ngClass]="{ 'input-error': isFechaEmisionInvalida }" [readonly]="isViewing" />
           </div>
 
+
           <div class="form-field">
             <label for="firmante">Firma Digital</label>
-            <input id="firmante" type="text" [(ngModel)]="firmante" name="firmante" pInputText [readonly]="isViewing" />
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              
+              <input type="file" *ngIf="viewSeleccionarImagenFirma" accept="image/*" (change)="onFirmaImageSelected($event)" [disabled]="isViewing" />
+            </div>
+            <img *ngIf="firmantePreviewUrl" [src]="firmantePreviewUrl" alt="Preview firma" style="max-width: 200px; max-height: 80px; border: 1px solid #ccc; margin-top: 0.5rem;" />
           </div>
+          
 
           <div class="form-field">
             <label for="firmante">Nombre</label>
@@ -283,8 +297,8 @@
         <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
       </div>
 
-      <div class="submit-btn" *ngIf="!isViewing">
-        <button pButton type="submit" [disabled]="errores.length > 0"
+      <div class="submit-btn" *ngIf="!isViewing && viewSeleccionarImagenFirma">
+        <button  pButton type="submit" [disabled]="errores.length > 0"
                 [label]="isEditing ? 'Actualizar' : 'Crear Certificado'"
                 class="p-button-success"></button>
       </div>
@@ -302,6 +316,7 @@
     <!-- Botón de Exportar a PDF -->
     <div class="pdf-export-btn">
       <button pButton 
+              *ngIf="viewSeleccionarImagenFirma"
               type="button" 
               (click)="exportarAPDF()"
               [disabled]="!certificadoId || certificadoId === 0 || isExportingPDF"

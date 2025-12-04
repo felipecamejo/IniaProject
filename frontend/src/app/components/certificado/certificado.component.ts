@@ -44,6 +44,7 @@ import { TableModule } from 'primeng/table';
 })
 export class CertificadoComponent implements OnInit {
   // Propiedades del formulario
+  viewSeleccionarImagenFirma: boolean = true;
   nombreSolicitante: string = '';
   especie: string = '';
   cultivar: string = '';
@@ -54,7 +55,7 @@ export class CertificadoComponent implements OnInit {
   responsableMuestreo: string = '';
   fechaMuestreo: string = '';
   numeroLote: string = '';
-  pesoKg: number | null = null;
+  pesoKg: number = 0;
   numeroEnvases: number | null = null;
   fechaIngresoLaboratorio: string = '';
   fechaFinalizacionAnalisis: string = '';
@@ -62,7 +63,56 @@ export class CertificadoComponent implements OnInit {
   numeroCertificado: string = '';
   tipoCertificado: TipoCertificado | null = null;
   fechaEmision: string = '';
-  firmante: string = '';
+  firmante: Uint8Array = new Uint8Array(0);
+  firmantePreviewUrl: string | null = null;
+  firmantePreviewName: string = '';
+  /**
+   * Maneja la selección de imagen para la firma digital.
+   */
+  onFirmaImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.firmantePreviewName = file.name;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const base64 = e.target.result as string;
+        this.firmantePreviewUrl = base64;
+        // Extraer solo la parte base64 si es dataURL
+        let base64Data = base64;
+        if (base64.startsWith('data:')) {
+          base64Data = base64.split(',')[1];
+        }
+        this.firmante = this.base64ToUint8Array(base64Data);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  /**
+   * Convierte un string base64 a Uint8Array
+   */
+  base64ToUint8Array(base64: string): Uint8Array {
+    const binaryString = window.atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+  }
+
+  /**
+   * Convierte un Uint8Array a una imagen base64 para mostrar preview
+   */
+  uint8ArrayToBase64Image(uint8: Uint8Array): string {
+    let binary = '';
+    for (let i = 0; i < uint8.length; i++) {
+      binary += String.fromCharCode(uint8[i]);
+    }
+    const base64 = window.btoa(binary);
+    return 'data:image/png;base64,' + base64;
+  }
 
   certificadoId: number = 0;
   loteId: number | null = null;
@@ -84,6 +134,8 @@ export class CertificadoComponent implements OnInit {
   debeRealizarDOSN: boolean = false;
   debeRealizarGerminacion: boolean = false;
 
+  brassicaContiene: boolean = false;
+
   // Resultados de análisis (por defecto, luego se extraerán de los análisis)
   // Pureza
   purezaSemillaPura: number | null = null;
@@ -102,7 +154,7 @@ export class CertificadoComponent implements OnInit {
   dosnMalezasToleranciaCero: number | null = null;
   dosnMalezasTolerancia: number | null = null;
   dosnOtrosCultivos: number | null = null;
-  dosnBrassicaSpp: string = '';
+  dosnBrassicaSpp: number = 0;
 
   // Germinación
   germinacionNumeroDias: number | null = null;
@@ -144,6 +196,8 @@ export class CertificadoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Siempre mostrar los botones al cargar la página
+    this.viewSeleccionarImagenFirma = true;
     // Obtener parámetros de la ruta
     this.route.paramMap.subscribe(params => {
       // Obtener loteId y reciboId de la ruta (si existen)
@@ -239,7 +293,7 @@ export class CertificadoComponent implements OnInit {
         } else {
           this.cultivar = 'Sin Cultivar';
         }
-        if (recibo.kgLimpios) this.pesoKg = recibo.kgLimpios;
+        this.pesoKg = recibo.kgLimpios ?? 0;
 
         // Obtener loteId del recibo si no está en la ruta
         if (!this.loteId && recibo.loteId) {
@@ -471,7 +525,7 @@ export class CertificadoComponent implements OnInit {
     this.dosnMalezasToleranciaCero = null;
     this.dosnMalezasTolerancia = null;
     this.dosnOtrosCultivos = null;
-    this.dosnBrassicaSpp = '';
+
   }
 
   inicializarValoresPorDefectoGerminacion() {
@@ -502,7 +556,7 @@ export class CertificadoComponent implements OnInit {
     this.responsableMuestreo = '';
     this.fechaMuestreo = fechaHoy;
     this.numeroLote = '';
-    this.pesoKg = null;
+    this.pesoKg = 0;
     this.numeroEnvases = null;
     this.fechaIngresoLaboratorio = fechaHoy;
     this.fechaFinalizacionAnalisis = fechaHoy;
@@ -510,7 +564,7 @@ export class CertificadoComponent implements OnInit {
     this.numeroCertificado = '';
     this.tipoCertificado = null;
     this.fechaEmision = fechaHoy;
-    this.firmante = '';
+    this.firmante = new Uint8Array(0);
 
     // Inicializar valores por defecto de análisis
     this.inicializarValoresPorDefectoPureza();
@@ -565,7 +619,32 @@ export class CertificadoComponent implements OnInit {
         this.numeroCertificado = certificado.numeroCertificado || '';
         this.tipoCertificado = certificado.tipoCertificado ?? null;
         this.fechaEmision = this.formatearFechaParaInput(certificado.fechaEmision);
-        this.firmante = certificado.firmante || '';
+        // Adaptación: si el backend retorna una cadena base64, mostrarla como imagen
+        if (typeof certificado.firmante === 'string' && (certificado.firmante as string).length > 0) {
+          const firmanteStr = certificado.firmante as string;
+          if (firmanteStr.startsWith('data:image')) {
+            this.firmantePreviewUrl = firmanteStr;
+          } else {
+            this.firmantePreviewUrl = 'data:image/png;base64,' + firmanteStr;
+          }
+          let base64Data = firmanteStr;
+          if (base64Data.startsWith('data:image')) {
+            base64Data = base64Data.split(',')[1];
+          }
+          this.firmante = this.base64ToUint8Array(base64Data);
+          this.firmantePreviewName = 'Firma cargada';
+        } else if (Array.isArray(certificado.firmante) && (certificado.firmante as Array<any>).length > 0) {
+          this.firmante = new Uint8Array(certificado.firmante as Array<number>);
+          this.firmantePreviewUrl = this.uint8ArrayToBase64Image(this.firmante);
+          this.firmantePreviewName = 'Firma cargada';
+        } else {
+          this.firmante = new Uint8Array(0);
+          this.firmantePreviewUrl = null;
+          this.firmantePreviewName = '';
+        }
+        // Siempre mostrar los botones al cargar
+        this.viewSeleccionarImagenFirma = true;
+  
 
         // Solo usar reciboId del certificado si no hay uno en la ruta
         if (!this.reciboId && certificado.reciboId) {
@@ -579,9 +658,7 @@ export class CertificadoComponent implements OnInit {
               this.recibo = recibo;
               this.analisisSolicitados = recibo.analisisSolicitados;
               // Extraer el peso del recibo
-              if (recibo.kgLimpios) {
-                this.pesoKg = recibo.kgLimpios;
-              }
+              this.pesoKg = recibo.kgLimpios ?? 0;
               // Determinar qué análisis deben realizarse
               this.determinarAnalisisSolicitados();
               // Cargar análisis disponibles para verificar si existen análisis estándar
@@ -617,7 +694,16 @@ export class CertificadoComponent implements OnInit {
         this.dosnMalezasToleranciaCero = certificado.dosnMalezasToleranciaCero ?? null;
         this.dosnMalezasTolerancia = certificado.dosnMalezasTolerancia ?? null;
         this.dosnOtrosCultivos = certificado.dosnOtrosCultivos ?? null;
-        this.dosnBrassicaSpp = certificado.dosnBrassicaSpp != null ? String(certificado.dosnBrassicaSpp) : "0";
+        // Asignar correctamente dosnBrassicaSpp, permitiendo 0 y valores positivos, y forzando a number
+        if (certificado.dosnBrassicaSpp !== undefined && certificado.dosnBrassicaSpp !== null) {
+          const val = Number(certificado.dosnBrassicaSpp);
+          this.dosnBrassicaSpp = isNaN(val) ? 0 : val;
+        } else {
+          this.dosnBrassicaSpp = 0;
+        }
+
+        // Asignar correctamente brassicaContiene, permitiendo true/false del backend
+        this.brassicaContiene = (typeof certificado.brassicaContiene === 'boolean') ? certificado.brassicaContiene : false;
 
         this.otrasDeterminaciones = certificado.otrasDeterminaciones || '';
         this.nombreFirmante = certificado.nombreFirmante || '';
@@ -800,7 +886,6 @@ export class CertificadoComponent implements OnInit {
       responsableMuestreo: this.responsableMuestreo || null,
       fechaMuestreo: DateService.ajustarFecha(this.fechaMuestreo),
       numeroLote: this.numeroLote || null,
-      pesoKg: this.pesoKg ?? null,
       numeroEnvases: this.numeroEnvases ?? null,
       fechaIngresoLaboratorio: DateService.ajustarFecha(this.fechaIngresoLaboratorio),
       fechaFinalizacionAnalisis: DateService.ajustarFecha(this.fechaFinalizacionAnalisis),
@@ -808,10 +893,11 @@ export class CertificadoComponent implements OnInit {
       numeroCertificado: this.numeroCertificado || null,
       tipoCertificado: this.tipoCertificado ?? null,
       fechaEmision: DateService.ajustarFecha(this.fechaEmision),
-      firmante: this.firmante || null,
+      firmante: this.firmante,
       fechaFirma: null,
       reciboId: this.reciboId ?? null,
       activo: true,
+      brassicaContiene: this.brassicaContiene ?? false,
       // Resultados de análisis - Pureza
       purezaSemillaPura: this.purezaSemillaPura ?? null,
       purezaMateriaInerte: this.purezaMateriaInerte ?? null,
@@ -844,6 +930,9 @@ export class CertificadoComponent implements OnInit {
       germinacionPreTratamiento: this.germinacionPreTratamiento || null
     };
 
+    console.log('Payload crear certificado:', payload);
+    // Solución: enviar null si la firma está vacía, si no enviar como array de números
+    payload.firmante = (this.firmante && this.firmante.length > 0) ? Array.from(this.firmante) : [];
     this.certificadoService.crearCertificado(payload).subscribe({
       next: (certificadoCreado: CertificadoDto) => {
         console.log('Certificado creado:', certificadoCreado);
@@ -912,7 +1001,6 @@ export class CertificadoComponent implements OnInit {
       responsableMuestreo: this.responsableMuestreo || null,
       fechaMuestreo: DateService.ajustarFecha(this.fechaMuestreo),
       numeroLote: this.numeroLote || null,
-      pesoKg: this.pesoKg ?? null,
       numeroEnvases: this.numeroEnvases ?? null,
       fechaIngresoLaboratorio: DateService.ajustarFecha(this.fechaIngresoLaboratorio),
       fechaFinalizacionAnalisis: DateService.ajustarFecha(this.fechaFinalizacionAnalisis),
@@ -920,10 +1008,11 @@ export class CertificadoComponent implements OnInit {
       numeroCertificado: this.numeroCertificado || null,
       tipoCertificado: this.tipoCertificado ?? null,
       fechaEmision: DateService.ajustarFecha(this.fechaEmision),
-      firmante: this.firmante || null,
+      firmante: this.firmante,
       fechaFirma: null,
       reciboId: this.reciboId ?? null,
       activo: true,
+      brassicaContiene: this.brassicaContiene ?? false,
       // Resultados de análisis - Pureza
       purezaSemillaPura: this.purezaSemillaPura ?? null,
       purezaMateriaInerte: this.purezaMateriaInerte ?? null,
@@ -956,6 +1045,9 @@ export class CertificadoComponent implements OnInit {
       germinacionPreTratamiento: this.germinacionPreTratamiento || null
     };
 
+    console.log('Payload editar certificado:', payload);
+    // Solución: enviar null si la firma está vacía, si no enviar como array de números
+    payload.firmante = (this.firmante && this.firmante.length > 0) ? Array.from(this.firmante) : [];
     this.certificadoService.editarCertificado(payload).subscribe({
       next: (mensaje: string) => {
         console.log('Certificado actualizado:', mensaje);
@@ -992,27 +1084,27 @@ export class CertificadoComponent implements OnInit {
 
     this.isExportingPDF = true;
 
-    // Obtener el elemento del certificado
-    const certificadoElement = document.querySelector('.certificado-container') as HTMLElement;
-    
-    if (!certificadoElement) {
-      alert('Error: No se pudo encontrar el contenido del certificado.');
-      this.isExportingPDF = false;
-      return;
-    }
+    // Ocultar los botones justo antes de capturar el PDF
+    this.viewSeleccionarImagenFirma = false;
 
-    // Configurar opciones para html2canvas
-    const options = {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: '#ffffff',
-      width: certificadoElement.scrollWidth,
-      height: certificadoElement.scrollHeight
-    };
-
-    // Convertir el HTML a canvas
-    html2canvas(certificadoElement, options).then((canvas) => {
+    // Esperar a que el DOM se actualice antes de capturar
+    setTimeout(() => {
+      const certificadoElement = document.querySelector('.certificado-container') as HTMLElement;
+      if (!certificadoElement) {
+        alert('Error: No se pudo encontrar el contenido del certificado.');
+        this.isExportingPDF = false;
+        this.viewSeleccionarImagenFirma = true;
+        return;
+      }
+      const options = {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        width: certificadoElement.scrollWidth,
+        height: certificadoElement.scrollHeight
+      };
+      html2canvas(certificadoElement, options).then((canvas: HTMLCanvasElement) => {
       const imgData = canvas.toDataURL('image/png');
       
       // Calcular dimensiones del PDF
@@ -1042,13 +1134,16 @@ export class CertificadoComponent implements OnInit {
       
       // Descargar el PDF
       pdf.save(fileName);
-      
+
+      this.viewSeleccionarImagenFirma = true;
       this.isExportingPDF = false;
-    }).catch((error) => {
+    }).catch((error: any) => {
       console.error('Error al generar PDF:', error);
       alert('Error al generar el PDF. Por favor, intente nuevamente.');
       this.isExportingPDF = false;
+      this.viewSeleccionarImagenFirma = true;
     });
+  }, 0);
   }
 
   onCancel() {

@@ -12,7 +12,6 @@ export interface CertificadoDto {
   responsableMuestreo: string | null;
   fechaMuestreo: string | null; // ISO string
   numeroLote: string | null;
-  pesoKg: number | null;
   numeroEnvases: number | null;
   fechaIngresoLaboratorio: string | null; // ISO string
   fechaFinalizacionAnalisis: string | null; // ISO string
@@ -20,10 +19,12 @@ export interface CertificadoDto {
   numeroCertificado: string | null;
   tipoCertificado: TipoCertificado | null;
   fechaEmision: string | null; // ISO string
-  firmante: string | null;
+  firmante: Uint8Array | number[];
   fechaFirma: string | null; // ISO string
   reciboId: number | null;
   activo: boolean;
+
+  brassicaContiene: boolean;
 
   nombreFirmante: string | null;
   funcionFirmante: string | null;
@@ -46,7 +47,7 @@ export interface CertificadoDto {
   dosnMalezasToleranciaCero: number | null;
   dosnMalezasTolerancia: number | null;
   dosnOtrosCultivos: number | null;
-  dosnBrassicaSpp: number | null;
+  dosnBrassicaSpp: number;
 
   // Resultados de análisis - Germinación
   germinacionNumeroDias: number | null;

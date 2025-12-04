@@ -1916,6 +1916,7 @@ public class MapsDtoEntityService {
 
         CertificadoDto dto = new CertificadoDto();
         dto.setId(certificado.getId());
+        dto.setBrassicaContiene(certificado.isBrassicaContiene());
         dto.setNombreSolicitante(certificado.getNombreSolicitante());
         dto.setEspecie(certificado.getEspecie());
         dto.setCultivar(certificado.getCultivar());
@@ -1923,7 +1924,6 @@ public class MapsDtoEntityService {
         dto.setResponsableMuestreo(certificado.getResponsableMuestreo());
         dto.setFechaMuestreo(certificado.getFechaMuestreo());
         dto.setNumeroLote(certificado.getNumeroLote());
-        dto.setPesoKg(certificado.getPesoKg());
         dto.setNumeroEnvases(certificado.getNumeroEnvases());
         dto.setFechaIngresoLaboratorio(certificado.getFechaIngresoLaboratorio());
         dto.setFechaFinalizacionAnalisis(certificado.getFechaFinalizacionAnalisis());
@@ -1931,7 +1931,9 @@ public class MapsDtoEntityService {
         dto.setNumeroCertificado(certificado.getNumeroCertificado());
         dto.setTipoCertificado(certificado.getTipoCertificado());
         dto.setFechaEmision(certificado.getFechaEmision());
-        dto.setFirmante(certificado.getFirmante());
+
+        dto.setFirmante(certificado.getFirmante() != null ? certificado.getFirmante() : new byte[0]);
+        
         dto.setFechaFirma(certificado.getFechaFirma());
         dto.setActivo(certificado.isActivo());
         dto.setOtrasDeterminaciones(certificado.getOtrasDeterminaciones());
@@ -1985,6 +1987,7 @@ public class MapsDtoEntityService {
 
         Certificado certificado = new Certificado();
         certificado.setId(dto.getId());
+        certificado.setBrassicaContiene(dto.isBrassicaContiene());
         certificado.setNombreSolicitante(dto.getNombreSolicitante());
         certificado.setEspecie(dto.getEspecie());
         certificado.setCultivar(dto.getCultivar());
@@ -1992,7 +1995,6 @@ public class MapsDtoEntityService {
         certificado.setResponsableMuestreo(dto.getResponsableMuestreo());
         certificado.setFechaMuestreo(dto.getFechaMuestreo());
         certificado.setNumeroLote(dto.getNumeroLote());
-        certificado.setPesoKg(dto.getPesoKg());
         certificado.setNumeroEnvases(dto.getNumeroEnvases());
         certificado.setFechaIngresoLaboratorio(dto.getFechaIngresoLaboratorio());
         certificado.setFechaFinalizacionAnalisis(dto.getFechaFinalizacionAnalisis());
@@ -2000,7 +2002,9 @@ public class MapsDtoEntityService {
         certificado.setNumeroCertificado(dto.getNumeroCertificado());
         certificado.setTipoCertificado(dto.getTipoCertificado());
         certificado.setFechaEmision(dto.getFechaEmision());
-        certificado.setFirmante(dto.getFirmante());
+        
+        certificado.setFirmante(dto.getFirmante() == null || dto.getFirmante().length == 0 ? new byte[0] : dto.getFirmante());
+
         certificado.setFechaFirma(dto.getFechaFirma());
         certificado.setActivo(dto.isActivo());
 
