@@ -9,6 +9,12 @@
     width: 100%;
     padding-right: 2.5rem;
     box-sizing: border-box;
+
+    // Ocultar el botón nativo de mostrar/ocultar contraseña del navegador
+    &::-ms-reveal,
+    &::-ms-clear {
+      display: none;
+    }
   }
 
   .toggle-password-btn {
