@@ -624,7 +624,6 @@ public class MapsDtoEntityService {
         dto.setMalezasToleranciaCeroPorcentajeRedondeo(pureza.getMalezasToleranciaCeroPorcentajeRedondeo());
         dto.setMalezasToleranciaCeroPorcentajeRedondeoInase(pureza.getMalezasToleranciaCeroPorcentajeRedondeoInase());
         dto.setOtrosCultivo(pureza.getOtrosCultivo());
-        dto.setFechaEstandar(pureza.getFechaEstandar());
         dto.setEstandar(pureza.isEstandar());
         dto.setActivo(pureza.isActivo());
         dto.setRepetido(pureza.isRepetido());
@@ -705,7 +704,6 @@ public class MapsDtoEntityService {
         pureza.setMalezasToleranciaCeroPorcentajeRedondeo(dto.getMalezasToleranciaCeroPorcentajeRedondeo());
         pureza.setMalezasToleranciaCeroPorcentajeRedondeoInase(dto.getMalezasToleranciaCeroPorcentajeRedondeoInase());
         pureza.setOtrosCultivo(dto.getOtrosCultivo());
-        pureza.setFechaEstandar(dto.getFechaEstandar());
         pureza.setEstandar(dto.isEstandar());
         pureza.setActivo(dto.isActivo());
         pureza.setRepetido(dto.isRepetido());
