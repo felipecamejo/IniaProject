@@ -16,10 +16,7 @@
   <div class="form-grid inase-section">
         <div class="form-field">
           <label for="fechaInase">Fecha</label>
-          <input id="fechaInase" type="date" [(ngModel)]="fechaInase" name="fechaInase" pInputText [readonly]="isReadonly"
-          [ngClass]="{ 'input-error': validarFecha(fechaInase) }"
-          />
-           <span *ngIf="validarFecha(fechaInase)" class="error-message">La fecha no puede ser futura.</span>
+          <input id="fechaInase" type="date" [(ngModel)]="fechaInase" name="fechaInase" pInputText [readonly]="isReadonly"/>
         </div>
         <div class="form-field">
           <label for="gramosInase">Gramos analizados</label>
@@ -169,10 +166,7 @@
   <div class="form-grid inia-section">
         <div class="form-field">
           <label for="fechaInia">Fecha</label>
-          <input id="fechaInia" type="date" [(ngModel)]="fechaInia" name="fechaInia" pInputText [readonly]="isReadonly"
-          [ngClass]="{ 'input-error': validarFecha(fechaInia) }"
-          />
-          <span *ngIf="validarFecha(fechaInia)" class="error-message">La fecha no puede ser futura.</span>
+          <input id="fechaInia" type="date" [(ngModel)]="fechaInia" name="fechaInia" pInputText [readonly]="isReadonly"/>
         </div>
         <div class="form-field">
           <label for="gramosInia">Gramos analizados</label>
@@ -341,13 +335,11 @@
         </table>
       </div>
 
-      <!-- Fecha estándar -->
-      <div class="form-field" style="display: flex; flex-direction: column; align-items: flex-start;">
+      <div class="form-grid">
+        <div class="form-field">
           <label for="fechaEstandar" style="margin-bottom: 0.25rem;">Fecha</label>
-          <input id="fechaEstandar" type="date" [(ngModel)]="fechaEstandar" name="fechaEstandar" pInputText [readonly]="isReadonly"
-            [ngClass]="{ 'input-error': validarFecha(fechaEstandar) }"
-            style="width: 100%; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 0.25rem;" />
-          <span *ngIf="validarFecha(fechaEstandar)" class="error-message">La fecha no puede ser futura.</span>
+          <input id="fechaEstandar" type="date" [(ngModel)]="fechaEstandar" name="fechaEstandar" pInputText [readonly]="isReadonly"/>
+        </div>
       </div>
 
       <!-- Checkboxes - visible solo para admin al editar -->

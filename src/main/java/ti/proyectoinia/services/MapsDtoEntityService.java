@@ -546,7 +546,6 @@ public class MapsDtoEntityService {
 
         pmsDto.setId(pms.getId());
         pmsDto.setPesoMilSemillas(pms.getPesoMilSemillas());
-        pmsDto.setPesoPromedioMilSemillas(pms.getPesoPromedioMilSemillas());
         pmsDto.setComentarios(pms.getComentarios());
         pmsDto.setActivo(pms.isActivo());
         pmsDto.setRepetido(pms.isRepetido());
@@ -573,7 +572,6 @@ public class MapsDtoEntityService {
         pms.setId(pmsDto.getId());
 
         pms.setPesoMilSemillas(pmsDto.getPesoMilSemillas());
-        pms.setPesoPromedioMilSemillas(pmsDto.getPesoPromedioMilSemillas());
         pms.setComentarios(pmsDto.getComentarios());
         pms.setActivo(pmsDto.isActivo());
         pms.setRepetido(pmsDto.isRepetido());
@@ -960,7 +958,7 @@ public class MapsDtoEntityService {
         dto.setDeterminacionCuscutaGramos(dosn.getDeterminacionCuscutaGramos());
         // Otros
         dto.setEstandar(dosn.isEstandar());
-        dto.setFechaAnalisis(dosn.getFechaAnalisis());
+        dto.setFechaEstandar(dosn.getFechaEstandar());
         dto.setActivo(dosn.isActivo());
         dto.setRepetido(dosn.isRepetido());
         dto.setFechaCreacion(dosn.getFechaCreacion());
@@ -1054,6 +1052,8 @@ public class MapsDtoEntityService {
         // Gramos analizados
         dosn.setGramosAnalizadosINIA(dto.getGramosAnalizadosINIA());
         dosn.setGramosAnalizadosINASE(dto.getGramosAnalizadosINASE());
+        dosn.setFechaEstandar(dto.getFechaEstandar());
+
         // Tipos de análisis (String a enum)
         if (dto.getTiposDeanalisisINIA() != null) {
             dosn.setTiposDeanalisisINIA(tipoAnalisisDOSN.valueOf(dto.getTiposDeanalisisINIA()));

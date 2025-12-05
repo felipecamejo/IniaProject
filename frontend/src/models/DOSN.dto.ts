@@ -7,6 +7,7 @@ export interface DOSNDto {
   // Fechas INIA / INASE
   fechaINIA: string | null;
   fechaINASE: string | null;
+  fechaEstandar: string | null;
 
   // Gramos analizados INIA / INASE
   gramosAnalizadosINIA: number | null;
@@ -23,7 +24,6 @@ export interface DOSNDto {
   determinacionCuscutaGramos: number | null;
 
   estandar: boolean | null;
-  fechaAnalisis: string | null;
 
   // Colecciones (IDs)
   malezasNormalesINIAId: number[] | null;

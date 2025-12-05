@@ -63,14 +63,6 @@
                     <span *ngIf="pesoMilSemillas != null && pesoMilSemillas < 0" class="error-message">El valor no puede ser negativo.</span>
                 </div>
 
-
-                <div class="form-field">
-                    <label for="pesoPromedioMilSemillas">Peso Promedio Mil Semillas</label>
-                    <input id="pesoPromedioMilSemillas" type="number" [(ngModel)]="pesoPromedioMilSemillas" name="pesoPromedioMilSemillas" pInputText step="0.0001" [readonly]="isReadonly" [ngClass]="{ 'input-error': pesoPromedioMilSemillas != null && pesoPromedioMilSemillas < 0 }"
-                    />
-                    <span *ngIf="pesoPromedioMilSemillas != null && pesoPromedioMilSemillas < 0" class="error-message">El valor no puede ser negativo.</span>
-                </div>
-
                 <div class="form-field">
                     <label ñfor="desvioEstandar">Desvío Estándar</label>
                     <input id="desvioEstandar" type="number" [value]="calcularDesvioEstandar()" name="desvioEstandar" pInputText step="0.0001" [readonly]="true" [ngClass]="{ 'input-error': (calcularDesvioEstandar() ?? 0) < 0 }" />
@@ -85,8 +77,8 @@
 
                 <div class="form-field">
                     <label for="fechaMedicion">Fecha Medicion</label>
-                    <input id="fechaMedicion" type="date" [(ngModel)]="fechaMedicion" name="fechaMedicion" pInputText [readonly]="isReadonly" [ngClass]="{ 'input-error': validarFecha(fechaMedicion) }" />
-                    <span *ngIf="validarFecha(fechaMedicion)" class="error-message">La fecha no puede ser futura.</span>
+                    <input id="fechaMedicion" type="date" [(ngModel)]="fechaMedicion" name="fechaMedicion" pInputText [readonly]="isReadonly" />
+                    
                 </div>
 
                 <div class="form-field">

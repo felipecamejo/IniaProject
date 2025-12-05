@@ -13,8 +13,6 @@ public class PMSDto {
 
     private Float pesoMilSemillas;
 
-    private Float pesoPromedioMilSemillas;
-
     private String comentarios;
 
     private boolean activo;

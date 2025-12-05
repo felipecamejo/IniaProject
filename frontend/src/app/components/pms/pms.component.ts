@@ -575,9 +575,6 @@ export class PmsComponent implements OnInit {
     manejarProblemas(): boolean {
       this.errores = []; // Reiniciar errores
 
-      const hoy = new Date();
-      const fecha = this.fechaMedicion ? new Date(this.fechaMedicion) : null;
-
       if (this.pesoMilSemillas != null && this.pesoMilSemillas < 0) {
         this.errores.push('El peso de mil semillas no puede ser un número negativo.');
       }
@@ -595,9 +592,6 @@ export class PmsComponent implements OnInit {
         this.errores.push('Algunos hongos tienen un número de gramos negativo.');
       }
 
-      if (fecha != null && fecha > hoy) {
-        this.errores.push('La fecha no puede ser mayor a la fecha actual.');
-      }
 
       return this.errores.length > 0;
     }

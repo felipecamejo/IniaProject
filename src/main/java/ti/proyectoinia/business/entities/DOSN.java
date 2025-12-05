@@ -22,6 +22,9 @@ public class DOSN {
     @Column(name = "DOSN_FECHA_INASE")
     private Date fechaINASE;
 
+    @Column(name = "DOSN_FECHA_ESTANDAR")
+    private Date fechaEstandar;
+
     @Column(name = "DOSN_GRAMOS_ANALIZADOS_INIA")
     private Float gramosAnalizadosINIA;
 
@@ -50,11 +53,6 @@ public class DOSN {
 
     @Column(name = "DOSN_ESTANDAR")
     private boolean estandar;
-
-    @Column(name = "DOSN_FECHA_ANALISIS")
-    private Date fechaAnalisis;
-
-    
 
     @ManyToOne
     @JoinColumn(name = "RECIBO_ID")

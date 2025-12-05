@@ -904,15 +904,6 @@ export class SanitarioComponent implements OnInit {
         this.errores.push('Algunos hongos tienen un número de valor negativo.');
       }
 
-
-    if (this.validarFecha(this.fecha)) {
-      this.errores.push('La fecha no puede ser futura.');
-    }
-
-    if (this.fechaSiembra != null && this.validarFecha(this.fechaSiembra)) {
-      this.errores.push('La fecha no puede ser futura.');
-    }
-
     return this.errores.length > 0;
   }
 

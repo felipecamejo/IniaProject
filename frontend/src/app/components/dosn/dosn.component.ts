@@ -263,22 +263,6 @@ import { AuthService } from '../../../services/AuthService';
         }
       }
 
-      confirmarEstandar() {
-        // Método ya no necesario, lógica movida a onEstandarChange con alert
-      }
-
-      cancelarEstandar() {
-        // Método ya no necesario, lógica movida a onEstandarChange con alert
-      }
-
-      confirmarRepetido() {
-        // Método ya no necesario, lógica movida a onRepetidoChange con alert
-      }
-
-      cancelarRepetido() {
-        // Método ya no necesario, lógica movida a onRepetidoChange con alert
-      }
-
       // Variables para manejar navegación
       isEditing: boolean = false;
       isViewing: boolean = false;
@@ -684,7 +668,7 @@ import { AuthService } from '../../../services/AuthService';
     // Guardar valores originales para deshabilitar checkboxes si ya están marcados
     this.estandarOriginal = d.estandar ?? false;
     this.repetidoOriginal = d.repetido ?? false;
-    this.fechaEstandar = this.toDateInput(d.fechaAnalisis);
+    this.fechaEstandar = this.toDateInput(d.fechaEstandar);
   }
 
   private toDateInput(value: string | null): string {
@@ -759,6 +743,7 @@ import { AuthService } from '../../../services/AuthService';
       // Fechas en formato ISO simple para backend
       fechaINIA: this.fechaInia ? `${this.fechaInia}T00:00:00` : null,
       fechaINASE: this.fechaInase ? `${this.fechaInase}T00:00:00` : null,
+      fechaEstandar: this.fechaEstandar ? `${this.fechaEstandar}T00:00:00` : null,
       // Gramos analizados
       gramosAnalizadosINIA: this.gramosInia ?? null,
       gramosAnalizadosINASE: this.gramosInase ?? null,
@@ -772,7 +757,6 @@ import { AuthService } from '../../../services/AuthService';
       determinacionCuscutaGramos: cuscuta && cuscuta.contiene ? Number(cuscuta.gramos) : 0,
       // Estandar y fecha análisis
       estandar: this.estandar ?? false,
-      fechaAnalisis: this.fechaEstandar ? `${this.fechaEstandar}T00:00:00` : null,
       // Colecciones por organismo
       malezasNormalesINIAId: this.selectedMalezasInia ?? [],
       malezasNormalesINASEId: this.selectedMalezasInase ?? [],
@@ -801,18 +785,6 @@ import { AuthService } from '../../../services/AuthService';
 
   manejarProblemas(): boolean {
       this.errores = []; // Reiniciar errores
-
-      if (this.validarFecha(this.fechaInase)) {
-        this.errores.push('La fecha de análisis INASE no puede ser futura.');
-      }
-    
-      if (this.validarFecha(this.fechaInia)) {
-        this.errores.push('La fecha de análisis INIA no puede ser futura.');
-      }
-
-      if (this.validarFecha(this.fechaEstandar)) {
-        this.errores.push('La fecha estándar no puede ser futura.');
-      }
 
       if (!this.validarNumero(this.gramosInase)) {
         this.errores.push('Los gramos analizados INASE no pueden ser negativos.');

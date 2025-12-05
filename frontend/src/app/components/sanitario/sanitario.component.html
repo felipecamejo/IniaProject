@@ -22,18 +22,15 @@
             name="fechaSiembra" 
             pInputText 
             [readonly]="isReadonly" 
-            [ngClass]="{ 'input-error': validarFecha(fechaSiembra) }"
+
             
           />
-          <span *ngIf="validarFecha(fechaSiembra)" class="error-message">La fecha no puede ser futura.</span>
+          
         </div>
 
         <div class="form-field">
           <label for="fecha">Fecha</label>
-          <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" pInputText [readonly]="isReadonly"
-            [ngClass]="{ 'input-error': validarFecha(fecha) }"
-          />
-          <span *ngIf="validarFecha(fecha)" class="error-message">La fecha no puede ser futura.</span>
+          <input id="fecha" type="date" [(ngModel)]="fecha" name="fecha" pInputText [readonly]="isReadonly"/>
         </div>
 
         <div class="form-field">
