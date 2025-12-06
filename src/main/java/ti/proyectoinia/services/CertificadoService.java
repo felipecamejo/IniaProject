@@ -35,7 +35,18 @@ public class CertificadoService {
     }
 
     public String editarCertificado(CertificadoDto certificadoDto) {
-        this.certificadoRepository.save(mapsDtoEntityService.mapToEntityCertificado(certificadoDto));
+        if (certificadoDto.getId() == null) {
+            throw new IllegalArgumentException("El ID del certificado es obligatorio para editar");
+        }
+        
+        Certificado certificadoExistente = this.certificadoRepository.findById(certificadoDto.getId())
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException(
+                    "Certificado no encontrado con ID: " + certificadoDto.getId()));
+        
+        // Actualizar solo los campos que no son null en el DTO
+        mapsDtoEntityService.actualizarCertificadoDesdeDto(certificadoExistente, certificadoDto);
+        
+        this.certificadoRepository.save(certificadoExistente);
         return "Certificado actualizado correctamente ID:" + certificadoDto.getId();
     }
 
