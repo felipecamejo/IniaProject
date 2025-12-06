@@ -44,6 +44,8 @@ export interface TetrazolioDto {
   duras: string | null;
   total: string | null;
   promedio: string | null;
+  promedioNoViables: string | null;
+  promedioDuras: string | null;
   porcentaje: number | null;
   viabilidadPorTetrazolio: ViabilidadPorTz | null;
   nroSemillas: number | null;

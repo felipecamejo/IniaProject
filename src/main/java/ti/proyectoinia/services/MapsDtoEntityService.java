@@ -1369,6 +1369,8 @@ public class MapsDtoEntityService {
         dto.setDuras(tetrazolio.getDuras() != null ? tetrazolio.getDuras().toString() : null);
         dto.setTotal(tetrazolio.getTotal() != null ? tetrazolio.getTotal().toString() : null);
         dto.setPromedio(tetrazolio.getPromedio() != null ? tetrazolio.getPromedio().toString() : null);
+        dto.setPromedioNoViables(tetrazolio.getPromedioNoViables() != null ? tetrazolio.getPromedioNoViables().toString() : null);
+        dto.setPromedioDuras(tetrazolio.getPromedioDuras() != null ? tetrazolio.getPromedioDuras().toString() : null);
         dto.setPorcentaje(tetrazolio.getPorcentaje());
         dto.setFechaCreacion(tetrazolio.getFechaCreacion());
         dto.setFechaRepeticion(tetrazolio.getFechaRepeticion());
@@ -1436,6 +1438,8 @@ public class MapsDtoEntityService {
         tetrazolio.setDuras(dto.getDuras() != null ? Float.parseFloat(dto.getDuras()) : null);
         tetrazolio.setTotal(dto.getTotal() != null ? Float.parseFloat(dto.getTotal()) : null);
         tetrazolio.setPromedio(dto.getPromedio() != null ? Float.parseFloat(dto.getPromedio()) : null);
+        tetrazolio.setPromedioNoViables(dto.getPromedioNoViables() != null ? Float.parseFloat(dto.getPromedioNoViables()) : null);
+        tetrazolio.setPromedioDuras(dto.getPromedioDuras() != null ? Float.parseFloat(dto.getPromedioDuras()) : null);
         tetrazolio.setPorcentaje(dto.getPorcentaje());
         tetrazolio.setViabilidadPorTetrazolio(dto.getViabilidadPorTetrazolio());
         tetrazolio.setViabilidadVigorTz(dto.getViabilidadVigorTz());
