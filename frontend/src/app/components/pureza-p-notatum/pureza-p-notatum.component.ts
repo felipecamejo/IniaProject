@@ -240,6 +240,10 @@ export class PurezaPNotatumComponent implements OnInit {
         this.activo = data.activo ?? true;
         this.estandar = data.estandar ?? false;
         this.repetido = data.repetido ?? false;
+        this.semillaPuraPct = data.semillaPuraPorcentaje ?? 0;
+        this.semillaCultivosPct = data.semillacultivoPorcentaje ?? 0;
+        this.semillaMalezasPct = data.semillaMalezaPorcentaje ?? 0;
+        this.materiaInertePct = data.materiaInertePorcentaje ?? 0;
         // Guardar valores originales para deshabilitar checkboxes si ya están marcados
         this.estandarOriginal = data.estandar ?? false;
         this.repetidoOriginal = data.repetido ?? false;
@@ -383,7 +387,11 @@ export class PurezaPNotatumComponent implements OnInit {
       reciboId: reciboIdNum,
       fechaCreacion: this.fechaCreacion,
       fechaRepeticion: this.fechaRepeticion,
-      observaciones: this.comentarios
+      observaciones: this.comentarios,
+      semillaPuraPorcentaje: this.semillaPuraPct,
+      semillacultivoPorcentaje: this.semillaCultivosPct,
+      semillaMalezaPorcentaje: this.semillaMalezasPct,
+      materiaInertePorcentaje: this.materiaInertePct
     };
 
     if (this.isEditing && this.editingId) {

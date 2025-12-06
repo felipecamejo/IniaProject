@@ -49,5 +49,16 @@ public class PurezaPNotatum {
     @Column(name = "PUREZA_PNOTATUM_OBSERVACIONES")
     private String observaciones;
 
+    @Column(name = "SEMILLA_PURA_PORCENTAJE")
+    private Integer semillaPuraPorcentaje;
+
+    @Column(name = "SEMILLA_CULTIVO_PORCENTAJE")
+    private Integer semillacultivoPorcentaje;
+
+    @Column(name = "SEMILLA_MALEZA_PORCENTAJE")
+    private Integer semillaMalezaPorcentaje;
+
+    @Column(name = "MATERIA_INERTE_PORCENTAJE")
+    private Integer materiaInertePorcentaje;
 
 }

@@ -32,6 +32,15 @@ public class PurezaPNotatumDto {
 
     private String observaciones;
 
+    private Integer semillaPuraPorcentaje;
+
+    private Integer semillacultivoPorcentaje;
+
+    private Integer semillaMalezaPorcentaje;
+
+    private Integer materiaInertePorcentaje;
+
+
     @Generated
     public boolean equals(final Object o) {
         if (o == this) return true;

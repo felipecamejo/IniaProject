@@ -11,4 +11,9 @@ export interface PurezaPNotatumDto {
   fechaCreacion: string | null;
   fechaRepeticion: string | null;
   observaciones: string | null;
+
+  semillaPuraPorcentaje?: number | null;
+  semillacultivoPorcentaje?: number | null;
+  semillaMalezaPorcentaje?: number | null;
+  materiaInertePorcentaje?: number | null;
 }

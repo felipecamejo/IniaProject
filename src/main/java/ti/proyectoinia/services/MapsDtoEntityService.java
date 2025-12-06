@@ -1270,6 +1270,11 @@ public class MapsDtoEntityService {
         dto.setObservaciones(pureza.getObservaciones());
         dto.setEstandar(pureza.isEstandar());
 
+        dto.setSemillaPuraPorcentaje(pureza.getSemillaPuraPorcentaje());
+        dto.setSemillacultivoPorcentaje(pureza.getSemillacultivoPorcentaje());
+        dto.setSemillaMalezaPorcentaje(pureza.getSemillaMalezaPorcentaje());
+        dto.setMateriaInertePorcentaje(pureza.getMateriaInertePorcentaje());
+
         if (pureza.getRecibo() != null) {
             dto.setReciboId(pureza.getRecibo().getId());
         } else {
@@ -1295,6 +1300,12 @@ public class MapsDtoEntityService {
         pureza.setFechaRepeticion(dto.getFechaRepeticion());
         pureza.setObservaciones(dto.getObservaciones());
         pureza.setEstandar(dto.isEstandar());
+
+        pureza.setSemillaPuraPorcentaje(dto.getSemillaPuraPorcentaje());
+        pureza.setSemillacultivoPorcentaje(dto.getSemillacultivoPorcentaje());
+        pureza.setSemillaMalezaPorcentaje(dto.getSemillaMalezaPorcentaje());
+        pureza.setMateriaInertePorcentaje(dto.getMateriaInertePorcentaje());
+
 
         // Validar y obtener el recibo si existe
         Recibo recibo = getValidRecibo(dto.getReciboId());
