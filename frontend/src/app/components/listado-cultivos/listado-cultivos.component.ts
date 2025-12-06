@@ -47,7 +47,6 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
     totalPages = 0;
 
     // Popup de confirmación de eliminación (misma UX que Usuarios)
-    mostrarConfirmEliminar: boolean = false;
     cultivoAEliminar: CultivoDto | null = null;
     confirmLoading: boolean = false;
 
@@ -143,11 +142,11 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
       
       this.cultivoService.crearCultivo(dto).subscribe({
         next: (response) => {
-          console.log('Cultivo creado:', response);
+          console.log('Cultivar creado:', response);
           this.cargarCultivos();
         },
         error: (error) => {
-          console.error('Error al crear cultivo:', error);
+          console.error('Error al crear cultivar:', error);
         }
       });
     }
@@ -195,13 +194,13 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
         // Editar cultivo existente
         this.cultivoService.editarCultivo(cultivo).subscribe({
           next: (response) => {
-            console.log('Cultivo editado:', response);
+            console.log('Cultivar editado:', response);
             this.modalLoading = false;
             this.cerrarModal();
             this.cargarCultivos();
           },
           error: (error) => {
-            console.error('Error al editar cultivo:', error);
+            console.error('Error al editar cultivar:', error);
             this.modalError = 'Error al actualizar el cultivar';
             this.modalLoading = false;
           }
@@ -210,13 +209,13 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
         // Crear nuevo cultivo
         this.cultivoService.crearCultivo(cultivo).subscribe({
           next: (response) => {
-            console.log('Cultivo creado:', response);
+            console.log('Cultivar creado:', response);
             this.modalLoading = false;
             this.cerrarModal();
             this.cargarCultivos();
           },
           error: (error) => {
-            console.error('Error al crear cultivo:', error);
+            console.error('Error al crear cultivar:', error);
             this.modalError = 'Error al crear el cultivar';
             this.modalLoading = false;
           }
@@ -232,9 +231,21 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
       this.abrirModalEdicion(maleza);
     }
 
+
     eliminarItem(cultivo: CultivoDto) {
-      this.cultivoAEliminar = cultivo;
-      this.mostrarConfirmEliminar = true;
+      const confirmed = window.confirm(`¿Estás seguro que deseas eliminar el cultivar "${cultivo.nombre}"?`);
+      if (confirmed && cultivo.id != null) {
+        this.cultivoService.eliminarCultivo(cultivo.id).subscribe({
+          next: (response) => {
+            console.log('Cultivar eliminado:', response);
+            this.cargarCultivos();
+          },
+          error: (error) => {
+            console.error('Error al eliminar cultivar:', error);
+            alert('Error al eliminar el cultivar');
+          }
+        });
+      }
     }
 
     confirmarEliminacion() {
@@ -243,16 +254,14 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
       this.confirmLoading = true;
       this.cultivoService.eliminarCultivo(cultivo.id).subscribe({
         next: (response) => {
-          console.log('Cultivo eliminado:', response);
+          console.log('Cultivar eliminado:', response);
           this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
           this.cultivoAEliminar = null;
           this.cargarCultivos();
         },
         error: (error) => {
-          console.error('Error al eliminar cultivo:', error);
+          console.error('Error al eliminar cultivar:', error);
           this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
           this.cultivoAEliminar = null;
           alert('Error al eliminar el cultivar');
         }
@@ -260,7 +269,6 @@ export class ListadoCultivosComponent implements OnInit, OnDestroy {
     }
 
     cancelarEliminacion() {
-      this.mostrarConfirmEliminar = false;
       this.cultivoAEliminar = null;
     }
 }

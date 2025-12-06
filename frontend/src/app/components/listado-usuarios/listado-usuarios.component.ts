@@ -67,7 +67,6 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
     ];
 
     // Popup de confirmación de eliminación
-    mostrarConfirmEliminar: boolean = false;
     usuarioAEliminar: UsuarioDto | null = null;
     confirmLoading: boolean = false;
 
@@ -304,8 +303,19 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
 
 
     eliminarItem(usuario: UsuarioDto) {
-        this.usuarioAEliminar = usuario;
-        this.mostrarConfirmEliminar = true;
+        const confirmed = window.confirm(`¿Estás seguro que deseas eliminar el usuario "${usuario.nombre}"?`);
+        if (confirmed && usuario.id != null) {
+            this.usuarioService.eliminarUsuario(usuario.id).subscribe({
+                next: (response: string) => {
+                    console.log('Usuario eliminado:', response);
+                    this.items = this.items.filter(i => i.id !== usuario.id);
+                },
+                error: (error: any) => {
+                    console.error('Error al eliminar usuario:', error);
+                    alert('Error al eliminar el usuario. Por favor, inténtalo de nuevo.');
+                }
+            });
+        }
     }
 
     onConfirmEliminar() {
@@ -316,13 +326,11 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
                 console.log('Usuario eliminado:', response);
                 this.items = this.items.filter(i => i.id !== this.usuarioAEliminar!.id);
                 this.confirmLoading = false;
-                this.mostrarConfirmEliminar = false;
                 this.usuarioAEliminar = null;
             },
             error: (error: any) => {
                 console.error('Error al eliminar usuario:', error);
                 this.confirmLoading = false;
-                this.mostrarConfirmEliminar = false;
                 this.usuarioAEliminar = null;
                 alert('Error al eliminar el usuario. Por favor, inténtalo de nuevo.');
             }
@@ -330,7 +338,6 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
     }
 
     onCancelEliminar() {
-        this.mostrarConfirmEliminar = false;
         this.usuarioAEliminar = null;
     }
 

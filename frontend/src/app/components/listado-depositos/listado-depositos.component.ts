@@ -38,7 +38,6 @@ export class ListadoDepositosComponent implements OnInit {
     error: string = '';
 
     // Popup de confirmación de eliminación
-    mostrarConfirmEliminar: boolean = false;
     depositoAEliminar: DepositoDto | null = null;
     confirmLoading: boolean = false;
 
@@ -196,8 +195,19 @@ export class ListadoDepositosComponent implements OnInit {
     }
 
     eliminarItem(deposito: DepositoDto) {
-      this.depositoAEliminar = deposito;
-      this.mostrarConfirmEliminar = true;
+      const confirmed = window.confirm(`¿Estás seguro que deseas eliminar el depósito "${deposito.nombre}"?`);
+      if (confirmed && deposito.id != null) {
+        this.depositoService.eliminarDeposito(deposito.id).subscribe({
+          next: (response: string) => {
+            console.log('Depósito eliminado:', response);
+            this.cargarListado();
+          },
+          error: (error: any) => {
+            console.error('Error al eliminar depósito:', error);
+            alert('Error al eliminar el depósito. Por favor, inténtalo de nuevo.');
+          }
+        });
+      }
     }
 
     confirmarEliminacion() {
@@ -208,14 +218,12 @@ export class ListadoDepositosComponent implements OnInit {
         next: (response: string) => {
           console.log('Depósito eliminado:', response);
           this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
           this.depositoAEliminar = null;
           this.cargarListado();
         },
         error: (error: any) => {
           console.error('Error al eliminar depósito:', error);
           this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
           this.depositoAEliminar = null;
           alert('Error al eliminar el depósito. Por favor, inténtalo de nuevo.');
         }
@@ -223,7 +231,6 @@ export class ListadoDepositosComponent implements OnInit {
     }
 
     cancelarEliminacion() {
-      this.mostrarConfirmEliminar = false;
       this.depositoAEliminar = null;
     }
 }

@@ -226,8 +226,19 @@ export class ListadoHongosComponent implements OnInit, OnDestroy {
     }
 
     eliminarItem(hongo: HongoDto) {
-      this.hongoAEliminar = hongo;
-      this.mostrarConfirmEliminar = true;
+      const confirmed = window.confirm(`¿Estás seguro que deseas eliminar el hongo "${hongo.nombre}"?`);
+      if (confirmed && hongo.id != null) {
+        this.hongoService.eliminar(hongo.id).subscribe({
+          next: (response) => {
+            console.log('Hongo eliminado:', response);
+            this.cargarHongos();
+          },
+          error: (error) => {
+            console.error('Error al eliminar hongo:', error);
+            alert('Error al eliminar el hongo');
+          }
+        });
+      }
     }
 
     confirmarEliminacion() {

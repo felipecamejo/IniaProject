@@ -42,7 +42,6 @@ export class ListadoMetodosComponent implements OnInit, OnDestroy {
     private navigationSubscription: any;
 
     // Popup de confirmación de eliminación
-    mostrarConfirmEliminar: boolean = false;
     metodoAEliminar: MetodoDto | null = null;
     confirmLoading: boolean = false;
 
@@ -238,8 +237,19 @@ export class ListadoMetodosComponent implements OnInit, OnDestroy {
     }
 
     eliminarItem(item: MetodoDto) {
-      this.metodoAEliminar = item;
-      this.mostrarConfirmEliminar = true;
+      const confirmed = window.confirm(`¿Estás seguro que deseas eliminar el método "${item.nombre}"?`);
+      if (confirmed && item.id != null) {
+        this.metodoService.eliminar(item.id).subscribe({
+          next: (response: string) => {
+            console.log('Método eliminado:', response);
+            this.cargarListado();
+          },
+          error: (error: any) => {
+            console.error('Error al eliminar método:', error);
+            alert('Error al eliminar el método. Por favor, inténtalo de nuevo.');
+          }
+        });
+      }
     }
 
     confirmarEliminacion() {
@@ -250,14 +260,12 @@ export class ListadoMetodosComponent implements OnInit, OnDestroy {
         next: (response: string) => {
           console.log('Método eliminado:', response);
           this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
           this.metodoAEliminar = null;
           this.cargarListado();
         },
         error: (error: any) => {
           console.error('Error al eliminar método:', error);
           this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
           this.metodoAEliminar = null;
           alert('Error al eliminar el método. Por favor, inténtalo de nuevo.');
         }
@@ -265,7 +273,6 @@ export class ListadoMetodosComponent implements OnInit, OnDestroy {
     }
 
     cancelarEliminacion() {
-      this.mostrarConfirmEliminar = false;
       this.metodoAEliminar = null;
     }
 }

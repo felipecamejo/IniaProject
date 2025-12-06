@@ -39,7 +39,6 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
     items: AutocompletadoDto[] = [];
 
     // Popup de confirmación de eliminación
-    mostrarConfirmEliminar: boolean = false;
     autocompletadoAEliminar: AutocompletadoDto | null = null;
     confirmLoading: boolean = false;
 
@@ -81,11 +80,9 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
     // Lista de parámetros disponibles para el select
     parametrosDisponibles: Array<{label: string, value: string}> = [
         // Campos del Recibo
-        { label: 'Especie', value: 'especie' },
         { label: 'N° Análisis (nLab)', value: 'nLab' },
         { label: 'Origen', value: 'origen' },
         { label: 'Remitente', value: 'remite' },
-        { label: 'Observaciones Recibo', value: 'observaciones' },
         { label: 'Ficha', value: 'ficha' },
         // Campos de Análisis de Pureza
         { label: 'Materia Inerte Tipo (INIA)', value: 'materiaInerteTipo' },
@@ -321,8 +318,19 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
     }
 
     eliminarItem(autocompletado: AutocompletadoDto) {
-      this.autocompletadoAEliminar = autocompletado;
-      this.mostrarConfirmEliminar = true;
+      const confirmed = window.confirm(`¿Estás seguro que deseas eliminar el autocompletado "${autocompletado.valor}"?`);
+      if (confirmed && autocompletado.id != null) {
+        this.autocompletadoService.eliminar(autocompletado.id).subscribe({
+          next: (response) => {
+            console.log('Autocompletado eliminado:', response);
+            this.cargarAutocompletados();
+          },
+          error: (error) => {
+            console.error('Error al eliminar autocompletado:', error);
+            alert('Error al eliminar el autocompletado');
+          }
+        });
+      }
     }
 
     confirmarEliminacion() {
@@ -333,14 +341,12 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
         next: (response) => {
           console.log('Autocompletado eliminado:', response);
           this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
           this.autocompletadoAEliminar = null;
           this.cargarAutocompletados();
         },
         error: (error) => {
           console.error('Error al eliminar autocompletado:', error);
           this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
           this.autocompletadoAEliminar = null;
           alert('Error al eliminar el autocompletado');
         }
@@ -348,7 +354,6 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
     }
 
     cancelarEliminacion() {
-      this.mostrarConfirmEliminar = false;
       this.autocompletadoAEliminar = null;
     }
 }

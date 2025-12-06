@@ -47,7 +47,6 @@ export class ListadoEspeciesComponent implements OnInit, OnDestroy {
     totalPages = 0;
 
     // Popup de confirmación de eliminación (misma UX que Usuarios)
-    mostrarConfirmEliminar: boolean = false;
     especieAEliminar: EspecieDto | null = null;
     confirmLoading: boolean = false;
 
@@ -232,8 +231,19 @@ export class ListadoEspeciesComponent implements OnInit, OnDestroy {
     }
 
     eliminarItem(especie: EspecieDto) {
-      this.especieAEliminar = especie;
-      this.mostrarConfirmEliminar = true;
+      const confirmed = window.confirm(`¿Estás seguro que deseas eliminar la especie "${especie.nombre}"?`);
+      if (confirmed && especie.id != null) {
+        this.especieService.eliminar(especie.id).subscribe({
+          next: (response) => {
+            console.log('Especie eliminada:', response);
+            this.cargar();
+          },
+          error: (error) => {
+            console.error('Error al eliminar especie:', error);
+            alert('Error al eliminar la especie');
+          }
+        });
+      }
     }
 
     confirmarEliminacion() {
@@ -244,14 +254,12 @@ export class ListadoEspeciesComponent implements OnInit, OnDestroy {
         next: (response) => {
           console.log('Especie eliminada:', response);
           this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
           this.especieAEliminar = null;
           this.cargar();
         },
         error: (error) => {
           console.error('Error al eliminar especie:', error);
           this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
           this.especieAEliminar = null;
           alert('Error al eliminar la especie');
         }
@@ -259,7 +267,6 @@ export class ListadoEspeciesComponent implements OnInit, OnDestroy {
     }
 
     cancelarEliminacion() {
-      this.mostrarConfirmEliminar = false;
       this.especieAEliminar = null;
     }
 }
