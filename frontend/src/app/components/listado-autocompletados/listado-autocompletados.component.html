@@ -175,13 +175,16 @@
                 </div>
             </div>
 
+            <div *ngIf="modalError" class="error-container">
+              <p class="error-message">{{ modalError }}</p>
+            </div>
+
             <div class="modal-submit-btn">
                 <button pButton type="submit" [disabled]="modalLoading || modalForm.invalid"
                         label="{{ modalLoading ? 'Ingresando...' : itemEditando ? 'Editar Autocompletado' : 'Crear Autocompletado' }}"
                         class="p-button-primary"></button>
             </div>
 
-            <div *ngIf="modalError" class="error">{{ modalError }}</div>
         </form>
     </p-dialog>
 </div>

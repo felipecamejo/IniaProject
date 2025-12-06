@@ -201,15 +201,15 @@
                 </div>
             </div>
 
+          <div *ngIf="modalError" class="error-container">
+            <p class="error-message">Error: {{ modalError }}</p>
+          </div>
+
             <div class="modal-submit-btn">
                 <button pButton type="submit" [disabled]="modalLoading || modalForm.invalid"
                         label="{{ modalLoading ? 'Procesando...' : modalBotonTexto }}"
                         class="p-button-primary"></button>
             </div>
-
-          <div *ngIf="modalError" class="error-container">
-            <p class="error-message">Error: {{ modalError }}</p>
-          </div>
 
         </form>
     </p-dialog>
