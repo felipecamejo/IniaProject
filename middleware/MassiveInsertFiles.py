@@ -6,63 +6,14 @@ from datetime import datetime, timedelta
 from urllib.parse import quote_plus
 from typing import Dict, List, Optional, Tuple, Any
 
-# Intentar importar módulo de instalación de dependencias
-try:
-    from InstallDependencies import verificar_e_instalar, instalar_dependencias_faltantes
-    INSTALL_DEPS_AVAILABLE = True
-except ImportError:
-    INSTALL_DEPS_AVAILABLE = False
+# Importar dependencias usando módulo común
+from dependencies_common import importar_sqlalchemy, importar_pandas
 
-# Verificar e instalar dependencias SQLAlchemy
-if INSTALL_DEPS_AVAILABLE:
-    if not verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=True):
-        print("Intentando instalar SQLAlchemy...")
-        verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=False)
+# Importar SQLAlchemy
+create_engine, text, inspect, _, sessionmaker, automap_base = importar_sqlalchemy()
 
-# Importaciones SQLAlchemy
-try:
-    from sqlalchemy import create_engine, text, inspect
-    from sqlalchemy.orm import sessionmaker
-    from sqlalchemy.ext.automap import automap_base
-except ModuleNotFoundError:
-    if INSTALL_DEPS_AVAILABLE:
-        print("Instalando dependencias faltantes...")
-        if instalar_dependencias_faltantes('MassiveInsertFiles', silent=False):
-            from sqlalchemy import create_engine, text, inspect
-            from sqlalchemy.orm import sessionmaker
-            from sqlalchemy.ext.automap import automap_base
-        else:
-            print("No se pudieron instalar las dependencias. Instálalas manualmente con: pip install -r requirements.txt")
-            raise
-    else:
-        print("Falta el paquete 'sqlalchemy'. Instálalo con: pip install SQLAlchemy")
-        raise
-
-# Verificar e instalar dependencias Pandas y NumPy
-if INSTALL_DEPS_AVAILABLE:
-    if not verificar_e_instalar('pandas', 'pandas', silent=True):
-        print("Intentando instalar pandas...")
-        verificar_e_instalar('pandas', 'pandas', silent=False)
-    if not verificar_e_instalar('numpy', 'numpy', silent=True):
-        print("Intentando instalar numpy...")
-        verificar_e_instalar('numpy', 'numpy', silent=False)
-
-# Importaciones Pandas
-try:
-    import pandas as pd
-    import numpy as np
-except ModuleNotFoundError:
-    if INSTALL_DEPS_AVAILABLE:
-        print("Instalando dependencias faltantes...")
-        if instalar_dependencias_faltantes('MassiveInsertFiles', silent=False):
-            import pandas as pd
-            import numpy as np
-        else:
-            print("No se pudieron instalar las dependencias. Instálalas manualmente con: pip install -r requirements.txt")
-            raise
-    else:
-        print("Faltan los paquetes 'pandas' y 'numpy'. Instálalos con: pip install pandas numpy")
-        raise
+# Importar Pandas
+pd, np = importar_pandas()
 
 # ================================
 # CONFIGURACIÓN Y LOGGING
@@ -70,91 +21,43 @@ except ModuleNotFoundError:
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Importar configuración centralizada de base de datos
-from database_config import build_connection_string
+# Importar módulo de orden topológico
+try:
+    from TopologicalOrder import (
+        obtener_dependencias_tabla as obtener_dependencias_tabla_topological,
+        mapear_todas_dependencias as mapear_todas_dependencias_topological,
+        orden_topologico as orden_topologico_topological,
+        obtener_prioridad_tabla,
+        TABLAS_IGNORAR as TOPOLOGICAL_TABLAS_IGNORAR
+    )
+    TOPOLOGICAL_ORDER_AVAILABLE = True
+except ImportError:
+    TOPOLOGICAL_ORDER_AVAILABLE = False
+    logger.warning("TopologicalOrder.py no disponible, usando implementación local")
 
-def obtener_engine():
-    """Obtiene un engine de SQLAlchemy configurado."""
-    connection_string = build_connection_string()
-    return create_engine(connection_string)
+# Importar funciones comunes de base de datos
+from db_common import (
+    obtener_engine,
+    inicializar_automap,
+    obtener_modelo,
+    Base,
+    MODELS
+)
 
-# ================================
-# MÓDULO: AUTOMAPEO DE MODELOS
-# ================================
-Base = None
-_engine = None
-_models_initialized = False
-MODELS = {}
+# Importar funciones comunes de secuencias
+from sequence_common import (
+    obtener_columnas_con_secuencia as _obtener_columnas_con_secuencia_common,
+    obtener_id_maximo as _obtener_id_maximo_common,
+    sincronizar_secuencia_tabla as _sincronizar_secuencia_tabla_common,
+    verificar_sincronizacion_secuencia,
+    manejar_error_secuencia,
+    es_error_secuencia
+)
 
-def inicializar_automap(engine=None):
-    """Inicializa automap_base y genera modelos automáticamente desde la BD."""
-    global Base, _engine, _models_initialized, MODELS
-    
-    if _models_initialized and Base is not None:
-        return Base
-    
-    if engine is None:
-        connection_string = build_connection_string()
-        _engine = create_engine(connection_string)
-    else:
-        _engine = engine
-    
-    Base = automap_base()
-    
-    try:
-        # Deshabilitar generación automática de relaciones para evitar conflictos de backref
-        # Solo necesitamos las columnas para la inserción masiva, no las relaciones
-        Base.prepare(
-            autoload_with=_engine,
-            generate_relationship=None  # No generar relaciones automáticamente
-            # Nota: reflect=True está deprecado cuando se usa autoload_with (reflexión automática)
-        )
-        logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
-    except Exception as e:
-        logger.error(f"Error inicializando automap: {e}")
-        # Si falla, intentar sin reflect=True como fallback
-        try:
-            logger.warning("Intentando inicializar automap sin reflect=True...")
-            Base = automap_base()
-            Base.prepare(autoload_with=_engine, generate_relationship=None)
-            logger.info(f"Modelos generados automáticamente (fallback): {len(Base.classes)} tablas")
-        except Exception as e2:
-            logger.error(f"Error en fallback de automap: {e2}")
-            raise
-    
-    MODELS.clear()
-    for class_name in dir(Base.classes):
-        if not class_name.startswith('_'):
-            cls = getattr(Base.classes, class_name)
-            if hasattr(cls, '__tablename__'):
-                tabla_nombre = cls.__tablename__.lower()
-                MODELS[tabla_nombre] = cls
-                MODELS[class_name.lower()] = cls
-    
-    _models_initialized = True
-    return Base
-
-def obtener_modelo(nombre_tabla):
-    """Obtiene un modelo por nombre de tabla."""
-    if not _models_initialized or Base is None:
-        inicializar_automap()
-    
-    nombre_tabla_lower = nombre_tabla.lower()
-    if nombre_tabla_lower in MODELS:
-        return MODELS[nombre_tabla_lower]
-    
-    if Base is not None:
-        for class_name in dir(Base.classes):
-            if not class_name.startswith('_'):
-                try:
-                    cls = getattr(Base.classes, class_name)
-                    if hasattr(cls, '__tablename__') and cls.__tablename__.lower() == nombre_tabla_lower:
-                        MODELS[nombre_tabla_lower] = cls
-                        return cls
-                except Exception:
-                    continue
-    
-    raise AttributeError(f"Tabla '{nombre_tabla}' no encontrada en modelos reflejados")
+# Re-exports para compatibilidad con tests y código existente
+obtener_columnas_con_secuencia = _obtener_columnas_con_secuencia_common
+obtener_id_maximo = _obtener_id_maximo_common
+sincronizar_secuencia_tabla = _sincronizar_secuencia_tabla_common
 
 # ================================
 # MÓDULO: ANÁLISIS DE DEPENDENCIAS
@@ -267,7 +170,38 @@ def mapear_check_constraints_por_columna(engine, tabla_nombre: str) -> Dict[str,
     return check_map
 
 def mapear_todas_dependencias(engine) -> Dict[str, Dict[str, Any]]:
-    """Mapea todas las dependencias y constraints de todas las tablas."""
+    """
+    Mapea todas las dependencias y constraints de todas las tablas.
+    Usa TopologicalOrder.py si está disponible, sino usa implementación local.
+    """
+    # Intentar usar el módulo TopologicalOrder si está disponible
+    if TOPOLOGICAL_ORDER_AVAILABLE:
+        try:
+            mapeo_topological = mapear_todas_dependencias_topological(engine)
+            # Enriquecer con información adicional que necesita MassiveInsertFiles
+            inspector = inspect(engine)
+            for tabla in mapeo_topological:
+                constraints = obtener_constraints_tabla(engine, tabla)
+                check_map = mapear_check_constraints_por_columna(engine, tabla)
+                
+                # Log informativo de CHECK constraints encontrados
+                if check_map:
+                    for columna, valores in check_map.items():
+                        logger.info(f"CHECK constraint detectado para '{tabla}.{columna}': valores permitidos = {valores}")
+                
+                # Agregar información adicional al mapeo
+                mapeo_topological[tabla]['constraints'] = constraints
+                mapeo_topological[tabla]['check_map'] = check_map
+                # Mantener compatibilidad: 'dependencias' debe incluir todas las dependencias
+                # (no solo las válidas)
+                if 'dependencias' not in mapeo_topological[tabla]:
+                    mapeo_topological[tabla]['dependencias'] = mapeo_topological[tabla].get('dependencias_validas', [])
+            
+            return mapeo_topological
+        except Exception as e:
+            logger.warning(f"Error usando TopologicalOrder, usando implementación local: {e}")
+    
+    # Implementación local (fallback)
     inspector = inspect(engine)
     tablas = inspector.get_table_names(schema='public')
     
@@ -312,14 +246,50 @@ def mapear_todas_dependencias(engine) -> Dict[str, Dict[str, Any]]:
     return mapeo_completo
 
 def orden_topologico(mapeo_completo: Dict[str, Dict[str, Any]]) -> List[List[str]]:
-    """Calcula el orden topológico de inserción de tablas usando algoritmo de Kahn."""
+    """
+    Calcula el orden topológico de inserción de tablas usando algoritmo de Kahn.
+    Usa TopologicalOrder.py si está disponible, sino usa implementación local.
+    """
+    # Intentar usar el módulo TopologicalOrder si está disponible
+    if TOPOLOGICAL_ORDER_AVAILABLE:
+        try:
+            # Asegurar que el mapeo tenga la estructura esperada por TopologicalOrder
+            mapeo_para_topological = {}
+            for tabla, info in mapeo_completo.items():
+                mapeo_para_topological[tabla] = {
+                    'dependencias_validas': info.get('dependencias_validas', info.get('dependencias', [])),
+                    'dependencias_nullable': info.get('dependencias_nullable', []),
+                    'tablas_dependientes': info.get('tablas_dependientes', [])
+                }
+            
+            return orden_topologico_topological(mapeo_para_topological, considerar_nullable=True)
+        except Exception as e:
+            logger.warning(f"Error usando TopologicalOrder, usando implementación local: {e}")
+    
+    # Implementación local (fallback) - CORREGIDA para filtrar dependencias no mapeadas
     niveles = []
     tablas_restantes = set(mapeo_completo.keys())
     grados_entrada = {}
     
-    # Calcular grados de entrada (número de dependencias)
+    # Calcular grados de entrada SOLO para dependencias válidas (tablas mapeadas)
     for tabla, info in mapeo_completo.items():
-        grados_entrada[tabla] = len(info['dependencias'])
+        # Usar dependencias_validas si está disponible, sino filtrar manualmente
+        if 'dependencias_validas' in info:
+            dependencias_a_contar = info['dependencias_validas']
+        else:
+            # Filtrar dependencias que apuntan a tablas no mapeadas
+            dependencias_a_contar = [
+                (tabla_ref, col) for tabla_ref, col in info.get('dependencias', [])
+                if tabla_ref in mapeo_completo
+            ]
+        
+        # Excluir auto-referencias del conteo inicial
+        dependencias_sin_auto = [
+            (tabla_ref, col) for tabla_ref, col in dependencias_a_contar
+            if tabla_ref.lower() != tabla.lower()
+        ]
+        
+        grados_entrada[tabla] = len(dependencias_sin_auto)
     
     # Algoritmo de Kahn
     while tablas_restantes:
@@ -338,9 +308,11 @@ def orden_topologico(mapeo_completo: Dict[str, Dict[str, Any]]) -> List[List[str
         for tabla in nivel_actual:
             tablas_restantes.remove(tabla)
             # Reducir grados de entrada de tablas dependientes
-            for tabla_dep in mapeo_completo[tabla]['tablas_dependientes']:
+            for tabla_dep in mapeo_completo[tabla].get('tablas_dependientes', []):
                 if tabla_dep in grados_entrada:
                     grados_entrada[tabla_dep] -= 1
+                    if grados_entrada[tabla_dep] < 0:
+                        grados_entrada[tabla_dep] = 0
         
         niveles.append(nivel_actual)
     
@@ -736,125 +708,6 @@ def obtener_ids_insertados(engine, tabla_nombre: str, id_max_antes: int, cantida
     
     return ids
 
-def obtener_id_maximo(engine, tabla_nombre: str) -> int:
-    """Obtiene el ID máximo actual de una tabla."""
-    inspector = inspect(engine)
-    
-    # Intentar obtener PK con diferentes variantes del nombre de tabla
-    pk_constraint = None
-    pk_columns = []
-    for tabla_variant in [tabla_nombre, tabla_nombre.lower(), tabla_nombre.upper()]:
-        try:
-            pk_constraint = inspector.get_pk_constraint(tabla_variant, schema='public')
-            pk_columns = pk_constraint.get('constrained_columns', [])
-            if pk_columns:
-                break
-        except:
-            continue
-    
-    pk_column = pk_columns[0] if pk_columns else None
-    
-    if not pk_column:
-        return 0
-    
-    with engine.connect() as conn:
-        # Intentar con diferentes variantes del nombre de tabla
-        for tabla_variant in [tabla_nombre.upper(), tabla_nombre.lower(), tabla_nombre]:
-            try:
-                query_max = text(f"SELECT COALESCE(MAX({pk_column}), 0) FROM {tabla_variant}")
-                result_max = conn.execute(query_max)
-                return result_max.scalar() or 0
-            except:
-                continue
-    
-    return 0
-
-def obtener_columnas_con_secuencia(engine, tabla_nombre: str) -> List[str]:
-    """Obtiene las columnas que tienen secuencias (SERIAL/BIGSERIAL) en PostgreSQL."""
-    columnas_con_secuencia = []
-    try:
-        # Normalizar nombre de tabla a minúsculas para búsqueda consistente
-        tabla_normalizada = tabla_nombre.lower()
-        
-        with engine.connect() as conn:
-            # Método 1: Buscar por column_default LIKE 'nextval%'
-            query = text("""
-                SELECT column_name
-                FROM information_schema.columns
-                WHERE table_schema = 'public'
-                    AND LOWER(table_name) = LOWER(:tabla)
-                    AND column_default LIKE 'nextval%'
-            """)
-            result = conn.execute(query, {"tabla": tabla_nombre})
-            columnas_con_secuencia = [row[0] for row in result]
-            
-            # Método 2: Si no encontramos nada, buscar secuencias por nombre de tabla
-            # Las secuencias suelen tener el formato: tabla_seq
-            if not columnas_con_secuencia:
-                # Buscar secuencias que coincidan con el nombre de la tabla
-                query_seq = text("""
-                    SELECT sequence_name
-                    FROM information_schema.sequences
-                    WHERE sequence_schema = 'public'
-                        AND sequence_name = :seq_name
-                """)
-                seq_name_pattern = f"{tabla_normalizada}_seq"
-                seq_result = conn.execute(query_seq, {"seq_name": seq_name_pattern}).fetchone()
-                
-                if seq_result:
-                    # Si encontramos una secuencia, buscar columnas que puedan usarla
-                    # Generalmente es la columna que termina en _id y es primary key
-                    inspector = inspect(engine)
-                    try:
-                        # Intentar con nombre original y normalizado
-                        for tabla_variant in [tabla_nombre, tabla_normalizada, tabla_nombre.upper()]:
-                            try:
-                                pk_constraint = inspector.get_pk_constraint(tabla_variant, schema='public')
-                                pk_columns = pk_constraint.get('constrained_columns', [])
-                                if pk_columns:
-                                    # Agregar la primera columna PK que termine en _id
-                                    for pk_col in pk_columns:
-                                        if pk_col.lower().endswith('_id'):
-                                            if pk_col not in columnas_con_secuencia:
-                                                columnas_con_secuencia.append(pk_col)
-                                    break
-                            except:
-                                continue
-                    except Exception as e:
-                        logger.debug(f"Error obteniendo PK para {tabla_nombre}: {e}")
-                
-                # Método 3: Si aún no encontramos nada, usar pg_get_serial_sequence
-                if not columnas_con_secuencia:
-                    # Obtener todas las columnas que terminan en _id
-                    query_cols = text("""
-                        SELECT column_name
-                        FROM information_schema.columns
-                        WHERE table_schema = 'public'
-                            AND LOWER(table_name) = LOWER(:tabla)
-                            AND column_name LIKE '%_id'
-                            AND data_type IN ('integer', 'bigint')
-                    """)
-                    cols_result = conn.execute(query_cols, {"tabla": tabla_nombre})
-                    for col_row in cols_result:
-                        col_name = col_row[0]
-                        # Verificar si tiene secuencia usando pg_get_serial_sequence
-                        # Intentar con diferentes variantes del nombre de tabla
-                        for tabla_variant in [tabla_nombre.upper(), tabla_normalizada, tabla_nombre]:
-                            try:
-                                query_pg_seq = text(f"SELECT pg_get_serial_sequence('{tabla_variant}', '{col_name}')")
-                                seq_name = conn.execute(query_pg_seq).scalar()
-                                if seq_name:
-                                    if col_name not in columnas_con_secuencia:
-                                        columnas_con_secuencia.append(col_name)
-                                    break
-                            except:
-                                continue
-                
-    except Exception as e:
-        logger.warning(f"Error obteniendo columnas con secuencia para {tabla_nombre}: {e}")
-    
-    return columnas_con_secuencia
-
 def insertar_datos_tabla(engine, tabla_nombre: str, df: pd.DataFrame, chunksize: int = 1000) -> List[int]:
     """Inserta datos en una tabla y retorna los IDs generados."""
     try:
@@ -940,10 +793,15 @@ def insertar_datos_tabla(engine, tabla_nombre: str, df: pd.DataFrame, chunksize:
                     logger.warning(f"Error obteniendo secuencia para {col_secuencia} en {tabla_nombre}: {e}. Se usará DEFAULT")
                     secuencias_map[col_secuencia] = None
             
-            # Construir INSERT SQL incluyendo columnas con secuencia usando nextval()
+            # Construir INSERT SQL INCLUYENDO columnas con secuencia usando DEFAULT explícitamente
+            # Esto garantiza que PostgreSQL use el DEFAULT configurado (la secuencia)
             columnas_df = list(df.columns)
-            # INCLUIR columnas con secuencia en el INSERT usando nextval()
-            columnas_insert = columnas_df + list(columnas_con_secuencia)
+            columnas_con_secuencia_lower = [c.lower() for c in columnas_con_secuencia]
+            # INCLUIR columnas con secuencia para usar DEFAULT explícitamente
+            columnas_insert = list(columnas_df)  # Incluir todas las columnas del DataFrame
+            for col_secuencia in columnas_con_secuencia:
+                if col_secuencia not in columnas_insert:
+                    columnas_insert.append(col_secuencia)
             
             for i in range(0, len(rows_to_insert), chunksize):
                 batch = rows_to_insert[i:i+chunksize]
@@ -952,8 +810,18 @@ def insertar_datos_tabla(engine, tabla_nombre: str, df: pd.DataFrame, chunksize:
                 valores_sql = []
                 for row_dict in batch:
                     valores_fila = []
-                    # Valores del DataFrame
-                    for col in columnas_df:
+                    for col in columnas_insert:
+                        # Si es columna con secuencia, usar nextval() explícitamente
+                        if col.lower() in columnas_con_secuencia_lower:
+                            seq_name = secuencias_map.get(col)
+                            if seq_name:
+                                # Usar nextval() con el nombre completo de la secuencia
+                                valores_fila.append(f"nextval('{seq_name}')")
+                            else:
+                                # Si no tenemos el nombre de la secuencia, usar DEFAULT
+                                valores_fila.append("DEFAULT")
+                            continue
+                        
                         val = row_dict.get(col)
                         col_lower = col.lower()
                         
@@ -987,20 +855,10 @@ def insertar_datos_tabla(engine, tabla_nombre: str, df: pd.DataFrame, chunksize:
                         else:
                             valores_fila.append(str(val))
                     
-                    # Usar nextval() para columnas con secuencia
-                    for col_secuencia in columnas_con_secuencia:
-                        seq_name = secuencias_map.get(col_secuencia)
-                        if seq_name:
-                            # Usar nextval() con el nombre completo de la secuencia
-                            valores_fila.append(f"nextval('{seq_name}')")
-                        else:
-                            # Si no encontramos la secuencia, usar DEFAULT
-                            valores_fila.append("DEFAULT")
-                    
                     valores_sql.append(f"({', '.join(valores_fila)})")
                 
                 # Construir y ejecutar INSERT SQL
-                # Incluir columnas con secuencia usando nextval() para generar IDs automáticamente
+                # INCLUIR columnas con secuencia usando DEFAULT explícitamente
                 columnas_sql = ', '.join([f'"{col}"' for col in columnas_insert])
                 valores_sql_str = ', '.join(valores_sql)
                 # Usar el nombre de tabla en mayúsculas (formato estándar en esta BD)
@@ -1037,19 +895,24 @@ def identificar_error_detallado(error: Exception, tabla: str, df: pd.DataFrame =
         'tipo_error': type(error).__name__,
         'mensaje': mensaje_error_corto,
         'mensaje_completo': mensaje_error_completo,
-        'detalles': {}
+        'detalles': {},
+        'es_error_secuencia': False
     }
     
     # Identificar tipo de error común
-    if 'foreign key' in mensaje_error_lower or 'constraint' in mensaje_error_lower:
-        error_info['tipo'] = 'foreign_key_violation'
-        error_info['detalles']['descripcion'] = 'Violación de foreign key constraint'
-    elif 'not null' in mensaje_error_lower or 'null' in mensaje_error_lower:
-        error_info['tipo'] = 'not_null_violation'
-        error_info['detalles']['descripcion'] = 'Violación de NOT NULL constraint'
-    elif 'unique' in mensaje_error_lower or 'duplicate' in mensaje_error_lower:
+    # IMPORTANTE: Verificar UniqueViolation PRIMERO antes de otros tipos
+    if 'unique' in mensaje_error_lower or 'duplicate' in mensaje_error_lower or 'llave duplicada' in mensaje_error_lower:
         error_info['tipo'] = 'unique_violation'
         error_info['detalles']['descripcion'] = 'Violación de UNIQUE constraint'
+        # Intentar detectar si es error de secuencia
+        # Esto se verificará más tarde con es_error_secuencia, pero marcamos como posible
+        error_info['es_error_secuencia'] = True
+    elif 'foreign key' in mensaje_error_lower or ('constraint' in mensaje_error_lower and 'foreign' in mensaje_error_lower):
+        error_info['tipo'] = 'foreign_key_violation'
+        error_info['detalles']['descripcion'] = 'Violación de foreign key constraint'
+    elif 'not null' in mensaje_error_lower or ('null' in mensaje_error_lower and 'not' in mensaje_error_lower):
+        error_info['tipo'] = 'not_null_violation'
+        error_info['detalles']['descripcion'] = 'Violación de NOT NULL constraint'
     elif 'check' in mensaje_error_lower:
         error_info['tipo'] = 'check_violation'
         error_info['detalles']['descripcion'] = 'Violación de CHECK constraint'
@@ -1062,6 +925,18 @@ def identificar_error_detallado(error: Exception, tabla: str, df: pd.DataFrame =
     else:
         error_info['tipo'] = 'unknown_error'
         error_info['detalles']['descripcion'] = 'Error desconocido'
+    
+    # Intentar extraer información de secuencia del mensaje de error
+    import re
+    if error_info['tipo'] == 'unique_violation':
+        # Buscar ID duplicado en el mensaje
+        id_match = re.search(r'\((\d+)\)', mensaje_error_completo)
+        if id_match:
+            error_info['detalles']['id_duplicado'] = int(id_match.group(1))
+        # Buscar nombre de constraint
+        constraint_match = re.search(r'constraint\s+["\']?(\w+)["\']?', mensaje_error_lower)
+        if constraint_match:
+            error_info['detalles']['constraint_nombre'] = constraint_match.group(1)
     
     if df is not None:
         error_info['detalles']['filas_intentadas'] = len(df)
@@ -1143,6 +1018,22 @@ def procesar_tabla_insercion(engine, tabla: str, mapeo_completo: Dict[str, Dict[
             }
             return False, None, error_info
         
+        # Sincronizar secuencia de la tabla antes de insertar
+        logger.info(f"[{tabla}] Sincronizando secuencia antes de insertar...")
+        exito_sync, seq_name, max_val = sincronizar_secuencia_tabla(engine, tabla)
+        if exito_sync:
+            logger.info(f"[{tabla}] ✓ Secuencia sincronizada correctamente (MAX={max_val})")
+        else:
+            logger.warning(f"[{tabla}] ⚠ No se pudo sincronizar la secuencia, continuando de todas formas...")
+        
+        # Verificar sincronización después de sincronizar
+        esta_sincronizada, max_id_tabla, last_value, _ = verificar_sincronizacion_secuencia(engine, tabla)
+        if not esta_sincronizada:
+            logger.warning(f"[{tabla}] ⚠ Secuencia no está sincronizada después de sincronización (MAX tabla={max_id_tabla}, last_value={last_value}). Intentando resincronización forzada...")
+            exito_sync, _, _ = sincronizar_secuencia_tabla(engine, tabla, forzar_resincronizacion=True)
+            if exito_sync:
+                logger.info(f"[{tabla}] ✓ Secuencia resincronizada forzadamente")
+        
         # Insertar datos
         logger.info(f"[SECUENCIAL] Insertando {len(df)} registros en '{tabla}'...")
         ids = insertar_datos_tabla(engine, tabla, df)
@@ -1155,7 +1046,25 @@ def procesar_tabla_insercion(engine, tabla: str, mapeo_completo: Dict[str, Dict[
         return True, ids, None
         
     except Exception as e:
-        error_info = identificar_error_detallado(e, tabla)
+        error_info = identificar_error_detallado(e, tabla, df)
+        
+        # Intentar manejar error de secuencia de forma inteligente
+        cantidad_necesaria = len(df) if df is not None else 0
+        exito_recuperacion, ids_existentes, error_info_recuperacion = manejar_error_secuencia(
+            engine, e, tabla, cantidad_necesaria, ids_referencias
+        )
+        
+        if exito_recuperacion and ids_existentes:
+            logger.info(f"Recuperación exitosa: usando {len(ids_existentes)} IDs existentes de '{tabla}'")
+            # Agregar IDs a ids_referencias para que dependientes puedan continuar
+            if tabla not in ids_referencias:
+                ids_referencias[tabla] = []
+            ids_referencias[tabla].extend(ids_existentes)
+            return True, ids_existentes, None
+        elif error_info_recuperacion:
+            # Hay información de recuperación pero no fue exitosa
+            error_info.update(error_info_recuperacion)
+        
         return False, None, error_info
 
 def procesar_nivel_insercion(engine, nivel: List[str], nivel_num: int, mapeo_completo: Dict[str, Dict[str, Any]], 
@@ -1400,9 +1309,89 @@ def insertar_1000_registros_principales():
     
     niveles = orden_topologico(mapeo_completo)
     
-    logger.info(f"Orden de inserción calculado: {len(niveles)} niveles")
+    # El orden topológico ya respeta las prioridades definidas en TopologicalOrder.py:
+    # 1. Usuario (prioridad 1)
+    # 2. Lote (prioridad 2)
+    # 3. Listados (prioridad 3)
+    # 4. Recibos (prioridad 4)
+    # 5. Análisis (prioridad 5)
+    # No es necesario forzar ningún orden, ya que TopologicalOrder.py lo maneja correctamente
+    
+    logger.info(f"Orden de inserción calculado: {len(niveles)} niveles (con prioridades de TopologicalOrder)")
     for i, nivel in enumerate(niveles, 1):
-        logger.info(f"  Nivel {i}: {nivel}")
+        # Mostrar prioridades de las tablas en cada nivel
+        if TOPOLOGICAL_ORDER_AVAILABLE:
+            try:
+                prioridades_nivel = [obtener_prioridad_tabla(t) for t in nivel]
+                logger.info(f"  Nivel {i} ({len(nivel)} tabla(s)): {nivel}")
+                if prioridades_nivel:
+                    logger.info(f"    Prioridades: min={min(prioridades_nivel)}, max={max(prioridades_nivel)}")
+            except Exception as e:
+                logger.warning(f"Error obteniendo prioridades: {e}")
+                logger.info(f"  Nivel {i} ({len(nivel)} tabla(s)): {nivel}")
+        else:
+            logger.info(f"  Nivel {i} ({len(nivel)} tabla(s)): {nivel}")
+    
+    # Sincronizar específicamente la secuencia de 'lote' antes de insertar
+    if 'lote' in mapeo_completo:
+        try:
+            logger.info("Sincronizando secuencia de 'lote' específicamente...")
+            with engine.connect() as conn:
+                # Usar el mismo método que en insertar_datos_tabla para obtener la secuencia
+                tabla_nombre = 'lote'
+                col_secuencia = 'lote_id'
+                max_val = 0
+                seq_name = None
+                
+                # Método 1: Intentar obtener el nombre de la secuencia usando pg_get_serial_sequence
+                for tabla_variant in [tabla_nombre.upper(), tabla_nombre.lower(), tabla_nombre]:
+                    try:
+                        query_seq = text(f"SELECT pg_get_serial_sequence('{tabla_variant}', '{col_secuencia}')")
+                        seq_name = conn.execute(query_seq).scalar()
+                        if seq_name:
+                            # Obtener el valor máximo usando la misma variante
+                            query_max = text(f'SELECT COALESCE(MAX("{col_secuencia}"), 0) FROM {tabla_variant}')
+                            max_val = conn.execute(query_max).scalar()
+                            break
+                    except:
+                        continue
+                
+                # Método 2: Si pg_get_serial_sequence no funciona, buscar secuencias por nombre
+                if not seq_name:
+                    patterns = [
+                        f"{tabla_nombre.lower()}_seq",
+                        f"{tabla_nombre.lower()}_{col_secuencia.lower()}_seq",
+                        f"{tabla_nombre.upper()}_seq",
+                        f"{tabla_nombre.upper()}_{col_secuencia.upper()}_seq"
+                    ]
+                    for pattern in patterns:
+                        query_seq_search = text("""
+                            SELECT sequence_name
+                            FROM information_schema.sequences
+                            WHERE sequence_schema = 'public'
+                                AND sequence_name = :pattern
+                        """)
+                        seq_result = conn.execute(query_seq_search, {"pattern": pattern}).fetchone()
+                        if seq_result:
+                            seq_name = seq_result[0]
+                            # Agregar schema si es necesario
+                            if '.' not in seq_name:
+                                seq_name = f"public.{seq_name}"
+                            # Obtener el valor máximo
+                            query_max = text(f'SELECT COALESCE(MAX("{col_secuencia}"), 0) FROM {tabla_nombre.upper()}')
+                            max_val = conn.execute(query_max).scalar()
+                            break
+                
+                if seq_name:
+                    # Sincronizar la secuencia
+                    query_sync = text(f"SELECT setval('{seq_name}', {max_val}, false)")
+                    conn.execute(query_sync)
+                    conn.commit()
+                    logger.info(f"Secuencia de 'lote' ({seq_name}) sincronizada a {max_val} (próximo valor será {max_val + 1})")
+                else:
+                    logger.warning("No se encontró la secuencia para 'lote'")
+        except Exception as e:
+            logger.warning(f"Error sincronizando secuencia de 'lote': {e}. Continuando...")
     
     # Inicializar variables de control
     ids_referencias = {}
@@ -1466,3 +1455,9 @@ if __name__ == "__main__":
         logger.error(f"Error en el proceso principal: {e}")
         logger.error("=" * 80)
         raise
+
+# ================================
+# RE-EXPORTS PARA COMPATIBILIDAD
+# ================================
+# Mantener re-exports para que código existente que importa desde este módulo siga funcionando
+from db_common import Base, MODELS, obtener_engine, inicializar_automap, obtener_modelo

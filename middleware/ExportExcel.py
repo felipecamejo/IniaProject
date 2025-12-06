@@ -6,178 +6,29 @@ from datetime import date, datetime
 from typing import Optional, Dict, Any, List
 from urllib.parse import quote_plus
 
-# Intentar importar módulo de instalación de dependencias
-try:
-    from InstallDependencies import verificar_e_instalar, instalar_dependencias_faltantes
-    INSTALL_DEPS_AVAILABLE = True
-except ImportError:
-    INSTALL_DEPS_AVAILABLE = False
+# Importar dependencias usando módulo común
+from dependencies_common import importar_sqlalchemy, importar_openpyxl
 
-# Verificar e instalar dependencias SQLAlchemy
-if INSTALL_DEPS_AVAILABLE:
-    if not verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=True):
-        # Si falla la instalación silenciosa, intentar con salida
-        print("Intentando instalar SQLAlchemy...")
-        verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=False)
+# Importar SQLAlchemy
+create_engine, text, inspect, _, sessionmaker, automap_base = importar_sqlalchemy()
 
-# Importaciones SQLAlchemy
-try:
-    from sqlalchemy import create_engine, text, inspect
-    from sqlalchemy.orm import sessionmaker
-    from sqlalchemy.ext.automap import automap_base
-except ModuleNotFoundError:
-    if INSTALL_DEPS_AVAILABLE:
-        print("Instalando dependencias faltantes...")
-        if instalar_dependencias_faltantes('ExportExcel', silent=False):
-            # Reintentar importación después de instalar
-            from sqlalchemy import create_engine, text, inspect
-            from sqlalchemy.orm import sessionmaker
-            from sqlalchemy.ext.automap import automap_base
-        else:
-            print("No se pudieron instalar las dependencias. Instálalas manualmente con: pip install -r requirements.txt")
-            raise
-    else:
-        print("Falta el paquete 'sqlalchemy'. Instálalo con: pip install SQLAlchemy")
-        raise
-
-# Dependencia opcional para Excel
-try:
-    from openpyxl import Workbook
-    from openpyxl.utils import get_column_letter
-    from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
-    import openpyxl.styles
-    OPENPYXL_AVAILABLE = True
-except Exception:
-    OPENPYXL_AVAILABLE = False
-    # Intentar instalar openpyxl si el módulo de instalación está disponible
-    if INSTALL_DEPS_AVAILABLE:
-        if verificar_e_instalar('openpyxl', 'openpyxl', silent=False):
-            try:
-                from openpyxl import Workbook
-                from openpyxl.utils import get_column_letter
-                from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
-                import openpyxl.styles
-                OPENPYXL_AVAILABLE = True
-            except Exception:
-                OPENPYXL_AVAILABLE = False
+# Importar openpyxl
+OPENPYXL_AVAILABLE, Workbook, load_workbook, get_column_letter, Font, PatternFill, Border, Side, Alignment = importar_openpyxl()
+import openpyxl.styles
 
 # Configuración de logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Importar configuración centralizada de base de datos
-from database_config import build_connection_string
-
-def obtener_engine():
-    """Obtiene un engine de SQLAlchemy configurado."""
-    connection_string = build_connection_string()
-    return create_engine(connection_string)
-
-# ================================
-# MÓDULO: AUTOMAPEO DE MODELOS
-# ================================
-Base = None
-_engine = None
-_models_initialized = False
-MODELS = {}
-
-def inicializar_automap(engine=None):
-    """Inicializa automap_base y genera modelos automáticamente desde la BD."""
-    global Base, _engine, _models_initialized, MODELS
-    
-    if _models_initialized and Base is not None:
-        return Base
-    
-    if engine is None:
-        connection_string = build_connection_string()
-        _engine = create_engine(connection_string)
-    else:
-        _engine = engine
-    
-    Base = automap_base()
-    
-    try:
-        # Deshabilitar generación automática de relaciones para evitar conflictos de backref
-        # Solo necesitamos las columnas para la exportación, no las relaciones
-        Base.prepare(
-            autoload_with=_engine,
-            generate_relationship=None  # No generar relaciones automáticamente
-            # Nota: reflect=True está deprecado cuando se usa autoload_with (reflexión automática)
-        )
-        logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
-    except Exception as e:
-        logger.error(f"Error inicializando automap: {e}")
-        # Si falla, intentar sin reflect=True como fallback
-        try:
-            logger.warning("Intentando inicializar automap sin reflect=True...")
-            Base = automap_base()
-            Base.prepare(autoload_with=_engine, generate_relationship=None)
-            logger.info(f"Modelos generados automáticamente (fallback): {len(Base.classes)} tablas")
-        except Exception as e2:
-            logger.error(f"Error en fallback de automap: {e2}")
-            raise
-    
-    MODELS.clear()
-    for class_name in dir(Base.classes):
-        if not class_name.startswith('_'):
-            try:
-                cls = getattr(Base.classes, class_name)
-                # Intentar obtener el nombre de la tabla de diferentes formas
-                tabla_nombre = None
-                
-                # Método 1: Intentar __tablename__
-                try:
-                    if hasattr(cls, '__tablename__'):
-                        tabla_nombre = cls.__tablename__.lower()
-                except:
-                    pass
-                
-                # Método 2: Intentar __table__.name
-                if tabla_nombre is None:
-                    try:
-                        if hasattr(cls, '__table__') and hasattr(cls.__table__, 'name'):
-                            tabla_nombre = cls.__table__.name.lower()
-                    except:
-                        pass
-                
-                # Método 3: Usar el nombre de la clase directamente (en automap suelen coincidir)
-                if tabla_nombre is None:
-                    tabla_nombre = class_name.lower()
-                
-                # Mapear la clase
-                if tabla_nombre:
-                    MODELS[tabla_nombre] = cls
-                    MODELS[class_name.lower()] = cls
-                    logger.debug(f"Mapeado: {tabla_nombre} -> {class_name}")
-            except Exception as e:
-                logger.warning(f"Error procesando clase {class_name}: {e}")
-                continue
-    
-    logger.info(f"Total de modelos mapeados: {len(MODELS)}")
-    _models_initialized = True
-    return Base
-
-def obtener_modelo(nombre_tabla):
-    """Obtiene un modelo por nombre de tabla."""
-    if not _models_initialized or Base is None:
-        inicializar_automap()
-    
-    nombre_tabla_lower = nombre_tabla.lower()
-    if nombre_tabla_lower in MODELS:
-        return MODELS[nombre_tabla_lower]
-    
-    if Base is not None:
-        for class_name in dir(Base.classes):
-            if not class_name.startswith('_'):
-                try:
-                    cls = getattr(Base.classes, class_name)
-                    if hasattr(cls, '__tablename__') and cls.__tablename__.lower() == nombre_tabla_lower:
-                        MODELS[nombre_tabla_lower] = cls
-                        return cls
-                except Exception:
-                    continue
-    
-    raise AttributeError(f"Tabla '{nombre_tabla}' no encontrada en modelos reflejados")
+# Importar funciones comunes de base de datos
+from db_common import (
+    obtener_engine,
+    inicializar_automap,
+    obtener_modelo,
+    obtener_nombre_tabla_seguro,
+    Base,
+    MODELS
+)
 
 # ================================
 # MÓDULO: LOGGING Y UTILIDADES
@@ -1265,3 +1116,9 @@ def main():
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.INFO)
     main()
+
+# ================================
+# RE-EXPORTS PARA COMPATIBILIDAD
+# ================================
+# Mantener re-exports para que código existente que importa desde este módulo siga funcionando
+from db_common import Base, MODELS, obtener_engine, inicializar_automap, obtener_modelo, obtener_nombre_tabla_seguro

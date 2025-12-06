@@ -5,155 +5,28 @@ import logging
 from typing import Dict, List, Any, Optional, Tuple
 from urllib.parse import quote_plus
 
-# Intentar importar módulo de instalación de dependencias
-try:
-    from InstallDependencies import verificar_e_instalar, instalar_dependencias_faltantes
-    INSTALL_DEPS_AVAILABLE = True
-except ImportError:
-    INSTALL_DEPS_AVAILABLE = False
+# Importar dependencias usando módulo común
+from dependencies_common import importar_sqlalchemy
 
-# Verificar e instalar dependencias SQLAlchemy
-if INSTALL_DEPS_AVAILABLE:
-    if not verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=True):
-        print("Intentando instalar SQLAlchemy...")
-        verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=False)
-
-# Importaciones SQLAlchemy
-try:
-    from sqlalchemy import create_engine, text
-    from sqlalchemy.orm import sessionmaker
-    from sqlalchemy.ext.automap import automap_base
-except ModuleNotFoundError:
-    if INSTALL_DEPS_AVAILABLE:
-        print("Instalando dependencias faltantes...")
-        if instalar_dependencias_faltantes('ContrastDatabase', silent=False):
-            from sqlalchemy import create_engine, text
-            from sqlalchemy.orm import sessionmaker
-            from sqlalchemy.ext.automap import automap_base
-        else:
-            print("No se pudieron instalar las dependencias. Instálalas manualmente con: pip install -r requirements.txt")
-            raise
-    else:
-        print("Falta el paquete 'sqlalchemy'. Instálalo con: pip install SQLAlchemy")
-        raise
+# Importar SQLAlchemy
+create_engine, text, _, _, sessionmaker, automap_base = importar_sqlalchemy()
 
 # Configuración de logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Importar configuración centralizada de base de datos
-from database_config import build_connection_string
+# Importar funciones comunes de base de datos
+from db_common import (
+    obtener_engine,
+    inicializar_automap,
+    obtener_modelo,
+    obtener_nombre_tabla_seguro,
+    Base,
+    MODELS
+)
 
-def obtener_engine():
-    """Obtiene un engine de SQLAlchemy configurado."""
-    connection_string = build_connection_string()
-    return create_engine(connection_string)
-
-# ================================
-# MÓDULO: AUTOMAPEO DE MODELOS
-# ================================
-Base = None
-_engine = None
-_models_initialized = False
-MODELS = {}
-
-def inicializar_automap(engine=None):
-    """Inicializa automap_base y genera modelos automáticamente desde la BD."""
-    global Base, _engine, _models_initialized, MODELS
-    
-    if _models_initialized and Base is not None:
-        return Base
-    
-    if engine is None:
-        connection_string = build_connection_string()
-        _engine = create_engine(connection_string)
-    else:
-        _engine = engine
-    
-    Base = automap_base()
-    
-    try:
-        # Deshabilitar generación automática de relaciones para evitar conflictos de backref
-        # Solo necesitamos las columnas para el contraste, no las relaciones
-        Base.prepare(
-            autoload_with=_engine,
-            reflect=True,
-            generate_relationship=None  # No generar relaciones automáticamente
-        )
-        logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
-    except Exception as e:
-        logger.error(f"Error inicializando automap: {e}")
-        # Si falla, intentar sin reflect=True como fallback
-        try:
-            logger.warning("Intentando inicializar automap sin reflect=True...")
-            Base = automap_base()
-            Base.prepare(autoload_with=_engine, generate_relationship=None)
-            logger.info(f"Modelos generados automáticamente (fallback): {len(Base.classes)} tablas")
-        except Exception as e2:
-            logger.error(f"Error en fallback de automap: {e2}")
-            raise
-    
-    MODELS.clear()
-    for class_name in dir(Base.classes):
-        if not class_name.startswith('_'):
-            try:
-                cls = getattr(Base.classes, class_name)
-                # Intentar obtener el nombre de la tabla de diferentes formas
-                tabla_nombre = None
-                
-                # Método 1: Intentar __tablename__
-                try:
-                    if hasattr(cls, '__tablename__'):
-                        tabla_nombre = cls.__tablename__.lower()
-                except:
-                    pass
-                
-                # Método 2: Intentar __table__.name
-                if tabla_nombre is None:
-                    try:
-                        if hasattr(cls, '__table__') and hasattr(cls.__table__, 'name'):
-                            tabla_nombre = cls.__table__.name.lower()
-                    except:
-                        pass
-                
-                # Método 3: Usar el nombre de la clase directamente (en automap suelen coincidir)
-                if tabla_nombre is None:
-                    tabla_nombre = class_name.lower()
-                
-                # Mapear la clase
-                if tabla_nombre:
-                    MODELS[tabla_nombre] = cls
-                    MODELS[class_name.lower()] = cls
-                    logger.debug(f"Mapeado: {tabla_nombre} -> {class_name}")
-            except Exception as e:
-                logger.warning(f"Error procesando clase {class_name}: {e}")
-                continue
-    
-    logger.info(f"Total de modelos mapeados: {len(MODELS)}")
-    _models_initialized = True
-    return Base
-
-def obtener_modelo(nombre_tabla):
-    """Obtiene un modelo por nombre de tabla."""
-    if not _models_initialized or Base is None:
-        inicializar_automap()
-    
-    nombre_tabla_lower = nombre_tabla.lower()
-    if nombre_tabla_lower in MODELS:
-        return MODELS[nombre_tabla_lower]
-    
-    if Base is not None:
-        for class_name in dir(Base.classes):
-            if not class_name.startswith('_'):
-                try:
-                    cls = getattr(Base.classes, class_name)
-                    if hasattr(cls, '__tablename__') and cls.__tablename__.lower() == nombre_tabla_lower:
-                        MODELS[nombre_tabla_lower] = cls
-                        return cls
-                except Exception:
-                    continue
-    
-    raise AttributeError(f"Tabla '{nombre_tabla}' no encontrada en modelos reflejados")
+# Importar utilidades de strings
+from string_utils import normalize_header_names
 
 def obtener_columnas_tabla(model) -> List[str]:
     """Obtiene las columnas de una tabla desde el modelo."""
@@ -164,60 +37,9 @@ def obtener_columnas_tabla(model) -> List[str]:
         logger.warning(f"Error obteniendo columnas del modelo: {e}")
         return []
 
-def obtener_nombre_tabla_seguro(model) -> str:
-    """Obtiene el nombre de la tabla de un modelo de forma segura."""
-    try:
-        if hasattr(model, '__tablename__'):
-            return model.__tablename__
-    except (AttributeError, TypeError):
-        pass
-    
-    try:
-        if hasattr(model, '__table__') and hasattr(model.__table__, 'name'):
-            return model.__table__.name
-    except (AttributeError, TypeError):
-        pass
-    
-    try:
-        if hasattr(model, '__name__'):
-            return model.__name__.lower()
-    except (AttributeError, TypeError):
-        pass
-    
-    return str(model).split('.')[-1].split("'")[0].lower()
-
 # ================================
 # MÓDULO: CONTRASTE CON BASE DE DATOS
 # ================================
-def normalize_header_names(headers: List[str]) -> List[str]:
-    """
-    Normaliza los nombres de los encabezados (reutilizado de ImportExcel.py).
-    Convierte a minúsculas, reemplaza espacios/guiones con guiones bajos,
-    y remueve caracteres especiales.
-    """
-    import re
-    import unicodedata
-    
-    normalized = []
-    for header in headers:
-        if header:
-            # Normalizar unicode
-            header = unicodedata.normalize('NFKD', str(header))
-            # Convertir a minúsculas y reemplazar espacios/guiones con guiones bajos
-            header = header.lower().strip()
-            header = re.sub(r'[\s\-]+', '_', header)
-            # Remover caracteres especiales
-            header = re.sub(r'[^a-z0-9_]', '', header)
-            # Remover guiones bajos múltiples
-            header = re.sub(r'_+', '_', header)
-            # Remover guiones bajos al inicio y final
-            header = header.strip('_')
-            if not header:
-                header = f"columna_{len(normalized)+1}"
-        else:
-            header = f"columna_{len(normalized)+1}"
-        normalized.append(header)
-    return normalized
 
 def contrastar_columnas_con_tabla(columnas_excel: List[str], columnas_tabla: List[str]) -> Tuple[float, List[str], List[str]]:
     """
@@ -730,5 +552,12 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# ================================
+# RE-EXPORTS PARA COMPATIBILIDAD
+# ================================
+# Mantener re-exports para que código existente que importa desde este módulo siga funcionando
+from db_common import Base, MODELS, obtener_engine, inicializar_automap, obtener_modelo, obtener_nombre_tabla_seguro
+from string_utils import normalize_header_names
 
 

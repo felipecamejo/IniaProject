@@ -39,404 +39,44 @@ except ImportError:
     ANALYSIS_KEYWORDS = {}
     HEADER_SYNONYMS = {}
 
-# Intentar importar módulo de instalación de dependencias
-try:
-    from InstallDependencies import verificar_e_instalar, instalar_dependencias_faltantes
-    INSTALL_DEPS_AVAILABLE = True
-except ImportError:
-    INSTALL_DEPS_AVAILABLE = False
+# Importar dependencias usando módulo común
+from dependencies_common import importar_sqlalchemy, importar_openpyxl
 
-# Verificar e instalar dependencias SQLAlchemy
-if INSTALL_DEPS_AVAILABLE:
-    if not verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=True):
-        print("Intentando instalar SQLAlchemy...")
-        verificar_e_instalar('sqlalchemy', 'SQLAlchemy', silent=False)
+# Importar SQLAlchemy
+create_engine, text, inspect, Table, sessionmaker, automap_base = importar_sqlalchemy()
 
-# Importaciones SQLAlchemy
-try:
-    from sqlalchemy import create_engine, text, Table, inspect
-    from sqlalchemy.orm import sessionmaker
-    from sqlalchemy.ext.automap import automap_base
-except ModuleNotFoundError:
-    if INSTALL_DEPS_AVAILABLE:
-        print("Instalando dependencias faltantes...")
-        if instalar_dependencias_faltantes('ImportExcel', silent=False):
-            from sqlalchemy import create_engine, text, Table, inspect
-            from sqlalchemy.orm import sessionmaker
-            from sqlalchemy.ext.automap import automap_base
-        else:
-            print("No se pudieron instalar las dependencias. Instálalas manualmente con: pip install -r requirements.txt")
-            raise
-    else:
-        print("Falta el paquete 'sqlalchemy'. Instálalo con: pip install SQLAlchemy")
-        raise
+# Importar openpyxl
+OPENPYXL_AVAILABLE, _, load_workbook, _, _, _, _, _, _ = importar_openpyxl()
 
-# Dependencias opcionales para Excel
-try:
-    from openpyxl import load_workbook
-    OPENPYXL_AVAILABLE = True
-except Exception:
-    OPENPYXL_AVAILABLE = False
-    # Intentar instalar openpyxl si el módulo de instalación está disponible
-    if INSTALL_DEPS_AVAILABLE:
-        if verificar_e_instalar('openpyxl', 'openpyxl', silent=False):
-            try:
-                from openpyxl import load_workbook
-                OPENPYXL_AVAILABLE = True
-            except Exception:
-                OPENPYXL_AVAILABLE = False
+# Importar funciones comunes de secuencias
+from sequence_common import asegurar_autoincrementos as asegurar_autoincrementos_common
 
 # Configuración de logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Importar configuración centralizada de base de datos
-from database_config import build_connection_string
+# Importar funciones comunes de base de datos
+from db_common import (
+    obtener_engine as _obtener_engine_common,
+    inicializar_automap as _inicializar_automap_common,
+    obtener_modelo,
+    obtener_nombre_tabla_seguro,
+    Base,
+    MODELS,
+    _TABLES_CACHE
+)
 
+# Importar utilidades de strings
+from string_utils import normalize_header_names
+
+# Wrappers para ImportExcel con configuración específica
 def obtener_engine():
-    """Obtiene un engine de SQLAlchemy configurado."""
-    try:
-        from app.services.database_service import create_engine_with_pool
-        return create_engine_with_pool()
-    except ImportError:
-        # Fallback si no está disponible el servicio
-        connection_string = build_connection_string()
-        return create_engine(connection_string)
-
-# ================================
-# MÓDULO: AUTOMAPEO DE MODELOS
-# ================================
-Base = None
-_engine = None
-_models_initialized = False
-MODELS = {}
-# Caché de tablas para evitar acceder al mapper repetidamente
-_TABLES_CACHE = {}
-
-def _intentar_reflejar_tablas_selectivas(engine, tablas_criticas=None):
-    """
-    Intenta reflejar tablas de forma selectiva para evitar problemas de codificación.
-    
-    Args:
-        engine: Engine de SQLAlchemy
-        tablas_criticas: Lista de nombres de tablas críticas a reflejar primero
-    
-    Returns:
-        Base preparado o None si falla
-    """
-    if tablas_criticas is None:
-        tablas_criticas = ['lote', 'recibo']  # Tablas críticas para importación
-    
-    try:
-        from sqlalchemy import inspect as sql_inspect
-        inspector = sql_inspect(engine)
-        
-        # Obtener esquemas disponibles
-        schemas = inspector.get_schema_names()
-        tablas_disponibles = []
-        
-        for schema in schemas:
-            if schema in ['pg_catalog', 'information_schema']:
-                continue
-            try:
-                tablas = inspector.get_table_names(schema=schema)
-                for tabla in tablas:
-                    tablas_disponibles.append((schema, tabla))
-            except Exception as e:
-                logger.warning(f"Error obteniendo tablas del esquema {schema}: {e}")
-                continue
-        
-        # Intentar reflejar solo tablas críticas primero
-        tablas_a_reflejar = []
-        for schema, tabla in tablas_disponibles:
-            tabla_lower = tabla.lower()
-            if any(critica.lower() in tabla_lower for critica in tablas_criticas):
-                tablas_a_reflejar.append((schema, tabla))
-        
-        if tablas_a_reflejar:
-            logger.info(f"Intentando reflejar {len(tablas_a_reflejar)} tablas críticas...")
-            Base = automap_base()
-            metadata = Base.metadata
-            
-            # Reflejar solo las tablas críticas
-            nombres_tablas = [tabla for _, tabla in tablas_a_reflejar]
-            metadata.reflect(engine, only=nombres_tablas)
-            Base.prepare()
-            logger.info(f"✓ Tablas críticas reflejadas exitosamente: {len(Base.classes)} tablas")
-            return Base
-        
-        # Si no hay tablas críticas, intentar reflejar todas
-        logger.info("No se encontraron tablas críticas, intentando reflejar todas...")
-        Base = automap_base()
-        Base.prepare(autoload_with=engine, generate_relationship=None)
-        return Base
-        
-    except Exception as e:
-        logger.error(f"Error en reflejo selectivo: {e}")
-        return None
-
+    """Obtiene un engine de SQLAlchemy configurado con pool para ImportExcel."""
+    return _obtener_engine_common(use_pool=True)
 
 def inicializar_automap(engine=None):
-    """Inicializa automap_base y genera modelos automáticamente desde la BD."""
-    global Base, _engine, _models_initialized, MODELS
-    
-    if _models_initialized and Base is not None:
-        return Base
-    
-    if engine is None:
-        # Usar función centralizada para crear engine con codificación UTF-8
-        try:
-            from app.services.database_service import create_engine_with_pool
-            _engine = create_engine_with_pool()
-            logger.info("Engine creado usando create_engine_with_pool() con codificación UTF-8")
-        except Exception as e:
-            logger.error(f"Error creando engine con create_engine_with_pool(): {e}")
-            logger.error(traceback.format_exc())
-            raise
-    else:
-        _engine = engine
-    
-    Base = automap_base()
-    
-    logger.info("Iniciando preparación de automap_base...")
-    logger.debug(f"Engine configurado: {_engine.url if hasattr(_engine, 'url') else 'N/A'}")
-    
-    try:
-        # Deshabilitar generación automática de relaciones para evitar conflictos de backref
-        # Solo necesitamos las columnas para la importación, no las relaciones
-        logger.info("Ejecutando Base.prepare() para reflejar todas las tablas...")
-        Base.prepare(
-            autoload_with=_engine,
-            generate_relationship=None  # No generar relaciones automáticamente
-            # Nota: reflect=True está deprecado cuando se usa autoload_with (reflexión automática)
-        )
-        logger.info(f"Modelos generados automáticamente: {len(Base.classes)} tablas")
-    except (UnicodeDecodeError, UnicodeError) as e:
-        logger.error("=" * 80)
-        logger.error("ERROR DE CODIFICACIÓN DETECTADO DURANTE Base.prepare()")
-        logger.error("=" * 80)
-        logger.error(f"Tipo de error: {type(e).__name__}")
-        logger.error(f"Mensaje: {e}")
-        if hasattr(e, 'start') and hasattr(e, 'end'):
-            logger.error(f"Posición del error: bytes {e.start}-{e.end}")
-        if hasattr(e, 'object') and hasattr(e, 'start'):
-            try:
-                byte_problematico = e.object[e.start] if e.start < len(e.object) else None
-                logger.error(f"Byte problemático: {hex(byte_problematico) if byte_problematico is not None else 'N/A'}")
-                # Intentar mostrar contexto alrededor del byte problemático
-                inicio = max(0, e.start - 10)
-                fin = min(len(e.object), e.end + 10)
-                contexto = e.object[inicio:fin]
-                logger.error(f"Contexto (bytes): {contexto}")
-            except Exception:
-                pass
-        logger.error("Stack trace completo:")
-        logger.error(traceback.format_exc())
-        logger.warning("Esto puede deberse a nombres de tablas/columnas con caracteres especiales.")
-        logger.warning("Intentando continuar con manejo de errores de codificación...")
-        # Verificar si se cargaron algunas clases a pesar del error
-        if not hasattr(Base, 'classes') or len(Base.classes) == 0:
-            # Si no se cargaron clases, intentar con configuración de codificación diferente
-            logger.warning("No se cargaron clases. Intentando con configuración alternativa...")
-            try:
-                # Intentar con encoding explícito en la conexión
-                Base = automap_base()
-                logger.info("Reintentando Base.prepare() con configuración alternativa...")
-                Base.prepare(autoload_with=_engine, generate_relationship=None)
-                logger.info(f"Modelos generados automáticamente (con encoding alternativo): {len(Base.classes)} tablas")
-            except Exception as e2:
-                logger.error(f"Error en intento alternativo: {e2}")
-                logger.error("Stack trace del intento alternativo:")
-                logger.error(traceback.format_exc())
-                
-                # Intentar reflejo selectivo como último recurso
-                logger.warning("Intentando reflejo selectivo de tablas críticas...")
-                Base_selectivo = _intentar_reflejar_tablas_selectivas(_engine)
-                if Base_selectivo and hasattr(Base_selectivo, 'classes') and len(Base_selectivo.classes) > 0:
-                    Base = Base_selectivo
-                    logger.info(f"✓ Reflejo selectivo exitoso: {len(Base.classes)} tablas cargadas")
-                else:
-                    raise RuntimeError(f"No se pudieron cargar modelos debido a error de codificación: {e}. Error alternativo: {e2}")
-    except Exception as e:
-        logger.error("=" * 80)
-        logger.error("ERROR INESPERADO DURANTE Base.prepare()")
-        logger.error("=" * 80)
-        logger.error(f"Tipo de error: {type(e).__name__}")
-        logger.error(f"Mensaje: {e}")
-        logger.error("Stack trace completo:")
-        logger.error(traceback.format_exc())
-        # Si falla, intentar sin reflect=True como fallback
-        try:
-            logger.warning("Intentando inicializar automap sin reflect=True...")
-            Base = automap_base()
-            Base.prepare(autoload_with=_engine, generate_relationship=None)
-            logger.info(f"Modelos generados automáticamente (fallback): {len(Base.classes)} tablas")
-        except (UnicodeDecodeError, UnicodeError) as e2:
-            logger.error(f"Error de codificación en fallback de automap: {e2}")
-            logger.error("Stack trace del fallback:")
-            logger.error(traceback.format_exc())
-            logger.warning("Continuando con manejo de errores de codificación...")
-            pass
-        except Exception as e2:
-            logger.error(f"Error en fallback de automap: {e2}")
-            logger.error("Stack trace del fallback:")
-            logger.error(traceback.format_exc())
-            
-            # Intentar reflejo selectivo como último recurso
-            logger.warning("Intentando reflejo selectivo de tablas críticas como último recurso...")
-            Base_selectivo = _intentar_reflejar_tablas_selectivas(_engine)
-            if Base_selectivo and hasattr(Base_selectivo, 'classes') and len(Base_selectivo.classes) > 0:
-                Base = Base_selectivo
-                logger.info(f"✓ Reflejo selectivo exitoso: {len(Base.classes)} tablas cargadas")
-            else:
-                raise
-    
-    # Verificar que se cargaron clases
-    if not hasattr(Base, 'classes') or len(Base.classes) == 0:
-        raise RuntimeError("No se cargaron modelos de la base de datos. Base.classes está vacío.")
-    
-    MODELS.clear()
-    modelos_procesados = 0
-    modelos_con_error = 0
-    
-    for class_name in dir(Base.classes):
-        if not class_name.startswith('_'):
-            try:
-                cls = getattr(Base.classes, class_name)
-                # Intentar obtener el nombre de la tabla de diferentes formas
-                tabla_nombre = None
-                
-                # Método 1: Intentar __tablename__
-                try:
-                    if hasattr(cls, '__tablename__'):
-                        tabla_nombre_raw = cls.__tablename__
-                        # Manejar posibles problemas de codificación
-                        if isinstance(tabla_nombre_raw, bytes):
-                            tabla_nombre = tabla_nombre_raw.decode('utf-8', errors='replace').lower()
-                        else:
-                            tabla_nombre = str(tabla_nombre_raw).lower()
-                except (UnicodeDecodeError, UnicodeError) as e:
-                    logger.warning(f"Error de codificación obteniendo __tablename__ de {class_name}: {e}")
-                    try:
-                        # Intentar con diferentes codificaciones
-                        if isinstance(cls.__tablename__, bytes):
-                            tabla_nombre = cls.__tablename__.decode('latin-1', errors='replace').lower()
-                    except:
-                        pass
-                except Exception:
-                    pass
-                
-                # Método 2: Intentar __table__.name
-                if tabla_nombre is None:
-                    try:
-                        if hasattr(cls, '__table__') and hasattr(cls.__table__, 'name'):
-                            tabla_nombre_raw = cls.__table__.name
-                            # Manejar posibles problemas de codificación
-                            if isinstance(tabla_nombre_raw, bytes):
-                                tabla_nombre = tabla_nombre_raw.decode('utf-8', errors='replace').lower()
-                            else:
-                                tabla_nombre = str(tabla_nombre_raw).lower()
-                    except (UnicodeDecodeError, UnicodeError) as e:
-                        logger.warning(f"Error de codificación obteniendo __table__.name de {class_name}: {e}")
-                        try:
-                            if hasattr(cls, '__table__') and hasattr(cls.__table__, 'name'):
-                                if isinstance(cls.__table__.name, bytes):
-                                    tabla_nombre = cls.__table__.name.decode('latin-1', errors='replace').lower()
-                        except:
-                            pass
-                    except Exception:
-                        pass
-                
-                # Método 3: Usar el nombre de la clase directamente (en automap suelen coincidir)
-                if tabla_nombre is None:
-                    try:
-                        tabla_nombre = str(class_name).lower()
-                    except Exception:
-                        logger.warning(f"Error convirtiendo class_name a string: {class_name}")
-                        continue
-                
-                # Mapear la clase
-                if tabla_nombre:
-                    MODELS[tabla_nombre] = cls
-                    MODELS[class_name.lower()] = cls
-                    modelos_procesados += 1
-                    logger.debug(f"Mapeado: {tabla_nombre} -> {class_name}")
-            except (UnicodeDecodeError, UnicodeError) as e:
-                modelos_con_error += 1
-                logger.warning(f"Error de codificación procesando clase {class_name}: {e}. Omitiendo esta clase.")
-                continue
-            except Exception as e:
-                modelos_con_error += 1
-                logger.warning(f"Error procesando clase {class_name}: {e}")
-                continue
-    
-    logger.info(f"Total de modelos mapeados: {len(MODELS)} (procesados: {modelos_procesados}, con errores: {modelos_con_error})")
-    
-    # Verificar que se mapearon al menos algunos modelos
-    if len(MODELS) == 0:
-        raise RuntimeError("No se pudieron mapear modelos. MODELS está vacío después del procesamiento.")
-    _models_initialized = True
-    return Base
-
-def obtener_modelo(nombre_tabla):
-    """Obtiene un modelo por nombre de tabla."""
-    if not _models_initialized or Base is None:
-        inicializar_automap()
-    
-    nombre_tabla_lower = nombre_tabla.lower()
-    if nombre_tabla_lower in MODELS:
-        return MODELS[nombre_tabla_lower]
-    
-    if Base is not None:
-        for class_name in dir(Base.classes):
-            if not class_name.startswith('_'):
-                try:
-                    cls = getattr(Base.classes, class_name)
-                    if hasattr(cls, '__tablename__') and cls.__tablename__.lower() == nombre_tabla_lower:
-                        MODELS[nombre_tabla_lower] = cls
-                        return cls
-                except Exception:
-                    continue
-    
-    raise AttributeError(f"Tabla '{nombre_tabla}' no encontrada en modelos reflejados")
-
-def obtener_nombre_tabla_seguro(model) -> str:
-    """
-    Obtiene el nombre de la tabla de un modelo de forma segura.
-    Maneja diferentes formas en que SQLAlchemy puede exponer el nombre de la tabla.
-    """
-    try:
-        # Método 1: Intentar __tablename__ directamente
-        if hasattr(model, '__tablename__'):
-            return model.__tablename__
-    except (AttributeError, TypeError):
-        pass
-    
-    try:
-        # Método 2: Intentar __table__.name
-        if hasattr(model, '__table__') and hasattr(model.__table__, 'name'):
-            return model.__table__.name
-    except (AttributeError, TypeError):
-        pass
-    
-    try:
-        # Método 3: Usar el nombre de la clase como fallback
-        if hasattr(model, '__name__'):
-            return model.__name__.lower()
-    except (AttributeError, TypeError):
-        pass
-    
-    try:
-        # Método 4: Intentar obtener desde el mapeo
-        if hasattr(model, '__mapper__') and hasattr(model.__mapper__, 'tables'):
-            tables = model.__mapper__.tables
-            if tables:
-                return list(tables)[0].name
-    except (AttributeError, TypeError, IndexError):
-        pass
-    
-    # Último recurso: usar el nombre de la clase como string
-    return str(model).split('.')[-1].split("'")[0].lower()
+    """Inicializa automap_base con manejo robusto de errores para ImportExcel."""
+    return _inicializar_automap_common(engine=engine, use_pool=True, robust_error_handling=True)
 
 # ================================
 # MÓDULO: UTILIDADES DE ARCHIVOS
@@ -550,28 +190,7 @@ def read_rows_from_csv(ruta_archivo: str, max_rows: Optional[int] = None) -> Tup
     
     return headers, rows
 
-def normalize_header_names(headers: List[str]) -> List[str]:
-    """Normaliza los nombres de los encabezados."""
-    normalized = []
-    for header in headers:
-        if header:
-            # Normalizar unicode
-            header = unicodedata.normalize('NFKD', str(header))
-            # Convertir a minúsculas y reemplazar espacios/guiones con guiones bajos
-            header = header.lower().strip()
-            header = re.sub(r'[\s\-]+', '_', header)
-            # Remover caracteres especiales
-            header = re.sub(r'[^a-z0-9_]', '', header)
-            # Remover guiones bajos múltiples
-            header = re.sub(r'_+', '_', header)
-            # Remover guiones bajos al inicio y final
-            header = header.strip('_')
-            if not header:
-                header = f"columna_{len(normalized)+1}"
-        else:
-            header = f"columna_{len(normalized)+1}"
-        normalized.append(header)
-    return normalized
+# normalize_header_names ahora se importa de string_utils
 
 # ================================
 # MÓDULO: DETECCIÓN DE TABLAS
@@ -732,48 +351,20 @@ def detectar_tabla_por_columnas(session, headers: List[str], tipo_analisis: Opti
 # ================================
 # MÓDULO: SINCRONIZACIÓN DE SECUENCIAS
 # ================================
-def asegurar_autoincrementos(engine):
-    """Asegura que las secuencias de autoincremento estén sincronizadas."""
-    try:
-        with engine.connect() as conn:
-            # Obtener todas las tablas con columnas serial/bigserial
-            query = text("""
-                SELECT 
-                    t.table_name,
-                    c.column_name,
-                    c.data_type
-                FROM information_schema.tables t
-                JOIN information_schema.columns c ON t.table_name = c.table_name
-                WHERE t.table_schema = 'public'
-                    AND t.table_type = 'BASE TABLE'
-                    AND c.data_type IN ('integer', 'bigint')
-                    AND c.column_default LIKE 'nextval%'
-                ORDER BY t.table_name, c.column_name
-            """)
-            
-            result = conn.execute(query)
-            for row in result:
-                tabla = row[0]
-                columna = row[1]
-                
-                # Obtener el valor máximo actual
-                query_max = text(f"SELECT COALESCE(MAX({columna}), 0) FROM {tabla}")
-                max_val = conn.execute(query_max).scalar()
-                
-                # Obtener el nombre de la secuencia
-                query_seq = text(f"""
-                    SELECT pg_get_serial_sequence('{tabla}', '{columna}')
-                """)
-                seq_name = conn.execute(query_seq).scalar()
-                
-                if seq_name:
-                    # Sincronizar la secuencia
-                    query_sync = text(f"SELECT setval('{seq_name}', {max_val}, true)")
-                    conn.execute(query_sync)
-                    conn.commit()
-                    logger.debug(f"Secuencia {seq_name} sincronizada a {max_val}")
-    except Exception as e:
-        logger.warning(f"Error sincronizando secuencias: {e}")
+def asegurar_autoincrementos(engine, tablas_especificas: Optional[List[str]] = None):
+    """
+    Asegura que las secuencias de autoincremento estén sincronizadas.
+    
+    Re-export de sequence_common.asegurar_autoincrementos para compatibilidad.
+    
+    Args:
+        engine: Engine de SQLAlchemy
+        tablas_especificas: Lista opcional de tablas a sincronizar. Si None, sincroniza todas.
+    
+    Returns:
+        Diccionario con estado de sincronización por tabla: {tabla: exito}
+    """
+    return asegurar_autoincrementos_common(engine, tablas_especificas)
 
 # ================================
 # MÓDULO: IMPORTACIÓN DE ARCHIVOS
@@ -1631,3 +1222,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# ================================
+# RE-EXPORTS PARA COMPATIBILIDAD
+# ================================
+# Mantener re-exports para que código existente que importa desde este módulo siga funcionando
+from db_common import Base, MODELS, obtener_engine, inicializar_automap, obtener_modelo, obtener_nombre_tabla_seguro, _TABLES_CACHE
+from string_utils import normalize_header_names
