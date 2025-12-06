@@ -22,8 +22,8 @@
                 <div class="form-field">
                     <label for="especie">Especie</label>
                     <select id="especie" [(ngModel)]="selectedEspecieId" name="especieId" [disabled]="isEditing && isObservador()">
-                        <option [value]="null">Seleccionar especie</option>
-                        <option *ngFor="let e of especies" [value]="e.value">{{ e.label }}</option>
+                        <option [ngValue]="null">Seleccionar especie</option>
+                        <option *ngFor="let e of especies" [ngValue]="e.value">{{ e.label }}</option>
                     </select>
                 </div>
 

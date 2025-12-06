@@ -539,7 +539,7 @@ export class ReciboComponent implements OnInit {
         this.errores.push('El campo N° Analisis es obligatorio.');
     }
 
-    if (!this.especie || this.especie.trim() === '') {
+    if (this.selectedEspecieId === null || this.selectedEspecieId === undefined) {
         this.errores.push('El campo Especie es obligatorio.');
     }
 

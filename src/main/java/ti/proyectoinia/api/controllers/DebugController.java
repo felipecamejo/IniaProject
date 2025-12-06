@@ -36,6 +36,7 @@ public class DebugController {
     private final PurezaRepository purezaRepository;
     private final GerminacionRepository germinacionRepository;
     private final SanitarioRepository sanitarioRepository;
+    private final SanitarioHongoRepository sanitarioHongoRepository;
     private final TetrazolioRepository tetrazolioRepository;
     private final PurezaPNotatumRepository purezaPNotatumRepository;
 
@@ -54,6 +55,7 @@ public class DebugController {
                           PurezaRepository purezaRepository,
                           GerminacionRepository germinacionRepository,
                           SanitarioRepository sanitarioRepository,
+                          SanitarioHongoRepository sanitarioHongoRepository,
                           TetrazolioRepository tetrazolioRepository,
                           PurezaPNotatumRepository purezaPNotatumRepository) {
         this.depositoRepository = depositoRepository;
@@ -71,6 +73,7 @@ public class DebugController {
         this.purezaRepository = purezaRepository;
         this.germinacionRepository = germinacionRepository;
         this.sanitarioRepository = sanitarioRepository;
+        this.sanitarioHongoRepository = sanitarioHongoRepository;
         this.tetrazolioRepository = tetrazolioRepository;
         this.purezaPNotatumRepository = purezaPNotatumRepository;
     }
@@ -78,7 +81,7 @@ public class DebugController {
     @PostMapping({"/crear-datos-prueba"})
     @Secured({"ADMIN"})
     @Operation(
-            description = "Endpoint de debug que crea datos reales para cada tipo: Depósitos, Cultivos, Malezas, Hongos y Métodos"
+            description = "Endpoint de debug que crea datos reales para cada tipo: Depósitos, Especies, Cultivos, Malezas, Hongos y Métodos"
     )
     public ResponseEntity<String> crearDatosPrueba() {
         try {
@@ -103,8 +106,27 @@ public class DebugController {
                         .append(", Nombre=").append(guardado.getNombre()).append("\n");
             }
 
+            // Crear 5 Especies (especies forrajeras comunes en Uruguay)
+            resultado.append("\n2. CREANDO ESPECIES:\n");
+            String[][] especies = {
+                {"Trifolium repens", "Trébol blanco, especie forrajera perenne de la familia Fabaceae"},
+                {"Lolium perenne", "Rye grass perenne, gramínea forrajera de la familia Poaceae"},
+                {"Festuca arundinacea", "Festuca alta, gramínea perenne de la familia Poaceae"},
+                {"Dactylis glomerata", "Dactilis o pasto ovillo, gramínea perenne de la familia Poaceae"},
+                {"Poa pratensis", "Poa de los prados, gramínea perenne de la familia Poaceae"}
+            };
+            for (String[] especieData : especies) {
+                Especie especie = new Especie();
+                especie.setNombre(especieData[0]);
+                especie.setDescripcion(especieData[1]);
+                especie.setActivo(true);
+                Especie guardada = especieRepository.save(especie);
+                resultado.append("   - Especie creada: ID=").append(guardada.getId())
+                        .append(", Nombre=").append(guardada.getNombre()).append("\n");
+            }
+
             // Crear 5 Cultivos (especies forrajeras comunes en Uruguay)
-            resultado.append("\n2. CREANDO CULTIVOS:\n");
+            resultado.append("\n3. CREANDO CULTIVOS:\n");
             String[][] cultivos = {
                 {"Trifolium repens", "Trébol blanco, especie forrajera perenne de alta calidad nutritiva"},
                 {"Lolium perenne", "Rye grass perenne, gramínea forrajera de crecimiento rápido"},
@@ -123,7 +145,7 @@ public class DebugController {
             }
 
             // Crear 5 Malezas (malezas comunes en cultivos forrajeros)
-            resultado.append("\n3. CREANDO MALEZAS:\n");
+            resultado.append("\n4. CREANDO MALEZAS:\n");
             String[][] malezas = {
                 {"Amaranthus retroflexus", "Amaranto rojo, maleza anual de hoja ancha, tolerancia cero"},
                 {"Sorghum halepense", "Sorgo de Alepo, gramínea perenne muy agresiva, tolerancia cero"},
@@ -142,7 +164,7 @@ public class DebugController {
             }
 
             // Crear 5 Hongos (hongos patógenos comunes en semillas)
-            resultado.append("\n4. CREANDO HONGOS:\n");
+            resultado.append("\n5. CREANDO HONGOS:\n");
             String[][] hongos = {
                 {"Fusarium spp.", "Género de hongos patógenos que causan enfermedades en semillas y plantas"},
                 {"Aspergillus spp.", "Hongos que pueden producir micotoxinas y afectar la calidad de semillas"},
@@ -161,7 +183,7 @@ public class DebugController {
             }
 
             // Crear 5 Métodos (métodos de análisis según normativas ISTA)
-            resultado.append("\n5. CREANDO MÉTODOS:\n");
+            resultado.append("\n6. CREANDO MÉTODOS:\n");
             String[][] metodos = {
                 {"ISTA 5.1 - Pureza", "ISTA", "Método estándar para determinación de pureza física de semillas según Reglas ISTA"},
                 {"ISTA 5.3 - Germinación", "ISTA", "Método estándar para prueba de germinación de semillas en condiciones controladas"},
@@ -181,7 +203,7 @@ public class DebugController {
             }
 
             resultado.append("\n=== DATOS REALES CREADOS EXITOSAMENTE ===");
-            resultado.append("\nTotal creado: 25 registros (5 de cada tipo)");
+            resultado.append("\nTotal creado: 30 registros (5 de cada tipo: Depósitos, Especies, Cultivos, Malezas, Hongos y Métodos)");
 
             return new ResponseEntity<>(resultado.toString(), HttpStatus.CREATED);
 
@@ -204,6 +226,9 @@ public class DebugController {
             long totalDepositos = depositoRepository.count();
             long depositosActivos = depositoRepository.findByActivoTrue().size();
             
+            long totalEspecies = especieRepository.count();
+            long especiesActivas = especieRepository.findByActivoTrue().size();
+            
             long totalCultivos = cultivoRepository.count();
             long cultivosActivos = cultivoRepository.findByActivoTrue().size();
             
@@ -219,6 +244,10 @@ public class DebugController {
             estadisticas.append("DEPÓSITOS:\n");
             estadisticas.append("  - Total: ").append(totalDepositos).append("\n");
             estadisticas.append("  - Activos: ").append(depositosActivos).append("\n\n");
+
+            estadisticas.append("ESPECIES:\n");
+            estadisticas.append("  - Total: ").append(totalEspecies).append("\n");
+            estadisticas.append("  - Activas: ").append(especiesActivas).append("\n\n");
 
             estadisticas.append("CULTIVOS:\n");
             estadisticas.append("  - Total: ").append(totalCultivos).append("\n");
@@ -236,8 +265,8 @@ public class DebugController {
             estadisticas.append("  - Total: ").append(totalMetodos).append("\n");
             estadisticas.append("  - Activos: ").append(metodosActivos).append("\n\n");
 
-            long totalGeneral = totalDepositos + totalCultivos + totalMalezas + totalHongos + totalMetodos;
-            long totalActivos = depositosActivos + cultivosActivos + malezasActivas + hongosActivos + metodosActivos;
+            long totalGeneral = totalDepositos + totalEspecies + totalCultivos + totalMalezas + totalHongos + totalMetodos;
+            long totalActivos = depositosActivos + especiesActivas + cultivosActivos + malezasActivas + hongosActivos + metodosActivos;
 
             estadisticas.append("TOTAL GENERAL:\n");
             estadisticas.append("  - Total registros: ").append(totalGeneral).append("\n");
@@ -282,6 +311,30 @@ public class DebugController {
                     deposito.setActivo(false);
                     depositoRepository.save(deposito);
                     depositosLimpiados++;
+                }
+            }
+
+            // Nombres de especies creadas por el endpoint
+            String[] especiesReales = {
+                "Trifolium repens", "Lolium perenne", "Festuca arundinacea",
+                "Dactylis glomerata", "Poa pratensis"
+            };
+
+            // Marcar como inactivas las especies creadas por debug
+            List<Especie> especies = especieRepository.findAll();
+            int especiesLimpiadas = 0;
+            for (Especie especie : especies) {
+                boolean esEspecieDebug = especie.getNombre().contains("Especie de Prueba");
+                for (String nombreEspecie : especiesReales) {
+                    if (especie.getNombre().equals(nombreEspecie)) {
+                        esEspecieDebug = true;
+                        break;
+                    }
+                }
+                if (esEspecieDebug) {
+                    especie.setActivo(false);
+                    especieRepository.save(especie);
+                    especiesLimpiadas++;
                 }
             }
 
@@ -383,12 +436,13 @@ public class DebugController {
 
             resultado.append("DATOS LIMPIADOS:\n");
             resultado.append("  - Depósitos: ").append(depositosLimpiados).append("\n");
+            resultado.append("  - Especies: ").append(especiesLimpiadas).append("\n");
             resultado.append("  - Cultivos: ").append(cultivosLimpiados).append("\n");
             resultado.append("  - Malezas: ").append(malezasLimpiadas).append("\n");
             resultado.append("  - Hongos: ").append(hongosLimpiados).append("\n");
             resultado.append("  - Métodos: ").append(metodosLimpiados).append("\n\n");
 
-            int totalLimpiado = depositosLimpiados + cultivosLimpiados + malezasLimpiadas + hongosLimpiados + metodosLimpiados;
+            int totalLimpiado = depositosLimpiados + especiesLimpiadas + cultivosLimpiados + malezasLimpiadas + hongosLimpiados + metodosLimpiados;
             resultado.append("Total de registros marcados como inactivos: ").append(totalLimpiado);
 
             return new ResponseEntity<>(resultado.toString(), HttpStatus.OK);
@@ -954,12 +1008,35 @@ public class DebugController {
                     sanitario.setEstandar(true);
                     sanitario.setRepetido(false);
                     sanitario.setFechaCreacion(fechaActual);
-                    if (!hongos.isEmpty()) {
-                        sanitario.setSanitarioHongos(new ArrayList<>());
-                        // Crear relación con hongo (requiere SanitarioHongo)
-                    }
+                    sanitario.setSanitarioHongos(new ArrayList<>());
                     sanitarioRepository.save(sanitario);
-                    resultado.append("  - Sanitario creado\n");
+                    
+                    // Crear relaciones SanitarioHongo si hay hongos disponibles
+                    if (!hongos.isEmpty()) {
+                        int numRepeticiones = 4; // Número típico de repeticiones en análisis sanitario
+                        TipoSanitarioHongo[] tipos = TipoSanitarioHongo.values();
+                        
+                        // Crear 1-2 relaciones de hongos por análisis sanitario
+                        int numHongos = Math.min(2, hongos.size());
+                        for (int i = 0; i < numHongos; i++) {
+                            for (int rep = 1; rep <= numRepeticiones; rep++) {
+                                SanitarioHongo sanitarioHongo = new SanitarioHongo();
+                                sanitarioHongo.setSanitario(sanitario);
+                                sanitarioHongo.setHongo(hongos.get(i % hongos.size()));
+                                sanitarioHongo.setRepeticion(rep);
+                                // Valor aleatorio entre 0 y 10 para simular presencia de hongo
+                                sanitarioHongo.setValor((int)(Math.random() * 11));
+                                // Rotar entre los tipos disponibles
+                                sanitarioHongo.setTipo(tipos[i % tipos.length]);
+                                sanitarioHongoRepository.save(sanitarioHongo);
+                                sanitario.getSanitarioHongos().add(sanitarioHongo);
+                            }
+                        }
+                        resultado.append("  - Sanitario creado con ").append(numHongos * numRepeticiones)
+                                .append(" relaciones de hongos\n");
+                    } else {
+                        resultado.append("  - Sanitario creado\n");
+                    }
                     analisisCreados++;
                 }
 
