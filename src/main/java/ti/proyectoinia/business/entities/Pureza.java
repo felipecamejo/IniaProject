@@ -15,6 +15,9 @@ public class Pureza {
     @Column(name = "PUREZA_ID")
     private Long id;
 
+    @Column(name = "COMENTARIOS")
+    private String comentarios;
+
     @Column(name = "FECHA_INASE")
     private Date fechaInase;
 

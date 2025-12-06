@@ -595,6 +595,7 @@ public class MapsDtoEntityService {
 
         PurezaDto dto = new PurezaDto();
         dto.setId(pureza.getId());
+        dto.setComentarios(pureza.getComentarios());
         dto.setFechaInase(pureza.getFechaInase());
         dto.setFechaInia(pureza.getFechaInia());
         dto.setPesoInicial(pureza.getPesoInicial());
@@ -674,6 +675,8 @@ public class MapsDtoEntityService {
         if (dto.getId() != null) {
             pureza.setId(dto.getId());
         }
+
+        pureza.setComentarios(dto.getComentarios());
 
         pureza.setFechaInase(dto.getFechaInase());
         pureza.setFechaInia(dto.getFechaInia());

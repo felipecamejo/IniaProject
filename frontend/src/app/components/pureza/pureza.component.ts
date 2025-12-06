@@ -43,6 +43,8 @@ export class PurezaComponent implements OnInit {
   estandarPendiente: boolean = false;
   repetidoPendiente: boolean = false;
 
+  comentarios: string = '';
+
   // Variables para controlar si ya está marcado (no se puede cambiar)
   estandarOriginal: boolean = false;
   repetidoOriginal: boolean = false;
@@ -736,6 +738,7 @@ export class PurezaComponent implements OnInit {
   // Objeto pureza de tipo PurezaDto
   pureza: PurezaDto = {
     id: null,
+    comentarios: null,
     fechaInase: null,
     fechaInia: null,
     pesoInicial: 0,
@@ -934,7 +937,7 @@ export class PurezaComponent implements OnInit {
         // Fechas
         this.fechaInia = item.fechaInia ? item.fechaInia.split('T')[0] : null;
         this.fechaInase = item.fechaInase ? item.fechaInase.split('T')[0] : null;
-        
+        this.comentarios = item.comentarios || '';
         // Campos INIA - Gramos
         this.pesoInicialGr = item.pesoInicial || 0;
         this.semillaPuraGr = item.semillaPura || 0;
@@ -1179,6 +1182,9 @@ export class PurezaComponent implements OnInit {
   private buildPurezaDto(): PurezaDto {
     return {
       id: this.isEditing && this.editingId ? this.editingId : 0,
+
+      comentarios: this.comentarios || null,
+
       fechaInase: this.fechaInase ? this.convertirFechaAISO(this.fechaInase) : null,
       fechaInia: this.fechaInia ? this.convertirFechaAISO(this.fechaInia) : null,
       

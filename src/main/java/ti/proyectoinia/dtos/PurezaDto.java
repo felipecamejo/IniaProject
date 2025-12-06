@@ -9,6 +9,8 @@ import java.util.List;
 public class PurezaDto {
     private Long id;
 
+    private String comentarios;
+
     private Date fechaInase;
 
     private Date fechaInia;

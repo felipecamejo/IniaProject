@@ -1,5 +1,6 @@
 export interface PurezaDto {
   id: number | null;
+  comentarios: string | null;
 
   fechaInase: string | null;
   fechaInia: string | null;
