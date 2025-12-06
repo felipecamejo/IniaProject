@@ -17,6 +17,9 @@ export class ConfirmDialogComponent {
   @Input() loading: boolean = false;
   @Input() itemName: string = '';
   @Input() itemId: string | number = '';
+  @Input() buttonType: 'delete' | 'success' = 'delete';
+  @Input() hideItemDetails: boolean = false;
+  @Input() centerMessage: boolean = false;
 
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();

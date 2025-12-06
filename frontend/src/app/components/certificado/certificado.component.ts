@@ -26,6 +26,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-certificado',
@@ -40,6 +41,7 @@ import { TableModule } from 'primeng/table';
     InputNumberModule,
     ButtonModule,
     TableModule,
+    ConfirmDialogComponent,
   ]
 })
 export class CertificadoComponent implements OnInit {
@@ -119,6 +121,9 @@ export class CertificadoComponent implements OnInit {
   reciboId: number | null = null;
   isEditing: boolean = false;
   isViewing: boolean = false;
+
+  // Popup de confirmación de éxito
+  mostrarConfirmExito: boolean = false;
 
   // Datos del recibo
   recibo: ReciboDto | null = null;
@@ -605,6 +610,17 @@ export class CertificadoComponent implements OnInit {
     }
   }
 
+  /**
+   * Normaliza un string, convirtiendo valores vacíos o undefined a null
+   */
+  private normalizarString(valor: string | null | undefined): string | null {
+    if (valor === null || valor === undefined || valor === '') {
+      return null;
+    }
+    const trimmed = valor.trim();
+    return trimmed === '' ? null : trimmed;
+  }
+
   manejarProblemas(): boolean {
     this.errores = [];
     this.isFechaMuestreoInvalida = false;
@@ -727,20 +743,20 @@ export class CertificadoComponent implements OnInit {
   crearCertificadoConPayload() {
     const payload: CertificadoDto = {
       id: null,
-      nombreSolicitante: this.nombreSolicitante || null,
-      especie: this.especie || null,
-      cultivar: this.cultivar || null,
-      categoria: this.categoria || null,
-      responsableMuestreo: this.responsableMuestreo || null,
-      fechaMuestreo: DateService.ajustarFecha(this.fechaMuestreo),
-      numeroLote: this.numeroLote || null,
+      nombreSolicitante: this.normalizarString(this.nombreSolicitante),
+      especie: this.normalizarString(this.especie),
+      cultivar: this.normalizarString(this.cultivar),
+      categoria: this.normalizarString(this.categoria),
+      responsableMuestreo: this.normalizarString(this.responsableMuestreo),
+      fechaMuestreo: this.fechaMuestreo ? DateService.ajustarFecha(this.fechaMuestreo) : null,
+      numeroLote: this.normalizarString(this.numeroLote),
       numeroEnvases: this.numeroEnvases ?? null,
-      fechaIngresoLaboratorio: DateService.ajustarFecha(this.fechaIngresoLaboratorio),
-      fechaFinalizacionAnalisis: DateService.ajustarFecha(this.fechaFinalizacionAnalisis),
-      numeroMuestra: this.numeroMuestra || null,
-      numeroCertificado: this.numeroCertificado || null,
+      fechaIngresoLaboratorio: this.fechaIngresoLaboratorio ? DateService.ajustarFecha(this.fechaIngresoLaboratorio) : null,
+      fechaFinalizacionAnalisis: this.fechaFinalizacionAnalisis ? DateService.ajustarFecha(this.fechaFinalizacionAnalisis) : null,
+      numeroMuestra: this.normalizarString(this.numeroMuestra),
+      numeroCertificado: this.normalizarString(this.numeroCertificado),
       tipoCertificado: this.tipoCertificado ?? null,
-      fechaEmision: DateService.ajustarFecha(this.fechaEmision),
+      fechaEmision: this.fechaEmision ? DateService.ajustarFecha(this.fechaEmision) : null,
       firmante: this.firmante,
       fechaFirma: null,
       reciboId: this.reciboId ?? null,
@@ -752,20 +768,20 @@ export class CertificadoComponent implements OnInit {
       purezaOtrasSemillas: this.purezaOtrasSemillas ?? null,
       purezaOtrosCultivos: this.purezaOtrosCultivos ?? null,
       purezaMalezas: this.purezaMalezas ?? null,
-      purezaMalezasToleradas: this.purezaMalezasToleradas || null,
-      purezaPeso1000Semillas: this.purezaPeso1000Semillas || null,
-      purezaHumedad: this.purezaHumedad || null,
-      purezaClaseMateriaInerte: this.purezaClaseMateriaInerte || null,
-      purezaOtrasSemillasDescripcion: this.purezaOtrasSemillasDescripcion || null,
+      purezaMalezasToleradas: this.normalizarString(this.purezaMalezasToleradas),
+      purezaPeso1000Semillas: this.normalizarString(this.purezaPeso1000Semillas),
+      purezaHumedad: this.normalizarString(this.purezaHumedad),
+      purezaClaseMateriaInerte: this.normalizarString(this.purezaClaseMateriaInerte),
+      purezaOtrasSemillasDescripcion: this.normalizarString(this.purezaOtrasSemillasDescripcion),
       // Resultados de análisis - DOSN
       dosnGramosAnalizados: this.dosnGramosAnalizados ?? null,
       dosnMalezasToleranciaCero: this.dosnMalezasToleranciaCero ?? null,
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
       dosnBrassicaSpp: this.dosnBrassicaSpp != null && this.dosnBrassicaSpp !== undefined ? String(this.dosnBrassicaSpp) : null,
-      otrasDeterminaciones: this.otrasDeterminaciones || null,
-      nombreFirmante: this.nombreFirmante || null,
-      funcionFirmante: this.funcionFirmante || null,
+      otrasDeterminaciones: this.normalizarString(this.otrasDeterminaciones),
+      nombreFirmante: this.normalizarString(this.nombreFirmante),
+      funcionFirmante: this.normalizarString(this.funcionFirmante),
       // Resultados de análisis - Germinación
       germinacionNumeroDias: this.germinacionNumeroDias ?? null,
       germinacionPlantulasNormales: this.germinacionPlantulasNormales ?? null,
@@ -773,9 +789,9 @@ export class CertificadoComponent implements OnInit {
       germinacionSemillasDuras: this.germinacionSemillasDuras ?? null,
       germinacionSemillasFrescas: this.germinacionSemillasFrescas ?? null,
       germinacionSemillasMuertas: this.germinacionSemillasMuertas ?? null,
-      germinacionSustrato: this.germinacionSustrato || null,
+      germinacionSustrato: this.normalizarString(this.germinacionSustrato),
       germinacionTemperatura: this.germinacionTemperatura ?? null,
-      germinacionPreTratamiento: this.germinacionPreTratamiento || null
+      germinacionPreTratamiento: this.normalizarString(this.germinacionPreTratamiento)
     };
 
     console.log('Payload crear certificado:', payload);
@@ -793,7 +809,7 @@ export class CertificadoComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error creando certificado:', err);
-        const errorMessage = err.error?.message || err.error || err.message || '';
+        const errorMessage = err.error?.message || err.error || err.message || 'Error desconocido';
         if (errorMessage.includes('certificado') && errorMessage.includes('existe')) {
           alert('Ya existe un certificado para este lote. Solo se permite un certificado por lote.');
           // Intentar redirigir a editar si hay reciboId
@@ -806,11 +822,14 @@ export class CertificadoComponent implements OnInit {
                     this.router.navigate([`/${this.loteId}/${this.reciboId}/certificado/editar/${certificadoActivo.id}`]);
                   }
                 }
+              },
+              error: (listErr) => {
+                console.error('Error listando certificados:', listErr);
               }
             });
           }
         } else {
-          alert('Error al crear el certificado. Por favor, intente nuevamente.');
+          alert('Error al crear el certificado: ' + errorMessage);
         }
       }
     });
@@ -842,20 +861,20 @@ export class CertificadoComponent implements OnInit {
   editarCertificadoConPayload() {
     const payload: CertificadoDto = {
       id: this.certificadoId,
-      nombreSolicitante: this.nombreSolicitante || null,
-      especie: this.especie || null,
-      cultivar: this.cultivar || null,
-      categoria: this.categoria || null,
-      responsableMuestreo: this.responsableMuestreo || null,
-      fechaMuestreo: DateService.ajustarFecha(this.fechaMuestreo),
-      numeroLote: this.numeroLote || null,
+      nombreSolicitante: this.normalizarString(this.nombreSolicitante),
+      especie: this.normalizarString(this.especie),
+      cultivar: this.normalizarString(this.cultivar),
+      categoria: this.normalizarString(this.categoria),
+      responsableMuestreo: this.normalizarString(this.responsableMuestreo),
+      fechaMuestreo: this.fechaMuestreo ? DateService.ajustarFecha(this.fechaMuestreo) : null,
+      numeroLote: this.normalizarString(this.numeroLote),
       numeroEnvases: this.numeroEnvases ?? null,
-      fechaIngresoLaboratorio: DateService.ajustarFecha(this.fechaIngresoLaboratorio),
-      fechaFinalizacionAnalisis: DateService.ajustarFecha(this.fechaFinalizacionAnalisis),
-      numeroMuestra: this.numeroMuestra || null,
-      numeroCertificado: this.numeroCertificado || null,
+      fechaIngresoLaboratorio: this.fechaIngresoLaboratorio ? DateService.ajustarFecha(this.fechaIngresoLaboratorio) : null,
+      fechaFinalizacionAnalisis: this.fechaFinalizacionAnalisis ? DateService.ajustarFecha(this.fechaFinalizacionAnalisis) : null,
+      numeroMuestra: this.normalizarString(this.numeroMuestra),
+      numeroCertificado: this.normalizarString(this.numeroCertificado),
       tipoCertificado: this.tipoCertificado ?? null,
-      fechaEmision: DateService.ajustarFecha(this.fechaEmision),
+      fechaEmision: this.fechaEmision ? DateService.ajustarFecha(this.fechaEmision) : null,
       firmante: this.firmante,
       fechaFirma: null,
       reciboId: this.reciboId ?? null,
@@ -867,20 +886,20 @@ export class CertificadoComponent implements OnInit {
       purezaOtrasSemillas: this.purezaOtrasSemillas ?? null,
       purezaOtrosCultivos: this.purezaOtrosCultivos ?? null,
       purezaMalezas: this.purezaMalezas ?? null,
-      purezaMalezasToleradas: this.purezaMalezasToleradas || null,
-      purezaPeso1000Semillas: this.purezaPeso1000Semillas || null,
-      purezaHumedad: this.purezaHumedad || null,
-      purezaClaseMateriaInerte: this.purezaClaseMateriaInerte || null,
-      purezaOtrasSemillasDescripcion: this.purezaOtrasSemillasDescripcion || null,
+      purezaMalezasToleradas: this.normalizarString(this.purezaMalezasToleradas),
+      purezaPeso1000Semillas: this.normalizarString(this.purezaPeso1000Semillas),
+      purezaHumedad: this.normalizarString(this.purezaHumedad),
+      purezaClaseMateriaInerte: this.normalizarString(this.purezaClaseMateriaInerte),
+      purezaOtrasSemillasDescripcion: this.normalizarString(this.purezaOtrasSemillasDescripcion),
       // Resultados de análisis - DOSN
       dosnGramosAnalizados: this.dosnGramosAnalizados ?? null,
       dosnMalezasToleranciaCero: this.dosnMalezasToleranciaCero ?? null,
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
       dosnBrassicaSpp: this.dosnBrassicaSpp != null && this.dosnBrassicaSpp !== undefined ? String(this.dosnBrassicaSpp) : null,
-      otrasDeterminaciones: this.otrasDeterminaciones || null,
-      nombreFirmante: this.nombreFirmante || null,
-      funcionFirmante: this.funcionFirmante || null,
+      otrasDeterminaciones: this.normalizarString(this.otrasDeterminaciones),
+      nombreFirmante: this.normalizarString(this.nombreFirmante),
+      funcionFirmante: this.normalizarString(this.funcionFirmante),
       // Resultados de análisis - Germinación
       germinacionNumeroDias: this.germinacionNumeroDias ?? null,
       germinacionPlantulasNormales: this.germinacionPlantulasNormales ?? null,
@@ -888,9 +907,9 @@ export class CertificadoComponent implements OnInit {
       germinacionSemillasDuras: this.germinacionSemillasDuras ?? null,
       germinacionSemillasFrescas: this.germinacionSemillasFrescas ?? null,
       germinacionSemillasMuertas: this.germinacionSemillasMuertas ?? null,
-      germinacionSustrato: this.germinacionSustrato || null,
+      germinacionSustrato: this.normalizarString(this.germinacionSustrato),
       germinacionTemperatura: this.germinacionTemperatura ?? null,
-      germinacionPreTratamiento: this.germinacionPreTratamiento || null
+      germinacionPreTratamiento: this.normalizarString(this.germinacionPreTratamiento)
     };
 
     console.log('Payload editar certificado:', payload);
@@ -899,15 +918,13 @@ export class CertificadoComponent implements OnInit {
     this.certificadoService.editarCertificado(payload).subscribe({
       next: (mensaje: string) => {
         console.log('Certificado actualizado:', mensaje);
-        // Navegar según si hay loteId y reciboId
-        if (this.loteId != null && this.reciboId != null) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/lote-analisis`]);
-        } else {
-          this.router.navigate(['/listado-lotes']);
-        }
+        // Mostrar popup de éxito
+        this.mostrarConfirmExito = true;
       },
       error: (err) => {
         console.error('Error actualizando certificado:', err);
+        const errorMessage = err.error?.message || err.error || err.message || 'Error desconocido';
+        alert('Error al actualizar el certificado: ' + errorMessage);
       }
     });
   }
@@ -1001,6 +1018,21 @@ export class CertificadoComponent implements OnInit {
     } else {
       this.router.navigate(['/listado-lotes']);
     }
+  }
+
+  onConfirmExito() {
+    // Cerrar el popup y redirigir
+    this.mostrarConfirmExito = false;
+    if (this.loteId != null && this.reciboId != null) {
+      this.router.navigate([`/${this.loteId}/${this.reciboId}/lote-analisis`]);
+    } else {
+      this.router.navigate(['/listado-lotes']);
+    }
+  }
+
+  onCancelExito() {
+    // Cerrar el popup sin redirigir (aunque normalmente no debería cancelarse)
+    this.mostrarConfirmExito = false;
   }
 }
 

@@ -88,6 +88,11 @@
 .modal-content {
   padding: 20px 24px;
   background-color: var(--azul);
+
+  &.content-no-header {
+    padding-top: 40px;
+    padding-bottom: 20px;
+  }
 }
 
 .modal-message {
@@ -97,6 +102,18 @@
   margin: 0 0 16px 0;
   text-align: center;
   font-family: var(--font-main);
+
+  &.centered {
+    text-align: center;
+  }
+
+  &.large-text {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 30px 0;
+    padding: 0 20px;
+    line-height: 1.6;
+  }
 }
 
 .item-details {
@@ -130,6 +147,11 @@
   border-top: 1px solid var(--gris);
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
+
+  &.footer-centered {
+    justify-content: center;
+    border-top: none;
+  }
 }
 
 // Buttons - usando estilos del proyecto
@@ -180,6 +202,22 @@
     filter: brightness(0.9);
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(218, 105, 106, 0.3);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+.btn-success {
+  background-color: var(--verde);
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--verde);
+    filter: brightness(0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(21, 177, 109, 0.3);
   }
   
   &:active:not(:disabled) {

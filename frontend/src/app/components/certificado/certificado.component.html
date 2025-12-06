@@ -32,17 +32,17 @@
 
           <div class="form-field">
             <label for="especie">Especie</label>
-            <input id="especie" type="text" [(ngModel)]="especie" name="especie" pInputText [readonly]="true" />
+            <input id="especie" type="text" [(ngModel)]="especie" name="especie" pInputText [readonly]="isViewing" />
           </div>
 
           <div class="form-field">
             <label for="cultivar">Cultivar</label>
-            <input id="cultivar" type="text" [(ngModel)]="cultivar" name="cultivar" pInputText [readonly]="true" />
+            <input id="cultivar" type="text" [(ngModel)]="cultivar" name="cultivar" pInputText [readonly]="isViewing" />
           </div>
 
           <div class="form-field">
             <label for="categoria">Categoría</label>
-            <input id="categoria" type="text" [(ngModel)]="categoria" name="categoria" pInputText [readonly]="true" />
+            <input id="categoria" type="text" [(ngModel)]="categoria" name="categoria" pInputText [readonly]="isViewing" />
           </div>
         </div>
       </div>
@@ -58,12 +58,12 @@
 
           <div class="form-field">
             <label for="numeroLote">Número de lote</label>
-            <input id="numeroLote" type="text" [value]="getNumeroLote()" name="numeroLote" pInputText [readonly]="true" />
+            <input id="numeroLote" type="text" [value]="getNumeroLote()" name="numeroLote" pInputText [readonly]="isViewing" />
           </div>
 
           <div class="form-field">
             <label for="categoria2">Categoría</label>
-            <input id="categoria2" type="text" [(ngModel)]="categoria" name="categoria" pInputText [readonly]="true" />
+            <input id="categoria2" type="text" [(ngModel)]="categoria" name="categoria" pInputText [readonly]="isViewing" />
           </div>
 
           <div class="form-field">
@@ -77,7 +77,7 @@
             <label for="pesoKg">Peso (kg)</label>
             <span *ngIf="pesoKg != null && pesoKg < 0" class="error-message">El peso no puede ser negativo.</span>
             <input id="pesoKg" type="number" [(ngModel)]="pesoKg" name="pesoKg" pInputText
-                   [ngClass]="{ 'input-error': pesoKg != null && pesoKg < 0 }" [readonly]="true" />
+                   [ngClass]="{ 'input-error': pesoKg != null && pesoKg < 0 }" [readonly]="isViewing" />
           </div>
 
           <div class="form-field">
@@ -153,14 +153,30 @@
             </thead>
             <tbody>
               <tr>
-                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaSemillaPura ?? 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaMateriaInerte ?? 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaOtrasSemillas ?? 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaOtrosCultivos ?? 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaMalezas ?? 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaMalezasToleradas || 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaPeso1000Semillas || 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tienePureza }">{{ purezaHumedad || 'N' }}</td>
+                <td>
+                  <input type="number" [(ngModel)]="purezaSemillaPura" name="purezaSemillaPura" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="purezaMateriaInerte" name="purezaMateriaInerte" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="purezaOtrasSemillas" name="purezaOtrasSemillas" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="purezaOtrosCultivos" name="purezaOtrosCultivos" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="purezaMalezas" name="purezaMalezas" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="text" [(ngModel)]="purezaMalezasToleradas" name="purezaMalezasToleradas" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="text" [(ngModel)]="purezaPeso1000Semillas" name="purezaPeso1000Semillas" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="text" [(ngModel)]="purezaHumedad" name="purezaHumedad" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
               </tr>
             </tbody>
           </table>
@@ -168,35 +184,36 @@
         <div class="form-grid"> 
           <div class="form-field">
             <label for="purezaClaseMateriaInerte">Clase de materia inerte</label>
-            <input id="purezaClaseMateriaInerte" type="text" [(ngModel)]="purezaClaseMateriaInerte" name="purezaClaseMateriaInerte" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tienePureza }" [value]="purezaClaseMateriaInerte || ''" />
+            <input id="purezaClaseMateriaInerte" type="text" [(ngModel)]="purezaClaseMateriaInerte" name="purezaClaseMateriaInerte" pInputText [readonly]="isViewing" [value]="purezaClaseMateriaInerte || ''" />
           </div>
 
           <div class="form-field">
             <label for="purezaOtrasSemillasDescripcion">Otras semillas</label>
-            <input id="purezaOtrasSemillasDescripcion" type="text" [(ngModel)]="purezaOtrasSemillasDescripcion" name="purezaOtrasSemillasDescripcion" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tienePureza }" [value]="purezaOtrasSemillasDescripcion || ''" />
+            <input id="purezaOtrasSemillasDescripcion" type="text" [(ngModel)]="purezaOtrasSemillasDescripcion" name="purezaOtrasSemillasDescripcion" pInputText [readonly]="isViewing" [value]="purezaOtrasSemillasDescripcion || ''" />
           </div>
         </div>
        
 
         <!-- Determinación de otras semillas por número -->
         <div class="table-section">
-          <h4 class="table-title">Determinación de otras semillas en número en {{ dosnGramosAnalizados ?? 'N' }} g (análisis limitado)</h4>
+          <h4 class="table-title">Determinación de otras semillas en número en 
+            <input type="number" [(ngModel)]="dosnGramosAnalizados" name="dosnGramosAnalizados" pInputText [readonly]="isViewing" style="width: 80px; display: inline-block; margin: 0 5px;" /> g (análisis limitado)</h4>
           <div class="form-grid">
             <div class="form-field">
               <label>Nº de semillas de malezas con tolerancia cero</label>
-              <input type="number" [(ngModel)]="dosnMalezasToleranciaCero" name="dosnMalezasToleranciaCero" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnMalezasToleranciaCero ?? ''" />
+              <input type="number" [(ngModel)]="dosnMalezasToleranciaCero" name="dosnMalezasToleranciaCero" pInputText [readonly]="isViewing" [value]="dosnMalezasToleranciaCero ?? ''" />
             </div>
             <div class="form-field">
               <label>Nº de semillas de malezas con tolerancia</label>
-              <input type="number" [(ngModel)]="dosnMalezasTolerancia" name="dosnMalezasTolerancia" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnMalezasTolerancia ?? ''" />
+              <input type="number" [(ngModel)]="dosnMalezasTolerancia" name="dosnMalezasTolerancia" pInputText [readonly]="isViewing" [value]="dosnMalezasTolerancia ?? ''" />
             </div>
             <div class="form-field">
               <label>Nº de semillas de otros cultivos</label>
-              <input type="number" [(ngModel)]="dosnOtrosCultivos" name="dosnOtrosCultivos" pInputText [readonly]="true" [ngClass]="{ 'input-error': !tieneDOSN }" [value]="dosnOtrosCultivos ?? ''" />
+              <input type="number" [(ngModel)]="dosnOtrosCultivos" name="dosnOtrosCultivos" pInputText [readonly]="isViewing" [value]="dosnOtrosCultivos ?? ''" />
             </div>
             <div class="form-field">
               <label>Determinación de Brassica spp. (g)</label>
-              <input id="dosnBrassicaSpp" type="number" [(ngModel)]="dosnBrassicaSpp" name="dosnBrassicaSpp" pInputText />
+              <input id="dosnBrassicaSpp" type="number" [(ngModel)]="dosnBrassicaSpp" name="dosnBrassicaSpp" pInputText [readonly]="isViewing" />
             </div>
 
             <div class="checkbox-item">
@@ -228,15 +245,33 @@
             </thead>
             <tbody>
               <tr>
-                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionNumeroDias ?? 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionPlantulasNormales ?? 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionPlantulasAnormales ?? 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionSemillasDuras ?? 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionSemillasFrescas ?? 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionSemillasMuertas ?? 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionSustrato || 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionTemperatura ?? 'N' }}</td>
-                <td [ngClass]="{ 'empty-value': !tieneGerminacion }">{{ germinacionPreTratamiento || 'N' }}</td>
+                <td>
+                  <input type="number" [(ngModel)]="germinacionNumeroDias" name="germinacionNumeroDias" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="germinacionPlantulasNormales" name="germinacionPlantulasNormales" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="germinacionPlantulasAnormales" name="germinacionPlantulasAnormales" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="germinacionSemillasDuras" name="germinacionSemillasDuras" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="germinacionSemillasFrescas" name="germinacionSemillasFrescas" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="germinacionSemillasMuertas" name="germinacionSemillasMuertas" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="text" [(ngModel)]="germinacionSustrato" name="germinacionSustrato" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="germinacionTemperatura" name="germinacionTemperatura" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
+                <td>
+                  <input type="text" [(ngModel)]="germinacionPreTratamiento" name="germinacionPreTratamiento" pInputText [readonly]="isViewing" style="width: 100%; border: none; background: transparent; text-align: center;" />
+                </td>
               </tr>
             </tbody>
           </table>
@@ -246,7 +281,7 @@
       <div class="form-grid">
         <div class="form-field">
           <label>Otras Determinaciones</label>
-          <input id="otrasDeterminaciones" type="text" [(ngModel)]="otrasDeterminaciones" name="otrasDeterminaciones" pInputText />
+          <input id="otrasDeterminaciones" type="text" [(ngModel)]="otrasDeterminaciones" name="otrasDeterminaciones" pInputText [readonly]="isViewing" />
         </div>
       </div>
         
@@ -327,4 +362,19 @@
     </div>
 
   </div>
+
+  <!-- Popup de confirmación de éxito -->
+  <app-confirm-dialog
+      [visible]="mostrarConfirmExito"
+      title="Certificado Actualizado"
+      message="El certificado se ha actualizado correctamente."
+      confirmText="Aceptar"
+      cancelText="Cancelar"
+      [loading]="false"
+      buttonType="success"
+      [hideItemDetails]="true"
+      [centerMessage]="true"
+      (confirm)="onConfirmExito()"
+      (cancel)="onCancelExito()">
+  </app-confirm-dialog>
 </div>
