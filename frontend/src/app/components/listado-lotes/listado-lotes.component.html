@@ -11,7 +11,7 @@
 
         <div class="search-section">
             <div class="search-bar">
-                <input type="text" placeholder="Buscar lotes..." class="search-input" [(ngModel)]="searchText" name="search" (keyup.enter)="onSearchTextChange()" (blur)="onSearchTextChange()" />
+                <input type="text" placeholder="Buscar lotes" class="search-input" [(ngModel)]="searchText" name="search" (keyup.enter)="onSearchTextChange()" (blur)="onSearchTextChange()" />
             </div>
             <div class="filter-dropdown">
                 <select class="mes-select" [(ngModel)]="selectedMes" name="mes" (change)="onMesChange()">
@@ -53,7 +53,7 @@
             <div class="divider-line"></div>
             <div class="item-content">
                 <div class="item-description">
-                    <p>{{ item.descripcion || '' }}</p>
+                    <p>Categoria: {{ item.categoria || '' }}</p>
                 </div>
                 <div class="item-actions" (click)="$event.stopPropagation()">
                     <button *ngIf="!isObserver && !isAnalista"class="action-button delete-button" (click)="eliminarItem(item)" title="Eliminar">
