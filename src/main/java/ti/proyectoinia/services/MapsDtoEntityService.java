@@ -2096,11 +2096,12 @@ public class MapsDtoEntityService {
         certificado.setPurezaOtrasSemillas(dto.getPurezaOtrasSemillas());
         certificado.setPurezaOtrosCultivos(dto.getPurezaOtrosCultivos());
         certificado.setPurezaMalezas(dto.getPurezaMalezas());
-        if (dto.getPurezaMalezasToleradas() != null) certificado.setPurezaMalezasToleradas(dto.getPurezaMalezasToleradas());
-        if (dto.getPurezaPeso1000Semillas() != null) certificado.setPurezaPeso1000Semillas(dto.getPurezaPeso1000Semillas());
-        if (dto.getPurezaHumedad() != null) certificado.setPurezaHumedad(dto.getPurezaHumedad());
-        if (dto.getPurezaClaseMateriaInerte() != null) certificado.setPurezaClaseMateriaInerte(dto.getPurezaClaseMateriaInerte());
-        if (dto.getPurezaOtrasSemillasDescripcion() != null) certificado.setPurezaOtrasSemillasDescripcion(dto.getPurezaOtrasSemillasDescripcion());
+        // Permitir null para limpiar estos campos
+        certificado.setPurezaMalezasToleradas(dto.getPurezaMalezasToleradas());
+        certificado.setPurezaPeso1000Semillas(dto.getPurezaPeso1000Semillas());
+        certificado.setPurezaHumedad(dto.getPurezaHumedad());
+        certificado.setPurezaClaseMateriaInerte(dto.getPurezaClaseMateriaInerte());
+        certificado.setPurezaOtrasSemillasDescripcion(dto.getPurezaOtrasSemillasDescripcion());
         
         // Mapear resultados de análisis - DOSN (permitir null para limpiar valores)
         certificado.setDosnGramosAnalizados(dto.getDosnGramosAnalizados());
@@ -2117,8 +2118,9 @@ public class MapsDtoEntityService {
         certificado.setGerminacionSemillasDuras(dto.getGerminacionSemillasDuras());
         certificado.setGerminacionSemillasFrescas(dto.getGerminacionSemillasFrescas());
         certificado.setGerminacionSemillasMuertas(dto.getGerminacionSemillasMuertas());
-        if (dto.getGerminacionSustrato() != null) certificado.setGerminacionSustrato(dto.getGerminacionSustrato());
+        // Permitir null para limpiar estos campos
+        certificado.setGerminacionSustrato(dto.getGerminacionSustrato());
         certificado.setGerminacionTemperatura(dto.getGerminacionTemperatura());
-        if (dto.getGerminacionPreTratamiento() != null) certificado.setGerminacionPreTratamiento(dto.getGerminacionPreTratamiento());
+        certificado.setGerminacionPreTratamiento(dto.getGerminacionPreTratamiento());
     }
 }

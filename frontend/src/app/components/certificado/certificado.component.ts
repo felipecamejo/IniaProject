@@ -18,7 +18,8 @@ import { PurezaDto } from '../../../models/Pureza.dto';
 import { GerminacionDto } from '../../../models/Germinacion.dto';
 import { DOSNDto } from '../../../models/DOSN.dto';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+// @ts-ignore - jspdf-autotable puede no tener tipos TypeScript completos
+import autoTable from 'jspdf-autotable';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -26,6 +27,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-certificado',
@@ -40,6 +42,7 @@ import { TableModule } from 'primeng/table';
     InputNumberModule,
     ButtonModule,
     TableModule,
+    ConfirmDialogComponent,
   ]
 })
 export class CertificadoComponent implements OnInit {
@@ -120,9 +123,17 @@ export class CertificadoComponent implements OnInit {
   isEditing: boolean = false;
   isViewing: boolean = false;
 
+  // Popup de confirmación de éxito
+  mostrarConfirmExito: boolean = false;
+
   // Datos del recibo
   recibo: ReciboDto | null = null;
   analisisSolicitados: string | null = null;
+
+  // Indicadores de existencia de análisis
+  tienePureza: boolean = false;
+  tieneDOSN: boolean = false;
+  tieneGerminacion: boolean = false;
 
   // Indicadores de qué análisis deben realizarse
   debeRealizarPureza: boolean = false;
@@ -149,7 +160,7 @@ export class CertificadoComponent implements OnInit {
   dosnMalezasToleranciaCero: number | null = null;
   dosnMalezasTolerancia: number | null = null;
   dosnOtrosCultivos: number | null = null;
-  dosnBrassicaSpp: string | null = null;
+  dosnBrassicaSpp: number | null = null;
 
   // Germinación
   germinacionNumeroDias: number | null = null;
@@ -351,6 +362,7 @@ export class CertificadoComponent implements OnInit {
 
   inicializarValoresPorDefectoPureza() {
     // Marcar que no existe análisis de pureza
+    this.tienePureza = false;
     this.purezaSemillaPura = null;
     this.purezaMateriaInerte = null;
     this.purezaOtrasSemillas = null;
@@ -365,6 +377,7 @@ export class CertificadoComponent implements OnInit {
 
   inicializarValoresPorDefectoDOSN() {
     // Marcar que no existe análisis de DOSN
+    this.tieneDOSN = false;
     this.dosnGramosAnalizados = null;
     this.dosnMalezasToleranciaCero = null;
     this.dosnMalezasTolerancia = null;
@@ -374,6 +387,7 @@ export class CertificadoComponent implements OnInit {
 
   inicializarValoresPorDefectoGerminacion() {
     // Marcar que no existe análisis de germinación
+    this.tieneGerminacion = false;
     this.germinacionNumeroDias = null;
     this.germinacionPlantulasNormales = null;
     this.germinacionPlantulasAnormales = null;
@@ -526,15 +540,21 @@ export class CertificadoComponent implements OnInit {
         this.purezaHumedad = certificado.purezaHumedad || 'N';
         this.purezaClaseMateriaInerte = certificado.purezaClaseMateriaInerte || '';
         this.purezaOtrasSemillasDescripcion = certificado.purezaOtrasSemillasDescripcion || '';
-        
+        // Determinar si existe análisis de pureza
+        this.tienePureza = this.purezaSemillaPura != null || this.purezaMateriaInerte != null || this.purezaOtrasSemillas != null || this.purezaOtrosCultivos != null || this.purezaMalezas != null;
 
         // Cargar resultados de análisis - DOSN
         this.dosnGramosAnalizados = certificado.dosnGramosAnalizados ?? null;
         this.dosnMalezasToleranciaCero = certificado.dosnMalezasToleranciaCero ?? null;
         this.dosnMalezasTolerancia = certificado.dosnMalezasTolerancia ?? null;
         this.dosnOtrosCultivos = certificado.dosnOtrosCultivos ?? null;
-        // Asignar dosnBrassicaSpp como string (viene del backend como string)
-        this.dosnBrassicaSpp = certificado.dosnBrassicaSpp || null;
+        // Asignar correctamente dosnBrassicaSpp, permitiendo 0 y valores positivos, y forzando a number
+        if (certificado.dosnBrassicaSpp !== undefined && certificado.dosnBrassicaSpp !== null && certificado.dosnBrassicaSpp !== '') {
+          const val = Number(certificado.dosnBrassicaSpp);
+          this.dosnBrassicaSpp = isNaN(val) ? null : val;
+        } else {
+          this.dosnBrassicaSpp = null;
+        }
 
         // Asignar correctamente brassicaContiene, permitiendo true/false del backend
         this.brassicaContiene = (typeof certificado.brassicaContiene === 'boolean') ? certificado.brassicaContiene : false;
@@ -543,6 +563,8 @@ export class CertificadoComponent implements OnInit {
         this.nombreFirmante = certificado.nombreFirmante || '';
         this.funcionFirmante = certificado.funcionFirmante || '';
 
+        // Determinar si existe análisis de DOSN
+        this.tieneDOSN = this.dosnGramosAnalizados != null;
 
         // Cargar resultados de análisis - Germinación
         this.germinacionNumeroDias = certificado.germinacionNumeroDias ?? null;
@@ -554,7 +576,9 @@ export class CertificadoComponent implements OnInit {
         this.germinacionSustrato = certificado.germinacionSustrato || '';
         this.germinacionTemperatura = certificado.germinacionTemperatura ?? null;
         this.germinacionPreTratamiento = certificado.germinacionPreTratamiento || '';
-        
+        // Determinar si existe análisis de germinación
+        this.tieneGerminacion = this.germinacionNumeroDias != null || this.germinacionPlantulasNormales != null || this.germinacionPlantulasAnormales != null;
+
         console.log('Datos del certificado asignados al formulario');
       },
       error: (err) => {
@@ -585,6 +609,17 @@ export class CertificadoComponent implements OnInit {
     } catch {
       return '';
     }
+  }
+
+  /**
+   * Normaliza un string, convirtiendo valores vacíos o undefined a null
+   */
+  private normalizarString(valor: string | null | undefined): string | null {
+    if (valor === null || valor === undefined || valor === '') {
+      return null;
+    }
+    const trimmed = valor.trim();
+    return trimmed === '' ? null : trimmed;
   }
 
   manejarProblemas(): boolean {
@@ -709,20 +744,20 @@ export class CertificadoComponent implements OnInit {
   crearCertificadoConPayload() {
     const payload: CertificadoDto = {
       id: null,
-      nombreSolicitante: this.nombreSolicitante || null,
-      especie: this.especie || null,
-      cultivar: this.cultivar || null,
-      categoria: this.categoria || null,
-      responsableMuestreo: this.responsableMuestreo || null,
-      fechaMuestreo: DateService.ajustarFecha(this.fechaMuestreo),
-      numeroLote: this.numeroLote || null,
+      nombreSolicitante: this.normalizarString(this.nombreSolicitante),
+      especie: this.normalizarString(this.especie),
+      cultivar: this.normalizarString(this.cultivar),
+      categoria: this.normalizarString(this.categoria),
+      responsableMuestreo: this.normalizarString(this.responsableMuestreo),
+      fechaMuestreo: this.fechaMuestreo ? DateService.ajustarFecha(this.fechaMuestreo) : null,
+      numeroLote: this.normalizarString(this.numeroLote),
       numeroEnvases: this.numeroEnvases ?? null,
-      fechaIngresoLaboratorio: DateService.ajustarFecha(this.fechaIngresoLaboratorio),
-      fechaFinalizacionAnalisis: DateService.ajustarFecha(this.fechaFinalizacionAnalisis),
-      numeroMuestra: this.numeroMuestra || null,
-      numeroCertificado: this.numeroCertificado || null,
+      fechaIngresoLaboratorio: this.fechaIngresoLaboratorio ? DateService.ajustarFecha(this.fechaIngresoLaboratorio) : null,
+      fechaFinalizacionAnalisis: this.fechaFinalizacionAnalisis ? DateService.ajustarFecha(this.fechaFinalizacionAnalisis) : null,
+      numeroMuestra: this.normalizarString(this.numeroMuestra),
+      numeroCertificado: this.normalizarString(this.numeroCertificado),
       tipoCertificado: this.tipoCertificado ?? null,
-      fechaEmision: DateService.ajustarFecha(this.fechaEmision),
+      fechaEmision: this.fechaEmision ? DateService.ajustarFecha(this.fechaEmision) : null,
       firmante: this.firmante,
       fechaFirma: null,
       reciboId: this.reciboId ?? null,
@@ -734,20 +769,20 @@ export class CertificadoComponent implements OnInit {
       purezaOtrasSemillas: this.purezaOtrasSemillas ?? null,
       purezaOtrosCultivos: this.purezaOtrosCultivos ?? null,
       purezaMalezas: this.purezaMalezas ?? null,
-      purezaMalezasToleradas: this.purezaMalezasToleradas || null,
-      purezaPeso1000Semillas: this.purezaPeso1000Semillas || null,
-      purezaHumedad: this.purezaHumedad || null,
-      purezaClaseMateriaInerte: this.purezaClaseMateriaInerte || null,
-      purezaOtrasSemillasDescripcion: this.purezaOtrasSemillasDescripcion || null,
+      purezaMalezasToleradas: this.normalizarString(this.purezaMalezasToleradas),
+      purezaPeso1000Semillas: this.normalizarString(this.purezaPeso1000Semillas),
+      purezaHumedad: this.normalizarString(this.purezaHumedad),
+      purezaClaseMateriaInerte: this.normalizarString(this.purezaClaseMateriaInerte),
+      purezaOtrasSemillasDescripcion: this.normalizarString(this.purezaOtrasSemillasDescripcion),
       // Resultados de análisis - DOSN
       dosnGramosAnalizados: this.dosnGramosAnalizados ?? null,
       dosnMalezasToleranciaCero: this.dosnMalezasToleranciaCero ?? null,
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
-      dosnBrassicaSpp: this.dosnBrassicaSpp || null,
-      otrasDeterminaciones: this.otrasDeterminaciones || null,
-      nombreFirmante: this.nombreFirmante || null,
-      funcionFirmante: this.funcionFirmante || null,
+      dosnBrassicaSpp: this.dosnBrassicaSpp != null && this.dosnBrassicaSpp !== undefined ? String(this.dosnBrassicaSpp) : null,
+      otrasDeterminaciones: this.normalizarString(this.otrasDeterminaciones),
+      nombreFirmante: this.normalizarString(this.nombreFirmante),
+      funcionFirmante: this.normalizarString(this.funcionFirmante),
       // Resultados de análisis - Germinación
       germinacionNumeroDias: this.germinacionNumeroDias ?? null,
       germinacionPlantulasNormales: this.germinacionPlantulasNormales ?? null,
@@ -755,9 +790,9 @@ export class CertificadoComponent implements OnInit {
       germinacionSemillasDuras: this.germinacionSemillasDuras ?? null,
       germinacionSemillasFrescas: this.germinacionSemillasFrescas ?? null,
       germinacionSemillasMuertas: this.germinacionSemillasMuertas ?? null,
-      germinacionSustrato: this.germinacionSustrato || null,
+      germinacionSustrato: this.normalizarString(this.germinacionSustrato),
       germinacionTemperatura: this.germinacionTemperatura ?? null,
-      germinacionPreTratamiento: this.germinacionPreTratamiento || null
+      germinacionPreTratamiento: this.normalizarString(this.germinacionPreTratamiento)
     };
 
     console.log('Payload crear certificado:', payload);
@@ -775,7 +810,7 @@ export class CertificadoComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error creando certificado:', err);
-        const errorMessage = err.error?.message || err.error || err.message || '';
+        const errorMessage = err.error?.message || err.error || err.message || 'Error desconocido';
         if (errorMessage.includes('certificado') && errorMessage.includes('existe')) {
           alert('Ya existe un certificado para este lote. Solo se permite un certificado por lote.');
           // Intentar redirigir a editar si hay reciboId
@@ -788,11 +823,14 @@ export class CertificadoComponent implements OnInit {
                     this.router.navigate([`/${this.loteId}/${this.reciboId}/certificado/editar/${certificadoActivo.id}`]);
                   }
                 }
+              },
+              error: (listErr) => {
+                console.error('Error listando certificados:', listErr);
               }
             });
           }
         } else {
-          alert('Error al crear el certificado. Por favor, intente nuevamente.');
+          alert('Error al crear el certificado: ' + errorMessage);
         }
       }
     });
@@ -824,20 +862,20 @@ export class CertificadoComponent implements OnInit {
   editarCertificadoConPayload() {
     const payload: CertificadoDto = {
       id: this.certificadoId,
-      nombreSolicitante: this.nombreSolicitante || null,
-      especie: this.especie || null,
-      cultivar: this.cultivar || null,
-      categoria: this.categoria || null,
-      responsableMuestreo: this.responsableMuestreo || null,
-      fechaMuestreo: DateService.ajustarFecha(this.fechaMuestreo),
-      numeroLote: this.numeroLote || null,
+      nombreSolicitante: this.normalizarString(this.nombreSolicitante),
+      especie: this.normalizarString(this.especie),
+      cultivar: this.normalizarString(this.cultivar),
+      categoria: this.normalizarString(this.categoria),
+      responsableMuestreo: this.normalizarString(this.responsableMuestreo),
+      fechaMuestreo: this.fechaMuestreo ? DateService.ajustarFecha(this.fechaMuestreo) : null,
+      numeroLote: this.normalizarString(this.numeroLote),
       numeroEnvases: this.numeroEnvases ?? null,
-      fechaIngresoLaboratorio: DateService.ajustarFecha(this.fechaIngresoLaboratorio),
-      fechaFinalizacionAnalisis: DateService.ajustarFecha(this.fechaFinalizacionAnalisis),
-      numeroMuestra: this.numeroMuestra || null,
-      numeroCertificado: this.numeroCertificado || null,
+      fechaIngresoLaboratorio: this.fechaIngresoLaboratorio ? DateService.ajustarFecha(this.fechaIngresoLaboratorio) : null,
+      fechaFinalizacionAnalisis: this.fechaFinalizacionAnalisis ? DateService.ajustarFecha(this.fechaFinalizacionAnalisis) : null,
+      numeroMuestra: this.normalizarString(this.numeroMuestra),
+      numeroCertificado: this.normalizarString(this.numeroCertificado),
       tipoCertificado: this.tipoCertificado ?? null,
-      fechaEmision: DateService.ajustarFecha(this.fechaEmision),
+      fechaEmision: this.fechaEmision ? DateService.ajustarFecha(this.fechaEmision) : null,
       firmante: this.firmante,
       fechaFirma: null,
       reciboId: this.reciboId ?? null,
@@ -849,20 +887,20 @@ export class CertificadoComponent implements OnInit {
       purezaOtrasSemillas: this.purezaOtrasSemillas ?? null,
       purezaOtrosCultivos: this.purezaOtrosCultivos ?? null,
       purezaMalezas: this.purezaMalezas ?? null,
-      purezaMalezasToleradas: this.purezaMalezasToleradas || null,
-      purezaPeso1000Semillas: this.purezaPeso1000Semillas || null,
-      purezaHumedad: this.purezaHumedad || null,
-      purezaClaseMateriaInerte: this.purezaClaseMateriaInerte || null,
-      purezaOtrasSemillasDescripcion: this.purezaOtrasSemillasDescripcion || null,
+      purezaMalezasToleradas: this.normalizarString(this.purezaMalezasToleradas),
+      purezaPeso1000Semillas: this.normalizarString(this.purezaPeso1000Semillas),
+      purezaHumedad: this.normalizarString(this.purezaHumedad),
+      purezaClaseMateriaInerte: this.normalizarString(this.purezaClaseMateriaInerte),
+      purezaOtrasSemillasDescripcion: this.normalizarString(this.purezaOtrasSemillasDescripcion),
       // Resultados de análisis - DOSN
       dosnGramosAnalizados: this.dosnGramosAnalizados ?? null,
       dosnMalezasToleranciaCero: this.dosnMalezasToleranciaCero ?? null,
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
-      dosnBrassicaSpp: this.dosnBrassicaSpp || null,
-      otrasDeterminaciones: this.otrasDeterminaciones || null,
-      nombreFirmante: this.nombreFirmante || null,
-      funcionFirmante: this.funcionFirmante || null,
+      dosnBrassicaSpp: this.dosnBrassicaSpp != null && this.dosnBrassicaSpp !== undefined ? String(this.dosnBrassicaSpp) : null,
+      otrasDeterminaciones: this.normalizarString(this.otrasDeterminaciones),
+      nombreFirmante: this.normalizarString(this.nombreFirmante),
+      funcionFirmante: this.normalizarString(this.funcionFirmante),
       // Resultados de análisis - Germinación
       germinacionNumeroDias: this.germinacionNumeroDias ?? null,
       germinacionPlantulasNormales: this.germinacionPlantulasNormales ?? null,
@@ -870,9 +908,9 @@ export class CertificadoComponent implements OnInit {
       germinacionSemillasDuras: this.germinacionSemillasDuras ?? null,
       germinacionSemillasFrescas: this.germinacionSemillasFrescas ?? null,
       germinacionSemillasMuertas: this.germinacionSemillasMuertas ?? null,
-      germinacionSustrato: this.germinacionSustrato || null,
+      germinacionSustrato: this.normalizarString(this.germinacionSustrato),
       germinacionTemperatura: this.germinacionTemperatura ?? null,
-      germinacionPreTratamiento: this.germinacionPreTratamiento || null
+      germinacionPreTratamiento: this.normalizarString(this.germinacionPreTratamiento)
     };
 
     console.log('Payload editar certificado:', payload);
@@ -881,15 +919,13 @@ export class CertificadoComponent implements OnInit {
     this.certificadoService.editarCertificado(payload).subscribe({
       next: (mensaje: string) => {
         console.log('Certificado actualizado:', mensaje);
-        // Navegar según si hay loteId y reciboId
-        if (this.loteId != null && this.reciboId != null) {
-          this.router.navigate([`/${this.loteId}/${this.reciboId}/lote-analisis`]);
-        } else {
-          this.router.navigate(['/listado-lotes']);
-        }
+        // Mostrar popup de éxito
+        this.mostrarConfirmExito = true;
       },
       error: (err) => {
         console.error('Error actualizando certificado:', err);
+        const errorMessage = err.error?.message || err.error || err.message || 'Error desconocido';
+        alert('Error al actualizar el certificado: ' + errorMessage);
       }
     });
   }
@@ -904,7 +940,7 @@ export class CertificadoComponent implements OnInit {
   }
 
   /**
-   * Exporta el certificado a PDF
+   * Exporta el certificado a PDF como documento real (no screenshot)
    */
   exportarAPDF(): void {
     if (!this.certificadoId || this.certificadoId === 0) {
@@ -914,66 +950,544 @@ export class CertificadoComponent implements OnInit {
 
     this.isExportingPDF = true;
 
-    // Ocultar los botones justo antes de capturar el PDF
-    this.viewSeleccionarImagenFirma = false;
-
-    // Esperar a que el DOM se actualice antes de capturar
-    setTimeout(() => {
-      const certificadoElement = document.querySelector('.certificado-container') as HTMLElement;
-      if (!certificadoElement) {
-        alert('Error: No se pudo encontrar el contenido del certificado.');
-        this.isExportingPDF = false;
-        this.viewSeleccionarImagenFirma = true;
-        return;
-      }
-      const options = {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        width: certificadoElement.scrollWidth,
-        height: certificadoElement.scrollHeight
-      };
-      html2canvas(certificadoElement, options).then((canvas: HTMLCanvasElement) => {
-      const imgData = canvas.toDataURL('image/png');
-      
-      // Calcular dimensiones del PDF
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-
-      // Crear PDF
+    try {
       const pdf = new jsPDF('p', 'mm', 'a4');
-      let position = 0;
+      const pageWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const margin = 18; // Márgenes más profesionales
+      const contentWidth = pageWidth - (2 * margin);
+      let yPosition = margin;
+      
+      // Colores oficiales INASE
+      const colorAzul: [number, number, number] = [0, 102, 204];
+      const colorDoradoClaro: [number, number, number] = [212, 165, 116];
+      const colorDoradoOscuro: [number, number, number] = [184, 134, 11];
 
-      // Agregar primera página
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      // Función helper para formatear números con comas (formato uruguayo/español)
+      const formatearNumero = (valor: number | null | undefined): string => {
+        if (valor === null || valor === undefined) return 'N';
+        return valor.toString().replace('.', ',');
+      };
 
-      // Agregar páginas adicionales si es necesario
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      // Función helper para agregar texto con tipografía mejorada
+      const addText = (text: string, x: number, y: number, fontSize: number = 10, isBold: boolean = false, align: 'left' | 'center' | 'right' = 'left', maxWidth?: number, useSerif: boolean = false) => {
+        pdf.setFontSize(fontSize);
+        // Usar serif (times) para títulos importantes, helvetica para texto normal
+        if (useSerif) {
+          pdf.setFont('times', isBold ? 'bold' : 'normal');
+        } else {
+          pdf.setFont('helvetica', isBold ? 'bold' : 'normal');
+        }
+        const lines = maxWidth ? pdf.splitTextToSize(text, maxWidth) : [text];
+        pdf.text(lines, x, y, { align });
+        return lines.length * (fontSize * 0.4); // Mejor altura de línea
+      };
+
+      // Función helper para agregar texto subrayado (para nombres científicos)
+      const addTextSubrayado = (text: string, x: number, y: number, fontSize: number = 10, align: 'left' | 'center' | 'right' = 'left') => {
+        pdf.setFontSize(fontSize);
+        pdf.setFont('helvetica', 'normal');
+        const lines = pdf.splitTextToSize(text, contentWidth);
+        pdf.text(lines, x, y, { align });
+        // Agregar línea de subrayado
+        const textWidth = pdf.getTextWidth(text);
+        const lineY = y + 1;
+        pdf.setDrawColor(0, 0, 0);
+        pdf.setLineWidth(0.1);
+        if (align === 'center') {
+          pdf.line(x - textWidth / 2, lineY, x + textWidth / 2, lineY);
+        } else if (align === 'right') {
+          pdf.line(x - textWidth, lineY, x, lineY);
+        } else {
+          pdf.line(x, lineY, x + textWidth, lineY);
+        }
+        return lines.length * (fontSize * 0.4);
+      };
+
+      // Función helper para agregar nueva página si es necesario
+      const checkNewPage = (requiredHeight: number) => {
+        if (yPosition + requiredHeight > pageHeight - margin) {
+          pdf.addPage();
+          yPosition = margin;
+          return true;
+        }
+        return false;
+      };
+
+      // HEADER PROFESIONAL
+      // Línea azul superior (más gruesa)
+      pdf.setDrawColor(colorAzul[0], colorAzul[1], colorAzul[2]);
+      pdf.setLineWidth(1.0);
+      pdf.line(0, yPosition, pageWidth, yPosition);
+      yPosition += 4;
+      
+      // Logos con gradientes mejorados
+      // Logo izquierdo (más grande) con gradiente
+      const logoLeftX = 25;
+      const logoLeftY = yPosition + 10;
+      const logoLeftRadius = 9;
+      
+      // Crear gradiente con múltiples círculos
+      for (let i = 0; i < 5; i++) {
+        const alpha = 1 - (i * 0.15);
+        const r = colorDoradoClaro[0] + (colorDoradoOscuro[0] - colorDoradoClaro[0]) * (i / 4);
+        const g = colorDoradoClaro[1] + (colorDoradoOscuro[1] - colorDoradoClaro[1]) * (i / 4);
+        const b = colorDoradoClaro[2] + (colorDoradoOscuro[2] - colorDoradoClaro[2]) * (i / 4);
+        pdf.setFillColor(r, g, b);
+        pdf.circle(logoLeftX, logoLeftY, logoLeftRadius - (i * 0.5), 'F');
+      }
+      
+      // Texto "INASE" en el logo izquierdo
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(7.5);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('INASE', logoLeftX, logoLeftY + 2.5, { align: 'center' });
+      
+      // Logo derecho (más pequeño) con gradiente
+      const logoRightX = pageWidth - 25;
+      const logoRightY = yPosition + 10;
+      const logoRightRadius = 7;
+      
+      // Crear gradiente con múltiples círculos
+      for (let i = 0; i < 5; i++) {
+        const alpha = 1 - (i * 0.15);
+        const r = colorDoradoClaro[0] + (colorDoradoOscuro[0] - colorDoradoClaro[0]) * (i / 4);
+        const g = colorDoradoClaro[1] + (colorDoradoOscuro[1] - colorDoradoClaro[1]) * (i / 4);
+        const b = colorDoradoClaro[2] + (colorDoradoOscuro[2] - colorDoradoClaro[2]) * (i / 4);
+        pdf.setFillColor(r, g, b);
+        pdf.circle(logoRightX, logoRightY, logoRightRadius - (i * 0.4), 'F');
+      }
+      
+      // Texto "INASE" y "URUGUAY" en el logo derecho
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(5.5);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('INASE', logoRightX, logoRightY - 1.8, { align: 'center' });
+      pdf.setFontSize(4.5);
+      pdf.text('URUGUAY', logoRightX, logoRightY + 2.2, { align: 'center' });
+      
+      // Línea azul debajo del logo derecho (subrayado)
+      pdf.setDrawColor(colorAzul[0], colorAzul[1], colorAzul[2]);
+      pdf.setLineWidth(0.8);
+      const lineStartX = logoRightX - 9;
+      const lineEndX = logoRightX + 9;
+      const lineY = logoRightY + logoRightRadius + 2.5;
+      pdf.line(lineStartX, lineY, lineEndX, lineY);
+      
+      // Restaurar color de texto a negro
+      pdf.setTextColor(0, 0, 0);
+      
+      // Texto centralizado con tipografía serif para títulos
+      addText('INSTITUTO NACIONAL DE SEMILLAS', pageWidth / 2, yPosition + 8, 12, true, 'center', undefined, true);
+      addText('CERTIFICADO DE ANÁLISIS NACIONAL', pageWidth / 2, yPosition + 15, 14, true, 'center', undefined, true);
+      addText('laboratorio@inase.uy | www.inase.uy', pageWidth / 2, yPosition + 21, 8.5, false, 'center');
+      
+      // Línea negra inferior del header (más gruesa)
+      yPosition += 32;
+      pdf.setDrawColor(0, 0, 0);
+      pdf.setLineWidth(0.8);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 12;
+
+      // INFORMACIÓN DEL SOLICITANTE
+      checkNewPage(25);
+      addText('INFORMACIÓN DEL SOLICITANTE', margin, yPosition, 12, true, 'left', undefined, true);
+      yPosition += 10;
+      
+      const solicitanteData = [
+        ['Nombre:', this.nombreSolicitante || ''],
+        ['Especie:', this.especie || ''],
+        ['Cultivar:', this.cultivar || ''],
+        ['Categoría:', this.categoria || '']
+      ];
+      
+      solicitanteData.forEach(([label, value]) => {
+        checkNewPage(8);
+        addText(label, margin, yPosition, 9.5, true);
+        // Si es especie, usar subrayado para nombre científico
+        if (label === 'Especie:' && value) {
+          addTextSubrayado(value, margin + 50, yPosition, 9.5);
+        } else {
+          addText(value, margin + 50, yPosition, 9.5, false);
+        }
+        yPosition += 7;
+      });
+      
+      yPosition += 6;
+      pdf.setDrawColor(colorAzul[0], colorAzul[1], colorAzul[2]);
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 12;
+
+      // INFORMACIÓN GENERAL
+      checkNewPage(25);
+      addText('INFORMACIÓN GENERAL', margin, yPosition, 12, true, 'left', undefined, true);
+      yPosition += 10;
+      
+      const generalData = [
+        ['Responsable del muestreo:', this.responsableMuestreo || ''],
+        ['Número de lote:', this.getNumeroLote() || ''],
+        ['Categoría:', this.categoria || ''],
+        ['Fecha muestreo:', this.fechaMuestreo ? this.formatearFecha(this.fechaMuestreo) : ''],
+        ['Peso (kg):', this.pesoKg?.toString() || ''],
+        ['N° de envases:', this.numeroEnvases?.toString() || ''],
+        ['Ingreso Laboratorio:', this.fechaIngresoLaboratorio ? this.formatearFecha(this.fechaIngresoLaboratorio) : ''],
+        ['Finalización análisis:', this.fechaFinalizacionAnalisis ? this.formatearFecha(this.fechaFinalizacionAnalisis) : ''],
+        ['N° de muestra:', this.numeroMuestra || ''],
+        ['Certificado:', this.tipoCertificado || '']
+      ];
+      
+      generalData.forEach(([label, value]) => {
+        checkNewPage(8);
+        const labelWidth = 65;
+        addText(label, margin, yPosition, 9.5, true, 'left', labelWidth);
+        addText(value, margin + labelWidth + 5, yPosition, 9.5, false);
+        yPosition += 7;
+      });
+      
+      yPosition += 6;
+      pdf.setDrawColor(colorAzul[0], colorAzul[1], colorAzul[2]);
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 12;
+
+      // RESULTADOS DE ANÁLISIS
+      checkNewPage(25);
+      addText('RESULTADOS DE ANÁLISIS', margin, yPosition, 12, true, 'left', undefined, true);
+      yPosition += 10;
+      
+      // Nombre científico con subrayado
+      if (this.especie) {
+        addText('Especie (nombre científico): ', margin, yPosition, 9.5, false);
+        const textWidth = pdf.getTextWidth('Especie (nombre científico): ');
+        addTextSubrayado(this.especie, margin + textWidth, yPosition, 9.5);
+      } else {
+        addText(`Especie (nombre científico): ${this.especie || ''}`, margin, yPosition, 9.5, false);
+      }
+      yPosition += 10;
+
+      // Tabla de Pureza
+      if (this.tienePureza) {
+        checkNewPage(35);
+        addText('Pureza (% en peso)', margin, yPosition, 11, true, 'left', undefined, true);
+        yPosition += 8;
+        
+        const purezaHeaders = [
+          'Semilla pura',
+          'Materia inerte',
+          'Otras semillas',
+          'Otros cultivos',
+          'Malezas',
+          'Malezas toleradas',
+          'Peso 1000 semillas (g)',
+          'Humedad (%)'
+        ];
+        
+        const purezaData = [[
+          formatearNumero(this.purezaSemillaPura),
+          formatearNumero(this.purezaMateriaInerte),
+          formatearNumero(this.purezaOtrasSemillas),
+          formatearNumero(this.purezaOtrosCultivos),
+          formatearNumero(this.purezaMalezas),
+          this.purezaMalezasToleradas || 'N',
+          this.purezaPeso1000Semillas || 'N',
+          this.purezaHumedad || 'N'
+        ]];
+      
+        // Usar autoTable para las tablas con diseño profesional mejorado
+        autoTable(pdf, {
+          head: [purezaHeaders],
+          body: purezaData,
+          startY: yPosition,
+          margin: { left: margin, right: margin },
+          styles: { 
+            fontSize: 8.5, 
+            cellPadding: 4,
+            halign: 'center',
+            valign: 'middle',
+            lineColor: [0, 0, 0],
+            lineWidth: 0.15,
+            font: 'helvetica',
+            fontStyle: 'normal'
+          },
+          headStyles: { 
+            fillColor: colorAzul, 
+            textColor: [255, 255, 255], 
+            fontStyle: 'bold',
+            halign: 'center',
+            valign: 'middle',
+            lineColor: [255, 255, 255],
+            lineWidth: 0.1,
+            fontSize: 8.5
+          },
+          bodyStyles: {
+            halign: 'center',
+            valign: 'middle',
+            lineColor: [0, 0, 0],
+            lineWidth: 0.1
+          },
+          columnStyles: {
+            0: { cellWidth: 22 },
+            1: { cellWidth: 22 },
+            2: { cellWidth: 22 },
+            3: { cellWidth: 22 },
+            4: { cellWidth: 18 },
+            5: { cellWidth: 22 },
+            6: { cellWidth: 28 },
+            7: { cellWidth: 18 }
+          },
+          theme: 'grid',
+          tableWidth: 'auto',
+          alternateRowStyles: {
+            fillColor: [250, 250, 250]
+          }
+        });
+        
+        yPosition = (pdf as any).lastAutoTable.finalY + 8;
+        
+        if (this.purezaClaseMateriaInerte && this.purezaClaseMateriaInerte.trim() !== '') {
+          checkNewPage(8);
+          addText(`Clase de materia inerte: ${this.purezaClaseMateriaInerte}`, margin, yPosition, 9.5, false);
+          yPosition += 7;
+        }
+        
+        if (this.purezaOtrasSemillasDescripcion && this.purezaOtrasSemillasDescripcion.trim() !== '') {
+          checkNewPage(8);
+          addText(`Otras semillas: ${this.purezaOtrasSemillasDescripcion}`, margin, yPosition, 9.5, false);
+          yPosition += 7;
+        } else {
+          checkNewPage(8);
+          addText('Otras semillas: No contiene.', margin, yPosition, 9.5, false);
+          yPosition += 7;
+        }
       }
 
-      // Generar nombre del archivo
-      const fileName = `Certificado_${this.numeroCertificado || 'N' + this.certificadoId}_${new Date().getTime()}.pdf`;
-      
-      // Descargar el PDF
-      pdf.save(fileName);
+      // DOSN
+      if (this.tieneDOSN) {
+        checkNewPage(28);
+        addText(`Determinación de otras semillas en número en ${this.dosnGramosAnalizados || ''} g (análisis limitado)`, margin, yPosition, 10, true, 'left', undefined, true);
+        yPosition += 10;
+        
+        const dosnData = [
+          ['N° de semillas de malezas con tolerancia cero:', this.dosnMalezasToleranciaCero?.toString() || '0'],
+          ['N° de semillas de malezas con tolerancia:', this.dosnMalezasTolerancia?.toString() || '0'],
+          ['N° de semillas de otros cultivos:', this.dosnOtrosCultivos?.toString() || '0']
+        ];
+        
+        dosnData.forEach(([label, value]) => {
+          checkNewPage(8);
+          addText(label, margin, yPosition, 9.5, true, 'left', 85);
+          addText(value, margin + 90, yPosition, 9.5, false);
+          yPosition += 7;
+        });
 
-      this.viewSeleccionarImagenFirma = true;
+        // Determinación de Brassica spp. (separada)
+        checkNewPage(8);
+        let brassicaText = 'No contiene.';
+        if (this.brassicaContiene) {
+          brassicaText = 'Contiene.';
+        } else if (this.dosnBrassicaSpp != null) {
+          brassicaText = this.dosnBrassicaSpp.toString();
+        }
+        addText(`Determinación de Brassica spp. en ${this.dosnGramosAnalizados || ''} g: ${brassicaText}`, margin, yPosition, 9.5, false);
+        yPosition += 10;
+      }
+
+      // Tabla de Germinación
+      if (this.tieneGerminacion) {
+        checkNewPage(35);
+        addText('Germinación (% en número)', margin, yPosition, 11, true, 'left', undefined, true);
+        yPosition += 8;
+        
+        const germinacionHeaders = [
+          'N° de días',
+          'Plántulas normales',
+          'Plántulas anormales',
+          'Semillas duras',
+          'Semillas frescas',
+          'Semillas muertas',
+          'Sustrato',
+          'T (°C)',
+          'Pre-tratamiento'
+        ];
+        
+        const germinacionData = [[
+          this.germinacionNumeroDias?.toString() || 'N',
+          formatearNumero(this.germinacionPlantulasNormales),
+          formatearNumero(this.germinacionPlantulasAnormales),
+          formatearNumero(this.germinacionSemillasDuras),
+          formatearNumero(this.germinacionSemillasFrescas),
+          formatearNumero(this.germinacionSemillasMuertas),
+          this.germinacionSustrato || 'N',
+          this.germinacionTemperatura?.toString() || 'N',
+          this.germinacionPreTratamiento || 'N'
+        ]];
+        
+        autoTable(pdf, {
+          head: [germinacionHeaders],
+          body: germinacionData,
+          startY: yPosition,
+          margin: { left: margin, right: margin },
+          styles: { 
+            fontSize: 8.5, 
+            cellPadding: 4,
+            halign: 'center',
+            valign: 'middle',
+            lineColor: [0, 0, 0],
+            lineWidth: 0.15,
+            font: 'helvetica',
+            fontStyle: 'normal'
+          },
+          headStyles: { 
+            fillColor: colorAzul, 
+            textColor: [255, 255, 255], 
+            fontStyle: 'bold',
+            halign: 'center',
+            valign: 'middle',
+            lineColor: [255, 255, 255],
+            lineWidth: 0.1,
+            fontSize: 8.5
+          },
+          bodyStyles: {
+            halign: 'center',
+            valign: 'middle',
+            lineColor: [0, 0, 0],
+            lineWidth: 0.1
+          },
+          theme: 'grid',
+          tableWidth: 'auto',
+          alternateRowStyles: {
+            fillColor: [250, 250, 250]
+          }
+        });
+        
+        yPosition = (pdf as any).lastAutoTable.finalY + 8;
+      }
+
+      // Otras determinaciones
+      if (this.otrasDeterminaciones && this.otrasDeterminaciones.trim() !== '') {
+        checkNewPage(8);
+        addText(`Otras determinaciones: ${this.otrasDeterminaciones}`, margin, yPosition, 9.5, false);
+        yPosition += 10;
+      } else {
+        checkNewPage(8);
+        addText('Otras determinaciones: -', margin, yPosition, 9.5, false);
+        yPosition += 10;
+      }
+
+      // FOOTER PROFESIONAL
+      checkNewPage(35);
+      pdf.setDrawColor(colorAzul[0], colorAzul[1], colorAzul[2]);
+      pdf.setLineWidth(0.8);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 12;
+      
+      // Fecha de emisión con mejor formato
+      const fechaEmisionTexto = this.fechaEmision ? this.formatearFecha(this.fechaEmision) : '';
+      if (fechaEmisionTexto) {
+        addText(fechaEmisionTexto, margin, yPosition, 11, true);
+        addText('Fecha de emisión', margin, yPosition + 7, 9.5, false);
+      }
+      
+      // Texto centralizado con tipografía serif
+      addText('ESTE CERTIFICADO AMPARA A UN LOTE DE SEMILLAS', pageWidth / 2, yPosition + 18, 11, true, 'center', undefined, true);
+      
+      addText('LOS RESULTADOS remitidos refieren a la muestra recibida por el laboratorio.', pageWidth / 2, yPosition + 26, 9.5, true, 'center');
+      addText('Este informe no debe ser reproducido parcialmente sin la autorización del laboratorio.', pageWidth / 2, yPosition + 33, 9.5, true, 'center');
+      
+      // Función para guardar PDF
+      const guardarPDF = () => {
+      const fileName = `Certificado_${this.numeroCertificado || 'N' + this.certificadoId}_${new Date().getTime()}.pdf`;
+        pdf.save(fileName);
       this.isExportingPDF = false;
-    }).catch((error: any) => {
+      };
+      
+      // Función para agregar numeración de páginas
+      const agregarNumeracionPaginas = () => {
+        const totalPages = pdf.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+          pdf.setPage(i);
+          pdf.setFontSize(8);
+          pdf.setFont('helvetica', 'normal');
+          pdf.setTextColor(100, 100, 100);
+          pdf.text(
+            `${i}`,
+            pageWidth / 2,
+            pageHeight - 8,
+            { align: 'center' }
+          );
+          pdf.setTextColor(0, 0, 0);
+        }
+      };
+      
+      // Firma digital (si existe)
+      if (this.firmantePreviewUrl) {
+        yPosition += 45;
+        checkNewPage(35);
+        
+        // Agregar imagen de firma
+        const img = new Image();
+        const firmaUrl = this.firmantePreviewUrl;
+        img.src = firmaUrl;
+        img.onload = () => {
+          const imgWidth = 55;
+          const imgHeight = (img.height * imgWidth) / img.width;
+          const firmaX = pageWidth - margin - imgWidth;
+          const firmaY = yPosition;
+          
+          pdf.addImage(firmaUrl, 'PNG', firmaX, firmaY, imgWidth, imgHeight);
+          
+          // Calcular posición final de la firma (imagen + nombre + función)
+          let firmaFinalY = firmaY + imgHeight;
+          
+          if (this.nombreFirmante) {
+            addText(this.nombreFirmante, pageWidth - margin - imgWidth / 2, firmaY + imgHeight + 6, 10, true, 'center');
+            firmaFinalY += 7;
+          }
+          if (this.funcionFirmante) {
+            addText(this.funcionFirmante, pageWidth - margin - imgWidth / 2, firmaY + imgHeight + 13, 9, false, 'center');
+            firmaFinalY += 7;
+          }
+          
+          // Agregar información de firma digital si está disponible
+          if (this.fechaEmision) {
+            const fechaFirma = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            addText(`Firmado digitalmente el ${fechaFirma}`, pageWidth - margin - imgWidth / 2, firmaFinalY + 3, 7, false, 'center');
+            firmaFinalY += 5;
+          }
+          
+          // Agregar leyenda justo debajo de la firma
+          yPosition = firmaFinalY + 12;
+          checkNewPage(12);
+          addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition, 8.5, false, 'center');
+          
+          // Agregar numeración de páginas
+          agregarNumeracionPaginas();
+          
+          // Guardar PDF
+          guardarPDF();
+        };
+        img.onerror = () => {
+          // Si falla la imagen, agregar leyenda y guardar sin ella
+          yPosition += 25;
+          checkNewPage(12);
+          addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition, 8.5, false, 'center');
+          agregarNumeracionPaginas();
+          guardarPDF();
+        };
+      } else {
+        // Sin firma, agregar leyenda al final y guardar
+        yPosition += 25;
+        checkNewPage(12);
+        addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition, 8.5, false, 'center');
+        agregarNumeracionPaginas();
+        guardarPDF();
+      }
+    } catch (error) {
       console.error('Error al generar PDF:', error);
       alert('Error al generar el PDF. Por favor, intente nuevamente.');
       this.isExportingPDF = false;
-      this.viewSeleccionarImagenFirma = true;
-    });
-  }, 0);
+    }
   }
 
   onCancel() {
@@ -983,6 +1497,21 @@ export class CertificadoComponent implements OnInit {
     } else {
       this.router.navigate(['/listado-lotes']);
     }
+  }
+
+  onConfirmExito() {
+    // Cerrar el popup y redirigir
+    this.mostrarConfirmExito = false;
+    if (this.loteId != null && this.reciboId != null) {
+      this.router.navigate([`/${this.loteId}/${this.reciboId}/lote-analisis`]);
+    } else {
+      this.router.navigate(['/listado-lotes']);
+    }
+  }
+
+  onCancelExito() {
+    // Cerrar el popup sin redirigir (aunque normalmente no debería cancelarse)
+    this.mostrarConfirmExito = false;
   }
 }
 

@@ -4,7 +4,7 @@ param(
 )
 
 Write-Host "==> INIA Project Frontend PDF Setup" -ForegroundColor Cyan
-Write-Host "Instalando dependencias para exportar certificados a PDF: jspdf, html2canvas" -ForegroundColor Gray
+Write-Host "Instalando dependencias para exportar certificados a PDF: jspdf, html2canvas, jspdf-autotable" -ForegroundColor Gray
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -109,6 +109,14 @@ if (Test-Path "node_modules/html2canvas") {
     $dependenciasFaltantes += "html2canvas"
 }
 
+# Verificar jspdf-autotable
+if (Test-Path "node_modules/jspdf-autotable") {
+    Write-Host "  [OK] jspdf-autotable ya esta instalado" -ForegroundColor Green
+} else {
+    Write-Host "  [X] jspdf-autotable no esta instalado" -ForegroundColor Yellow
+    $dependenciasFaltantes += "jspdf-autotable"
+}
+
 # Verificar @types/html2canvas
 if (Test-Path "node_modules/@types/html2canvas") {
     Write-Host "  [OK] @types/html2canvas ya esta instalado" -ForegroundColor Green
@@ -155,6 +163,19 @@ try {
     warnings.push(`html2canvas: ${e.message}`);
 }
 
+// Verificar jspdf-autotable
+try {
+    const autotablePath = path.join(__dirname, 'node_modules', 'jspdf-autotable');
+    if (fs.existsSync(autotablePath)) {
+        const pkg = JSON.parse(fs.readFileSync(path.join(autotablePath, 'package.json'), 'utf8'));
+        console.log(`OK jspdf-autotable - versión ${pkg.version}`);
+    } else {
+        errors.push('jspdf-autotable no encontrado en node_modules');
+    }
+} catch (e) {
+    warnings.push(`jspdf-autotable: ${e.message}`);
+}
+
 // Verificar @types/html2canvas
 try {
     const typesPath = path.join(__dirname, 'node_modules', '@types', 'html2canvas');
@@ -183,11 +204,17 @@ if (warnings.length > 0) {
     try {
         $testScript | Out-File -FilePath $testScriptPath -Encoding UTF8
         $output = & node $testScriptPath 2>&1
-        Write-Host $output
+        $output | ForEach-Object { 
+            if ($_ -is [System.Management.Automation.ErrorRecord]) {
+                Write-Host $_.ToString() -ForegroundColor Yellow
+            } else {
+                Write-Host $_
+            }
+        }
         
         if ($LASTEXITCODE -ne 0) {
             Write-Warning "Algunas dependencias tienen problemas, pero se intentara reinstalar."
-            $dependenciasFaltantes = @("jspdf", "html2canvas", "@types/html2canvas")
+            $dependenciasFaltantes = @("jspdf", "html2canvas", "jspdf-autotable", "@types/html2canvas")
         } else {
             Write-Host "`nTodas las dependencias estan correctamente instaladas y funcionando." -ForegroundColor Green
             if (Test-Path $testScriptPath) {
@@ -199,7 +226,14 @@ if (warnings.length > 0) {
             exit 0
         }
     } catch {
-        Write-Warning "No se pudo verificar las importaciones: $($_.Exception.Message)"
+        $errorMsg = if ($_.Exception.Message) { 
+            $_.Exception.Message 
+        } elseif ($_.ToString()) { 
+            $_.ToString() 
+        } else { 
+            "Error desconocido" 
+        }
+        Write-Warning "No se pudo verificar las importaciones: $errorMsg"
     } finally {
         if (Test-Path $testScriptPath) {
             Remove-Item $testScriptPath -ErrorAction SilentlyContinue
@@ -211,45 +245,160 @@ if (warnings.length > 0) {
 if ($dependenciasFaltantes.Count -gt 0) {
     Write-Host "`nInstalando dependencias faltantes..." -ForegroundColor Cyan
     
-    # Verificar si existe package-lock.json para usar npm ci
-    $useCi = Test-Path "package-lock.json"
+    # Leer package.json para verificar qué dependencias están definidas
+    $packageJsonPath = Join-Path (Get-Location) "package.json"
+    $packageJson = $null
+    if (Test-Path $packageJsonPath) {
+        try {
+            $packageJsonContent = Get-Content $packageJsonPath -Raw | ConvertFrom-Json
+            $packageJson = $packageJsonContent
+        } catch {
+            Write-Warning "No se pudo leer package.json, se instalaran todas las dependencias"
+        }
+    }
+    
+    # Separar dependencias que están en package.json de las que no
+    $dependenciasEnPackage = @()
+    $dependenciasFaltantesEnPackage = @()
+    
+    foreach ($dep in $dependenciasFaltantes) {
+        $enPackage = $false
+        if ($packageJson) {
+            # Verificar en dependencies
+            if ($packageJson.dependencies.PSObject.Properties.Name -contains $dep) {
+                $enPackage = $true
+            }
+            # Verificar en devDependencies
+            if (-not $enPackage -and $packageJson.devDependencies -and $packageJson.devDependencies.PSObject.Properties.Name -contains $dep) {
+                $enPackage = $true
+            }
+        }
+        
+        if ($enPackage) {
+            $dependenciasEnPackage += $dep
+        } else {
+            $dependenciasFaltantesEnPackage += $dep
+        }
+    }
     
     $originalErrorAction = $ErrorActionPreference
-    try {
-        Write-Host "Instalando todas las dependencias..." -ForegroundColor Cyan
-        $ErrorActionPreference = 'Continue'
-        
-        if ($useCi) {
-            Write-Host "Usando npm ci (lockfile encontrado)..." -ForegroundColor Gray
-            & npm ci 2>&1 | ForEach-Object { Write-Host $_ }
-            $exitCode = $LASTEXITCODE
-            if ($exitCode -ne 0) {
-                Write-Warning "npm ci fallo, intentando con npm install..."
-                & npm install 2>&1 | ForEach-Object { Write-Host $_ }
+    
+    # Cambiar ErrorActionPreference para no detener el script en errores de npm
+    $ErrorActionPreference = 'Continue'
+    
+    # No usar try-catch, solo ejecutar y continuar
+        # Si hay dependencias en package.json, instalar todas las dependencias primero
+        if ($dependenciasEnPackage.Count -gt 0) {
+            Write-Host "Instalando dependencias del package.json..." -ForegroundColor Cyan
+            
+            # Verificar si existe package-lock.json para usar npm ci
+            $useCi = Test-Path "package-lock.json"
+            
+            $npmInstallSuccess = $false
+            
+            if ($useCi) {
+                Write-Host "Usando npm ci (lockfile encontrado)..." -ForegroundColor Gray
+                $null = & npm ci 2>&1 | ForEach-Object { 
+                    if ($_ -is [System.Management.Automation.ErrorRecord]) {
+                        Write-Host $_.ToString() -ForegroundColor Yellow
+                    } else {
+                        Write-Host $_
+                    }
+                }
                 $exitCode = $LASTEXITCODE
+                if ($exitCode -eq 0) {
+                    $npmInstallSuccess = $true
+                } else {
+                    Write-Warning "npm ci fallo con código $exitCode, intentando con npm install..."
+                }
+                
+                if (-not $npmInstallSuccess) {
+                    Write-Host "Usando npm install como alternativa..." -ForegroundColor Gray
+                    $null = & npm install 2>&1 | ForEach-Object { 
+                        if ($_ -is [System.Management.Automation.ErrorRecord]) {
+                            Write-Host $_.ToString() -ForegroundColor Yellow
+                        } else {
+                            Write-Host $_
+                        }
+                    }
+                    $exitCode = $LASTEXITCODE
+                    if ($exitCode -eq 0) {
+                        $npmInstallSuccess = $true
+                    }
+                }
+            } else {
+                Write-Host "Usando npm install..." -ForegroundColor Gray
+                $null = & npm install 2>&1 | ForEach-Object { 
+                    if ($_ -is [System.Management.Automation.ErrorRecord]) {
+                        Write-Host $_.ToString() -ForegroundColor Yellow
+                    } else {
+                        Write-Host $_
+                    }
+                }
+                $exitCode = $LASTEXITCODE
+                if ($exitCode -eq 0) {
+                    $npmInstallSuccess = $true
+                }
             }
-        } else {
-            Write-Host "Usando npm install..." -ForegroundColor Gray
-            & npm install 2>&1 | ForEach-Object { Write-Host $_ }
-            $exitCode = $LASTEXITCODE
+            
+            if (-not $npmInstallSuccess) {
+                Write-Warning "npm install fallo, pero continuando con instalacion individual de dependencias faltantes..."
+            }
         }
         
-        if ($exitCode -ne 0) {
-            throw "npm install falló con código $exitCode"
+        # Instalar dependencias que no están en package.json
+        if ($dependenciasFaltantesEnPackage.Count -gt 0) {
+            Write-Host "`nInstalando dependencias faltantes que no estan en package.json..." -ForegroundColor Cyan
+            foreach ($dep in $dependenciasFaltantesEnPackage) {
+                Write-Host "  Instalando $dep..." -ForegroundColor Gray
+                # Ejecutar npm install directamente sin pipe complejo
+                & npm install $dep --save
+                $exitCode = $LASTEXITCODE
+                if ($exitCode -ne 0) {
+                    Write-Warning "  Fallo al instalar $dep (código: $exitCode)"
+                } else {
+                    Write-Host "  [OK] $dep instalado" -ForegroundColor Green
+                }
+            }
         }
         
-        Write-Host "`n[OK] Dependencias instaladas correctamente" -ForegroundColor Green
+        Write-Host "`n[OK] Proceso de instalacion completado" -ForegroundColor Green
         
-    } catch {
-        Write-Error "Error al instalar dependencias: $($_.Exception.Message)"
-        Write-Host "`nIntenta ejecutar manualmente:" -ForegroundColor Yellow
-        Write-Host "  cd frontend" -ForegroundColor White
-        Write-Host "  npm install" -ForegroundColor White
-        Pop-Location
-        exit 1
-    } finally {
-        $ErrorActionPreference = $originalErrorAction
-    }
+        # Verificar nuevamente si aún faltan dependencias después de la instalación
+        Write-Host "`nVerificando dependencias instaladas..." -ForegroundColor Cyan
+        $dependenciasAunFaltantes = @()
+        foreach ($dep in $dependenciasFaltantes) {
+            $depPath = if ($dep -eq "@types/html2canvas") {
+                "node_modules/@types/html2canvas"
+            } else {
+                "node_modules/$dep"
+            }
+            if (-not (Test-Path $depPath)) {
+                $dependenciasAunFaltantes += $dep
+                Write-Host "  [X] $dep aun no esta instalado" -ForegroundColor Yellow
+            } else {
+                Write-Host "  [OK] $dep instalado" -ForegroundColor Green
+            }
+        }
+        
+        # Si aún faltan dependencias, instalarlas explícitamente
+        if ($dependenciasAunFaltantes.Count -gt 0) {
+            Write-Host "`nInstalando dependencias faltantes explicitamente..." -ForegroundColor Cyan
+            foreach ($dep in $dependenciasAunFaltantes) {
+                Write-Host "  Instalando $dep..." -ForegroundColor Gray
+                # Ejecutar npm install directamente sin pipe complejo
+                & npm install $dep --save
+                $exitCode = $LASTEXITCODE
+                if ($exitCode -ne 0) {
+                    Write-Warning "  Fallo al instalar $dep (código: $exitCode)"
+                } else {
+                    Write-Host "  [OK] $dep instalado correctamente" -ForegroundColor Green
+                }
+            }
+        }
+    
+    # Restaurar ErrorActionPreference
+    $ErrorActionPreference = $originalErrorAction
     
     # Verificar nuevamente después de la instalación
     Write-Host "`nVerificando instalacion..." -ForegroundColor Cyan
@@ -269,6 +418,13 @@ if ($dependenciasFaltantes.Count -gt 0) {
         Write-Host "  html2canvas instalado" -ForegroundColor Green
     }
     
+    if (-not (Test-Path "node_modules/jspdf-autotable")) {
+        Write-Error "jspdf-autotable no se instalo correctamente"
+        $todasInstaladas = $false
+    } else {
+        Write-Host "  jspdf-autotable instalado" -ForegroundColor Green
+    }
+    
     if (-not (Test-Path "node_modules/@types/html2canvas")) {
         Write-Warning "  @types/html2canvas no se instalo (opcional para desarrollo)"
     } else {
@@ -286,6 +442,7 @@ Write-Host "`n=== SETUP COMPLETADO ===" -ForegroundColor Green
 Write-Host "Las bibliotecas PDF estan listas para usar:" -ForegroundColor White
 Write-Host "  - jspdf: para generar archivos PDF" -ForegroundColor Gray
 Write-Host "  - html2canvas: para capturar el HTML como imagen" -ForegroundColor Gray
+Write-Host "  - jspdf-autotable: para generar tablas en PDF" -ForegroundColor Gray
 Write-Host "  - @types/html2canvas: tipos TypeScript (desarrollo)" -ForegroundColor Gray
 Write-Host ""
 Write-Host "Para usar en Docker, las dependencias se instalaran automaticamente" -ForegroundColor Yellow

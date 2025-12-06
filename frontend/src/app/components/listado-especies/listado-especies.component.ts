@@ -10,11 +10,10 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { EspecieDto } from '../../../models/Especie.dto';
 import { EspecieService } from '../../../services/EspecieService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-listado-especies.component',
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule],
   templateUrl: './listado-especies.component.html',
   styleUrls: ['./listado-especies.component.scss']
 })

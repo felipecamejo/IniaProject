@@ -785,7 +785,7 @@ export class TetrazolioComponent implements OnInit {
       daniosFracturas: 3,
       daniosOtros: 2,
       daniosDuras: 5,
-      viabilidadVigorTz: 'ALTO',
+      viabilidadVigorTz: 'VIGOR_ALTO',
       porcentajeFinal: 85,
       daniosPorPorcentajes: 15,
       activo: true,
@@ -1227,6 +1227,26 @@ export class TetrazolioComponent implements OnInit {
 
     // Agregar reporte al DTO
     tetrazolioData.reporte = this.reporte;
+
+    // Calcular y asignar viabilidadVigorTz basado en el porcentaje de viabilidad
+    const porcentajeViabilidad = this.getViabilidadReportePct();
+    if (!isNaN(porcentajeViabilidad) && porcentajeViabilidad > 0) {
+      if (porcentajeViabilidad >= 75) {
+        (tetrazolioData as any).viabilidadVigorTz = 'VIGOR_ALTO';
+      } else if (porcentajeViabilidad >= 60) {
+        (tetrazolioData as any).viabilidadVigorTz = 'VIGOR_MEDIO';
+      } else if (porcentajeViabilidad >= 50) {
+        (tetrazolioData as any).viabilidadVigorTz = 'VIGOR_BAJO';
+      } else {
+        (tetrazolioData as any).viabilidadVigorTz = 'LIMITE_CRITICO'; // < 50%
+      }
+      
+      // Calcular porcentajeFinal (redondeado)
+      (tetrazolioData as any).porcentajeFinal = Math.round(porcentajeViabilidad);
+    } else {
+      (tetrazolioData as any).viabilidadVigorTz = null;
+      (tetrazolioData as any).porcentajeFinal = null;
+    }
 
     console.log('=== PAYLOAD COMPLETO DE TETRAZOLIO ===');
     console.log('Datos completos a enviar:', JSON.stringify(tetrazolioData, null, 2));

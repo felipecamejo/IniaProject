@@ -1,5 +1,5 @@
 export type ViabilidadPorTz = 'ALTA' | 'MEDIA' | 'BAJA';
-export type ViabilidadVigorTZ = 'ALTO' | 'MEDIO' | 'BAJO';
+export type ViabilidadVigorTZ = 'VIGOR_ALTO' | 'VIGOR_MEDIO' | 'VIGOR_BAJO' | 'LIMITE_CRITICO';
 
 export interface PreTratamiento {
   id: number;

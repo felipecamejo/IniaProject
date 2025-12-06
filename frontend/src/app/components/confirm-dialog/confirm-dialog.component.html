@@ -1,7 +1,7 @@
 <div class="modal-overlay" *ngIf="visible" (click)="onCancel()">
   <div class="modal-dialog" (click)="$event.stopPropagation()">
-    <!-- Header -->
-    <div class="modal-header">
+    <!-- Header - Solo mostrar si no es success -->
+    <div class="modal-header" *ngIf="buttonType !== 'success'">
       <h3 class="modal-title">{{ title }}</h3>
       <button class="close-button" (click)="onCancel()" [disabled]="loading">
         <i class="pi pi-times"></i>
@@ -9,28 +9,29 @@
     </div>
 
     <!-- Content -->
-    <div class="modal-content">
-      <p class="modal-message">{{ message }}</p>
-      <div *ngIf="itemName || itemId" class="item-details">
+    <div class="modal-content" [ngClass]="{ 'content-no-header': buttonType === 'success' }">
+      <p class="modal-message" [ngClass]="{ 'centered': centerMessage, 'large-text': centerMessage }">{{ message }}</p>
+      <div *ngIf="(itemName || itemId) && !hideItemDetails" class="item-details">
         <p *ngIf="itemName" class="item-name"><strong>Elemento:</strong> {{ itemName }}</p>
         <p *ngIf="itemId" class="item-id"><strong>ID:</strong> #{{ itemId }}</p>
       </div>
     </div>
 
     <!-- Footer -->
-    <div class="modal-footer">
+    <div class="modal-footer" [ngClass]="{ 'footer-centered': buttonType === 'success' }">
       <button 
+        *ngIf="buttonType !== 'success'"
         class="btn btn-cancel" 
         (click)="onCancel()"
         [disabled]="loading">
         {{ cancelText }}
       </button>
       <button 
-        class="btn btn-delete" 
+        [class]="'btn ' + (buttonType === 'success' ? 'btn-success' : 'btn-delete')" 
         (click)="onConfirm()"
         [disabled]="loading">
         <i class="pi pi-spin pi-spinner" *ngIf="loading"></i>
-        <i class="pi pi-trash" *ngIf="!loading"></i>
+        <i class="pi pi-trash" *ngIf="!loading && buttonType === 'delete'"></i>
         {{ confirmText }}
       </button>
     </div>

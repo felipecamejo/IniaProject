@@ -10,11 +10,10 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { CultivoDto } from '../../../models/Cultivo.dto';
 import { CultivoService } from '../../../services/CultivoService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-listado-cultivos.component',
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule],
   templateUrl: './listado-cultivos.component.html',
   styleUrls: ['./listado-cultivos.component.scss']
 })
