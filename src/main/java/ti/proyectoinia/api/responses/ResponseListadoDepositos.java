@@ -1,7 +1,6 @@
 package ti.proyectoinia.api.responses;
 
 import ti.proyectoinia.dtos.DepositoDto;
-import ti.proyectoinia.dtos.HongoDto;
 
 import java.util.List;
 

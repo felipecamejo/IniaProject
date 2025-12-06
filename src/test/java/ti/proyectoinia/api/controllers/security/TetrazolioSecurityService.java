@@ -12,14 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ti.proyectoinia.api.controllers.PurezaPNotatumController;
-import ti.proyectoinia.api.controllers.SanitarioController;
 import ti.proyectoinia.api.controllers.TetrazolioController;
-import ti.proyectoinia.api.responses.ResponseListadoPurezaPNotatum;
-import ti.proyectoinia.api.responses.ResponseListadoSanitario;
 import ti.proyectoinia.api.responses.ResponseListadoTetrazolio;
 import ti.proyectoinia.dtos.TetrazolioDto;
-import ti.proyectoinia.services.PurezaPNotatumService;
 import ti.proyectoinia.services.SanitarioService;
 import ti.proyectoinia.services.TetrazolioService;
 

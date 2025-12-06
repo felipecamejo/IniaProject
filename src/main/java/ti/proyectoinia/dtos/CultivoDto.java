@@ -2,7 +2,6 @@ package ti.proyectoinia.dtos;
 
 import lombok.Data;
 import lombok.Generated;
-import lombok.Getter;
 
 @Data
 public class CultivoDto {

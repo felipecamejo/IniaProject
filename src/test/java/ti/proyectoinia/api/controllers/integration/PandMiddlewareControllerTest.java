@@ -1,6 +1,5 @@
 package ti.proyectoinia.api.controllers.integration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -31,9 +30,6 @@ public class PandMiddlewareControllerTest {
     @MockitoBean
     private PythonMiddlewareHttpService pythonService;
 
-    private final ObjectMapper mapper = new ObjectMapper();
-
-    private final String baseUrl = "/api/v1/pandmiddleware";
 
     @Test
     @WithMockUser(authorities = {"ADMIN"})

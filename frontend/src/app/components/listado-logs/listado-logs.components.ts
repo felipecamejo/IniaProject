@@ -51,23 +51,8 @@ export class ListadoLogsComponent implements OnInit {
       console.log('Años disponibles:', this.anios);
     }
 
-    get itemsFiltrados() {
-      return this.items.filter((item: LogDto) => {
-        const searchLower = this.searchText.toLowerCase();
-        const cumpleBusqueda = !this.searchText ||
-          item.id?.toString().includes(this.searchText) ||
-          item.texto.toLowerCase().includes(searchLower);
-        const fechaParaFiltro = this.getFechaConTipo(item).fecha;
-        const cumpleMes = !this.selectedMes || this.getMesFromFecha(fechaParaFiltro) === parseInt(this.selectedMes);
-        const cumpleAnio = !this.selectedAnio || this.getAnioFromFecha(fechaParaFiltro) === parseInt(this.selectedAnio);
-        return cumpleBusqueda && cumpleMes && cumpleAnio;
-      }).sort((a, b) => {
-        // Ordenar por fecha de creación descendente (más reciente primero)
-        const fechaA = new Date(a.fechaCreacion || 0).getTime();
-        const fechaB = new Date(b.fechaCreacion || 0).getTime();
-        return fechaB - fechaA;
-      });
-    }
+    // El filtrado y paginado se realiza completamente en el backend, por lo que los items ya vienen filtrados y ordenados.
+    // Si necesitas mostrar los logs, usa directamente 'items' en el template.
 
     getFechaConTipo(item: LogDto): { fecha: string, tipo: string } {
       return { fecha: item.fechaCreacion || '', tipo: 'Creación' };

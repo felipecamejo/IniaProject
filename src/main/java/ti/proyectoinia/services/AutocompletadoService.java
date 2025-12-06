@@ -7,8 +7,6 @@ import ti.proyectoinia.business.entities.Autocompletado;
 import ti.proyectoinia.business.repositories.AutocompletadoRepository;
 import ti.proyectoinia.dtos.AutocompletadoDto;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class AutocompletadoService {

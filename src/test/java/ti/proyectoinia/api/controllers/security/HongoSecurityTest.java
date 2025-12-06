@@ -12,9 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import ti.proyectoinia.api.controllers.HongoController;
-import ti.proyectoinia.api.responses.ResponseListadoCultivos;
 import ti.proyectoinia.api.responses.ResponseListadoHongos;
-import ti.proyectoinia.business.entities.Hongo;
 import ti.proyectoinia.dtos.HongoDto;
 import ti.proyectoinia.services.HongoService;
 

@@ -3,14 +3,9 @@ package ti.proyectoinia.services;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ti.proyectoinia.api.responses.ResponseListadoHongos;
-import ti.proyectoinia.api.responses.ResponseListadoMalezas;
-import ti.proyectoinia.api.responses.ResponseListadoUsuarios;
 import ti.proyectoinia.business.entities.Hongo;
 import ti.proyectoinia.business.repositories.HongoRepository;
 import ti.proyectoinia.dtos.HongoDto;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class HongoService {

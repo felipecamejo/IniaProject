@@ -14,9 +14,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import ti.proyectoinia.api.controllers.CertificadoController;
 import ti.proyectoinia.api.responses.ResponseListadoCertificados;
-import ti.proyectoinia.api.responses.ResponseListadoCultivos;
 import ti.proyectoinia.dtos.CertificadoDto;
-import ti.proyectoinia.services.AutocompletadoService;
 import ti.proyectoinia.services.CertificadoService;
 
 import java.util.Collections;

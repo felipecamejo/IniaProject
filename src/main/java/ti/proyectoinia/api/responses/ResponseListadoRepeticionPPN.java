@@ -1,6 +1,5 @@
 package ti.proyectoinia.api.responses;
 
-import ti.proyectoinia.dtos.HumedadReciboDto;
 import ti.proyectoinia.dtos.RepeticionesPPNDTO;
 
 import java.util.List;

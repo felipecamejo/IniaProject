@@ -1,7 +1,5 @@
 package ti.proyectoinia.api.responses;
 
-import ti.proyectoinia.business.entities.HumedadRecibo;
-import ti.proyectoinia.dtos.DepositoDto;
 import ti.proyectoinia.dtos.HumedadReciboDto;
 
 import java.util.List;

@@ -8,8 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import ti.proyectoinia.api.responses.ResponseListadoDOSN;
-import ti.proyectoinia.api.responses.ResponseListadoGerminacion;
-import ti.proyectoinia.api.responses.ResponseListadoPurezas;
 import ti.proyectoinia.dtos.DOSNDto;
 import ti.proyectoinia.services.DOSNService;
 

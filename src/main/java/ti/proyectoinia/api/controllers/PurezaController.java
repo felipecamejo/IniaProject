@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
-import ti.proyectoinia.api.responses.ResponseListadoPMS;
 import ti.proyectoinia.api.responses.ResponseListadoPurezas;
 import ti.proyectoinia.dtos.PurezaDto;
 import ti.proyectoinia.services.PurezaService;

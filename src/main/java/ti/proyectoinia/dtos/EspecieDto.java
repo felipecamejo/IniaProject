@@ -1,6 +1,6 @@
 package ti.proyectoinia.dtos;
 
-import jakarta.persistence.*;
+
 import lombok.Data;
 
 @Data

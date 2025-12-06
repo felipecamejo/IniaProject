@@ -1,6 +1,5 @@
 package ti.proyectoinia.api.responses;
 
-import ti.proyectoinia.dtos.HongoDto;
 import ti.proyectoinia.dtos.LogDto;
 
 import java.util.List;

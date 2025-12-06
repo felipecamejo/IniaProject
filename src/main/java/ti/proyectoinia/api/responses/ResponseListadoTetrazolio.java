@@ -1,6 +1,5 @@
 package ti.proyectoinia.api.responses;
 
-import ti.proyectoinia.dtos.DOSNDto;
 import ti.proyectoinia.dtos.TetrazolioDto;
 
 import java.util.List;

@@ -7,9 +7,6 @@ import ti.proyectoinia.business.entities.Metodo;
 import ti.proyectoinia.business.repositories.MetodoRepository;
 import ti.proyectoinia.dtos.MetodoDto;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 public class MetodoService {
 

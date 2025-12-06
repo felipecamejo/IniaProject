@@ -2,7 +2,6 @@ package ti.proyectoinia.services;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import ti.proyectoinia.api.responses.ResponseListadoHongos;
 import ti.proyectoinia.api.responses.ResponseListadoMalezas;
 import ti.proyectoinia.business.entities.Maleza;
 import ti.proyectoinia.business.repositories.MalezaRepository;

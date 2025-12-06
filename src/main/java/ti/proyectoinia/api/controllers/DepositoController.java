@@ -9,11 +9,8 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import ti.proyectoinia.api.responses.ResponseListadoDepositos;
-import ti.proyectoinia.api.responses.ResponseListadoMalezas;
 import ti.proyectoinia.dtos.DepositoDto;
-import ti.proyectoinia.dtos.MalezaDto;
 import ti.proyectoinia.services.DepositoService;
-import ti.proyectoinia.services.MalezaService;
 
 @RestController
 @RequestMapping({"api/v1/deposito"})

@@ -2,13 +2,11 @@ package ti.proyectoinia.api.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import ti.proyectoinia.api.responses.ResponseListadosEspecies;
-import ti.proyectoinia.dtos.CultivoDto;
 import ti.proyectoinia.dtos.EspecieDto;
 import ti.proyectoinia.services.EspecieService;
 

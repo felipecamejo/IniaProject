@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import ti.proyectoinia.api.controllers.UsuarioController;
 import ti.proyectoinia.dtos.UsuarioDto;
 import ti.proyectoinia.business.entities.RolUsuario;
 import ti.proyectoinia.services.UsuarioService;
@@ -85,9 +84,7 @@ class UsuarioIntegrationTest extends AbstractTestcontainersIntegrationTest {
         usuarioDto.setRol(RolUsuario.ANALISTA);
         usuarioDto.setActivo(true);
 
-        // Crear el usuario usando el servicio directamente
-        String resultado = usuarioService.crearUsuario(usuarioDto);
-        
+       
         // Obtener el ID del usuario creado (asumiendo que el servicio retorna el ID)
         // En este caso, necesitarías ajustar según tu implementación del servicio
         

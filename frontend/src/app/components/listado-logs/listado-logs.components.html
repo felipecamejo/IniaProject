@@ -28,7 +28,7 @@
         </div>
 
         <!-- Mensaje cuando no hay elementos -->
-        <div class="no-results-message" *ngIf="itemsFiltrados.length === 0">
+        <div class="no-results-message" *ngIf="items.length === 0">
             <div class="no-results-content">
                 <h3>No se encontraron Cambios</h3>
                 <p>No hay Cambios que coincidan con los filtros seleccionados.</p>
@@ -38,7 +38,7 @@
 
            <!-- Lista de elementos paginados -->
            <div class="blue-rectangle" 
-               *ngFor="let item of itemsFiltrados"
+               *ngFor="let item of items"
                >
             <div class="item-header">
                 <div class="item-info">

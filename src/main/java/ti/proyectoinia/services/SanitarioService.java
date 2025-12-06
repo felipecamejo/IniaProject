@@ -2,8 +2,6 @@ package ti.proyectoinia.services;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.ErrorResponse;
-import ti.proyectoinia.api.responses.ResponseListadoPurezaPNotatum;
 import ti.proyectoinia.api.responses.ResponseListadoSanitario;
 import ti.proyectoinia.business.entities.Hongo;
 import ti.proyectoinia.business.entities.Sanitario;

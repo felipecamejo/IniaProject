@@ -38,7 +38,7 @@ public class LogService {
      * Devuelve logs paginados por loteId y filtros opcionales: searchText, mes, anio
      */
     public ResponseEntity<ResponseListadoLogsPage> listadoPage(Long loteId, int page, int size, String sortField, String direction,
-                                                              String searchText, Integer mes, Integer anio) {
+                                                              String searchText, Object mes, Integer anio) {
         if (size <= 0) size = 20;
         if (page < 0) page = 0;
         if (sortField == null || sortField.isBlank()) sortField = "fechaCreacion";
@@ -48,13 +48,21 @@ public class LogService {
         // Normalizar searchText
         String textoFiltro = (searchText == null || searchText.isBlank() || "null".equalsIgnoreCase(searchText.trim())) ? null : searchText.trim();
 
-        // Calcular fechas para mes y año
+        // Calcular fechas para mes y año (aceptar mes como String o Integer)
         java.util.Date fechaInicio = null;
         java.util.Date fechaFin = null;
         try {
-            if (mes != null && anio != null) {
+            Integer mesInt = null;
+            if (mes != null) {
+                if (mes instanceof String) {
+                    mesInt = Integer.parseInt((String) mes);
+                } else if (mes instanceof Integer) {
+                    mesInt = (Integer) mes;
+                }
+            }
+            if (mesInt != null && anio != null) {
                 java.util.Calendar cal = java.util.Calendar.getInstance();
-                cal.set(anio, mes - 1, 1, 0, 0, 0);
+                cal.set(anio, mesInt - 1, 1, 0, 0, 0);
                 cal.set(java.util.Calendar.MILLISECOND, 0);
                 fechaInicio = cal.getTime();
                 cal.set(java.util.Calendar.DAY_OF_MONTH, cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
@@ -77,8 +85,20 @@ public class LogService {
         }
 
         Page<ti.proyectoinia.business.entities.Log> pageResult;
-        // Selección de método derivado según filtros
-        if (textoFiltro != null && fechaInicio != null && fechaFin != null) {
+        // Buscar por ID si el searchText es un número
+        boolean buscarPorId = false;
+        Long idBuscado = null;
+        if (textoFiltro != null) {
+            try {
+                idBuscado = Long.parseLong(textoFiltro);
+                buscarPorId = true;
+            } catch (NumberFormatException ignored) {}
+        }
+
+        if (buscarPorId) {
+            // Buscar por ID y loteId
+            pageResult = this.logRepository.findByLoteIdAndId(loteId, idBuscado, pageable);
+        } else if (textoFiltro != null && fechaInicio != null && fechaFin != null) {
             pageResult = this.logRepository.findByLoteIdAndTextoIgnoreCaseContainingAndFechaCreacionBetween(loteId, textoFiltro, fechaInicio, fechaFin, pageable);
         } else if (textoFiltro != null) {
             pageResult = this.logRepository.findByLoteIdAndTextoIgnoreCaseContaining(loteId, textoFiltro, pageable);

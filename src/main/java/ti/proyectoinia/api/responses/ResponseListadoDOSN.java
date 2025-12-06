@@ -1,8 +1,6 @@
 package ti.proyectoinia.api.responses;
 
-import ti.proyectoinia.business.entities.DOSN;
 import ti.proyectoinia.dtos.DOSNDto;
-import ti.proyectoinia.dtos.PMSDto;
 
 import java.util.List;
 

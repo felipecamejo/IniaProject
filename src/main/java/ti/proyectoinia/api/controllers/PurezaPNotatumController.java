@@ -7,12 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
-import ti.proyectoinia.api.responses.ResponseListadoGerminacion;
-import ti.proyectoinia.api.responses.ResponseListadoPMS;
 import ti.proyectoinia.api.responses.ResponseListadoPurezaPNotatum;
 import ti.proyectoinia.dtos.PurezaPNotatumDto;
 import ti.proyectoinia.dtos.RepeticionesPPNDTO;
-import ti.proyectoinia.dtos.SanitarioHongoDto;
 import ti.proyectoinia.services.PurezaPNotatumService;
 
 import java.util.List;

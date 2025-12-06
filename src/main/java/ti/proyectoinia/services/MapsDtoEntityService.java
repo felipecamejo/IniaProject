@@ -27,8 +27,6 @@ public class MapsDtoEntityService {
     @Autowired
     private PurezaPNotatumRepository purezaPNotatumRepository;
     @Autowired
-    private UsuarioRepository usuarioRepository;
-    @Autowired
     private LoteRepository loteRepository;
     @Autowired
     private EspecieRepository especieRepository;
@@ -881,50 +879,6 @@ public class MapsDtoEntityService {
         }
 
         return usuario;
-    }
-
-
-    private UsuarioDto mapToDtoUsuarioBasic(Usuario usuario) {
-        if (usuario == null) return null;
-
-        UsuarioDto dto = new UsuarioDto();
-        dto.setId(usuario.getId());
-        dto.setNombre(usuario.getNombre());
-        dto.setEmail(usuario.getEmail());
-
-        return dto;
-    }
-
-    private Usuario mapToEntityUsuarioBasic(UsuarioDto usuarioDto) {
-        if (usuarioDto == null) return null;
-
-        Usuario usuario = new Usuario();
-        usuario.setId(usuarioDto.getId());
-        usuario.setNombre(usuarioDto.getNombre());
-        usuario.setEmail(usuarioDto.getEmail());
-
-        return usuario;
-    }
-
-    private LoteDto mapToDtoLoteBasic(Lote lote) {
-        if (lote == null) return null;
-
-        LoteDto dto = new LoteDto();
-        dto.setId(lote.getId());
-        dto.setNombre(lote.getNombre());
-        dto.setCategoria(lote.getCategoria());
-
-        return dto;
-    }
-    private Lote mapToEntityLoteBasic(LoteDto loteDto) {
-        if (loteDto == null) return null;
-
-        Lote lote = new Lote();
-        lote.setId(loteDto.getId());
-        lote.setNombre(loteDto.getNombre());
-        lote.setCategoria(loteDto.getCategoria());
-
-        return lote;
     }
 
     public DOSNDto mapToDtoDOSN(DOSN dosn) {
