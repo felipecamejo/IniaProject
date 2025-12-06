@@ -126,10 +126,17 @@ def test_mapeo_dependencias_funciona(db_engine):
 def test_orden_topologico_funciona(db_engine):
     """Test que verifica que el orden topológico funciona."""
     try:
-        from MassiveInsertFiles import mapear_todas_dependencias, orden_topologico
-        
-        mapeo = mapear_todas_dependencias(db_engine)
-        niveles = orden_topologico(mapeo)
+        # Intentar usar TopologicalOrder primero
+        try:
+            from TopologicalOrder import obtener_orden_topologico
+            niveles = obtener_orden_topologico(db_engine)
+            print(f"\n✓ Orden topológico (TopologicalOrder): {len(niveles)} niveles calculados")
+        except ImportError:
+            # Fallback a MassiveInsertFiles
+            from MassiveInsertFiles import mapear_todas_dependencias, orden_topologico
+            mapeo = mapear_todas_dependencias(db_engine)
+            niveles = orden_topologico(mapeo)
+            print(f"\n✓ Orden topológico (MassiveInsertFiles): {len(niveles)} niveles calculados")
         
         assert isinstance(niveles, list), "El orden topológico debe ser una lista"
         assert len(niveles) > 0, "Debe haber al menos un nivel"
@@ -139,7 +146,6 @@ def test_orden_topologico_funciona(db_engine):
             assert isinstance(nivel, list), "Cada nivel debe ser una lista"
             assert len(nivel) > 0, "Cada nivel debe tener al menos una tabla"
         
-        print(f"\n✓ Orden topológico funciona: {len(niveles)} niveles calculados")
         for i, nivel in enumerate(niveles[:5], 1):  # Mostrar primeros 5 niveles
             print(f"  Nivel {i}: {len(nivel)} tabla(s)")
         
