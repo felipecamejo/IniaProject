@@ -958,6 +958,12 @@ export class CertificadoComponent implements OnInit {
       const contentWidth = pageWidth - (2 * margin);
       let yPosition = margin;
 
+      // Función helper para formatear números con comas (formato uruguayo/español)
+      const formatearNumero = (valor: number | null | undefined): string => {
+        if (valor === null || valor === undefined) return 'N';
+        return valor.toString().replace('.', ',');
+      };
+
       // Función helper para agregar texto con wrap
       const addText = (text: string, x: number, y: number, fontSize: number = 10, isBold: boolean = false, align: 'left' | 'center' | 'right' = 'left', maxWidth?: number) => {
         pdf.setFontSize(fontSize);
@@ -1071,34 +1077,51 @@ export class CertificadoComponent implements OnInit {
         ];
         
         const purezaData = [[
-          this.purezaSemillaPura?.toString() || 'N',
-          this.purezaMateriaInerte?.toString() || 'N',
-          this.purezaOtrasSemillas?.toString() || 'N',
-          this.purezaOtrosCultivos?.toString() || 'N',
-          this.purezaMalezas?.toString() || 'N',
+          formatearNumero(this.purezaSemillaPura),
+          formatearNumero(this.purezaMateriaInerte),
+          formatearNumero(this.purezaOtrasSemillas),
+          formatearNumero(this.purezaOtrosCultivos),
+          formatearNumero(this.purezaMalezas),
           this.purezaMalezasToleradas || 'N',
           this.purezaPeso1000Semillas || 'N',
           this.purezaHumedad || 'N'
         ]];
         
-        // Usar autoTable para las tablas
+        // Usar autoTable para las tablas con diseño similar al certificado original
         autoTable(pdf, {
           head: [purezaHeaders],
           body: purezaData,
           startY: yPosition,
           margin: { left: margin, right: margin },
-          styles: { fontSize: 7, cellPadding: 2 },
-          headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontStyle: 'bold' },
+          styles: { 
+            fontSize: 8, 
+            cellPadding: 3,
+            halign: 'center',
+            valign: 'middle'
+          },
+          headStyles: { 
+            fillColor: [0, 102, 204], 
+            textColor: [255, 255, 255], 
+            fontStyle: 'bold',
+            halign: 'center',
+            valign: 'middle'
+          },
+          bodyStyles: {
+            halign: 'center',
+            valign: 'middle'
+          },
           columnStyles: {
-            0: { cellWidth: 25 },
-            1: { cellWidth: 25 },
-            2: { cellWidth: 25 },
-            3: { cellWidth: 25 },
-            4: { cellWidth: 20 },
-            5: { cellWidth: 25 },
-            6: { cellWidth: 30 },
-            7: { cellWidth: 20 }
-          }
+            0: { cellWidth: 22 },
+            1: { cellWidth: 22 },
+            2: { cellWidth: 22 },
+            3: { cellWidth: 22 },
+            4: { cellWidth: 18 },
+            5: { cellWidth: 22 },
+            6: { cellWidth: 28 },
+            7: { cellWidth: 18 }
+          },
+          theme: 'grid',
+          tableWidth: 'auto'
         });
         
         yPosition = (pdf as any).lastAutoTable.finalY + 5;
@@ -1125,8 +1148,7 @@ export class CertificadoComponent implements OnInit {
         const dosnData = [
           ['N° de semillas de malezas con tolerancia cero:', this.dosnMalezasToleranciaCero?.toString() || '0'],
           ['N° de semillas de malezas con tolerancia:', this.dosnMalezasTolerancia?.toString() || '0'],
-          ['N° de semillas de otros cultivos:', this.dosnOtrosCultivos?.toString() || '0'],
-          ['Determinación de Brassica spp.:', this.brassicaContiene ? 'Contiene' : (this.dosnBrassicaSpp?.toString() || 'No contiene')]
+          ['N° de semillas de otros cultivos:', this.dosnOtrosCultivos?.toString() || '0']
         ];
         
         dosnData.forEach(([label, value]) => {
@@ -1135,7 +1157,17 @@ export class CertificadoComponent implements OnInit {
           addText(value, margin + 85, yPosition, 9, false);
           yPosition += 6;
         });
-        yPosition += 5;
+        
+        // Determinación de Brassica spp. (separada)
+        checkNewPage(7);
+        let brassicaText = 'No contiene.';
+        if (this.brassicaContiene) {
+          brassicaText = 'Contiene.';
+        } else if (this.dosnBrassicaSpp != null) {
+          brassicaText = this.dosnBrassicaSpp.toString();
+        }
+        addText(`Determinación de Brassica spp. en ${this.dosnGramosAnalizados || ''} g: ${brassicaText}`, margin, yPosition, 9, false);
+        yPosition += 8;
       }
 
       // Tabla de Germinación
@@ -1158,11 +1190,11 @@ export class CertificadoComponent implements OnInit {
         
         const germinacionData = [[
           this.germinacionNumeroDias?.toString() || 'N',
-          this.germinacionPlantulasNormales?.toString() || 'N',
-          this.germinacionPlantulasAnormales?.toString() || 'N',
-          this.germinacionSemillasDuras?.toString() || 'N',
-          this.germinacionSemillasFrescas?.toString() || 'N',
-          this.germinacionSemillasMuertas?.toString() || 'N',
+          formatearNumero(this.germinacionPlantulasNormales),
+          formatearNumero(this.germinacionPlantulasAnormales),
+          formatearNumero(this.germinacionSemillasDuras),
+          formatearNumero(this.germinacionSemillasFrescas),
+          formatearNumero(this.germinacionSemillasMuertas),
           this.germinacionSustrato || 'N',
           this.germinacionTemperatura?.toString() || 'N',
           this.germinacionPreTratamiento || 'N'
@@ -1173,17 +1205,38 @@ export class CertificadoComponent implements OnInit {
           body: germinacionData,
           startY: yPosition,
           margin: { left: margin, right: margin },
-          styles: { fontSize: 7, cellPadding: 2 },
-          headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontStyle: 'bold' }
+          styles: { 
+            fontSize: 8, 
+            cellPadding: 3,
+            halign: 'center',
+            valign: 'middle'
+          },
+          headStyles: { 
+            fillColor: [0, 102, 204], 
+            textColor: [255, 255, 255], 
+            fontStyle: 'bold',
+            halign: 'center',
+            valign: 'middle'
+          },
+          bodyStyles: {
+            halign: 'center',
+            valign: 'middle'
+          },
+          theme: 'grid',
+          tableWidth: 'auto'
         });
         
         yPosition = (pdf as any).lastAutoTable.finalY + 5;
       }
 
       // Otras determinaciones
-      if (this.otrasDeterminaciones) {
+      if (this.otrasDeterminaciones && this.otrasDeterminaciones.trim() !== '') {
         checkNewPage(7);
         addText(`Otras determinaciones: ${this.otrasDeterminaciones}`, margin, yPosition, 9, false);
+        yPosition += 8;
+      } else {
+        checkNewPage(7);
+        addText('Otras determinaciones: -', margin, yPosition, 9, false);
         yPosition += 8;
       }
 
