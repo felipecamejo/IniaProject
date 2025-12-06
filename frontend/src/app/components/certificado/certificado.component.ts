@@ -149,7 +149,7 @@ export class CertificadoComponent implements OnInit {
   dosnMalezasToleranciaCero: number | null = null;
   dosnMalezasTolerancia: number | null = null;
   dosnOtrosCultivos: number | null = null;
-  dosnBrassicaSpp: number = 0;
+  dosnBrassicaSpp: string | null = null;
 
   // Germinación
   germinacionNumeroDias: number | null = null;
@@ -300,11 +300,13 @@ export class CertificadoComponent implements OnInit {
           this.cargarDatosLote(this.loteId);
         }
 
-        // Determinar qué análisis deben realizarse
+        // Determinar qué análisis deben realizarse (solo para mostrar en la leyenda)
         this.determinarAnalisisSolicitados();
 
-        // Extraer análisis estándar y el último creado
-        this.cargarAnalisisDisponibles();
+        // Inicializar valores por defecto para análisis (ya no cargar desde análisis del lote)
+        this.inicializarValoresPorDefectoPureza();
+        this.inicializarValoresPorDefectoDOSN();
+        this.inicializarValoresPorDefectoGerminacion();
       },
       error: (err) => {
         console.error('Error cargando recibo:', err);
@@ -346,113 +348,6 @@ export class CertificadoComponent implements OnInit {
     this.debeRealizarGerminacion = analisis.includes('germinacion') || analisis.includes('germinación');
   }
 
-  cargarAnalisisDisponibles() {
-    if (!this.reciboId) return;
-
-    // Cargar análisis de pureza - solo si está solicitado y solo estándar y el último creado
-    if (this.debeRealizarPureza) {
-      this.purezaService.listarPorRecibo(this.reciboId).subscribe({
-      next: (response) => {
-        if (response.purezas && response.purezas.length > 0) {
-          // Filtrar solo análisis estándar
-          const purezasEstandar = response.purezas.filter(p => p.estandar === true);
-          if (purezasEstandar.length > 0) {
-            // Ordenar por fechaCreacion descendente y tomar el último creado
-            const purezasOrdenadas = purezasEstandar.sort((a, b) => {
-              const fechaA = a.fechaCreacion ? new Date(a.fechaCreacion).getTime() : 0;
-              const fechaB = b.fechaCreacion ? new Date(b.fechaCreacion).getTime() : 0;
-              return fechaB - fechaA; // Orden descendente
-            });
-            const pureza = purezasOrdenadas[0];
-          } else {
-            this.inicializarValoresPorDefectoPureza();
-          }
-        } else {
-          this.inicializarValoresPorDefectoPureza();
-        }
-      },
-      error: (err) => {
-        console.error('Error cargando pureza:', err);
-        this.inicializarValoresPorDefectoPureza();
-      }
-    });
-    } else {
-      // Si no está solicitado, no cargar datos pero marcar como no realizado
-      this.inicializarValoresPorDefectoPureza();
-    }
-
-    // Cargar análisis de DOSN - solo si está solicitado y solo estándar y el último creado
-    if (this.debeRealizarDOSN) {
-      this.dosnService.listarPorRecibo(this.reciboId).subscribe({
-        next: (response) => {
-          if (response.DOSN && response.DOSN.length > 0) {
-            // Filtrar solo análisis estándar
-            const dosnEstandar = response.DOSN.filter(d => d.estandar === true);
-            if (dosnEstandar.length > 0) {
-              // Ordenar por fechaCreacion descendente y tomar el último creado
-              const dosnOrdenados = dosnEstandar.sort((a, b) => {
-                const fechaA = a.fechaCreacion ? new Date(a.fechaCreacion).getTime() : 0;
-                const fechaB = b.fechaCreacion ? new Date(b.fechaCreacion).getTime() : 0;
-                return fechaB - fechaA; // Orden descendente
-              });
-              const dosn = dosnOrdenados[0];
-            } else {
-              this.inicializarValoresPorDefectoDOSN();
-            }
-          } else {
-            this.inicializarValoresPorDefectoDOSN();
-          }
-        },
-        error: (err) => {
-          console.error('Error cargando DOSN:', err);
-          this.inicializarValoresPorDefectoDOSN();
-        }
-      });
-    } else {
-      // Si no está solicitado, no cargar datos pero marcar como no realizado
-      this.inicializarValoresPorDefectoDOSN();
-    }
-
-    // Cargar análisis de germinación - solo si está solicitado y el último creado (verificar si tiene campo estandar)
-    if (this.debeRealizarGerminacion) {
-      this.germinacionService.listarPorRecibo(this.reciboId).subscribe({
-        next: (response) => {
-          if (response.germinacion && response.germinacion.length > 0) {
-            // Filtrar solo análisis estándar si existe el campo
-            const germinacionesEstandar = response.germinacion.filter(g => g.estandar === true);
-            const germinacionesParaUsar = germinacionesEstandar.length > 0 ? germinacionesEstandar : response.germinacion;
-
-            // Ordenar por fechaCreacion descendente y tomar el último creado
-            const germinacionOrdenadas = germinacionesParaUsar.sort((a, b) => {
-              const fechaA = a.fechaCreacion ? new Date(a.fechaCreacion).getTime() : 0;
-              const fechaB = b.fechaCreacion ? new Date(b.fechaCreacion).getTime() : 0;
-              return fechaB - fechaA; // Orden descendente
-            });
-            const germinacion = germinacionOrdenadas[0];
-          } else {
-            this.inicializarValoresPorDefectoGerminacion();
-          }
-        },
-        error: (err) => {
-          console.error('Error cargando germinación:', err);
-          this.inicializarValoresPorDefectoGerminacion();
-        }
-      });
-    } else {
-      // Si no está solicitado, no cargar datos pero marcar como no realizado
-      this.inicializarValoresPorDefectoGerminacion();
-    }
-  }
-
-  formatearPreTratamiento(preFrio: string | null, preTratamiento: string | null): string {
-    if (preFrio && preFrio !== 'NINGUNO') {
-      return `Pre-frío ${preFrio === 'CORTO' ? '5 días' : '10 días'}`;
-    }
-    if (preTratamiento && preTratamiento !== 'NINGUNO') {
-      return preTratamiento;
-    }
-    return '';
-  }
 
   inicializarValoresPorDefectoPureza() {
     // Marcar que no existe análisis de pureza
@@ -474,7 +369,7 @@ export class CertificadoComponent implements OnInit {
     this.dosnMalezasToleranciaCero = null;
     this.dosnMalezasTolerancia = null;
     this.dosnOtrosCultivos = null;
-
+    this.dosnBrassicaSpp = null;
   }
 
   inicializarValoresPorDefectoGerminacion() {
@@ -607,20 +502,17 @@ export class CertificadoComponent implements OnInit {
               this.analisisSolicitados = recibo.analisisSolicitados;
               // Extraer el peso del recibo
               this.pesoKg = recibo.kgLimpios ?? 0;
-              // Determinar qué análisis deben realizarse
+              // Determinar qué análisis deben realizarse (solo para mostrar en la leyenda)
               this.determinarAnalisisSolicitados();
-              // Cargar análisis disponibles para verificar si existen análisis estándar
-              this.cargarAnalisisDisponibles();
+              // Ya no cargar análisis disponibles - los datos vienen del certificado guardado
             },
             error: (err) => {
               console.error('Error cargando recibo para extraer peso:', err);
-              // Cargar análisis disponibles de todas formas
-              this.cargarAnalisisDisponibles();
+              // Ya no cargar análisis disponibles
             }
           });
         } else {
-          // Si no hay reciboId, cargar análisis disponibles de todas formas
-          this.cargarAnalisisDisponibles();
+          // Ya no cargar análisis disponibles
         }
 
         // Cargar resultados de análisis - Pureza
@@ -641,13 +533,8 @@ export class CertificadoComponent implements OnInit {
         this.dosnMalezasToleranciaCero = certificado.dosnMalezasToleranciaCero ?? null;
         this.dosnMalezasTolerancia = certificado.dosnMalezasTolerancia ?? null;
         this.dosnOtrosCultivos = certificado.dosnOtrosCultivos ?? null;
-        // Asignar correctamente dosnBrassicaSpp, permitiendo 0 y valores positivos, y forzando a number
-        if (certificado.dosnBrassicaSpp !== undefined && certificado.dosnBrassicaSpp !== null) {
-          const val = Number(certificado.dosnBrassicaSpp);
-          this.dosnBrassicaSpp = isNaN(val) ? 0 : val;
-        } else {
-          this.dosnBrassicaSpp = 0;
-        }
+        // Asignar dosnBrassicaSpp como string (viene del backend como string)
+        this.dosnBrassicaSpp = certificado.dosnBrassicaSpp || null;
 
         // Asignar correctamente brassicaContiene, permitiendo true/false del backend
         this.brassicaContiene = (typeof certificado.brassicaContiene === 'boolean') ? certificado.brassicaContiene : false;
@@ -857,7 +744,7 @@ export class CertificadoComponent implements OnInit {
       dosnMalezasToleranciaCero: this.dosnMalezasToleranciaCero ?? null,
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
-      dosnBrassicaSpp: Number(this.dosnBrassicaSpp) ?? null,
+      dosnBrassicaSpp: this.dosnBrassicaSpp || null,
       otrasDeterminaciones: this.otrasDeterminaciones || null,
       nombreFirmante: this.nombreFirmante || null,
       funcionFirmante: this.funcionFirmante || null,
@@ -972,7 +859,7 @@ export class CertificadoComponent implements OnInit {
       dosnMalezasToleranciaCero: this.dosnMalezasToleranciaCero ?? null,
       dosnMalezasTolerancia: this.dosnMalezasTolerancia ?? null,
       dosnOtrosCultivos: this.dosnOtrosCultivos ?? null,
-      dosnBrassicaSpp: Number(this.dosnBrassicaSpp) || 0,
+      dosnBrassicaSpp: this.dosnBrassicaSpp || null,
       otrasDeterminaciones: this.otrasDeterminaciones || null,
       nombreFirmante: this.nombreFirmante || null,
       funcionFirmante: this.funcionFirmante || null,
