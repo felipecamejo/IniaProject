@@ -18,7 +18,8 @@ import { PurezaDto } from '../../../models/Pureza.dto';
 import { GerminacionDto } from '../../../models/Germinacion.dto';
 import { DOSNDto } from '../../../models/DOSN.dto';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+// @ts-ignore - jspdf-autotable puede no tener tipos TypeScript completos
+import autoTable from 'jspdf-autotable';
 
 // PrimeNG
 import { CardModule } from 'primeng/card';
@@ -939,7 +940,7 @@ export class CertificadoComponent implements OnInit {
   }
 
   /**
-   * Exporta el certificado a PDF
+   * Exporta el certificado a PDF como documento real (no screenshot)
    */
   exportarAPDF(): void {
     if (!this.certificadoId || this.certificadoId === 0) {
@@ -949,66 +950,302 @@ export class CertificadoComponent implements OnInit {
 
     this.isExportingPDF = true;
 
-    // Ocultar los botones justo antes de capturar el PDF
-    this.viewSeleccionarImagenFirma = false;
-
-    // Esperar a que el DOM se actualice antes de capturar
-    setTimeout(() => {
-      const certificadoElement = document.querySelector('.certificado-container') as HTMLElement;
-      if (!certificadoElement) {
-        alert('Error: No se pudo encontrar el contenido del certificado.');
-        this.isExportingPDF = false;
-        this.viewSeleccionarImagenFirma = true;
-        return;
-      }
-      const options = {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        width: certificadoElement.scrollWidth,
-        height: certificadoElement.scrollHeight
-      };
-      html2canvas(certificadoElement, options).then((canvas: HTMLCanvasElement) => {
-      const imgData = canvas.toDataURL('image/png');
-      
-      // Calcular dimensiones del PDF
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-
-      // Crear PDF
+    try {
       const pdf = new jsPDF('p', 'mm', 'a4');
-      let position = 0;
+      const pageWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const margin = 15;
+      const contentWidth = pageWidth - (2 * margin);
+      let yPosition = margin;
 
-      // Agregar primera página
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      // Función helper para agregar texto con wrap
+      const addText = (text: string, x: number, y: number, fontSize: number = 10, isBold: boolean = false, align: 'left' | 'center' | 'right' = 'left', maxWidth?: number) => {
+        pdf.setFontSize(fontSize);
+        pdf.setFont('helvetica', isBold ? 'bold' : 'normal');
+        const lines = maxWidth ? pdf.splitTextToSize(text, maxWidth) : [text];
+        pdf.text(lines, x, y, { align });
+        return lines.length * (fontSize * 0.35); // Retorna altura aproximada
+      };
 
-      // Agregar páginas adicionales si es necesario
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      // Función helper para agregar nueva página si es necesario
+      const checkNewPage = (requiredHeight: number) => {
+        if (yPosition + requiredHeight > pageHeight - margin) {
+          pdf.addPage();
+          yPosition = margin;
+          return true;
+        }
+        return false;
+      };
+
+      // HEADER
+      pdf.setFillColor(212, 165, 116); // Color dorado del logo
+      pdf.circle(25, yPosition + 10, 8, 'F'); // Logo izquierdo
+      pdf.circle(pageWidth - 25, yPosition + 10, 6, 'F'); // Logo derecho
+      
+      addText('INSTITUTO NACIONAL DE SEMILLAS', pageWidth / 2, yPosition + 8, 11, true, 'center');
+      addText('CERTIFICADO DE ANÁLISIS NACIONAL', pageWidth / 2, yPosition + 14, 13, true, 'center');
+      addText('laboratorio@inase.uy | www.inase.uy', pageWidth / 2, yPosition + 19, 8, false, 'center');
+      
+      yPosition += 30;
+      pdf.setDrawColor(0, 102, 204); // Azul
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 10;
+
+      // INFORMACIÓN DEL SOLICITANTE
+      checkNewPage(20);
+      addText('INFORMACIÓN DEL SOLICITANTE', margin, yPosition, 11, true);
+      yPosition += 8;
+      
+      const solicitanteData = [
+        ['Nombre:', this.nombreSolicitante || ''],
+        ['Especie:', this.especie || ''],
+        ['Cultivar:', this.cultivar || ''],
+        ['Categoría:', this.categoria || '']
+      ];
+      
+      solicitanteData.forEach(([label, value]) => {
+        checkNewPage(7);
+        addText(label, margin, yPosition, 9, true);
+        addText(value, margin + 50, yPosition, 9, false);
+        yPosition += 6;
+      });
+      
+      yPosition += 5;
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 10;
+
+      // INFORMACIÓN GENERAL
+      checkNewPage(20);
+      addText('INFORMACIÓN GENERAL', margin, yPosition, 11, true);
+      yPosition += 8;
+      
+      const generalData = [
+        ['Responsable del muestreo:', this.responsableMuestreo || ''],
+        ['Número de lote:', this.getNumeroLote() || ''],
+        ['Categoría:', this.categoria || ''],
+        ['Fecha muestreo:', this.fechaMuestreo ? this.formatearFecha(this.fechaMuestreo) : ''],
+        ['Peso (kg):', this.pesoKg?.toString() || ''],
+        ['N° de envases:', this.numeroEnvases?.toString() || ''],
+        ['Ingreso Laboratorio:', this.fechaIngresoLaboratorio ? this.formatearFecha(this.fechaIngresoLaboratorio) : ''],
+        ['Finalización análisis:', this.fechaFinalizacionAnalisis ? this.formatearFecha(this.fechaFinalizacionAnalisis) : ''],
+        ['N° de muestra:', this.numeroMuestra || ''],
+        ['Certificado:', this.tipoCertificado || '']
+      ];
+      
+      generalData.forEach(([label, value]) => {
+        checkNewPage(7);
+        const labelWidth = 60;
+        addText(label, margin, yPosition, 9, true, 'left', labelWidth);
+        addText(value, margin + labelWidth + 5, yPosition, 9, false);
+        yPosition += 6;
+      });
+      
+      yPosition += 5;
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 10;
+
+      // RESULTADOS DE ANÁLISIS
+      checkNewPage(20);
+      addText('RESULTADOS DE ANÁLISIS', margin, yPosition, 11, true);
+      yPosition += 8;
+      
+      addText(`Especie (nombre científico): ${this.especie || ''}`, margin, yPosition, 9, false);
+      yPosition += 8;
+
+      // Tabla de Pureza
+      if (this.tienePureza) {
+        checkNewPage(30);
+        addText('Pureza (% en peso)', margin, yPosition, 10, true);
+        yPosition += 7;
+        
+        const purezaHeaders = [
+          'Semilla pura',
+          'Materia inerte',
+          'Otras semillas',
+          'Otros cultivos',
+          'Malezas',
+          'Malezas toleradas',
+          'Peso 1000 semillas (g)',
+          'Humedad (%)'
+        ];
+        
+        const purezaData = [[
+          this.purezaSemillaPura?.toString() || 'N',
+          this.purezaMateriaInerte?.toString() || 'N',
+          this.purezaOtrasSemillas?.toString() || 'N',
+          this.purezaOtrosCultivos?.toString() || 'N',
+          this.purezaMalezas?.toString() || 'N',
+          this.purezaMalezasToleradas || 'N',
+          this.purezaPeso1000Semillas || 'N',
+          this.purezaHumedad || 'N'
+        ]];
+        
+        // Usar autoTable para las tablas
+        autoTable(pdf, {
+          head: [purezaHeaders],
+          body: purezaData,
+          startY: yPosition,
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 7, cellPadding: 2 },
+          headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontStyle: 'bold' },
+          columnStyles: {
+            0: { cellWidth: 25 },
+            1: { cellWidth: 25 },
+            2: { cellWidth: 25 },
+            3: { cellWidth: 25 },
+            4: { cellWidth: 20 },
+            5: { cellWidth: 25 },
+            6: { cellWidth: 30 },
+            7: { cellWidth: 20 }
+          }
+        });
+        
+        yPosition = (pdf as any).lastAutoTable.finalY + 5;
+        
+        if (this.purezaClaseMateriaInerte) {
+          checkNewPage(7);
+          addText(`Clase de materia inerte: ${this.purezaClaseMateriaInerte}`, margin, yPosition, 9, false);
+          yPosition += 6;
+        }
+        
+        if (this.purezaOtrasSemillasDescripcion) {
+          checkNewPage(7);
+          addText(`Otras semillas: ${this.purezaOtrasSemillasDescripcion}`, margin, yPosition, 9, false);
+          yPosition += 6;
+        }
       }
 
-      // Generar nombre del archivo
-      const fileName = `Certificado_${this.numeroCertificado || 'N' + this.certificadoId}_${new Date().getTime()}.pdf`;
-      
-      // Descargar el PDF
-      pdf.save(fileName);
+      // DOSN
+      if (this.tieneDOSN) {
+        checkNewPage(25);
+        addText(`Determinación de otras semillas en número en ${this.dosnGramosAnalizados || ''} g (análisis limitado)`, margin, yPosition, 9, true);
+        yPosition += 8;
+        
+        const dosnData = [
+          ['N° de semillas de malezas con tolerancia cero:', this.dosnMalezasToleranciaCero?.toString() || '0'],
+          ['N° de semillas de malezas con tolerancia:', this.dosnMalezasTolerancia?.toString() || '0'],
+          ['N° de semillas de otros cultivos:', this.dosnOtrosCultivos?.toString() || '0'],
+          ['Determinación de Brassica spp.:', this.brassicaContiene ? 'Contiene' : (this.dosnBrassicaSpp?.toString() || 'No contiene')]
+        ];
+        
+        dosnData.forEach(([label, value]) => {
+          checkNewPage(7);
+          addText(label, margin, yPosition, 9, true, 'left', 80);
+          addText(value, margin + 85, yPosition, 9, false);
+          yPosition += 6;
+        });
+        yPosition += 5;
+      }
 
-      this.viewSeleccionarImagenFirma = true;
-      this.isExportingPDF = false;
-    }).catch((error: any) => {
+      // Tabla de Germinación
+      if (this.tieneGerminacion) {
+        checkNewPage(30);
+        addText('Germinación (% en número)', margin, yPosition, 10, true);
+        yPosition += 7;
+        
+        const germinacionHeaders = [
+          'N° de días',
+          'Plántulas normales',
+          'Plántulas anormales',
+          'Semillas duras',
+          'Semillas frescas',
+          'Semillas muertas',
+          'Sustrato',
+          'T (°C)',
+          'Pre-tratamiento'
+        ];
+        
+        const germinacionData = [[
+          this.germinacionNumeroDias?.toString() || 'N',
+          this.germinacionPlantulasNormales?.toString() || 'N',
+          this.germinacionPlantulasAnormales?.toString() || 'N',
+          this.germinacionSemillasDuras?.toString() || 'N',
+          this.germinacionSemillasFrescas?.toString() || 'N',
+          this.germinacionSemillasMuertas?.toString() || 'N',
+          this.germinacionSustrato || 'N',
+          this.germinacionTemperatura?.toString() || 'N',
+          this.germinacionPreTratamiento || 'N'
+        ]];
+        
+        autoTable(pdf, {
+          head: [germinacionHeaders],
+          body: germinacionData,
+          startY: yPosition,
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 7, cellPadding: 2 },
+          headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontStyle: 'bold' }
+        });
+        
+        yPosition = (pdf as any).lastAutoTable.finalY + 5;
+      }
+
+      // Otras determinaciones
+      if (this.otrasDeterminaciones) {
+        checkNewPage(7);
+        addText(`Otras determinaciones: ${this.otrasDeterminaciones}`, margin, yPosition, 9, false);
+        yPosition += 8;
+      }
+
+      // FOOTER
+      checkNewPage(30);
+      pdf.setDrawColor(0, 102, 204);
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 10;
+      
+      addText(this.fechaEmision ? this.formatearFecha(this.fechaEmision) : '', margin, yPosition, 10, true);
+      addText('Fecha de emisión', margin, yPosition + 6, 9, false);
+      
+      addText('ESTE CERTIFICADO AMPARA A UN LOTE DE SEMILLAS', pageWidth / 2, yPosition + 15, 10, true, 'center');
+      
+      addText('LOS RESULTADOS remitidos refieren a la muestra recibida por el laboratorio.', pageWidth / 2, yPosition + 22, 9, true, 'center');
+      addText('Este informe no debe ser reproducido parcialmente sin la autorización del laboratorio.', pageWidth / 2, yPosition + 28, 9, true, 'center');
+      addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition + 34, 8, false, 'center');
+      
+      // Firma digital (si existe)
+      if (this.firmantePreviewUrl) {
+        yPosition += 40;
+        checkNewPage(30);
+        
+        // Agregar imagen de firma
+        const img = new Image();
+        const firmaUrl = this.firmantePreviewUrl; // Guardar en variable local para evitar problemas de tipo
+        img.src = firmaUrl;
+        img.onload = () => {
+          const imgWidth = 50;
+          const imgHeight = (img.height * imgWidth) / img.width;
+          pdf.addImage(firmaUrl, 'PNG', pageWidth - margin - imgWidth, yPosition, imgWidth, imgHeight);
+          
+          if (this.nombreFirmante) {
+            addText(this.nombreFirmante, pageWidth - margin - imgWidth / 2, yPosition + imgHeight + 5, 9, true, 'center');
+          }
+          if (this.funcionFirmante) {
+            addText(this.funcionFirmante, pageWidth - margin - imgWidth / 2, yPosition + imgHeight + 11, 8, false, 'center');
+          }
+          
+          // Guardar PDF
+          const fileName = `Certificado_${this.numeroCertificado || 'N' + this.certificadoId}_${new Date().getTime()}.pdf`;
+          pdf.save(fileName);
+          this.isExportingPDF = false;
+        };
+        img.onerror = () => {
+          // Si falla la imagen, guardar sin ella
+          const fileName = `Certificado_${this.numeroCertificado || 'N' + this.certificadoId}_${new Date().getTime()}.pdf`;
+          pdf.save(fileName);
+          this.isExportingPDF = false;
+        };
+      } else {
+        // Guardar PDF sin firma
+        const fileName = `Certificado_${this.numeroCertificado || 'N' + this.certificadoId}_${new Date().getTime()}.pdf`;
+        pdf.save(fileName);
+        this.isExportingPDF = false;
+      }
+    } catch (error) {
       console.error('Error al generar PDF:', error);
       alert('Error al generar el PDF. Por favor, intente nuevamente.');
       this.isExportingPDF = false;
-      this.viewSeleccionarImagenFirma = true;
-    });
-  }, 0);
+    }
   }
 
   onCancel() {
