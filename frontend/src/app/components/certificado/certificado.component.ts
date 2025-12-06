@@ -954,9 +954,14 @@ export class CertificadoComponent implements OnInit {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = 210; // A4 width in mm
       const pageHeight = 297; // A4 height in mm
-      const margin = 15;
+      const margin = 18; // Márgenes más profesionales
       const contentWidth = pageWidth - (2 * margin);
       let yPosition = margin;
+      
+      // Colores oficiales INASE
+      const colorAzul: [number, number, number] = [0, 102, 204];
+      const colorDoradoClaro: [number, number, number] = [212, 165, 116];
+      const colorDoradoOscuro: [number, number, number] = [184, 134, 11];
 
       // Función helper para formatear números con comas (formato uruguayo/español)
       const formatearNumero = (valor: number | null | undefined): string => {
@@ -964,13 +969,39 @@ export class CertificadoComponent implements OnInit {
         return valor.toString().replace('.', ',');
       };
 
-      // Función helper para agregar texto con wrap
-      const addText = (text: string, x: number, y: number, fontSize: number = 10, isBold: boolean = false, align: 'left' | 'center' | 'right' = 'left', maxWidth?: number) => {
+      // Función helper para agregar texto con tipografía mejorada
+      const addText = (text: string, x: number, y: number, fontSize: number = 10, isBold: boolean = false, align: 'left' | 'center' | 'right' = 'left', maxWidth?: number, useSerif: boolean = false) => {
         pdf.setFontSize(fontSize);
-        pdf.setFont('helvetica', isBold ? 'bold' : 'normal');
+        // Usar serif (times) para títulos importantes, helvetica para texto normal
+        if (useSerif) {
+          pdf.setFont('times', isBold ? 'bold' : 'normal');
+        } else {
+          pdf.setFont('helvetica', isBold ? 'bold' : 'normal');
+        }
         const lines = maxWidth ? pdf.splitTextToSize(text, maxWidth) : [text];
         pdf.text(lines, x, y, { align });
-        return lines.length * (fontSize * 0.35); // Retorna altura aproximada
+        return lines.length * (fontSize * 0.4); // Mejor altura de línea
+      };
+
+      // Función helper para agregar texto subrayado (para nombres científicos)
+      const addTextSubrayado = (text: string, x: number, y: number, fontSize: number = 10, align: 'left' | 'center' | 'right' = 'left') => {
+        pdf.setFontSize(fontSize);
+        pdf.setFont('helvetica', 'normal');
+        const lines = pdf.splitTextToSize(text, contentWidth);
+        pdf.text(lines, x, y, { align });
+        // Agregar línea de subrayado
+        const textWidth = pdf.getTextWidth(text);
+        const lineY = y + 1;
+        pdf.setDrawColor(0, 0, 0);
+        pdf.setLineWidth(0.1);
+        if (align === 'center') {
+          pdf.line(x - textWidth / 2, lineY, x + textWidth / 2, lineY);
+        } else if (align === 'right') {
+          pdf.line(x - textWidth, lineY, x, lineY);
+        } else {
+          pdf.line(x, lineY, x + textWidth, lineY);
+        }
+        return lines.length * (fontSize * 0.4);
       };
 
       // Función helper para agregar nueva página si es necesario
@@ -983,67 +1014,85 @@ export class CertificadoComponent implements OnInit {
         return false;
       };
 
-      // HEADER
-      // Línea azul superior
-      pdf.setDrawColor(0, 102, 204); // Azul
-      pdf.setLineWidth(0.8);
+      // HEADER PROFESIONAL
+      // Línea azul superior (más gruesa)
+      pdf.setDrawColor(colorAzul[0], colorAzul[1], colorAzul[2]);
+      pdf.setLineWidth(1.0);
       pdf.line(0, yPosition, pageWidth, yPosition);
-      yPosition += 3;
+      yPosition += 4;
       
-      // Logos y texto central
-      pdf.setFillColor(212, 165, 116); // Color dorado del logo
-      
-      // Logo izquierdo (más grande)
+      // Logos con gradientes mejorados
+      // Logo izquierdo (más grande) con gradiente
       const logoLeftX = 25;
       const logoLeftY = yPosition + 10;
-      const logoLeftRadius = 8;
-      pdf.circle(logoLeftX, logoLeftY, logoLeftRadius, 'F');
-      // Texto "INASE" en el logo izquierdo
-      pdf.setTextColor(255, 255, 255); // Blanco
-      pdf.setFontSize(7);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('INASE', logoLeftX, logoLeftY + 2, { align: 'center' });
+      const logoLeftRadius = 9;
       
-      // Logo derecho (más pequeño)
+      // Crear gradiente con múltiples círculos
+      for (let i = 0; i < 5; i++) {
+        const alpha = 1 - (i * 0.15);
+        const r = colorDoradoClaro[0] + (colorDoradoOscuro[0] - colorDoradoClaro[0]) * (i / 4);
+        const g = colorDoradoClaro[1] + (colorDoradoOscuro[1] - colorDoradoClaro[1]) * (i / 4);
+        const b = colorDoradoClaro[2] + (colorDoradoOscuro[2] - colorDoradoClaro[2]) * (i / 4);
+        pdf.setFillColor(r, g, b);
+        pdf.circle(logoLeftX, logoLeftY, logoLeftRadius - (i * 0.5), 'F');
+      }
+      
+      // Texto "INASE" en el logo izquierdo
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(7.5);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('INASE', logoLeftX, logoLeftY + 2.5, { align: 'center' });
+      
+      // Logo derecho (más pequeño) con gradiente
       const logoRightX = pageWidth - 25;
       const logoRightY = yPosition + 10;
-      const logoRightRadius = 6;
-      pdf.circle(logoRightX, logoRightY, logoRightRadius, 'F');
+      const logoRightRadius = 7;
+      
+      // Crear gradiente con múltiples círculos
+      for (let i = 0; i < 5; i++) {
+        const alpha = 1 - (i * 0.15);
+        const r = colorDoradoClaro[0] + (colorDoradoOscuro[0] - colorDoradoClaro[0]) * (i / 4);
+        const g = colorDoradoClaro[1] + (colorDoradoOscuro[1] - colorDoradoClaro[1]) * (i / 4);
+        const b = colorDoradoClaro[2] + (colorDoradoOscuro[2] - colorDoradoClaro[2]) * (i / 4);
+        pdf.setFillColor(r, g, b);
+        pdf.circle(logoRightX, logoRightY, logoRightRadius - (i * 0.4), 'F');
+      }
+      
       // Texto "INASE" y "URUGUAY" en el logo derecho
-      pdf.setTextColor(255, 255, 255); // Blanco
-      pdf.setFontSize(5);
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(5.5);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('INASE', logoRightX, logoRightY - 1.5, { align: 'center' });
-      pdf.setFontSize(4);
-      pdf.text('URUGUAY', logoRightX, logoRightY + 2, { align: 'center' });
+      pdf.text('INASE', logoRightX, logoRightY - 1.8, { align: 'center' });
+      pdf.setFontSize(4.5);
+      pdf.text('URUGUAY', logoRightX, logoRightY + 2.2, { align: 'center' });
       
       // Línea azul debajo del logo derecho (subrayado)
-      pdf.setDrawColor(0, 102, 204); // Azul
+      pdf.setDrawColor(colorAzul[0], colorAzul[1], colorAzul[2]);
       pdf.setLineWidth(0.8);
-      const lineStartX = logoRightX - 8;
-      const lineEndX = logoRightX + 8;
-      const lineY = logoRightY + logoRightRadius + 2;
+      const lineStartX = logoRightX - 9;
+      const lineEndX = logoRightX + 9;
+      const lineY = logoRightY + logoRightRadius + 2.5;
       pdf.line(lineStartX, lineY, lineEndX, lineY);
       
-      // Restaurar color de texto a negro para el resto
+      // Restaurar color de texto a negro
       pdf.setTextColor(0, 0, 0);
       
-      // Texto centralizado
-      addText('INSTITUTO NACIONAL DE SEMILLAS', pageWidth / 2, yPosition + 8, 11, true, 'center');
-      addText('CERTIFICADO DE ANÁLISIS NACIONAL', pageWidth / 2, yPosition + 14, 13, true, 'center');
-      addText('laboratorio@inase.uy | www.inase.uy', pageWidth / 2, yPosition + 19, 8, false, 'center');
+      // Texto centralizado con tipografía serif para títulos
+      addText('INSTITUTO NACIONAL DE SEMILLAS', pageWidth / 2, yPosition + 8, 12, true, 'center', undefined, true);
+      addText('CERTIFICADO DE ANÁLISIS NACIONAL', pageWidth / 2, yPosition + 15, 14, true, 'center', undefined, true);
+      addText('laboratorio@inase.uy | www.inase.uy', pageWidth / 2, yPosition + 21, 8.5, false, 'center');
       
-      // Línea negra inferior del header
-      yPosition += 30;
-      pdf.setDrawColor(0, 0, 0); // Negro
-      pdf.setLineWidth(0.5);
+      // Línea negra inferior del header (más gruesa)
+      yPosition += 32;
+      pdf.setDrawColor(0, 0, 0);
+      pdf.setLineWidth(0.8);
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
-      yPosition += 10;
+      yPosition += 12;
 
       // INFORMACIÓN DEL SOLICITANTE
-      checkNewPage(20);
-      addText('INFORMACIÓN DEL SOLICITANTE', margin, yPosition, 11, true);
-      yPosition += 8;
+      checkNewPage(25);
+      addText('INFORMACIÓN DEL SOLICITANTE', margin, yPosition, 12, true, 'left', undefined, true);
+      yPosition += 10;
       
       const solicitanteData = [
         ['Nombre:', this.nombreSolicitante || ''],
@@ -1053,20 +1102,27 @@ export class CertificadoComponent implements OnInit {
       ];
       
       solicitanteData.forEach(([label, value]) => {
-        checkNewPage(7);
-        addText(label, margin, yPosition, 9, true);
-        addText(value, margin + 50, yPosition, 9, false);
-        yPosition += 6;
+        checkNewPage(8);
+        addText(label, margin, yPosition, 9.5, true);
+        // Si es especie, usar subrayado para nombre científico
+        if (label === 'Especie:' && value) {
+          addTextSubrayado(value, margin + 50, yPosition, 9.5);
+        } else {
+          addText(value, margin + 50, yPosition, 9.5, false);
+        }
+        yPosition += 7;
       });
       
-      yPosition += 5;
+      yPosition += 6;
+      pdf.setDrawColor(colorAzul[0], colorAzul[1], colorAzul[2]);
+      pdf.setLineWidth(0.5);
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
-      yPosition += 10;
+      yPosition += 12;
 
       // INFORMACIÓN GENERAL
-      checkNewPage(20);
-      addText('INFORMACIÓN GENERAL', margin, yPosition, 11, true);
-      yPosition += 8;
+      checkNewPage(25);
+      addText('INFORMACIÓN GENERAL', margin, yPosition, 12, true, 'left', undefined, true);
+      yPosition += 10;
       
       const generalData = [
         ['Responsable del muestreo:', this.responsableMuestreo || ''],
@@ -1082,30 +1138,39 @@ export class CertificadoComponent implements OnInit {
       ];
       
       generalData.forEach(([label, value]) => {
-        checkNewPage(7);
-        const labelWidth = 60;
-        addText(label, margin, yPosition, 9, true, 'left', labelWidth);
-        addText(value, margin + labelWidth + 5, yPosition, 9, false);
-        yPosition += 6;
+        checkNewPage(8);
+        const labelWidth = 65;
+        addText(label, margin, yPosition, 9.5, true, 'left', labelWidth);
+        addText(value, margin + labelWidth + 5, yPosition, 9.5, false);
+        yPosition += 7;
       });
       
-      yPosition += 5;
+      yPosition += 6;
+      pdf.setDrawColor(colorAzul[0], colorAzul[1], colorAzul[2]);
+      pdf.setLineWidth(0.5);
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
-      yPosition += 10;
+      yPosition += 12;
 
       // RESULTADOS DE ANÁLISIS
-      checkNewPage(20);
-      addText('RESULTADOS DE ANÁLISIS', margin, yPosition, 11, true);
-      yPosition += 8;
+      checkNewPage(25);
+      addText('RESULTADOS DE ANÁLISIS', margin, yPosition, 12, true, 'left', undefined, true);
+      yPosition += 10;
       
-      addText(`Especie (nombre científico): ${this.especie || ''}`, margin, yPosition, 9, false);
-      yPosition += 8;
+      // Nombre científico con subrayado
+      if (this.especie) {
+        addText('Especie (nombre científico): ', margin, yPosition, 9.5, false);
+        const textWidth = pdf.getTextWidth('Especie (nombre científico): ');
+        addTextSubrayado(this.especie, margin + textWidth, yPosition, 9.5);
+      } else {
+        addText(`Especie (nombre científico): ${this.especie || ''}`, margin, yPosition, 9.5, false);
+      }
+      yPosition += 10;
 
       // Tabla de Pureza
       if (this.tienePureza) {
-        checkNewPage(30);
-        addText('Pureza (% en peso)', margin, yPosition, 10, true);
-        yPosition += 7;
+        checkNewPage(35);
+        addText('Pureza (% en peso)', margin, yPosition, 11, true, 'left', undefined, true);
+        yPosition += 8;
         
         const purezaHeaders = [
           'Semilla pura',
@@ -1129,28 +1194,37 @@ export class CertificadoComponent implements OnInit {
           this.purezaHumedad || 'N'
         ]];
       
-        // Usar autoTable para las tablas con diseño similar al certificado original
+        // Usar autoTable para las tablas con diseño profesional mejorado
         autoTable(pdf, {
           head: [purezaHeaders],
           body: purezaData,
           startY: yPosition,
           margin: { left: margin, right: margin },
           styles: { 
-            fontSize: 8, 
-            cellPadding: 3,
+            fontSize: 8.5, 
+            cellPadding: 4,
             halign: 'center',
-            valign: 'middle'
+            valign: 'middle',
+            lineColor: [0, 0, 0],
+            lineWidth: 0.15,
+            font: 'helvetica',
+            fontStyle: 'normal'
           },
           headStyles: { 
-            fillColor: [0, 102, 204], 
+            fillColor: colorAzul, 
             textColor: [255, 255, 255], 
             fontStyle: 'bold',
             halign: 'center',
-            valign: 'middle'
+            valign: 'middle',
+            lineColor: [255, 255, 255],
+            lineWidth: 0.1,
+            fontSize: 8.5
           },
           bodyStyles: {
             halign: 'center',
-            valign: 'middle'
+            valign: 'middle',
+            lineColor: [0, 0, 0],
+            lineWidth: 0.1
           },
           columnStyles: {
             0: { cellWidth: 22 },
@@ -1163,29 +1237,36 @@ export class CertificadoComponent implements OnInit {
             7: { cellWidth: 18 }
           },
           theme: 'grid',
-          tableWidth: 'auto'
+          tableWidth: 'auto',
+          alternateRowStyles: {
+            fillColor: [250, 250, 250]
+          }
         });
         
-        yPosition = (pdf as any).lastAutoTable.finalY + 5;
+        yPosition = (pdf as any).lastAutoTable.finalY + 8;
         
-        if (this.purezaClaseMateriaInerte) {
-          checkNewPage(7);
-          addText(`Clase de materia inerte: ${this.purezaClaseMateriaInerte}`, margin, yPosition, 9, false);
-          yPosition += 6;
+        if (this.purezaClaseMateriaInerte && this.purezaClaseMateriaInerte.trim() !== '') {
+          checkNewPage(8);
+          addText(`Clase de materia inerte: ${this.purezaClaseMateriaInerte}`, margin, yPosition, 9.5, false);
+          yPosition += 7;
         }
         
-        if (this.purezaOtrasSemillasDescripcion) {
-          checkNewPage(7);
-          addText(`Otras semillas: ${this.purezaOtrasSemillasDescripcion}`, margin, yPosition, 9, false);
-          yPosition += 6;
+        if (this.purezaOtrasSemillasDescripcion && this.purezaOtrasSemillasDescripcion.trim() !== '') {
+          checkNewPage(8);
+          addText(`Otras semillas: ${this.purezaOtrasSemillasDescripcion}`, margin, yPosition, 9.5, false);
+          yPosition += 7;
+        } else {
+          checkNewPage(8);
+          addText('Otras semillas: No contiene.', margin, yPosition, 9.5, false);
+          yPosition += 7;
         }
       }
 
       // DOSN
       if (this.tieneDOSN) {
-        checkNewPage(25);
-        addText(`Determinación de otras semillas en número en ${this.dosnGramosAnalizados || ''} g (análisis limitado)`, margin, yPosition, 9, true);
-        yPosition += 8;
+        checkNewPage(28);
+        addText(`Determinación de otras semillas en número en ${this.dosnGramosAnalizados || ''} g (análisis limitado)`, margin, yPosition, 10, true, 'left', undefined, true);
+        yPosition += 10;
         
         const dosnData = [
           ['N° de semillas de malezas con tolerancia cero:', this.dosnMalezasToleranciaCero?.toString() || '0'],
@@ -1194,29 +1275,29 @@ export class CertificadoComponent implements OnInit {
         ];
         
         dosnData.forEach(([label, value]) => {
-          checkNewPage(7);
-          addText(label, margin, yPosition, 9, true, 'left', 80);
-          addText(value, margin + 85, yPosition, 9, false);
-          yPosition += 6;
+          checkNewPage(8);
+          addText(label, margin, yPosition, 9.5, true, 'left', 85);
+          addText(value, margin + 90, yPosition, 9.5, false);
+          yPosition += 7;
         });
 
         // Determinación de Brassica spp. (separada)
-        checkNewPage(7);
+        checkNewPage(8);
         let brassicaText = 'No contiene.';
         if (this.brassicaContiene) {
           brassicaText = 'Contiene.';
         } else if (this.dosnBrassicaSpp != null) {
           brassicaText = this.dosnBrassicaSpp.toString();
         }
-        addText(`Determinación de Brassica spp. en ${this.dosnGramosAnalizados || ''} g: ${brassicaText}`, margin, yPosition, 9, false);
-        yPosition += 8;
+        addText(`Determinación de Brassica spp. en ${this.dosnGramosAnalizados || ''} g: ${brassicaText}`, margin, yPosition, 9.5, false);
+        yPosition += 10;
       }
 
       // Tabla de Germinación
       if (this.tieneGerminacion) {
-        checkNewPage(30);
-        addText('Germinación (% en número)', margin, yPosition, 10, true);
-        yPosition += 7;
+        checkNewPage(35);
+        addText('Germinación (% en número)', margin, yPosition, 11, true, 'left', undefined, true);
+        yPosition += 8;
         
         const germinacionHeaders = [
           'N° de días',
@@ -1248,54 +1329,71 @@ export class CertificadoComponent implements OnInit {
           startY: yPosition,
           margin: { left: margin, right: margin },
           styles: { 
-            fontSize: 8, 
-            cellPadding: 3,
+            fontSize: 8.5, 
+            cellPadding: 4,
             halign: 'center',
-            valign: 'middle'
+            valign: 'middle',
+            lineColor: [0, 0, 0],
+            lineWidth: 0.15,
+            font: 'helvetica',
+            fontStyle: 'normal'
           },
           headStyles: { 
-            fillColor: [0, 102, 204], 
+            fillColor: colorAzul, 
             textColor: [255, 255, 255], 
             fontStyle: 'bold',
             halign: 'center',
-            valign: 'middle'
+            valign: 'middle',
+            lineColor: [255, 255, 255],
+            lineWidth: 0.1,
+            fontSize: 8.5
           },
           bodyStyles: {
             halign: 'center',
-            valign: 'middle'
+            valign: 'middle',
+            lineColor: [0, 0, 0],
+            lineWidth: 0.1
           },
           theme: 'grid',
-          tableWidth: 'auto'
+          tableWidth: 'auto',
+          alternateRowStyles: {
+            fillColor: [250, 250, 250]
+          }
         });
         
-        yPosition = (pdf as any).lastAutoTable.finalY + 5;
+        yPosition = (pdf as any).lastAutoTable.finalY + 8;
       }
 
       // Otras determinaciones
       if (this.otrasDeterminaciones && this.otrasDeterminaciones.trim() !== '') {
-        checkNewPage(7);
-        addText(`Otras determinaciones: ${this.otrasDeterminaciones}`, margin, yPosition, 9, false);
-        yPosition += 8;
+        checkNewPage(8);
+        addText(`Otras determinaciones: ${this.otrasDeterminaciones}`, margin, yPosition, 9.5, false);
+        yPosition += 10;
       } else {
-        checkNewPage(7);
-        addText('Otras determinaciones: -', margin, yPosition, 9, false);
-        yPosition += 8;
+        checkNewPage(8);
+        addText('Otras determinaciones: -', margin, yPosition, 9.5, false);
+        yPosition += 10;
       }
 
-      // FOOTER
-      checkNewPage(30);
-      pdf.setDrawColor(0, 102, 204);
-      pdf.setLineWidth(0.5);
+      // FOOTER PROFESIONAL
+      checkNewPage(35);
+      pdf.setDrawColor(colorAzul[0], colorAzul[1], colorAzul[2]);
+      pdf.setLineWidth(0.8);
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
-      yPosition += 10;
+      yPosition += 12;
       
-      addText(this.fechaEmision ? this.formatearFecha(this.fechaEmision) : '', margin, yPosition, 10, true);
-      addText('Fecha de emisión', margin, yPosition + 6, 9, false);
+      // Fecha de emisión con mejor formato
+      const fechaEmisionTexto = this.fechaEmision ? this.formatearFecha(this.fechaEmision) : '';
+      if (fechaEmisionTexto) {
+        addText(fechaEmisionTexto, margin, yPosition, 11, true);
+        addText('Fecha de emisión', margin, yPosition + 7, 9.5, false);
+      }
       
-      addText('ESTE CERTIFICADO AMPARA A UN LOTE DE SEMILLAS', pageWidth / 2, yPosition + 15, 10, true, 'center');
+      // Texto centralizado con tipografía serif
+      addText('ESTE CERTIFICADO AMPARA A UN LOTE DE SEMILLAS', pageWidth / 2, yPosition + 18, 11, true, 'center', undefined, true);
       
-      addText('LOS RESULTADOS remitidos refieren a la muestra recibida por el laboratorio.', pageWidth / 2, yPosition + 22, 9, true, 'center');
-      addText('Este informe no debe ser reproducido parcialmente sin la autorización del laboratorio.', pageWidth / 2, yPosition + 28, 9, true, 'center');
+      addText('LOS RESULTADOS remitidos refieren a la muestra recibida por el laboratorio.', pageWidth / 2, yPosition + 26, 9.5, true, 'center');
+      addText('Este informe no debe ser reproducido parcialmente sin la autorización del laboratorio.', pageWidth / 2, yPosition + 33, 9.5, true, 'center');
       
       // Función para guardar PDF
       const guardarPDF = () => {
@@ -1304,17 +1402,35 @@ export class CertificadoComponent implements OnInit {
       this.isExportingPDF = false;
       };
       
+      // Función para agregar numeración de páginas
+      const agregarNumeracionPaginas = () => {
+        const totalPages = pdf.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+          pdf.setPage(i);
+          pdf.setFontSize(8);
+          pdf.setFont('helvetica', 'normal');
+          pdf.setTextColor(100, 100, 100);
+          pdf.text(
+            `${i}`,
+            pageWidth / 2,
+            pageHeight - 8,
+            { align: 'center' }
+          );
+          pdf.setTextColor(0, 0, 0);
+        }
+      };
+      
       // Firma digital (si existe)
       if (this.firmantePreviewUrl) {
-        yPosition += 40;
-        checkNewPage(30);
+        yPosition += 45;
+        checkNewPage(35);
         
         // Agregar imagen de firma
         const img = new Image();
-        const firmaUrl = this.firmantePreviewUrl; // Guardar en variable local para evitar problemas de tipo
+        const firmaUrl = this.firmantePreviewUrl;
         img.src = firmaUrl;
         img.onload = () => {
-          const imgWidth = 50;
+          const imgWidth = 55;
           const imgHeight = (img.height * imgWidth) / img.width;
           const firmaX = pageWidth - margin - imgWidth;
           const firmaY = yPosition;
@@ -1325,34 +1441,46 @@ export class CertificadoComponent implements OnInit {
           let firmaFinalY = firmaY + imgHeight;
           
           if (this.nombreFirmante) {
-            addText(this.nombreFirmante, pageWidth - margin - imgWidth / 2, firmaY + imgHeight + 5, 9, true, 'center');
-            firmaFinalY += 6;
+            addText(this.nombreFirmante, pageWidth - margin - imgWidth / 2, firmaY + imgHeight + 6, 10, true, 'center');
+            firmaFinalY += 7;
           }
           if (this.funcionFirmante) {
-            addText(this.funcionFirmante, pageWidth - margin - imgWidth / 2, firmaY + imgHeight + 11, 8, false, 'center');
-            firmaFinalY += 6;
+            addText(this.funcionFirmante, pageWidth - margin - imgWidth / 2, firmaY + imgHeight + 13, 9, false, 'center');
+            firmaFinalY += 7;
+          }
+          
+          // Agregar información de firma digital si está disponible
+          if (this.fechaEmision) {
+            const fechaFirma = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            addText(`Firmado digitalmente el ${fechaFirma}`, pageWidth - margin - imgWidth / 2, firmaFinalY + 3, 7, false, 'center');
+            firmaFinalY += 5;
           }
           
           // Agregar leyenda justo debajo de la firma
-          yPosition = firmaFinalY + 10; // Espacio después de la firma
-          checkNewPage(10);
-          addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition, 8, false, 'center');
+          yPosition = firmaFinalY + 12;
+          checkNewPage(12);
+          addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition, 8.5, false, 'center');
+          
+          // Agregar numeración de páginas
+          agregarNumeracionPaginas();
           
           // Guardar PDF
           guardarPDF();
         };
         img.onerror = () => {
           // Si falla la imagen, agregar leyenda y guardar sin ella
-          yPosition += 20;
-          checkNewPage(10);
-          addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition, 8, false, 'center');
+          yPosition += 25;
+          checkNewPage(12);
+          addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition, 8.5, false, 'center');
+          agregarNumeracionPaginas();
           guardarPDF();
         };
       } else {
         // Sin firma, agregar leyenda al final y guardar
-        yPosition += 20;
-        checkNewPage(10);
-        addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition, 8, false, 'center');
+        yPosition += 25;
+        checkNewPage(12);
+        addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition, 8.5, false, 'center');
+        agregarNumeracionPaginas();
         guardarPDF();
       }
     } catch (error) {
