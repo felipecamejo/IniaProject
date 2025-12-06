@@ -712,9 +712,10 @@ public class DebugController {
             String[] origenes = {"Montevideo", "Canelones", "Maldonado", "Colonia", "San José", "Tacuarembó", "Paysandú", "Salto"};
             String[] remitentes = {"INIA La Estanzuela", "INIA Tacuarembó", "INIA Salto Grande", "INIA Treinta y Tres", "INIA Paysandú", 
                                    "Productor Privado", "Cooperativa Agraria", "Empresa Semillera"};
-            String[] analisisSolicitados = {"Pureza, Germinación", "Pureza, Germinación, Sanitario", 
-                                            "Pureza, Germinación, Tetrazolio", "Pureza, Germinación, DOSN, PMS",
-                                            "Completo: Pureza, Germinación, Sanitario, Tetrazolio, DOSN, PMS"};
+            // Variable no utilizada - Campo analisisSolicitados no existe en la entidad Recibo
+            // String[] analisisSolicitados = {"Pureza, Germinación", "Pureza, Germinación, Sanitario", 
+            //                                 "Pureza, Germinación, Tetrazolio", "Pureza, Germinación, DOSN, PMS",
+            //                                 "Completo: Pureza, Germinación, Sanitario, Tetrazolio, DOSN, PMS"};
             ReciboEstado[] estados = ReciboEstado.values();
 
             int recibosCreados = 0;
@@ -769,8 +770,8 @@ public class DebugController {
                     // Kg limpios (valores realistas entre 0.5 y 50 kg)
                     recibo.setKgLimpios(0.5f + (float)(Math.random() * 49.5f));
 
-                    // Análisis solicitados
-                    recibo.setAnalisisSolicitados(analisisSolicitados[recibosCreados % analisisSolicitados.length]);
+                    // Análisis solicitados - Campo no existe en la entidad Recibo
+                    // recibo.setAnalisisSolicitados(analisisSolicitados[recibosCreados % analisisSolicitados.length]);
 
                     // Artículo (opcional, algunos recibos lo tienen)
                     if (recibosCreados % 3 == 0) {
@@ -964,7 +965,8 @@ public class DebugController {
                     germinacion.setPreTratamiento(PreTratamiento.NINGUNO);
                     germinacion.setNroDias(14);
                     calendar.add(Calendar.DAY_OF_MONTH, 14);
-                    germinacion.setFechaFinal(calendar.getTime());
+                    // fechaFinal - Campo no existe en la entidad Germinacion
+                    // germinacion.setFechaFinal(calendar.getTime());
                     germinacion.setPRedondeo(85);
                     germinacion.setPNormalINIA(85);
                     germinacion.setPNormalINASE(85);
