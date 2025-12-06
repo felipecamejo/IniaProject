@@ -272,7 +272,6 @@ export class CertificadoComponent implements OnInit {
     this.reciboService.obtenerRecibo(this.reciboId).subscribe({
       next: (recibo: ReciboDto) => {
         this.recibo = recibo;
-        this.analisisSolicitados = recibo.analisisSolicitados;
         // Obtener nombre de especie por ID
         if (recibo.especieId) {
           this.especieService.obtener(recibo.especieId).subscribe({
@@ -513,7 +512,6 @@ export class CertificadoComponent implements OnInit {
           this.reciboService.obtenerRecibo(this.reciboId).subscribe({
             next: (recibo: ReciboDto) => {
               this.recibo = recibo;
-              this.analisisSolicitados = recibo.analisisSolicitados;
               // Extraer el peso del recibo
               this.pesoKg = recibo.kgLimpios ?? 0;
               // Determinar qué análisis deben realizarse (solo para mostrar en la leyenda)

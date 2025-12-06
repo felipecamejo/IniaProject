@@ -143,18 +143,4 @@
     <p>© Inia 2025</p>
   </footer>
 
-  <!-- Popup de confirmación de eliminación -->
-  <app-confirm-dialog
-      [visible]="mostrarConfirmEliminar"
-      title="Eliminar Certificado"
-      message="¿Estás seguro de que quieres eliminar este certificado?"
-      [itemName]="certificadoAEliminar?.numeroCertificado ? 'Certificado: ' + (certificadoAEliminar?.numeroCertificado ?? '') : ''"
-      [itemId]="certificadoAEliminar?.id ?? ''"
-      confirmText="Eliminar"
-      cancelText="Cancelar"
-      [loading]="confirmLoading"
-      (confirm)="confirmarEliminacion()"
-      (cancel)="cancelarEliminacion()">
-  </app-confirm-dialog>
-
 </div>

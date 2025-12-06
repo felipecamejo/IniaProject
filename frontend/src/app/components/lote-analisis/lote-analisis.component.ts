@@ -29,8 +29,7 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   private navigationSubscription: any;
   private currentUrl: string = '';
 
-  // Propiedades para el popup de confirmación de eliminación
-  mostrarConfirmEliminar: boolean = false;
+
   certificadoAEliminar: CertificadoDto | null = null;
   confirmLoading: boolean = false;
 
@@ -113,6 +112,11 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error al cargar lote:', error);
           this.lote = null;
+          // Si el error es 404, redirigir a home
+          if (error && error.status === 404) {
+            alert('El lote no existe o fue eliminado. Redirigiendo a la página principal.');
+            this.router.navigate(['/home']);
+          }
         }
       });
     }
@@ -181,6 +185,8 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error al verificar recibo:', error);
+          alert('Error: No se pudo identificar el recibo. Corrigiendo url.');
+          this.router.navigate([`/${this.loteId}/0/lote-analisis`]);
           this.tieneRecibo = false;
           this.tieneAnalisis = false;
           this.tieneCertificado = false;
@@ -381,7 +387,6 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
     this.certificadoService.obtenerCertificado(this.certificadoId).subscribe({
       next: (certificado: CertificadoDto) => {
         this.certificadoAEliminar = certificado;
-        this.mostrarConfirmEliminar = true;
       },
       error: (error) => {
         console.error('Error cargando certificado:', error);
@@ -400,7 +405,6 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
       next: (mensaje: string) => {
         console.log('Certificado eliminado:', mensaje);
         this.confirmLoading = false;
-        this.mostrarConfirmEliminar = false;
         this.certificadoAEliminar = null;
         // Actualizar estado local
         this.tieneCertificado = false;
@@ -411,7 +415,6 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error eliminando certificado:', error);
         this.confirmLoading = false;
-        this.mostrarConfirmEliminar = false;
         this.certificadoAEliminar = null;
         alert('Error al eliminar el certificado. Por favor, intente nuevamente.');
       }
@@ -419,7 +422,6 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   }
 
   cancelarEliminacion(): void {
-    this.mostrarConfirmEliminar = false;
     this.certificadoAEliminar = null;
     this.confirmLoading = false;
   }

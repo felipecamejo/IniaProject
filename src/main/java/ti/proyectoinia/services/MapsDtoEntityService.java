@@ -46,7 +46,6 @@ public class MapsDtoEntityService {
         if (value == null || value.isBlank()) {
             return null;
         }
-        // Proteger contra valores inválidos provenientes del frontend
         String cleanValue = value.trim();
         if (cleanValue.contains("NaN")) {
             return null;
@@ -61,8 +60,17 @@ public class MapsDtoEntityService {
         }
 
         try {
-            LocalDateTime localDateTime = LocalDateTime.parse(cleanValue, ISO_LOCAL_DATE_TIME);
-            return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+            // Extraer solo el año, mes y día del string recibido, ignorando hora y zona
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})");
+            java.util.regex.Matcher matcher = pattern.matcher(cleanValue);
+            if (matcher.find()) {
+                int year = Integer.parseInt(matcher.group(1));
+                int month = Integer.parseInt(matcher.group(2));
+                int day = Integer.parseInt(matcher.group(3));
+                java.time.LocalDate localDate = java.time.LocalDate.of(year, month, day);
+                return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            }
+            return null;
         } catch (Exception ignored) {
             // Si no matchea el formato esperado, devolver null de forma segura
             return null;

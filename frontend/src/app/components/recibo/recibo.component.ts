@@ -227,13 +227,10 @@ export class ReciboComponent implements OnInit {
       this.articulo = recibo.articulo;
       this.selectedCultivarId = recibo.cultivarId ?? null;
       this.kilos = recibo.kgLimpios || 0;
-      // Conservar fecha original al editar, manejando zona horaria local
+      console.log('Cargando fecha recibo para edición:', recibo.fechaRecibo);
+      // Mostrar siempre el día correcto, sin importar la zona horaria
       if (recibo.fechaRecibo) {
-        const fecha = new Date(recibo.fechaRecibo);
-        const year = fecha.getFullYear();
-        const month = String(fecha.getMonth() + 1).padStart(2, '0');
-        const day = String(fecha.getDate()).padStart(2, '0');
-        this.fechaRecibo = `${year}-${month}-${day}`;
+        this.fechaRecibo = recibo.fechaRecibo.substring(0, 10);
       } else {
         this.fechaRecibo = '';
       }
@@ -301,9 +298,6 @@ export class ReciboComponent implements OnInit {
   manejarProblemas(): boolean {
     this.errores = []; // Reiniciar errores
 
-    const hoy = new Date();
-    const fechaRecibo = this.fechaRecibo ? new Date(this.fechaRecibo) : null;
-
     if (this.articulo != null && this.articulo < 0) {
       this.errores.push('El artículo no puede ser un número negativo.');
     }
@@ -316,9 +310,6 @@ export class ReciboComponent implements OnInit {
       this.errores.push('Algunas humedades tienen un número negativo.');
     }
 
-    if (fechaRecibo != null && fechaRecibo > hoy) {
-      this.errores.push('La fecha no puede ser mayor a la fecha actual.');
-    }
 
     return this.errores.length > 0;
   }
@@ -345,7 +336,6 @@ export class ReciboComponent implements OnInit {
       cultivarId: this.selectedCultivarId ?? null,
       loteId: Number(this.lote2) || null,
       kgLimpios: Number(this.kilos) || null,
-      analisisSolicitados: null,
       articulo: this.articulo,
       activo: true
     };
@@ -412,7 +402,6 @@ export class ReciboComponent implements OnInit {
       cultivarId: this.selectedCultivarId ?? base.cultivarId ?? null,
       loteId: Number(this.lote2) || base.loteId || null,
       kgLimpios: Number(this.kilos) || base.kgLimpios || null,
-      analisisSolicitados: base.analisisSolicitados || null,
       articulo: this.articulo ?? base.articulo ?? null,
       activo: base.activo ?? true
     };

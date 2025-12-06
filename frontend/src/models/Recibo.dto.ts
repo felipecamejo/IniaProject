@@ -20,7 +20,6 @@ export interface ReciboDto {
   cultivarId: number | null;
   loteId: number | null;
   kgLimpios: number | null;
-  analisisSolicitados: string | null;
   articulo: number | null;
   activo: boolean;
 }
