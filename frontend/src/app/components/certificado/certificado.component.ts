@@ -984,16 +984,58 @@ export class CertificadoComponent implements OnInit {
       };
 
       // HEADER
-      pdf.setFillColor(212, 165, 116); // Color dorado del logo
-      pdf.circle(25, yPosition + 10, 8, 'F'); // Logo izquierdo
-      pdf.circle(pageWidth - 25, yPosition + 10, 6, 'F'); // Logo derecho
+      // Línea azul superior
+      pdf.setDrawColor(0, 102, 204); // Azul
+      pdf.setLineWidth(0.8);
+      pdf.line(0, yPosition, pageWidth, yPosition);
+      yPosition += 3;
       
+      // Logos y texto central
+      pdf.setFillColor(212, 165, 116); // Color dorado del logo
+      
+      // Logo izquierdo (más grande)
+      const logoLeftX = 25;
+      const logoLeftY = yPosition + 10;
+      const logoLeftRadius = 8;
+      pdf.circle(logoLeftX, logoLeftY, logoLeftRadius, 'F');
+      // Texto "INASE" en el logo izquierdo
+      pdf.setTextColor(255, 255, 255); // Blanco
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('INASE', logoLeftX, logoLeftY + 2, { align: 'center' });
+      
+      // Logo derecho (más pequeño)
+      const logoRightX = pageWidth - 25;
+      const logoRightY = yPosition + 10;
+      const logoRightRadius = 6;
+      pdf.circle(logoRightX, logoRightY, logoRightRadius, 'F');
+      // Texto "INASE" y "URUGUAY" en el logo derecho
+      pdf.setTextColor(255, 255, 255); // Blanco
+      pdf.setFontSize(5);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('INASE', logoRightX, logoRightY - 1.5, { align: 'center' });
+      pdf.setFontSize(4);
+      pdf.text('URUGUAY', logoRightX, logoRightY + 2, { align: 'center' });
+      
+      // Línea azul debajo del logo derecho (subrayado)
+      pdf.setDrawColor(0, 102, 204); // Azul
+      pdf.setLineWidth(0.8);
+      const lineStartX = logoRightX - 8;
+      const lineEndX = logoRightX + 8;
+      const lineY = logoRightY + logoRightRadius + 2;
+      pdf.line(lineStartX, lineY, lineEndX, lineY);
+      
+      // Restaurar color de texto a negro para el resto
+      pdf.setTextColor(0, 0, 0);
+      
+      // Texto centralizado
       addText('INSTITUTO NACIONAL DE SEMILLAS', pageWidth / 2, yPosition + 8, 11, true, 'center');
       addText('CERTIFICADO DE ANÁLISIS NACIONAL', pageWidth / 2, yPosition + 14, 13, true, 'center');
       addText('laboratorio@inase.uy | www.inase.uy', pageWidth / 2, yPosition + 19, 8, false, 'center');
       
+      // Línea negra inferior del header
       yPosition += 30;
-      pdf.setDrawColor(0, 102, 204); // Azul
+      pdf.setDrawColor(0, 0, 0); // Negro
       pdf.setLineWidth(0.5);
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
       yPosition += 10;
@@ -1086,7 +1128,7 @@ export class CertificadoComponent implements OnInit {
           this.purezaPeso1000Semillas || 'N',
           this.purezaHumedad || 'N'
         ]];
-        
+      
         // Usar autoTable para las tablas con diseño similar al certificado original
         autoTable(pdf, {
           head: [purezaHeaders],
@@ -1157,7 +1199,7 @@ export class CertificadoComponent implements OnInit {
           addText(value, margin + 85, yPosition, 9, false);
           yPosition += 6;
         });
-        
+
         // Determinación de Brassica spp. (separada)
         checkNewPage(7);
         let brassicaText = 'No contiene.';
@@ -1254,7 +1296,13 @@ export class CertificadoComponent implements OnInit {
       
       addText('LOS RESULTADOS remitidos refieren a la muestra recibida por el laboratorio.', pageWidth / 2, yPosition + 22, 9, true, 'center');
       addText('Este informe no debe ser reproducido parcialmente sin la autorización del laboratorio.', pageWidth / 2, yPosition + 28, 9, true, 'center');
-      addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition + 34, 8, false, 'center');
+      
+      // Función para guardar PDF
+      const guardarPDF = () => {
+      const fileName = `Certificado_${this.numeroCertificado || 'N' + this.certificadoId}_${new Date().getTime()}.pdf`;
+        pdf.save(fileName);
+      this.isExportingPDF = false;
+      };
       
       // Firma digital (si existe)
       if (this.firmantePreviewUrl) {
@@ -1268,31 +1316,44 @@ export class CertificadoComponent implements OnInit {
         img.onload = () => {
           const imgWidth = 50;
           const imgHeight = (img.height * imgWidth) / img.width;
-          pdf.addImage(firmaUrl, 'PNG', pageWidth - margin - imgWidth, yPosition, imgWidth, imgHeight);
+          const firmaX = pageWidth - margin - imgWidth;
+          const firmaY = yPosition;
+          
+          pdf.addImage(firmaUrl, 'PNG', firmaX, firmaY, imgWidth, imgHeight);
+          
+          // Calcular posición final de la firma (imagen + nombre + función)
+          let firmaFinalY = firmaY + imgHeight;
           
           if (this.nombreFirmante) {
-            addText(this.nombreFirmante, pageWidth - margin - imgWidth / 2, yPosition + imgHeight + 5, 9, true, 'center');
+            addText(this.nombreFirmante, pageWidth - margin - imgWidth / 2, firmaY + imgHeight + 5, 9, true, 'center');
+            firmaFinalY += 6;
           }
           if (this.funcionFirmante) {
-            addText(this.funcionFirmante, pageWidth - margin - imgWidth / 2, yPosition + imgHeight + 11, 8, false, 'center');
+            addText(this.funcionFirmante, pageWidth - margin - imgWidth / 2, firmaY + imgHeight + 11, 8, false, 'center');
+            firmaFinalY += 6;
           }
           
+          // Agregar leyenda justo debajo de la firma
+          yPosition = firmaFinalY + 10; // Espacio después de la firma
+          checkNewPage(10);
+          addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition, 8, false, 'center');
+          
           // Guardar PDF
-          const fileName = `Certificado_${this.numeroCertificado || 'N' + this.certificadoId}_${new Date().getTime()}.pdf`;
-          pdf.save(fileName);
-          this.isExportingPDF = false;
+          guardarPDF();
         };
         img.onerror = () => {
-          // Si falla la imagen, guardar sin ella
-          const fileName = `Certificado_${this.numeroCertificado || 'N' + this.certificadoId}_${new Date().getTime()}.pdf`;
-          pdf.save(fileName);
-          this.isExportingPDF = false;
+          // Si falla la imagen, agregar leyenda y guardar sin ella
+          yPosition += 20;
+          checkNewPage(10);
+          addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition, 8, false, 'center');
+          guardarPDF();
         };
       } else {
-        // Guardar PDF sin firma
-        const fileName = `Certificado_${this.numeroCertificado || 'N' + this.certificadoId}_${new Date().getTime()}.pdf`;
-        pdf.save(fileName);
-        this.isExportingPDF = false;
+        // Sin firma, agregar leyenda al final y guardar
+        yPosition += 20;
+        checkNewPage(10);
+        addText('N=no analizado TR=<0,05%', pageWidth / 2, yPosition, 8, false, 'center');
+        guardarPDF();
       }
     } catch (error) {
       console.error('Error al generar PDF:', error);
