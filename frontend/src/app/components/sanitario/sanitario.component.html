@@ -3,7 +3,7 @@
   <button class="back-button" (click)="onCancel()">
     <i class="pi pi-arrow-left"></i>
   </button>
-  
+
   <p-card class="card">
     <ng-template pTemplate="header">
       <h2 class="title">{{ isViewing ? 'Ver Sanitario' : (isEditing ? 'Editar Sanitario' : 'Crear Sanitario') }}</h2>
@@ -15,17 +15,17 @@
 
         <div class="form-field">
           <label for="fechaSiembra">Fecha Siembra</label>
-          <input 
-            id="fechaSiembra" 
-            type="date" 
-            [(ngModel)]="fechaSiembra" 
-            name="fechaSiembra" 
-            pInputText 
-            [readonly]="isReadonly" 
+          <input
+            id="fechaSiembra"
+            type="date"
+            [(ngModel)]="fechaSiembra"
+            name="fechaSiembra"
+            pInputText
+            [readonly]="isReadonly"
 
-            
+
           />
-          
+
         </div>
 
         <div class="form-field">
@@ -40,14 +40,14 @@
 
         <div class="form-field">
           <label for="temperatura">Temperatura</label>
-          <input 
-            id="temperatura" 
-            type="number" 
-            [(ngModel)]="temperatura" 
-            name="temperatura" 
-            pInputText 
+          <input
+            id="temperatura"
+            type="number"
+            [(ngModel)]="temperatura"
+            name="temperatura"
+            pInputText
             [readonly]="isReadonly"
-            [ngClass]="{ 'input-error': !validarNumero(temperatura) }" 
+            [ngClass]="{ 'input-error': !validarNumero(temperatura) }"
 
           />
           <span *ngIf="!validarNumero(temperatura)" class="error-message">La temperatura no puede ser un número negativo.</span>
@@ -55,29 +55,29 @@
 
         <div class="form-field">
           <label for="horasOscuridad">Horas Oscuridad</label>
-          <input 
-            id="horasOscuridad" 
-            type="number" 
-            [(ngModel)]="horasOscuridad" 
-            name="horasOscuridad" 
-            pInputText 
-            [readonly]="isReadonly" 
-            [ngClass]="{ 'input-error': !validarNumero(horasOscuridad) }" 
-            
+          <input
+            id="horasOscuridad"
+            type="number"
+            [(ngModel)]="horasOscuridad"
+            name="horasOscuridad"
+            pInputText
+            [readonly]="isReadonly"
+            [ngClass]="{ 'input-error': !validarNumero(horasOscuridad) }"
+
           />
           <span *ngIf="!validarNumero(horasOscuridad)" class="error-message">Las horas de oscuridad no pueden ser un número negativo.</span>
         </div>
 
         <div class="form-field">
           <label for="horasLuz">Horas Luz</label>
-          <input 
-            id="horasLuz" 
-            type="number" 
-            [(ngModel)]="horasLuz" 
-            name="horasLuz" 
-            pInputText 
-            [readonly]="isReadonly" 
-            [ngClass]="{ 'input-error': !validarNumero(horasLuz) }" 
+          <input
+            id="horasLuz"
+            type="number"
+            [(ngModel)]="horasLuz"
+            name="horasLuz"
+            pInputText
+            [readonly]="isReadonly"
+            [ngClass]="{ 'input-error': !validarNumero(horasLuz) }"
 
           />
           <span *ngIf="!validarNumero(horasLuz)" class="error-message">Las horas de luz no pueden ser un número negativo.</span>
@@ -85,15 +85,15 @@
 
         <div class="form-field">
           <label for="numeroDias">Numero de Dias</label>
-          <input 
-            id="nroDias" 
-            type="number" 
-            [(ngModel)]="nroDias" 
-            name="nroDias" 
-            pInputText 
-            [readonly]="isReadonly" 
-            [ngClass]="{ 'input-error': !validarNumero(nroDias) }" 
-            
+          <input
+            id="nroDias"
+            type="number"
+            [(ngModel)]="nroDias"
+            name="nroDias"
+            pInputText
+            [readonly]="isReadonly"
+            [ngClass]="{ 'input-error': !validarNumero(nroDias) }"
+
           />
           <span *ngIf="!validarNumero(nroDias)" class="error-message">El número de días no puede ser un número negativo.</span>
         </div>
@@ -104,19 +104,14 @@
         </div>
 
         <div class="form-field">
-          <label for="observaciones">Observaciones</label>
-          <textarea id="observaciones" rows="3" [(ngModel)]="observaciones" name="observaciones" pInputText [readonly]="isReadonly"></textarea>
-        </div>
-
-        <div class="form-field">
           <label for="numeroSemillasRepeticion">Numero de Semillas por Repeticion</label>
-          <input 
-            id="nroSemillasRepeticion" 
-            type="number" 
-            [(ngModel)]="nroSemillasRepeticion" 
-            name="nroSemillasRepeticion" 
-            pInputText 
-            [readonly]="isReadonly" 
+          <input
+            id="nroSemillasRepeticion"
+            type="number"
+            [(ngModel)]="nroSemillasRepeticion"
+            name="nroSemillasRepeticion"
+            pInputText
+            [readonly]="isReadonly"
             (ngModelChange)="onNroSemillasRepeticionChange()"
             [ngClass]="{ 'input-error': !validarNumero(nroSemillasRepeticion) }"
           />
@@ -124,6 +119,7 @@
         </div>
 
         <div class="form-field">
+          <hr class="w-full">
           <label for="hongosSelect">Hongos Patógenos</label>
           <div class="custom-multiselect" [class.open]="isHongosDropdownOpen" [class.disabled]="isReadonly">
             <div class="multiselect-trigger" (click)="!isReadonly && toggleHongosDropdown()">
@@ -134,8 +130,8 @@
             </div>
             <div class="multiselect-dropdown" *ngIf="isHongosDropdownOpen">
               <div class="multiselect-search">
-                <input type="text" 
-                       placeholder="Buscar hongos..." 
+                <input type="text"
+                       placeholder="Buscar hongos..."
                        [(ngModel)]="hongosSearchText"
                        name="hongosSearch"
                        (click)="$event.stopPropagation()"
@@ -143,11 +139,11 @@
                 <i class="pi pi-search"></i>
               </div>
               <div class="multiselect-options-container">
-                <div class="multiselect-option" 
-                     *ngFor="let hongo of getFilteredHongos()" 
+                <div class="multiselect-option"
+                     *ngFor="let hongo of getFilteredHongos()"
                      (click)="toggleHongoSelection(hongo)"
                      [class.selected]="isHongoSelected(hongo.id!)">
-                  <input type="checkbox" 
+                  <input type="checkbox"
                          [checked]="isHongoSelected(hongo.id!)"
                          (change)="toggleHongoSelection(hongo)"
                          (click)="$event.stopPropagation()">
@@ -178,41 +174,41 @@
                 <tr *ngFor="let hongo of hongosTable; let i = index">
                   <td>{{ hongo.tipoHongo }}</td>
                   <td>
-                    <input 
-                      type="number" 
-                      [(ngModel)]="hongosTable[i].repeticion" 
-                      name="repeticion_{{i}}" 
-                      placeholder="Repetición" 
-                      [readonly]="isReadonly" 
+                    <input
+                      type="number"
+                      [(ngModel)]="hongosTable[i].repeticion"
+                      name="repeticion_{{i}}"
+                      placeholder="Repetición"
+                      [readonly]="isReadonly"
                       [ngClass]="{ 'input-error': !validarNumero(hongosTable[i].repeticion) }"
-                      
+
                     />
-                    
+
                   </td>
                   <td>
-                    <input 
-                      type="number" 
-                      [(ngModel)]="hongosTable[i].valor" 
-                      name="valor_{{i}}" 
-                      placeholder="Valor" 
-                      [readonly]="isReadonly" 
+                    <input
+                      type="number"
+                      [(ngModel)]="hongosTable[i].valor"
+                      name="valor_{{i}}"
+                      placeholder="Valor"
+                      [readonly]="isReadonly"
                       (ngModelChange)="onValorPatogenoChange(i)"
                       [ngClass]="{ 'input-error': !validarNumero(hongosTable[i].valor) }"
                     />
-                    
+
                   </td>
                   <td>
-                    <input 
-                      type="number" 
-                      [(ngModel)]="hongosTable[i].incidencia" 
-                      name="incidencia_{{i}}" 
-                      placeholder="% Incidencia" 
-                      min="0" 
-                      max="100" 
-                      [readonly]="true" 
-                      
+                    <input
+                      type="number"
+                      [(ngModel)]="hongosTable[i].incidencia"
+                      name="incidencia_{{i}}"
+                      placeholder="% Incidencia"
+                      min="0"
+                      max="100"
+                      [readonly]="true"
+
                     />
-                    
+
                   </td>
                 </tr>
               </tbody>
@@ -222,6 +218,7 @@
 
         <!-- Hongos Contaminantes Campo -->
         <div class="form-field">
+          <hr class="w-full">
           <label for="hongosCampoSelect">Hongos Contaminantes Campo</label>
           <div class="custom-multiselect" [class.open]="isHongosCampoDropdownOpen" [class.disabled]="isReadonly">
             <div class="multiselect-trigger" (click)="!isReadonly && toggleHongosCampoDropdown()">
@@ -232,8 +229,8 @@
             </div>
             <div class="multiselect-dropdown" *ngIf="isHongosCampoDropdownOpen">
               <div class="multiselect-search">
-                <input type="text" 
-                       placeholder="Buscar hongos..." 
+                <input type="text"
+                       placeholder="Buscar hongos..."
                        [(ngModel)]="hongosCampoSearchText"
                        name="hongosCampoSearch"
                        (click)="$event.stopPropagation()"
@@ -241,11 +238,11 @@
                 <i class="pi pi-search"></i>
               </div>
               <div class="multiselect-options-container">
-                <div class="multiselect-option" 
-                     *ngFor="let hongo of getFilteredHongosCampo()" 
+                <div class="multiselect-option"
+                     *ngFor="let hongo of getFilteredHongosCampo()"
                      (click)="toggleHongoCampoSelection(hongo)"
                      [class.selected]="isHongoCampoSelected(hongo.id!)">
-                  <input type="checkbox" 
+                  <input type="checkbox"
                          [checked]="isHongoCampoSelected(hongo.id!)"
                          (change)="toggleHongoCampoSelection(hongo)"
                          (click)="$event.stopPropagation()">
@@ -276,41 +273,41 @@
                 <tr *ngFor="let hongo of hongosCampoTable; let i = index">
                   <td>{{ hongo.tipoHongo }}</td>
                   <td>
-                    <input 
-                      type="number" 
-                      [(ngModel)]="hongosCampoTable[i].repeticion" 
+                    <input
+                      type="number"
+                      [(ngModel)]="hongosCampoTable[i].repeticion"
                       name="repeticionCampo_{{i}}"
                       placeholder="Repetición"
                       [readonly]="isReadonly"
                       [ngClass]="{ 'input-error': !validarNumero(hongosCampoTable[i].repeticion) }"
-                      
+
                     />
-                    
+
                   </td>
                   <td>
-                    <input 
-                      type="number" 
-                      [(ngModel)]="hongosCampoTable[i].valor" 
-                      name="valorCampo_{{i}}" 
-                      placeholder="Valor" 
-                      [readonly]="isReadonly" 
+                    <input
+                      type="number"
+                      [(ngModel)]="hongosCampoTable[i].valor"
+                      name="valorCampo_{{i}}"
+                      placeholder="Valor"
+                      [readonly]="isReadonly"
                       (ngModelChange)="onValorContaminanteChange(i)"
                       [ngClass]="{ 'input-error': !validarNumero(hongosCampoTable[i].valor) }"
                     />
-                    
+
                   </td>
                   <td>
-                    <input 
-                      type="number" 
-                      [(ngModel)]="hongosCampoTable[i].incidencia" 
-                      name="incidenciaCampo_{{i}}" 
-                      placeholder="% Incidencia" 
-                      min="0" 
-                      max="100" 
-                      [readonly]="true" 
-                      
+                    <input
+                      type="number"
+                      [(ngModel)]="hongosCampoTable[i].incidencia"
+                      name="incidenciaCampo_{{i}}"
+                      placeholder="% Incidencia"
+                      min="0"
+                      max="100"
+                      [readonly]="true"
+
                     />
-                    
+
                   </td>
                 </tr>
               </tbody>
@@ -320,6 +317,7 @@
 
         <!-- Hongos Almacenaje -->
         <div class="form-field">
+          <hr class="w-full">
           <label for="hongosAlmacenajeSelect">Hongos Almacenaje</label>
           <div class="custom-multiselect" [class.open]="isHongosAlmacenajeDropdownOpen" [class.disabled]="isReadonly">
             <div class="multiselect-trigger" (click)="!isReadonly && toggleHongosAlmacenajeDropdown()">
@@ -330,8 +328,8 @@
             </div>
             <div class="multiselect-dropdown" *ngIf="isHongosAlmacenajeDropdownOpen">
               <div class="multiselect-search">
-                <input type="text" 
-                       placeholder="Buscar hongos..." 
+                <input type="text"
+                       placeholder="Buscar hongos..."
                        [(ngModel)]="hongosAlmacenajeSearchText"
                        name="hongosAlmacenajeSearch"
                        (click)="$event.stopPropagation()"
@@ -339,11 +337,11 @@
                 <i class="pi pi-search"></i>
               </div>
               <div class="multiselect-options-container">
-                <div class="multiselect-option" 
-                     *ngFor="let hongo of getFilteredHongosAlmacenaje()" 
+                <div class="multiselect-option"
+                     *ngFor="let hongo of getFilteredHongosAlmacenaje()"
                      (click)="toggleHongoAlmacenajeSelection(hongo)"
                      [class.selected]="isHongoAlmacenajeSelected(hongo.id!)">
-                  <input type="checkbox" 
+                  <input type="checkbox"
                          [checked]="isHongoAlmacenajeSelected(hongo.id!)"
                          (change)="toggleHongoAlmacenajeSelection(hongo)"
                          (click)="$event.stopPropagation()">
@@ -374,45 +372,51 @@
                 <tr *ngFor="let hongo of hongosAlmacenajeTable; let i = index">
                   <td>{{ hongo.tipoHongo }}</td>
                   <td>
-                    <input 
-                      type="number" 
-                      [(ngModel)]="hongosAlmacenajeTable[i].repeticion" 
-                      name="repeticionAlmacenaje_{{i}}" 
-                      placeholder="Repetición" 
-                      [readonly]="isReadonly" 
+                    <input
+                      type="number"
+                      [(ngModel)]="hongosAlmacenajeTable[i].repeticion"
+                      name="repeticionAlmacenaje_{{i}}"
+                      placeholder="Repetición"
+                      [readonly]="isReadonly"
                       [ngClass]="{ 'input-error': !validarNumero(hongosAlmacenajeTable[i].repeticion) }"
                     />
-                    
+
                   </td>
                   <td>
-                    <input 
-                      type="number" 
-                      [(ngModel)]="hongosAlmacenajeTable[i].valor" 
-                      name="valorAlmacenaje_{{i}}" 
-                      placeholder="Valor" 
-                      [readonly]="isReadonly" 
+                    <input
+                      type="number"
+                      [(ngModel)]="hongosAlmacenajeTable[i].valor"
+                      name="valorAlmacenaje_{{i}}"
+                      placeholder="Valor"
+                      [readonly]="isReadonly"
                       (ngModelChange)="onValorAlmacenajeChange(i)"
                       [ngClass]="{ 'input-error': !validarNumero(hongosAlmacenajeTable[i].valor) }"
                     />
-                    
+
                   </td>
                   <td>
-                    <input 
-                      type="number" 
-                      [(ngModel)]="hongosAlmacenajeTable[i].incidencia" 
-                      name="incidenciaAlmacenaje_{{i}}" 
-                      placeholder="% Incidencia" 
-                      min="0" 
+                    <input
+                      type="number"
+                      [(ngModel)]="hongosAlmacenajeTable[i].incidencia"
+                      name="incidenciaAlmacenaje_{{i}}"
+                      placeholder="% Incidencia"
+                      min="0"
                       max="100"
                       [readonly]="true"
-                      
+
                     />
-                    
+
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+        </div>
+
+        <div class="form-field">
+          <hr class="w-full">
+          <label for="observaciones">Observaciones</label>
+          <textarea id="observaciones" rows="3" [(ngModel)]="observaciones" name="observaciones" pInputText [readonly]="isReadonly"></textarea>
         </div>
 
         <!-- Checkboxes - visible solo para admin al editar -->
@@ -455,7 +459,7 @@
             class="p-button-success"
             [disabled]="errores.length > 0"
             ></button>
-            
+
             <button
             pButton
             type="button"
@@ -466,7 +470,7 @@
             ></button>
         </div>
 
-      </div>    
+      </div>
     </form>
   </p-card>
 </div>

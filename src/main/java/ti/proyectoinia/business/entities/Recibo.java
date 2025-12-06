@@ -51,9 +51,6 @@ public class Recibo {
     @Column(name = "KG_LIMPIOS")
     private Float kgLimpios;
 
-    @Column(name = "ANALISIS_SOLICITADOS")
-    private String analisisSolicitados;
-
     @Column(name = "ARTICULO")
     private Integer articulo;
 

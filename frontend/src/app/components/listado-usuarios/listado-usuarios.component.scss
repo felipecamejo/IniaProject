@@ -195,7 +195,7 @@
   max-width: 1000px !important;
   width: 95% !important;
   margin: 0 auto !important;
-  
+
   // Responsive para tablets
   @media (max-width: 768px) {
     width: 98% !important;
@@ -221,7 +221,7 @@
 .search-bar {
   flex: 1 !important;
   min-width: 200px !important;
-  
+
   .search-input {
     width: 100% !important;
     padding: 0.75rem 1rem !important;
@@ -243,7 +243,6 @@
     }
   }
 }
-
 .filter-dropdown {
   display: flex !important;
   align-items: center !important;
@@ -266,11 +265,12 @@
   }
 }
 
+
 .submit-btn {
   display: flex !important;
   align-items: center !important;
   padding-bottom: 23px !important;
-  
+
   ::ng-deep .p-button {
     background: var(--verde) !important;
     background-color: var(--verde) !important;
@@ -341,7 +341,7 @@
     border-color: var(--naranja) !important;
     color: white !important;
   }
-  
+
   &.repetido .status-badge {
     background-color: var(--rojo) !important;
     border-color: var(--rojo) !important;
@@ -354,21 +354,21 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
   }
-  
+
   .item-description {
     flex: 1;
-    
+
     p {
       margin: 0 0 0.5rem 0;
       font-size: 0.95rem;
       line-height: 1.4;
-      
+
       strong {
         font-weight: 600;
       }
@@ -414,7 +414,7 @@
 
   &.edit-button {
     background-color: var(--naranja);
-    
+
     &:hover {
       background-color: var(--naranja);
       box-shadow: 0 2px 8px rgba(237, 168, 70, 0.4);
@@ -423,7 +423,7 @@
 
   &.delete-button {
     background-color: var(--rojo);
-    
+
     &:hover {
       background-color: var(--rojo);
       box-shadow: 0 2px 8px rgba(218, 105, 106, 0.4);
@@ -436,7 +436,7 @@
   .action-button {
     width: 35px;
     height: 35px;
-    
+
     i {
       font-size: 0.9rem;
     }
@@ -447,11 +447,11 @@
   .item-actions {
     gap: 0.3rem;
   }
-  
+
   .action-button {
     width: 30px;
     height: 30px;
-    
+
     i {
       font-size: 0.8rem;
     }
@@ -466,26 +466,26 @@
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
     padding: 1rem 1.5rem;
-    
+
     .p-dialog-title {
       font-weight: 600;
       font-size: 1.2rem;
     }
-    
+
     .p-dialog-header-icon {
       color: white;
-      
+
       &:hover {
         background: rgba(255, 255, 255, 0.1);
       }
     }
   }
-  
+
   .p-dialog-content {
     padding: 1.5rem;
     background: #f7fbff;
   }
-  
+
   .p-dialog {
     border-radius: 12px;
     overflow: hidden;
@@ -586,7 +586,7 @@
         border-color: var(--celeste);
         box-shadow: 0 0 0 2px rgba(86, 168, 220, 0.25);
       }
-      
+
       &::placeholder {
         color: #9ca3af;
       }
@@ -652,7 +652,7 @@
       background: var(--verde) !important;
       filter: brightness(0.9) !important;
     }
-    
+
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
@@ -692,7 +692,7 @@
     border-color: var(--celeste);
     box-shadow: 0 0 0 2px rgba(86, 168, 220, 0.25);
   }
-  
+
   &::placeholder {
     color: #9ca3af;
   }

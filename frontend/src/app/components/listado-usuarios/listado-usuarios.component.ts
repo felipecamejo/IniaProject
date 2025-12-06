@@ -16,11 +16,11 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
 @Component({
   selector: 'app-listado-usuarios',
   imports: [
-    CommonModule, 
-    FormsModule, 
-    CardModule, 
-    ButtonModule, 
-    InputTextModule, 
+    CommonModule,
+    FormsModule,
+    CardModule,
+    ButtonModule,
+    InputTextModule,
     DialogModule,
     ConfirmDialogComponent
   ],
@@ -29,7 +29,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
 })
 export class ListadoUsuariosComponent implements OnInit, OnDestroy {
     constructor(
-        private router: Router, 
+        private router: Router,
         private authService: AuthService,
         private usuarioService: UsuarioService
     ) {}
@@ -61,7 +61,7 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
 
     // Opciones para el dropdown de roles
     rolesOptions = [
-        { label: 'Analista', value: UserRole.ANALISTA }, 
+        { label: 'Analista', value: UserRole.ANALISTA },
         { label: 'Observador', value: UserRole.OBSERVADOR },
         { label: 'Administrador', value: UserRole.ADMIN }
     ];
@@ -73,7 +73,7 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.cargarUsuarios();
-        
+
         // Suscribirse a cambios de navegación para recargar cuando se regrese de crear/editar
         this.navigationSubscription = this.router.events
             .pipe(filter(event => event instanceof NavigationEnd))
@@ -111,11 +111,11 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
 
     get itemsFiltrados() {
         const filtrados = this.items.filter(item => {
-            const cumpleNombre = !this.searchText || 
+            const cumpleNombre = !this.searchText ||
                 item.nombre.toLowerCase().includes(this.searchText.toLowerCase());
-            const cumpleEmail = !this.searchText || 
+            const cumpleEmail = !this.searchText ||
                 item.email.toLowerCase().includes(this.searchText.toLowerCase());
-            const cumpleRol = !this.selectedRol || 
+            const cumpleRol = !this.selectedRol ||
                 item.rol === this.selectedRol;
             return (cumpleNombre || cumpleEmail) && cumpleRol;
         });
@@ -201,7 +201,7 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
         this.modalConfirmPassword = '';
         this.modalError = '';
         this.modalTitulo = 'Editar Usuario';
-        this.modalBotonTexto = 'Actualizar Usuario';
+        this.modalBotonTexto = 'Editar Usuario';
         this.itemEditando = item;
         this.itemEditandoId = item.id;
         this.showModalPassword = false;
@@ -224,7 +224,7 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
 
     onSubmitModal(form: any) {
         if (form.invalid || this.modalLoading) return;
-        
+
         // Validaciones de contraseña
         if (this.cambiarPassword || !this.itemEditando) {
             if (!this.modalPassword.trim()) {
@@ -242,11 +242,11 @@ export class ListadoUsuariosComponent implements OnInit, OnDestroy {
                 return;
             }
         }
-        
+
         this.modalLoading = true;
         this.modalError = '';
 
-        const usuario: UsuarioDto = { 
+        const usuario: UsuarioDto = {
             id: this.itemEditandoId ?? 0,
             nombre: this.modalNombre,
             email: this.modalEmail,

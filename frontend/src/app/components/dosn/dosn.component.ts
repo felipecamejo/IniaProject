@@ -369,10 +369,10 @@ import { AuthService } from '../../../services/AuthService';
 
                   if (id != null) {
                     
-                    this.logService.crearLog(this.loteId ?? 0, Number(id), 'DOSN', 'actualizada').subscribe();
+                    this.logService.crearLog(this.loteId ?? 0, Number(id), 'DOSN', 'editada').subscribe();
                   }
 
-                  console.log(`DOSN actualizada correctamente con ID: ${id}`);
+                  console.log(`DOSN editada correctamente con ID: ${id}`);
                   
                   if (this.loteId != null && this.reciboId != null) {
                     this.router.navigate([`/${this.loteId}/${this.reciboId}/listado-dosn`]);

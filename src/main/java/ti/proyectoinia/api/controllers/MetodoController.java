@@ -29,8 +29,8 @@ public class MetodoController {
     )
     public ResponseEntity<String> crearMetodo(@RequestBody MetodoDto metodoDto) {
 
-        if (metodoDto.getNombre() == null || metodoDto.getNombre().trim().isEmpty() || metodoDto.getNombre().matches(".*\\d.*")) {
-            return new ResponseEntity<>("El nombre del cultivo es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
+        if (metodoDto.getNombre() == null || metodoDto.getNombre().trim().isEmpty()) {
+            return new ResponseEntity<>("El nombre es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
 
         if (metodoDto.getId() != null && metodoService.obtenerMetodoPorId(metodoDto.getId()) != null) {
@@ -63,7 +63,7 @@ public class MetodoController {
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
     public ResponseEntity<String> editarMetodo(@RequestBody MetodoDto metodoDto) {
-        if (metodoDto.getId() == null || metodoDto.getNombre() == null || metodoDto.getNombre().trim().isEmpty() || metodoDto.getNombre().matches(".*\\d.*")) {
+        if (metodoDto.getId() == null || metodoDto.getNombre() == null || metodoDto.getNombre().trim().isEmpty()) {
             return new ResponseEntity<>("El nombre es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
 

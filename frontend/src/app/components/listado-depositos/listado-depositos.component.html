@@ -3,7 +3,7 @@
     <button class="back-button" (click)="goToHome()">
         <i class="pi pi-arrow-left"></i>
     </button>
-    
+
     <p-card class="card">
         <ng-template pTemplate="header">
             <h2 class="title">Listado de Depósitos</h2>
@@ -30,7 +30,7 @@
         </div>
 
         <!-- Lista de elementos filtrados -->
-        <div class="blue-rectangle" 
+        <div class="blue-rectangle"
              *ngFor="let item of itemsFiltrados"
              >
             <div class="item-header">
@@ -77,7 +77,7 @@
                 </select>
             </div>
         </div>
-    
+
     </p-card>
 
     <!-- Popup de confirmación de eliminación -->
@@ -94,15 +94,15 @@
         (cancel)="cancelarEliminacion()">
     </app-confirm-dialog>
 
-    <p-dialog 
-        header="{{ modalTitulo }}" 
-        [(visible)]="mostrarModal" 
-        [modal]="true" 
-        [draggable]="false" 
+    <p-dialog
+        header="{{ modalTitulo }}"
+        [(visible)]="mostrarModal"
+        [modal]="true"
+        [draggable]="false"
         [resizable]="false"
         [style]="{width: '90vw', maxWidth: '450px'}"
         styleClass="auth-modal">
-        
+
         <form #modalForm="ngForm" (ngSubmit)="onSubmitModal(modalForm)">
             <div class="modal-form-grid">
                 <div class="modal-form-field">
@@ -112,12 +112,14 @@
             </div>
 
             <div class="modal-submit-btn">
-                <button pButton type="submit" [disabled]="modalLoading || modalForm.invalid" 
-                        label="{{ modalLoading ? 'Procesando...' : modalBotonTexto }}" 
+                <button pButton type="submit" [disabled]="modalLoading || modalForm.invalid"
+                        label="{{ modalLoading ? 'Procesando...' : modalBotonTexto }}"
                         class="p-button-primary"></button>
             </div>
 
-            <div *ngIf="modalError" class="error">{{ modalError }}</div>
+            <div *ngIf="modalError" class="error-container">
+              <p class="error-message">{{ modalError }}</p>
+            </div>
         </form>
     </p-dialog>
 </div>

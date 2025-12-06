@@ -521,7 +521,7 @@ export class PmsComponent implements OnInit {
           this.guardarGramos(this.editingId!);
           
           const loteId = this.route.snapshot.paramMap.get('loteId');
-          this.logService.crearLog(loteId ? parseInt(loteId) : 0, this.editingId!, 'PMS', 'actualizado').subscribe();
+          this.logService.crearLog(loteId ? parseInt(loteId) : 0, this.editingId!, 'PMS', 'editado*').subscribe();
           
           this.onCancel();
         },

@@ -25,8 +25,8 @@ public class CultivoController {
     @Secured({"ADMIN"})
     @Operation(description = "Esta función crea un nuevo cultivo")
     public ResponseEntity<String> crearCultivo(@RequestBody CultivoDto cultivoDto) {
-        if (cultivoDto.getNombre() == null || cultivoDto.getNombre().trim().isEmpty() || cultivoDto.getNombre().matches(".*\\d.*")) {
-            return new ResponseEntity<>("El nombre del cultivo es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
+        if (cultivoDto.getNombre() == null || cultivoDto.getNombre().trim().isEmpty()) {
+            return new ResponseEntity<>("El nombre es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
 
         if (cultivoDto.getId() != null && cultivoService.obtenerCultivoPorId(cultivoDto.getId()) != null) {
@@ -67,7 +67,7 @@ public class CultivoController {
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
     public ResponseEntity<String> editarCultivo(@RequestBody CultivoDto cultivoDto) {
-        if (cultivoDto.getId() == null || cultivoDto.getNombre() == null || cultivoDto.getNombre().trim().isEmpty() || cultivoDto.getNombre().matches(".*\\d.*")) {
+        if (cultivoDto.getId() == null || cultivoDto.getNombre() == null || cultivoDto.getNombre().trim().isEmpty()) {
             return new ResponseEntity<>("El nombre es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
 

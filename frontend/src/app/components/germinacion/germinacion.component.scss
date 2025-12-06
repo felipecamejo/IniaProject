@@ -20,6 +20,11 @@
   }
 }
 
+
+input {
+  color: #FFFFF !important;
+}
+
 .col-fecha-flex {
   display: flex;
   align-items: center;
@@ -32,6 +37,7 @@
 .conteos-scroll {
   overflow-x: auto;
   width: 100%;
+  margin-bottom: 0.2rem;
 }
 
 // Estilos para tablas igual que pureza
@@ -86,6 +92,7 @@
   box-shadow: 0 1px 4px rgba(38,99,235,0.08) !important;
   margin-bottom: 0.5rem;
   transition: background 0.2s, color 0.2s, border 0.2s;
+  margin-top: 0.5rem;
 
   @media (max-width: 480px) {
     font-size: 0.9em !important;
@@ -499,18 +506,17 @@
   font-weight: 700;
   font-size: 1.05rem;
   margin-bottom: 0.55rem;
-  color: #1746a0;
+  color: var(--azul);
   letter-spacing: 0.3px;
 }
 .producto-dosis-group input[type="text"] {
   width: 100%;
   padding: 0.65rem 0.95rem;
-  border: 2px solid #2563eb;
+  border: 2px solid var(--gris);
   background: #f7fbff;
   border-radius: 12px;
   font-size: 0.95rem;
   font-weight: 500;
-  color: #1746a0;
   box-shadow: 0 2px 8px rgba(38,99,235,0.12);
   transition: border-color 0.2s, box-shadow 0.2s;
 }

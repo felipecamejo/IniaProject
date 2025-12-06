@@ -83,11 +83,6 @@
                 </div>
 
                 <div class="form-field">
-                    <label for="observaciones">Observaciones</label>
-                    <textarea id="observaciones" rows="3" [(ngModel)]="observaciones" name="observaciones" pInputText [readonly]="isEditing && isObservador()"></textarea>
-                </div>
-
-                <div class="form-field">
                     <label for="deposito">Depósito</label>
                     <select id="deposito" [(ngModel)]="selectedDepositoId" name="deposito" class="mes-select" [disabled]="isEditing && isObservador()">
                         <option [value]="null">Seleccionar depósito</option>

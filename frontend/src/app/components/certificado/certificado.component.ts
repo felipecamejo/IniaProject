@@ -124,11 +124,6 @@ export class CertificadoComponent implements OnInit {
   recibo: ReciboDto | null = null;
   analisisSolicitados: string | null = null;
 
-  // Indicadores de existencia de análisis
-  tienePureza: boolean = false;
-  tieneDOSN: boolean = false;
-  tieneGerminacion: boolean = false;
-
   // Indicadores de qué análisis deben realizarse
   debeRealizarPureza: boolean = false;
   debeRealizarDOSN: boolean = false;
@@ -369,7 +364,6 @@ export class CertificadoComponent implements OnInit {
               return fechaB - fechaA; // Orden descendente
             });
             const pureza = purezasOrdenadas[0];
-            this.extraerDatosPureza(pureza);
           } else {
             this.inicializarValoresPorDefectoPureza();
           }
@@ -402,7 +396,6 @@ export class CertificadoComponent implements OnInit {
                 return fechaB - fechaA; // Orden descendente
               });
               const dosn = dosnOrdenados[0];
-              this.extraerDatosDOSN(dosn);
             } else {
               this.inicializarValoresPorDefectoDOSN();
             }
@@ -436,7 +429,6 @@ export class CertificadoComponent implements OnInit {
               return fechaB - fechaA; // Orden descendente
             });
             const germinacion = germinacionOrdenadas[0];
-            this.extraerDatosGerminacion(germinacion);
           } else {
             this.inicializarValoresPorDefectoGerminacion();
           }
@@ -452,47 +444,6 @@ export class CertificadoComponent implements OnInit {
     }
   }
 
-  extraerDatosPureza(pureza: PurezaDto) {
-    // Marcar que existe análisis de pureza
-    this.tienePureza = true;
-    // Extraer datos de pureza (usar valores INASE si están disponibles, sino INIA)
-    this.purezaSemillaPura = pureza.semillaPuraPorcentajeRedondeoInase ?? pureza.semillaPuraPorcentajeRedondeo ?? null;
-    this.purezaMateriaInerte = pureza.materialInertePorcentajeRedondeoInase ?? pureza.materialInertePorcentajeRedondeo ?? null;
-    this.purezaOtrasSemillas = pureza.otrosCultivosPorcentajeRedondeoInase ?? pureza.otrosCultivosPorcentajeRedondeo ?? null;
-    this.purezaOtrosCultivos = pureza.otrosCultivosPorcentajeRedondeoInase ?? pureza.otrosCultivosPorcentajeRedondeo ?? null;
-    this.purezaMalezas = pureza.malezasPorcentajeRedondeoInase ?? pureza.malezasPorcentajeRedondeo ?? null;
-    this.purezaMalezasToleradas = pureza.malezasToleradasPorcentajeRedondeoInase != null ?
-      pureza.malezasToleradasPorcentajeRedondeoInase.toString() : 'N';
-    this.purezaClaseMateriaInerte = pureza.materiaInerteTipoInase ?? pureza.materiaInerteTipo ?? '';
-    this.purezaOtrasSemillasDescripcion = 'No contiene.';
-  }
-
-  extraerDatosDOSN(dosn: DOSNDto) {
-    // Marcar que existe análisis de DOSN
-    this.tieneDOSN = true;
-    // Extraer datos de DOSN
-    this.dosnGramosAnalizados = dosn.gramosAnalizadosINASE ?? dosn.gramosAnalizadosINIA ?? null;
-    // Calcular valores desde las colecciones (por ahora usar null, se calcularán desde las listas)
-    this.dosnMalezasToleranciaCero = null;
-    this.dosnMalezasTolerancia = null;
-    this.dosnOtrosCultivos = null;
-  }
-
-  extraerDatosGerminacion(germinacion: GerminacionDto) {
-    // Marcar que existe análisis de germinación
-    this.tieneGerminacion = true;
-    // Extraer datos de germinación
-    this.germinacionNumeroDias = germinacion.nroDias ?? null;
-    this.germinacionPlantulasNormales = germinacion.pNormal ?? null;
-    this.germinacionPlantulasAnormales = germinacion.pAnormal ?? null;
-    this.germinacionSemillasDuras = germinacion.semillasDuras ?? null;
-    this.germinacionSemillasFrescas = null; // No está en el DTO actual
-    this.germinacionSemillasMuertas = germinacion.pMuertas ?? null;
-    this.germinacionSustrato = 'RP'; // Papel de filtro
-    this.germinacionTemperatura = germinacion.temperatura ?? null;
-    this.germinacionPreTratamiento = this.formatearPreTratamiento(germinacion.preFrio, germinacion.preTratamiento);
-  }
-
   formatearPreTratamiento(preFrio: string | null, preTratamiento: string | null): string {
     if (preFrio && preFrio !== 'NINGUNO') {
       return `Pre-frío ${preFrio === 'CORTO' ? '5 días' : '10 días'}`;
@@ -505,7 +456,6 @@ export class CertificadoComponent implements OnInit {
 
   inicializarValoresPorDefectoPureza() {
     // Marcar que no existe análisis de pureza
-    this.tienePureza = false;
     this.purezaSemillaPura = null;
     this.purezaMateriaInerte = null;
     this.purezaOtrasSemillas = null;
@@ -520,7 +470,6 @@ export class CertificadoComponent implements OnInit {
 
   inicializarValoresPorDefectoDOSN() {
     // Marcar que no existe análisis de DOSN
-    this.tieneDOSN = false;
     this.dosnGramosAnalizados = null;
     this.dosnMalezasToleranciaCero = null;
     this.dosnMalezasTolerancia = null;
@@ -530,7 +479,6 @@ export class CertificadoComponent implements OnInit {
 
   inicializarValoresPorDefectoGerminacion() {
     // Marcar que no existe análisis de germinación
-    this.tieneGerminacion = false;
     this.germinacionNumeroDias = null;
     this.germinacionPlantulasNormales = null;
     this.germinacionPlantulasAnormales = null;
@@ -686,8 +634,7 @@ export class CertificadoComponent implements OnInit {
         this.purezaHumedad = certificado.purezaHumedad || 'N';
         this.purezaClaseMateriaInerte = certificado.purezaClaseMateriaInerte || '';
         this.purezaOtrasSemillasDescripcion = certificado.purezaOtrasSemillasDescripcion || '';
-        // Determinar si existe análisis de pureza
-        this.tienePureza = this.purezaSemillaPura != null || this.purezaMateriaInerte != null || this.purezaOtrasSemillas != null || this.purezaOtrosCultivos != null || this.purezaMalezas != null;
+        
 
         // Cargar resultados de análisis - DOSN
         this.dosnGramosAnalizados = certificado.dosnGramosAnalizados ?? null;
@@ -709,8 +656,6 @@ export class CertificadoComponent implements OnInit {
         this.nombreFirmante = certificado.nombreFirmante || '';
         this.funcionFirmante = certificado.funcionFirmante || '';
 
-        // Determinar si existe análisis de DOSN
-        this.tieneDOSN = this.dosnGramosAnalizados != null;
 
         // Cargar resultados de análisis - Germinación
         this.germinacionNumeroDias = certificado.germinacionNumeroDias ?? null;
@@ -722,9 +667,7 @@ export class CertificadoComponent implements OnInit {
         this.germinacionSustrato = certificado.germinacionSustrato || '';
         this.germinacionTemperatura = certificado.germinacionTemperatura ?? null;
         this.germinacionPreTratamiento = certificado.germinacionPreTratamiento || '';
-        // Determinar si existe análisis de germinación
-        this.tieneGerminacion = this.germinacionNumeroDias != null || this.germinacionPlantulasNormales != null || this.germinacionPlantulasAnormales != null;
-
+        
         console.log('Datos del certificado asignados al formulario');
       },
       error: (err) => {

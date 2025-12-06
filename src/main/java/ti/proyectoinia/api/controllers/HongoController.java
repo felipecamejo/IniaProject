@@ -28,7 +28,7 @@ public class HongoController {
             description = "Esta Funcion crea un nuevo Hongo"
     )
     public ResponseEntity<String> crearHongo(@RequestBody HongoDto hongoDto) {
-        if (hongoDto.getNombre() == null || hongoDto.getNombre().trim().isEmpty() || hongoDto.getNombre().matches(".*\\d.*")) {
+        if (hongoDto.getNombre() == null || hongoDto.getNombre().trim().isEmpty()) {
             return new ResponseEntity<>("El nombre es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
 
@@ -63,7 +63,7 @@ public class HongoController {
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
     public ResponseEntity<String> editarHongo(@RequestBody HongoDto hongoDto) {
-        if (hongoDto.getId() == null || hongoDto.getNombre() == null || hongoDto.getNombre().trim().isEmpty() || hongoDto.getNombre().matches(".*\\d.*")) {
+        if (hongoDto.getId() == null || hongoDto.getNombre() == null || hongoDto.getNombre().trim().isEmpty()) {
             return new ResponseEntity<>("El nombre es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
 

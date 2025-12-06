@@ -64,7 +64,7 @@ export class GerminacionComponent implements OnInit {
   }
 
   onTratamientoChange(): void {
-    
+
     // Normalizar a clave backend (SIN_CURAR | CURADA_PLANTA | CURADA_LABORATORIO)
     const prevKey = this.mapUiTablaToKey(this.tratamientoSemillasAnterior);
     const currKey = this.mapUiTablaToKey(this.tratamientoSemillas);
@@ -423,14 +423,14 @@ export class GerminacionComponent implements OnInit {
   }
 
   ngOnInit() {
-    
+
 
     // Inicializar variables de navegación
     this.loteId = this.route.snapshot.paramMap.get('loteId');
     this.reciboId = this.route.snapshot.paramMap.get('reciboId');
-    
+
     this.syncNormalesConConteos();
-    
+
     this.onTratamientoChange();
 
     // Cargar métodos desde backend
@@ -544,7 +544,7 @@ export class GerminacionComponent implements OnInit {
     this.tablasSvc.getResumen(germinacionId).subscribe({
       next: (res: any) => {
         console.log('VALIDACION OK: Resumen obtenido del backend:', res);
-   
+
 
         try {
           const keys = Object.keys(res || {});
@@ -721,7 +721,7 @@ export class GerminacionComponent implements OnInit {
   }
 
   cargarDatosParaEdicion(id: number) {
-  
+
 
     if (!id || id <= 0) {
       console.error('VALIDACION ERROR: ID no válido para cargar datos de edición');
@@ -1010,7 +1010,7 @@ export class GerminacionComponent implements OnInit {
       console.error('VALIDACION ERROR: No se encontró reciboId en la ruta');
       return;
     }
-    
+
 
     if (this.repeticiones.length > 0) {
       // Validar datos de repeticiones
@@ -1079,9 +1079,9 @@ export class GerminacionComponent implements OnInit {
             // Log opcional
             const loteId = this.route.snapshot.paramMap.get('loteId');
             if (gid != null) {
-              this.logService.crearLog(loteId ? parseInt(loteId) : 0, Number(gid), 'Germinacion', 'actualizada').subscribe();
+              this.logService.crearLog(loteId ? parseInt(loteId) : 0, Number(gid), 'Germinacion', 'editada').subscribe();
             }
-            
+
             // Redirigir al listado de germinación del lote/recibo
             if (this.loteId && this.reciboId) {
               this.router.navigate([this.loteId, this.reciboId, 'listado-germinacion']);
@@ -1101,7 +1101,7 @@ export class GerminacionComponent implements OnInit {
 
     this.germSvc.crear(payload).subscribe({
       next: (text: string) => {
-    
+
         // El backend devuelve texto tipo: "Germinacion creada correctamente ID:1"
         const match = String(text || '').match(/ID\s*:?\s*(\d+)/i);
         const newId = match ? Number(match[1]) : null;
@@ -1278,16 +1278,16 @@ export class GerminacionComponent implements OnInit {
                 const ops$: any[] = [];
 
                 keys.forEach(k => {
-                
+
 
                   // Obtener snapshot de repeticiones para cada tratamiento
                   let reps: RepeticionGerminacion[] = [];
                   const selKey = this.mapUiTablaToKey(this.tratamientoSemillas);
-                  
+
 
                   if (k === selKey) {
                     reps = JSON.parse(JSON.stringify(this.repeticiones || []));
-                    
+
                   } else {
                     reps = JSON.parse(JSON.stringify(this.tratamientosData[k]?.repeticiones || []));
                   }
@@ -1441,9 +1441,6 @@ export class GerminacionComponent implements OnInit {
     const hoy = new Date();
     const fecha = this.fechas.inicio ? new Date(this.fechas.inicio ) : null;
 
-    if (this.validarFecha(this.fechas.inicio)) {
-      this.errores.push('La fecha de inicio no puede ser futura.');
-    }
 
     if (this.validarNumeroNegativo(this.fechas.totalDias || 0)) {
       this.errores.push('El total de días no puede ser negativo.');

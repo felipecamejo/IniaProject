@@ -30,8 +30,8 @@ export class ListadoEspeciesComponent implements OnInit, OnDestroy {
     modalDescripcion: string = '';
     modalLoading: boolean = false;
     modalError: string = '';
-    modalTitulo: string = 'Crear Cultivo';
-    modalBotonTexto: string = 'Crear Cultivo';
+    modalTitulo: string = 'Crear Especie';
+    modalBotonTexto: string = 'Crear Especie';
     itemEditando: any = null;
     itemEditandoId: number | null = null;
 
@@ -53,7 +53,7 @@ export class ListadoEspeciesComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.cargar();
-        
+
         // Suscribirse a cambios de navegación para recargar cuando se regrese
         this.navigationSubscription = this.router.events
             .pipe(filter(event => event instanceof NavigationEnd))
@@ -89,7 +89,7 @@ export class ListadoEspeciesComponent implements OnInit, OnDestroy {
 
     get itemsFiltrados() {
       const filtrados = this.items.filter(item => {
-        const cumpleNombre = !this.searchText || 
+        const cumpleNombre = !this.searchText ||
           item.nombre.toLowerCase().includes(this.searchText.toLowerCase());
         return cumpleNombre;
       });
@@ -139,7 +139,7 @@ export class ListadoEspeciesComponent implements OnInit, OnDestroy {
       const dto: EspecieDto = {
         id: 0, nombre: this.modalNombre, descripcion: this.modalDescripcion, activo: true
       };
-      
+
       this.especieService.crear(dto).subscribe({
         next: (response) => {
           console.log('Especie creada:', response);
@@ -179,11 +179,11 @@ export class ListadoEspeciesComponent implements OnInit, OnDestroy {
 
     onSubmitModal(form: any) {
       if (form.invalid || this.modalLoading) return;
-      
+
       this.modalLoading = true;
       this.modalError = '';
 
-      const especie: EspecieDto = { 
+      const especie: EspecieDto = {
         id: this.itemEditandoId ?? 0,
         nombre: this.modalNombre,
         descripcion: this.modalDescripcion,

@@ -85,7 +85,7 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
         { label: 'N° Análisis (nLab)', value: 'nLab' },
         { label: 'Origen', value: 'origen' },
         { label: 'Remitente', value: 'remite' },
-        { label: 'Observaciones (Recibo)', value: 'observaciones' },
+        { label: 'Observaciones Recibo', value: 'observaciones' },
         { label: 'Ficha', value: 'ficha' },
         // Campos de Análisis de Pureza
         { label: 'Materia Inerte Tipo (INIA)', value: 'materiaInerteTipo' },
@@ -96,7 +96,6 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
         // Campos de Análisis Sanitario
         { label: 'Método (Sanitario)', value: 'metodo' },
         { label: 'Estado (Sanitario)', value: 'estado' },
-        { label: 'Observaciones (Sanitario)', value: 'observaciones' },
         // Campos de Análisis de Tetrazolio
         { label: 'Pretratamiento Custom', value: 'pretratamientoCustom' },
         // Campos de Certificado
@@ -112,7 +111,7 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.cargarAutocompletados();
-        
+
         // Suscribirse a cambios de navegación para recargar cuando se regrese
         this.navigationSubscription = this.router.events
             .pipe(filter(event => event instanceof NavigationEnd))
@@ -150,11 +149,11 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
 
     get itemsFiltrados() {
       const filtrados = this.items.filter(item => {
-        const cumpleParametro = !this.searchText || 
+        const cumpleParametro = !this.searchText ||
           item.parametro.toLowerCase().includes(this.searchText.toLowerCase());
-        const cumpleValor = !this.searchText || 
+        const cumpleValor = !this.searchText ||
           item.valor.toLowerCase().includes(this.searchText.toLowerCase());
-        const cumpleTipoDato = !this.searchText || 
+        const cumpleTipoDato = !this.searchText ||
           item.tipoDato.toLowerCase().includes(this.searchText.toLowerCase());
         return cumpleParametro || cumpleValor || cumpleTipoDato;
       });
@@ -219,14 +218,14 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
     }
 
     crearItem() {
-      const dto: AutocompletadoDto = { 
-        id: 0, 
-        tipoDato: this.modalTipoDato, 
+      const dto: AutocompletadoDto = {
+        id: 0,
+        tipoDato: this.modalTipoDato,
         parametro: this.modalParametro,
         valor: this.modalValor,
         activo: true
       };
-      
+
       this.autocompletadoService.crear(dto).subscribe({
         next: (response) => {
           console.log('Autocompletado creado:', response);
@@ -268,11 +267,11 @@ export class ListadoAutocompletadosComponent implements OnInit, OnDestroy {
 
     onSubmitModal(form: any) {
       if (form.invalid || this.modalLoading) return;
-      
+
       this.modalLoading = true;
       this.modalError = '';
 
-      const autocompletado: AutocompletadoDto = { 
+      const autocompletado: AutocompletadoDto = {
         id: this.itemEditandoId ?? 0,
         tipoDato: this.modalTipoDato,
         parametro: this.modalParametro,

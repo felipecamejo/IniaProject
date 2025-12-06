@@ -156,7 +156,7 @@ export class ListadoMetodosComponent implements OnInit, OnDestroy {
       this.modalDescripcion = item.descripcion || '';
       this.modalError = '';
       this.modalTitulo = 'Editar Método';
-      this.modalBotonTexto = 'Actualizar Método';
+      this.modalBotonTexto = 'Editar Método';
       this.itemEditando = item;
       this.itemEditandoId = item.id;
       this.mostrarModal = true;
@@ -168,7 +168,7 @@ export class ListadoMetodosComponent implements OnInit, OnDestroy {
 
     onSubmitModal(form: any) {
       if (form.invalid || this.modalLoading) return;
-      
+
       this.modalLoading = true;
       this.modalError = '';
 
@@ -179,19 +179,13 @@ export class ListadoMetodosComponent implements OnInit, OnDestroy {
         return;
       }
 
-      if (this.modalNombre.match(/\d/)) {
-        this.modalError = 'El nombre del método no puede contener números';
-        this.modalLoading = false;
-        return;
-      }
-
       if (!this.modalAutor || this.modalAutor.trim() === '') {
         this.modalError = 'El autor del método es obligatorio';
         this.modalLoading = false;
         return;
       }
 
-      const metodo: MetodoDto = { 
+      const metodo: MetodoDto = {
         id: this.itemEditandoId,
         nombre: this.modalNombre.trim(),
         autor: this.modalAutor.trim(),

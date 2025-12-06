@@ -1274,7 +1274,7 @@ export class TetrazolioComponent implements OnInit {
 
               const loteId = this.route.snapshot.paramMap.get('loteId');
               if (this.editingId != null) {
-                this.logService.crearLog(loteId ? parseInt(loteId) : 0, Number(this.editingId), 'Tetrazolio', 'actualizado').subscribe();
+                this.logService.crearLog(loteId ? parseInt(loteId) : 0, Number(this.editingId), 'Tetrazolio', 'editado').subscribe();
               }
 
               this.safeNavigateToListado();

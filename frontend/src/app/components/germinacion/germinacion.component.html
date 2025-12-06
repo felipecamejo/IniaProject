@@ -11,29 +11,28 @@
       <!-- Sección de fechas de conteo reorganizada en grid -->
       <div class="table-section" style="margin: 2.5rem 0 3rem 0;">
         <h3 style="margin-bottom: 1rem; color: var(--azul); font-weight: 600;">Fechas de conteo</h3>
-        
+
         <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
           <!-- Fecha de Inicio -->
           <div style="min-width: 180px; flex: 0 0 180px;">
-            <label style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: #1746a0; font-size: 0.95em;">Inicio</label>
-            <input type="date" [(ngModel)]="fechas.inicio" name="fechaInicio" pInputText [readonly]="isReadonly" 
-              [ngClass]="{ 'input-error': validarFecha(fechas.inicio) }"
-              style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 10px; border: 2px solid #2563eb; background: #f7fbff; font-size: 0.95em; color: #1746a0; font-weight: 500; transition: border 0.2s, box-shadow 0.2s; box-shadow: 0 2px 6px rgba(38,99,235,0.08);" />
+            <label style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: var(--azul); font-size: 0.95em;">Inicio</label>
+            <input type="date" [(ngModel)]="fechas.inicio" name="fechaInicio" pInputText [readonly]="isReadonly"
+              style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 10px; border: 2px solid var(--gris); background: #f7fbff; font-size: 0.95em; font-weight: 500; transition: border 0.2s, box-shadow 0.2s; box-shadow: 0 2px 6px rgba(38,99,235,0.08);" />
           </div>
 
           <!-- Fechas de Conteo -->
           <ng-container *ngFor="let conteo of fechas.conteos; let i = index">
             <div style="min-width: 180px; flex: 0 0 180px; position: relative;">
-              <label style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: #1746a0; font-size: 0.95em;">
+              <label style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: var(--azul); font-size: 0.95em;">
                 Conteo {{i+1}}
                 <span *ngIf="isConteoSalidaPreFrio(i)" style="margin-left: 0.5rem; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #78350f; padding: 0.2rem 0.6rem; border-radius: 8px; font-size: 0.7em; font-weight: 700; box-shadow: 0 2px 4px rgba(251,191,36,0.3); display: inline-block;">✓ Salida pre‑frío</span>
               </label>
               <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <input type="date" [(ngModel)]="fechas.conteos[i]" [name]="'fechaConteo'+i" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'salida-prefrio-input': isConteoSalidaPreFrio(i) }"
-                  style="flex: 1; padding: 0.6rem 0.8rem; border-radius: 10px; border: 2px solid #2563eb; background: #f7fbff; font-size: 0.95em; color: #1746a0; font-weight: 500; transition: border 0.2s, box-shadow 0.2s; box-shadow: 0 2px 6px rgba(38,99,235,0.08);" />
-                <button type="button" (click)="removeConteo(i)" 
-                  style="color: #fff; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; font-size: 1.1em; cursor: pointer; padding: 0.4rem 0.6rem; border-radius: 8px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(239,68,68,0.3); font-weight: 700; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;" 
+                  style="flex: 1; padding: 0.6rem 0.8rem; border-radius: 10px; border: 2px solid var(--gris); background: #f7fbff; font-size: 0.95em; font-weight: 500; transition: border 0.2s, box-shadow 0.2s; box-shadow: 0 2px 6px rgba(38,99,235,0.08);" />
+                <button type="button" (click)="removeConteo(i)"
+                  style="color: #fff; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; font-size: 1.1em; cursor: pointer; padding: 0.4rem 0.6rem; border-radius: 8px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(239,68,68,0.3); font-weight: 700; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"
                   *ngIf="fechas.conteos.length > 1 && !isReadonly"
                   onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 4px 8px rgba(239,68,68,0.4)'"
                   onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px rgba(239,68,68,0.3)'"
@@ -44,20 +43,19 @@
 
           <!-- Total de días -->
           <div style="min-width: 180px; flex: 0 0 180px;">
-            <label style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: #1746a0; font-size: 0.95em;">Total de días</label>
-            <input type="number" [value]="fechas.totalDias" readonly pInputText 
+            <label style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: var(--azul); font-size: 0.95em;">Total de días</label>
+            <input type="number" [value]="fechas.totalDias" readonly pInputText
               [ngClass]="{ 'input-error': validarNumeroNegativo(this.fechas.totalDias || 0) }"
-              style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 10px; border: 2px solid #94a3b8; background: #f1f5f9; font-size: 0.95em; color: #475569; font-weight: 600; box-shadow: 0 2px 6px rgba(148,163,184,0.15);" />
+              style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 10px; border: 2px solid var(--gris); background: #f1f5f9; font-size: 0.95em; color: #475569; font-weight: 600; box-shadow: 0 2px 6px rgba(148,163,184,0.15);" />
           </div>
         </div>
 
         <!-- Botón agregar conteo -->
-        <button pButton type="button" label="+ Agregar conteo" 
-          (click)="addConteo()" 
+        <button pButton type="button" label="+ Agregar conteo"
+          (click)="addConteo()"
           *ngIf="!isReadonly"
-          style="margin-top: 0.5rem; padding: 0.6rem 1.2rem; border-radius: 10px; border: 2px solid #2563eb; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; font-size: 0.95em; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 6px rgba(37,99,235,0.3);"
-          onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(37,99,235,0.4)'"
-          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 6px rgba(37,99,235,0.3)'"></button>
+          class="btn-agregar-rep"
+        ></button>
       </div>
 
       <!-- Aviso destacado de Pre-frío: justo debajo de la tabla de conteos -->
@@ -79,14 +77,14 @@
 
       <!-- Select Tratamiento de semillas -->
       <div class="form-field" style="margin-bottom: 2.5rem; display: flex; flex-direction: column; align-items: flex-start;">
-        <label for="tratamientoSemillas" style="font-weight:700; font-size:1.2em; margin-bottom:0.7rem; color:#1746a0; letter-spacing:0.5px;">Tipo de tratamiento de semillas</label>
+        <label for="tratamientoSemillas" style="font-weight:700; font-size:1.2em; margin-bottom:0.7rem; color:var(--azul); letter-spacing:0.5px;">Tipo de tratamiento de semillas</label>
         <select id="tratamientoSemillas" [(ngModel)]="tratamientoSemillas" (change)="onSelectChanges()" name="tratamientoSemillas" [disabled]="isReadonly"
-          style="padding:0.7rem 1.5rem; border-radius:12px; border:2px solid #2563eb; background:#f7fbff; font-size:1.15em; font-weight:600; color:#1746a0; box-shadow:0 2px 8px rgba(38,99,235,0.08); transition:border 0.2s;">
+          style="padding:0.7rem 1.5rem; border-radius:12px; border:2px solid var(--gris); background:#f7fbff; font-size:1.15em; font-weight:600; color:var(--azul); box-shadow:0 2px 8px rgba(38,99,235,0.08); transition:border 0.2s;">
           <option value="sin curar">Sin curar</option>
           <option value="curada en planta">Curada en planta</option>
           <option value="curada en laboratorio">Curada en Laboratorio</option>
         </select>
-        <span style="margin-top:0.7rem; color:#2563eb; font-weight:500; font-size:1em;">Elige el tratamiento para mostrar y editar su tabla correspondiente.</span>
+        <span style="margin-top:0.7rem; font-weight:500; font-size:1em;">Elige el tratamiento para mostrar y editar su tabla correspondiente.</span>
       </div>
 
       <!-- Producto y dosis (destacado) -->
@@ -99,7 +97,7 @@
       <!-- Selects adicionales en una sola fila -->
       <div style="display: flex; flex-wrap: wrap; gap: 1.2rem; align-items: center; margin-bottom: 1.5rem;">
         <div class="form-field" style="margin-bottom: 0;">
-          <label for="numSemillas" style="font-weight:600; margin-right:0.5rem;">Número de semillas por repetición:</label>
+          <label for="numSemillas" style="font-weight:600; margin-right:0.5rem; color: var(--azul)">Número de semillas por repetición:</label>
           <select id="numSemillas" [(ngModel)]="numSemillas" name="numSemillas" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;" (change)="manejarProblemas()">
             <option value="25">25</option>
             <option value="50">50</option>
@@ -107,14 +105,14 @@
           </select>
         </div>
         <div class="form-field" style="margin-bottom: 0;">
-          <label for="metodo" style="font-weight:600; margin-right:0.5rem;">Método:</label>
+          <label for="metodo" style="font-weight:600; margin-right:0.5rem; color: var(--azul)">Método:</label>
           <select id="metodo" [(ngModel)]="metodoId" name="metodoId" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;" (change)="manejarProblemas()">
             <option [ngValue]="null">Seleccione...</option>
             <option *ngFor="let m of metodos" [ngValue]="m.id">{{ m.nombre }}</option>
           </select>
         </div>
         <div class="form-field" style="margin-bottom: 0;">
-          <label for="temperatura" style="font-weight:600; margin-right:0.5rem;">Temperatura:</label>
+          <label for="temperatura" style="font-weight:600; margin-right:0.5rem; color: var(--azul)">Temperatura:</label>
           <select id="temperatura" [(ngModel)]="temperatura" name="temperatura" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;" (change)="manejarProblemas()">
             <option value="15°C">15°C</option>
             <option value="20°C">20°C</option>
@@ -124,14 +122,14 @@
           </select>
         </div>
         <div class="form-field" style="margin-bottom: 0;">
-          <label for="preFrio" style="font-weight:600; margin-right:0.5rem;">Pre-frío:</label>
+          <label for="preFrio" style="font-weight:600; margin-right:0.5rem; color: var(--azul)">Pre-frío:</label>
           <select id="preFrio" [(ngModel)]="preFrio" name="preFrio" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;" (change)="manejarProblemas()">
             <option value="No">No</option>
             <option *ngFor="let d of diasPreFrio" [value]="d">{{d}}</option>
           </select>
         </div>
         <div class="form-field" style="margin-bottom: 0;">
-          <label for="preTratamiento" style="font-weight:600; margin-right:0.5rem;">Pre-tratamiento:</label>
+          <label for="preTratamiento" style="font-weight:600; margin-right:0.5rem; color: var(--azul)">Pre-tratamiento:</label>
           <select id="preTratamiento" [(ngModel)]="preTratamiento" name="preTratamiento" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;" (change)="manejarProblemas()">
             <option value="No">No</option>
             <option value="KNO3">KNO3</option>
@@ -162,26 +160,26 @@
               <tr>
                 <td style="min-width:160px; width:160px;">{{ rep.numero }}</td>
                 <td *ngFor="let conteo of fechas.conteos; let n = index" style="min-width:160px; width:160px;">
-                  <input type="number" [(ngModel)]="rep.normales[n]" [name]="'normales'+rowIndex+'_'+n" pInputText [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="rep.normales[n]" [name]="'normales'+rowIndex+'_'+n" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(rep.normales[n]) }"/>
                 </td>
-                <td style="min-width:160px; width:160px;"><input type="number" [(ngModel)]="rep.anormales" [name]="'anormales'+rowIndex" pInputText [readonly]="isReadonly" 
+                <td style="min-width:160px; width:160px;"><input type="number" [(ngModel)]="rep.anormales" [name]="'anormales'+rowIndex" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(rep.anormales) }"
                   /></td>
                 <td style="min-width:160px; width:160px;">
-                  <input type="number" [(ngModel)]="rep.duras" [name]="'duras'+rowIndex" pInputText  [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="rep.duras" [name]="'duras'+rowIndex" pInputText  [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(rep.duras) }"
                   /></td>
                 <td style="min-width:160px; width:160px;">
-                  <input type="number" [(ngModel)]="rep.frescas" [name]="'frescas'+rowIndex" pInputText  [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="rep.frescas" [name]="'frescas'+rowIndex" pInputText  [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(rep.frescas) }"
                   /></td>
                 <td style="min-width:160px; width:160px;">
-                  <input type="number" [(ngModel)]="rep.muertas" [name]="'muertas'+rowIndex" pInputText  [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="rep.muertas" [name]="'muertas'+rowIndex" pInputText  [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(rep.muertas) }"
                   /></td>
                 <td style="min-width:160px; width:160px;">
-                  <input type="number" [value]="getTotal(rep)" readonly pInputText class="calc-field" 
+                  <input type="number" [value]="getTotal(rep)" readonly pInputText class="calc-field"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(getTotal(rep)) || superaSemillas(rep) }"
                   />
                 </td>
@@ -194,7 +192,7 @@
               <tr>
                 <td style="font-weight:bold; background:#f0f0f0;">Promedio sin redondeo</td>
                 <td *ngFor="let conteo of fechas.conteos; let n = index">
-                  <input type="number" [value]="getPromedioNormales(n)" readonly pInputText class="calc-field" 
+                  <input type="number" [value]="getPromedioNormales(n)" readonly pInputText class="calc-field"
                   [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPromedioNormales(n)) }"
                   />
                 </td>
@@ -214,7 +212,7 @@
                   />
                 </td>
                 <td>
-                  <input type="number" [value]="getPromedioMuertas()" readonly pInputText class="calc-field" 
+                  <input type="number" [value]="getPromedioMuertas()" readonly pInputText class="calc-field"
                   [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPromedioMuertas()) }"
                   />
                 </td>
@@ -228,7 +226,7 @@
               <tr>
                 <td style="font-weight:bold; background:#e0e7ff;">Promedio sin redondeo global</td>
                 <td [attr.colspan]="fechas.conteos.length">
-                  <input type="number" [value]="getPromedioNormalesGlobal()" readonly pInputText class="calc-field"  
+                  <input type="number" [value]="getPromedioNormalesGlobal()" readonly pInputText class="calc-field"
                   [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPromedioNormalesGlobal()) }"
                   />
                 </td>
@@ -248,7 +246,7 @@
                   />
                 </td>
                 <td>
-                  <input type="number" [value]="getPromedioMuertas()" readonly pInputText class="calc-field" 
+                  <input type="number" [value]="getPromedioMuertas()" readonly pInputText class="calc-field"
                   [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(getPromedioMuertas()) }"
                   />
                 </td>
@@ -327,19 +325,13 @@
         <button pButton type="button" label="Agregar repetición" class="btn-agregar-rep" (click)="agregarRepeticion()"></button>
       </div>
 
-      <!-- Campo Fecha INASE -->
-      <div class="form-field" style="margin-bottom: 2.5rem; display: flex; flex-direction: column; align-items: flex-start;">
-        <label for="fechaINASE" style="font-weight:700; font-size:1.2em; margin-bottom:0.7rem; color:#1746a0; letter-spacing:0.5px;">Fecha INASE</label>
-        <input 
-          id="fechaINASE" 
-          type="date" 
-          [(ngModel)]="fechaINASE" 
-          name="fechaINASE" 
-          [readonly]="isReadonly"
-          style="padding:0.7rem 1.5rem; border-radius:12px; border:2px solid #2563eb; background:#f7fbff; font-size:1.15em; font-weight:600; color:#1746a0; box-shadow:0 2px 8px rgba(38,99,235,0.08); transition:border 0.2s;"
-        />
-        <span style="margin-top:0.7rem; color:#2563eb; font-weight:500; font-size:1em;">Ingrese la fecha de análisis INASE.</span>
+      <div style="min-width: 180px; flex: 0 0 180px; margin: -0.5rem 0;">
+        <label style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: var(--azul); font-size: 0.95em;">Fecha INASE</label>
+        <input type="date" [(ngModel)]="fechaINASE" name="fechaInicio" pInputText [readonly]="isReadonly"
+               style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 10px; border: 2px solid var(--gris); background: #f7fbff; font-size: 0.95em; font-weight: 500; transition: border 0.2s, box-shadow 0.2s; box-shadow: 0 2px 6px rgba(38,99,235,0.08);" />
       </div>
+
+
 
       <!-- Tabla INIA/INASE adaptada a PrimeNG, sin ngFor ni expresiones en ngModel -->
       <div class="table-section" style="margin: 2.5rem 0 3rem 0;">
@@ -361,54 +353,54 @@
               <tr *ngIf="row === 1">
                 <td style="font-weight:bold;">INIA</td>
                 <td>
-                  <input type="number" [(ngModel)]="inia.pNormales" name="iniaPNormales" pInputText [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="inia.pNormales" name="iniaPNormales" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(inia.pNormales) }"
                   /></td>
                 <td>
-                  <input type="number" [(ngModel)]="inia.pAnormales" name="iniaPAnormales" pInputText [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="inia.pAnormales" name="iniaPAnormales" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarPromedioNegativoOMayoraCiento(inia.pAnormales) }"
                   /></td>
                 <td>
-                  <input type="number" [(ngModel)]="inia.duras" name="iniaDuras" pInputText [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="inia.duras" name="iniaDuras" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(inia.duras) }"
                   /></td>
                 <td>
-                  <input type="number" [(ngModel)]="inia.frescas" name="iniaFrescas" pInputText [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="inia.frescas" name="iniaFrescas" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(inia.frescas) }"
                   /></td>
                 <td>
-                  <input type="number" [(ngModel)]="inia.muertas" name="iniaMuertas" pInputText [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="inia.muertas" name="iniaMuertas" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(inia.muertas) }"
                   /></td>
                 <td>
-                  <input type="number" [(ngModel)]="inia.germinacion" name="iniaGerminacion" pInputText  [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="inia.germinacion" name="iniaGerminacion" pInputText  [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(inia.germinacion) }"
                   /></td>
               </tr>
               <tr *ngIf="row === 2">
                 <td style="font-weight:bold;">INASE</td>
                 <td>
-                  <input type="number" [(ngModel)]="inase.pNormales" name="inasePNormales" pInputText [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="inase.pNormales" name="inasePNormales" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(inase.pNormales) }"
                   /></td>
                 <td>
-                  <input type="number" [(ngModel)]="inase.pAnormales" name="inasePAnormales" pInputText [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="inase.pAnormales" name="inasePAnormales" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(inase.pAnormales) }"
                   /></td>
                 <td>
-                  <input type="number" [(ngModel)]="inase.duras" name="inaseDuras" pInputText [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="inase.duras" name="inaseDuras" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(inase.duras) }"
                   /></td>
                 <td>
-                  <input type="number" [(ngModel)]="inase.frescas" name="inaseFrescas" pInputText [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="inase.frescas" name="inaseFrescas" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(inase.frescas) }"
                   /></td>
                 <td>
-                  <input type="number" [(ngModel)]="inase.muertas" name="inaseMuertas" pInputText [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="inase.muertas" name="inaseMuertas" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(inase.muertas) }"
                   /></td>
                 <td>
-                  <input type="number" [(ngModel)]="inase.germinacion" name="inaseGerminacion" pInputText [readonly]="isReadonly" 
+                  <input type="number" [(ngModel)]="inase.germinacion" name="inaseGerminacion" pInputText [readonly]="isReadonly"
                   [ngClass]="{ 'input-error': validarNumeroNegativo(inase.germinacion) }"
                   /></td>
               </tr>
@@ -416,11 +408,22 @@
           </p-table>
       </div>
 
-
       <!-- Comentarios del analista -->
-      <div class="form-field" style="margin-bottom: 2.5rem;">
-        <label for="comentarios" style="font-weight:600; display:block; margin-bottom:0.5rem;">Comentarios:</label>
-        <textarea id="comentarios" [(ngModel)]="comentarios" name="comentarios" rows="4" [readonly]="isReadonly" style="width:100%; max-width:700px; padding:0.7rem 1rem; border-radius:10px; border:2px solid #2563eb; background:#f7fbff; font-size:1.05em; color:#1746a0; resize:vertical; box-shadow:0 2px 8px rgba(38,99,235,0.08);"></textarea>
+      <div class="form-field" style="margin: 2.5rem 0;">
+        <label for="comentarios" style="font-weight:600; display:block; margin-bottom:0.5rem; color: var(--azul)">Comentarios:</label>
+        <textarea id="comentarios" [(ngModel)]="comentarios" name="comentarios" rows="4" [readonly]="isReadonly" style="width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--gris);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s ease;
+      font-family: var(--font-main);
+
+      &:focus {
+        border-color: var(--celeste);
+        box-shadow: 0 0 0 2px rgba(86, 168, 220, 0.25);
+      }"></textarea>
       </div>
 
       <!-- Checkboxes - visible solo para admin al editar -->
@@ -467,7 +470,7 @@
           (click)="onCancel()"
         ></button>
       </div>
-      
+
       <!-- Botón para modo visualización -->
       <div class="submit-btn" style="margin-top: 1.2rem; display: flex; gap: 1rem;" *ngIf="isReadonly">
         <button

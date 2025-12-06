@@ -51,7 +51,7 @@ export class ListadoDepositosComponent implements OnInit {
 
     get itemsFiltrados() {
       const filtrados = this.items.filter(item => {
-        const cumpleNombre = !this.searchText || 
+        const cumpleNombre = !this.searchText ||
           item.nombre.toLowerCase().includes(this.searchText.toLowerCase());
         return cumpleNombre;
       });
@@ -131,7 +131,7 @@ export class ListadoDepositosComponent implements OnInit {
       this.modalNombre = item.nombre;
       this.modalError = '';
       this.modalTitulo = 'Editar Depósito';
-      this.modalBotonTexto = 'Actualizar Depósito';
+      this.modalBotonTexto = 'Editar Depósito';
       this.itemEditando = item;
       this.itemEditandoId = item.id;
       this.mostrarModal = true;
@@ -143,11 +143,11 @@ export class ListadoDepositosComponent implements OnInit {
 
     onSubmitModal(form: any) {
       if (form.invalid || this.modalLoading) return;
-      
+
       this.modalLoading = true;
       this.modalError = '';
 
-      const deposito: DepositoDto = { 
+      const deposito: DepositoDto = {
         id: this.itemEditandoId,
         nombre: this.modalNombre,
         activo: true

@@ -15,6 +15,28 @@
   }
 }
 
+.filter-dropdown {
+  display: flex !important;
+  align-items: center !important;
+
+  select {
+    padding: 0.75rem 1rem !important;
+    border: 2px solid var(--gris) !important;
+    border-radius: 8px !important;
+    font-family: var(--font-main) !important;
+    font-size: 0.9rem !important;
+    background-color: white !important;
+    outline: none !important;
+    transition: border-color 0.2s ease !important;
+    min-width: 140px !important;
+
+    &:focus {
+      border-color: var(--celeste) !important;
+      box-shadow: 0 0 0 2px rgba(86, 168, 220, 0.25) !important;
+    }
+  }
+}
+
 .pagination-info {
   display: flex;
   align-items: center;
@@ -195,7 +217,7 @@
   max-width: 1000px !important;
   width: 95% !important;
   margin: 0 auto !important;
-  
+
   // Responsive para tablets
   @media (max-width: 768px) {
     width: 98% !important;
@@ -264,23 +286,23 @@
   margin-bottom: 1.5rem;
   align-items: center;
   flex-wrap: wrap;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
     gap: 0.75rem;
   }
-  
+
   .search-bar {
     flex: 1;
     min-width: 250px;
-    
+
     // Responsive adjustments
     @media (max-width: 768px) {
       min-width: unset;
       width: 100%;
     }
-    
+
     .search-input {
       width: 100%;
       height: 45px; // Altura específica para alinear con el botón
@@ -290,40 +312,40 @@
       font-size: 1rem;
       font-family: var(--font-main);
       transition: all 0.2s ease;
-      
+
       // Responsive adjustments
       @media (max-width: 768px) {
         font-size: 0.9rem;
         padding: 0.7rem 1rem;
       }
-      
+
       @media (max-width: 480px) {
         font-size: 0.85rem;
         padding: 0.65rem 0.75rem;
         height: 42px;
       }
-      
+
       &:focus {
         outline: none;
         border-color: var(--celeste);
         box-shadow: 0 0 0 2px color-mix(in srgb, var(--verde) 25%, transparent);
       }
-      
+
       &::placeholder {
         color: #9ca3af;
       }
     }
   }
-  
+
   .filter-dropdown {
     .submit-btn {
       margin: 0; // Remover margen para alineación
-      
+
       // Responsive para móviles
       @media (max-width: 768px) {
         width: 100%;
       }
-      
+
       ::ng-deep .p-button {
         height: 45px !important; // Misma altura que el input
         min-height: 45px !important;
@@ -333,14 +355,14 @@
         justify-content: center !important;
         white-space: nowrap !important;
         border-radius: 8px !important; // Mismo border-radius que el input
-        
+
         // Responsive adjustments
         @media (max-width: 768px) {
           width: 100% !important;
           font-size: 0.9rem !important;
           padding: 0 1rem !important;
         }
-        
+
         @media (max-width: 480px) {
           font-size: 0.85rem !important;
           padding: 0 0.75rem !important;
@@ -360,26 +382,26 @@
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
     padding: 1rem 1.5rem;
-    
+
     .p-dialog-title {
       font-weight: 600;
       font-size: 1.2rem;
     }
-    
+
     .p-dialog-header-icon {
       color: white;
-      
+
       &:hover {
         background: rgba(255, 255, 255, 0.1);
       }
     }
   }
-  
+
   .p-dialog-content {
     padding: 1.5rem;
     background: #f7fbff;
   }
-  
+
   .p-dialog {
     border-radius: 12px;
     overflow: hidden;
@@ -434,7 +456,7 @@
         border-color: var(--verde);
         box-shadow: 0 0 0 2px rgba(21, 177, 109, 0.25);
       }
-      
+
       &::placeholder {
         color: #9ca3af;
       }
@@ -483,7 +505,7 @@
       background: var(--verde) !important;
       filter: brightness(0.9) !important;
     }
-    
+
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
@@ -545,7 +567,7 @@
 
   &.edit-button {
     background-color: var(--naranja);
-    
+
     &:hover {
       background-color: var(--naranja);
       box-shadow: 0 2px 8px rgba(237, 168, 70, 0.4);
@@ -554,7 +576,7 @@
 
   &.delete-button {
     background-color: var(--rojo);
-    
+
     &:hover {
       background-color: var(--rojo);
       box-shadow: 0 2px 8px rgba(218, 105, 106, 0.4);
@@ -581,7 +603,7 @@
   .action-button {
     width: 35px;
     height: 35px;
-    
+
     i {
       font-size: 0.9rem;
     }
@@ -592,11 +614,11 @@
   .item-actions {
     gap: 0.3rem;
   }
-  
+
   .action-button {
     width: 30px;
     height: 30px;
-    
+
     i {
       font-size: 0.8rem;
     }

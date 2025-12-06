@@ -216,7 +216,6 @@ public class MapsDtoEntityService {
         dto.setPreFrio(germinacion.getPreFrio());
         dto.setPreTratamiento(germinacion.getPreTratamiento());
         dto.setNroDias(germinacion.getNroDias());
-        dto.setFechaFinal(germinacion.getFechaFinal());
         dto.setPRedondeo(germinacion.getPRedondeo());
         dto.setPNormalINIA(germinacion.getPNormalINIA());
         dto.setPNormalINASE(germinacion.getPNormalINASE());
@@ -280,7 +279,6 @@ public class MapsDtoEntityService {
         germinacion.setPreFrio(dto.getPreFrio());
         germinacion.setPreTratamiento(dto.getPreTratamiento());
         germinacion.setNroDias(dto.getNroDias());
-        germinacion.setFechaFinal(dto.getFechaFinal());
         germinacion.setPRedondeo(dto.getPRedondeo());
         germinacion.setPNormalINIA(dto.getPNormalINIA());
         germinacion.setPNormalINASE(dto.getPNormalINASE());
@@ -325,7 +323,6 @@ public class MapsDtoEntityService {
         dto.setOrigen(recibo.getOrigen());
         dto.setLoteId(recibo.getLoteId());
         dto.setKgLimpios(recibo.getKgLimpios());
-        dto.setAnalisisSolicitados(recibo.getAnalisisSolicitados());
         dto.setArticulo(recibo.getArticulo());
         dto.setActivo(recibo.isActivo());
         // Mapear listas de entidades a listas de IDs
@@ -368,7 +365,6 @@ public class MapsDtoEntityService {
         recibo.setOrigen(dto.getOrigen());
         recibo.setLoteId(dto.getLoteId());
         recibo.setKgLimpios(dto.getKgLimpios());
-        recibo.setAnalisisSolicitados(dto.getAnalisisSolicitados());
         recibo.setArticulo(dto.getArticulo());
         recibo.setActivo(dto.isActivo());
 

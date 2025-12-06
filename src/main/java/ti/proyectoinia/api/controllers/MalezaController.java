@@ -29,8 +29,8 @@ public class MalezaController {
             description = "Esta Funcion crea un nuevo MalezaS"
     )
     public ResponseEntity<String> crearMaleza(@RequestBody MalezaDto malezaDto) {
-        if (malezaDto.getNombre() == null || malezaDto.getNombre().trim().isEmpty() || malezaDto.getNombre().matches(".*\\d.*")) {
-            return new ResponseEntity<>("El nombre del cultivo es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
+        if (malezaDto.getNombre() == null || malezaDto.getNombre().trim().isEmpty()) {
+            return new ResponseEntity<>("El nombre es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
 
         if (malezaDto.getId() != null && MalezaService.obtenerMalezaPorId(malezaDto.getId()) != null) {
@@ -63,7 +63,7 @@ public class MalezaController {
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
     public ResponseEntity<String> editarMaleza(@RequestBody MalezaDto malezaDto) {
-        if (malezaDto.getId() == null || malezaDto.getNombre() == null || malezaDto.getNombre().trim().isEmpty() || malezaDto.getNombre().matches(".*\\d.*")) {
+        if (malezaDto.getId() == null || malezaDto.getNombre() == null || malezaDto.getNombre().trim().isEmpty()) {
             return new ResponseEntity<>("El nombre es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
 

@@ -33,8 +33,6 @@ public class GerminacionDto {
 
     private Integer nroDias;
 
-    private Date fechaFinal;
-
     @JsonProperty("pRedondeo")
     private Integer pRedondeo;
 

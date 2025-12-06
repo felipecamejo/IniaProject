@@ -46,9 +46,6 @@ public class Germinacion {
     @Column(name = "GERMINACION_NRODIAS")
     private Integer nroDias;
 
-    @Column(name = "GERMINACION_FECHAFINAL")
-    private Date fechaFinal;
-
     @Column(name = "GERMINACION_PREDONDEO")
     private Integer pRedondeo;
 

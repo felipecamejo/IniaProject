@@ -26,8 +26,8 @@ public class EspecieController {
     @Secured({"ADMIN"})
     @Operation(description = "Esta función crea una nueva especie")
     public ResponseEntity<String> crear(@RequestBody EspecieDto dto) {
-        if (dto.getNombre() == null || dto.getNombre().trim().isEmpty() || dto.getNombre().matches(".*\\d.*")) {
-            return new ResponseEntity<>("El nombre de la especie es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
+        if (dto.getNombre() == null || dto.getNombre().trim().isEmpty() ) {
+            return new ResponseEntity<>("El nombre es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
 
         if (dto.getId() != null && service.obtenerPorId(dto.getId()) != null) {
@@ -68,7 +68,7 @@ public class EspecieController {
     @PutMapping({"/editar"})
     @Secured({"ADMIN"})
     public ResponseEntity<String> editar(@RequestBody EspecieDto dto) {
-        if (dto.getId() == null || dto.getNombre() == null || dto.getNombre().trim().isEmpty() || dto.getNombre().matches(".*\\d.*")) {
+        if (dto.getId() == null || dto.getNombre() == null || dto.getNombre().trim().isEmpty()) {
             return new ResponseEntity<>("El nombre es obligatorio y debe ser String", HttpStatus.BAD_REQUEST);
         }
 

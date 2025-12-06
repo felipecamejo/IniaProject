@@ -403,7 +403,7 @@ export class PurezaPNotatumComponent implements OnInit {
           // Procesar repeticiones
           this.procesarRepeticiones(this.editingId!).then(() => {
             if (res != null) {
-              this.logService.crearLog(Number(this.loteId), Number(res), 'Pureza P. notatum', 'actualizada').subscribe();
+              this.logService.crearLog(Number(this.route.snapshot.params['loteId']), Number(res), 'Pureza P. notatum', 'editada').subscribe();
             }
             this.safeNavigateToListado();
           }).catch(err => {
@@ -428,7 +428,7 @@ export class PurezaPNotatumComponent implements OnInit {
           // Procesar repeticiones
           this.procesarRepeticiones(res).then(() => {
             if (res != null) { 
-              this.logService.crearLog(Number(this.loteId), Number(res), 'Pureza P. notatum', 'creada').subscribe();
+              this.logService.crearLog(Number(this.route.snapshot.params['loteId']), Number(res), 'Pureza P. notatum', 'creada').subscribe();
             }
             this.safeNavigateToListado();
           }).catch(err => {
