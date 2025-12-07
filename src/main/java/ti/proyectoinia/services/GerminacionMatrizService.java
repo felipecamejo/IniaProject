@@ -110,6 +110,12 @@ public class GerminacionMatrizService {
 
     // Nuevos upserts
     public NormalPorConteoDto upsertNormal(String tabla, NormalPorConteoDto dto) {
+        System.out.println("[upsertNormal] Recibido DTO: germinacionId=" + dto.getGerminacionId() 
+            + ", numeroRepeticion=" + dto.getNumeroRepeticion() 
+            + ", conteoId=" + dto.getConteoId() 
+            + ", normal=" + dto.getNormal() 
+            + ", tabla=" + tabla);
+        
         if (dto == null) throw new IllegalArgumentException("dto es requerido");
         if (dto.getConteoId() == null) throw new IllegalArgumentException("conteoId es requerido");
         if (dto.getNumeroRepeticion() == null) throw new IllegalArgumentException("numeroRepeticion es requerido");
@@ -121,11 +127,28 @@ public class GerminacionMatrizService {
                 .orElseThrow(() -> new IllegalArgumentException("Conteo no encontrado: " + dto.getConteoId()));
         if (dto.getGerminacionId() == null) dto.setGerminacionId(conteo.getGerminacionId());
 
+        System.out.println("[upsertNormal] Después de completar: germinacionId=" + dto.getGerminacionId());
+
         // Verificar que exista la repetición final (opcional, podemos crearlo lazy)
         ensureRepeticionExists(dto.getGerminacionId(), key, dto.getNumeroRepeticion());
 
+        System.out.println("[upsertNormal] Buscando existente con: germinacionId=" + dto.getGerminacionId() 
+            + ", tabla=" + key 
+            + ", numeroRepeticion=" + dto.getNumeroRepeticion() 
+            + ", conteoId=" + dto.getConteoId());
+        
         var existente = normalPorConteoRepository.findByGerminacionIdAndTablaAndNumeroRepeticionAndConteoId(
                 dto.getGerminacionId(), key, dto.getNumeroRepeticion(), dto.getConteoId());
+        
+        if (existente.isPresent()) {
+            System.out.println("[upsertNormal] Encontrado existente ID=" + existente.get().getId() 
+                + ", valores actuales: germinacionId=" + existente.get().getGerminacionId() 
+                + ", numeroRepeticion=" + existente.get().getNumeroRepeticion() 
+                + ", normal=" + existente.get().getNormal());
+        } else {
+            System.out.println("[upsertNormal] No se encontró existente, creando nuevo");
+        }
+        
         NormalPorConteo entity = existente.orElseGet(NormalPorConteo::new);
         entity.setId(existente.map(NormalPorConteo::getId).orElse(null));
         entity.setActivo(true);
@@ -134,7 +157,16 @@ public class GerminacionMatrizService {
         entity.setNumeroRepeticion(dto.getNumeroRepeticion());
         entity.setConteoId(dto.getConteoId());
         entity.setNormal(dto.getNormal());
+        
+        System.out.println("[upsertNormal] Entity antes de guardar: germinacionId=" + entity.getGerminacionId() 
+            + ", numeroRepeticion=" + entity.getNumeroRepeticion() 
+            + ", conteoId=" + entity.getConteoId() 
+            + ", normal=" + entity.getNormal());
+        
         NormalPorConteo saved = normalPorConteoRepository.save(entity);
+        
+        System.out.println("[upsertNormal] Entity guardada con ID=" + saved.getId());
+        
         return maps.mapToDtoNormalPorConteo(saved);
     }
 

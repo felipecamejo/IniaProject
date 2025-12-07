@@ -17,7 +17,7 @@ import { MetodoDto } from '../../../models/Metodo.dto';
 import { NormalPorConteoDto } from '../../../models/NormalPorConteo.dto';
 import { RepeticionFinalDto } from '../../../models/RepeticionFinal.dto';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { LogService } from '../../../services/LogService';
 
 export interface RepeticionGerminacion {
@@ -618,6 +618,7 @@ export class GerminacionComponent implements OnInit {
           let normalesPorConteo: Record<number, NormalPorConteoDto[]> = {} as any;
           if (tablaKey === 'SIN_CURAR') {
             finales = res?.finalesSinCurar ?? [];
+            console.log('[buildReps] Finales SIN_CURAR:', finales);
           } else if (tablaKey === 'CURADA_PLANTA') {
             finales = res?.finalesCuradaPlanta ?? [];
           } else if (tablaKey === 'CURADA_LABORATORIO') {
@@ -628,6 +629,7 @@ export class GerminacionComponent implements OnInit {
             else if (tablaKey === 'CURADA_PLANTA') normalesPorConteo[cid] = res?.normalesCuradaPlanta?.[cid] ?? [];
             else if (tablaKey === 'CURADA_LABORATORIO') normalesPorConteo[cid] = res?.normalesCuradaLaboratorio?.[cid] ?? [];
           }
+          console.log(`[buildReps] Normales por conteo para ${tablaKey}:`, normalesPorConteo);
           const reps: RepeticionGerminacion[] = [];
           for (const f of (finales || [])) {
             const rep: RepeticionGerminacion = {
@@ -642,6 +644,7 @@ export class GerminacionComponent implements OnInit {
               const lista = normalesPorConteo[cid] || [];
               const celda = lista.find(n => (n.numeroRepeticion ?? -1) === rep.numero);
               rep.normales[idx] = (celda?.normal ?? 0) as number;
+              console.log(`[buildReps] Rep${rep.numero} Conteo${idx+1} (ID=${cid}): celda=`, celda, 'valor=', rep.normales[idx]);
             });
             reps.push(rep);
           }
@@ -1390,83 +1393,92 @@ export class GerminacionComponent implements OnInit {
                     }
                   });
 
-                  // Crear (si falta) la repetición indicada y upsert normales + finales
-                  // Crear repeticiones necesarias (por fila)
-                  reps.forEach(rep => {
-                    ops$.push(
-                      this.tablasSvc.addRepeticionNumero(germinacionId, k, this.parseNumLocale(rep.numero))
-                        .pipe(catchError(err => { console.error('Error creando repetición', err); return of(null); }))
-                    );
-                  });
+                  // FASE 1: Crear repeticiones primero
+                  const crearReps$ = reps.map(rep =>
+                    this.tablasSvc.addRepeticionNumero(germinacionId, k, this.parseNumLocale(rep.numero))
+                      .pipe(catchError(err => { console.error('Error creando repetición', err); return of(null); }))
+                  );
+                  
+                  ops$.push(
+                    (crearReps$.length ? forkJoin(crearReps$) : of([])).pipe(
+                      // FASE 2: Después de crear repeticiones, guardar normales y finales
+                      switchMap(() => {
+                        const datosOps$: any[] = [];
+                        
+                        // Upsert normales por cada conteo mapeando por numeroConteo
+                        const mapaConteo = new Map<number, ConteoGerminacionDto>();
+                        conteosOrdenados.forEach(c => {
+                          const n = Number((c as any)?.numeroConteo || 0);
+                          if (n > 0) mapaConteo.set(n, c);
+                        });
+                        reps.forEach(rep => {
+                          for (let n = 1; n <= conteosOrdenados.length; n++) {
+                            const c = mapaConteo.get(n) || conteosOrdenados[n - 1];
+                            if (!germinacionId || !c?.id || rep.numero === undefined) {
+                              console.error('VALIDACION ERROR: Datos incompletos para normal', { germinacionId, conteoId: c?.id, numeroRepeticion: rep.numero, tabla: k });
+                              continue;
+                            }
+                            const idx = n - 1;
+                            const valorNormal = this.parseNumLocale(rep.normales?.[idx]);
+                            const body: NormalPorConteoDto = {
+                              germinacionId: germinacionId,
+                              tabla: k,
+                              numeroRepeticion: this.parseNumLocale(rep.numero),
+                              conteoId: Number(c.id),
+                              normal: valorNormal
+                            };
+                            console.log(`[persistirTodos] Guardando Normal - Tabla:${k}, Rep:${rep.numero}, Conteo${n}, Valor:${valorNormal}`);
+                            datosOps$.push(
+                              this.tablasSvc.upsertNormal(k, body).pipe(
+                                catchError(err => {
+                                  console.error('VALIDACION ERROR: Error guardando normal', { error: err, tabla: k, body: body });
+                                  return of(null);
+                                })
+                              )
+                            );
+                          }
+                        });
 
-                  // Upsert normales por cada conteo mapeando por numeroConteo
-                  const mapaConteo = new Map<number, ConteoGerminacionDto>();
-                  conteosOrdenados.forEach(c => {
-                    const n = Number((c as any)?.numeroConteo || 0);
-                    if (n > 0) mapaConteo.set(n, c);
-                  });
-                  reps.forEach(rep => {
-                    for (let n = 1; n <= conteosOrdenados.length; n++) {
-                      const c = mapaConteo.get(n) || conteosOrdenados[n - 1];
-                      if (!germinacionId || !c?.id || rep.numero === undefined) {
-                        console.error('VALIDACION ERROR: Datos incompletos para normal', { germinacionId, conteoId: c?.id, numeroRepeticion: rep.numero, tabla: k });
-                        continue;
-                      }
-                      const idx = n - 1;
-                      const body: NormalPorConteoDto = {
-                        germinacionId: germinacionId,
-                        tabla: k,
-                        numeroRepeticion: this.parseNumLocale(rep.numero),
-                        conteoId: Number(c.id),
-                        normal: this.parseNumLocale(rep.normales?.[idx])
-                      };
-                      ops$.push(
-                        this.tablasSvc.upsertNormal(k, body).pipe(
-                          catchError(err => {
-                            console.error('VALIDACION ERROR: Error guardando normal', { error: err, tabla: k, body: body });
-                            return of(null);
-                          })
-                        )
-                      );
-                    }
-                  });
+                        // Upsert finales por fila
+                        reps.forEach(rep => {
+                          // Validar datos antes de enviar
+                          if (!germinacionId || rep.numero === undefined) {
+                            console.error('VALIDACION ERROR: Datos incompletos para finales', {
+                              germinacionId,
+                              numeroRepeticion: rep.numero,
+                              tabla: k
+                            });
+                            return;
+                          }
 
-                  // Upsert finales por fila
-                  reps.forEach(rep => {
-                    // Validar datos antes de enviar
-                    if (!germinacionId || rep.numero === undefined) {
-                      console.error('VALIDACION ERROR: Datos incompletos para finales', {
-                        germinacionId,
-                        numeroRepeticion: rep.numero,
-                        tabla: k
-                      });
-                      return;
-                    }
+                          const finBody: RepeticionFinalDto = {
+                            activo: true,
+                            germinacionId: germinacionId,
+                            numeroRepeticion: this.parseNumLocale(rep.numero),
+                            anormal: this.parseNumLocale(rep.anormales),
+                            duras: this.parseNumLocale(rep.duras),
+                            frescas: this.parseNumLocale(rep.frescas),
+                            muertas: this.parseNumLocale(rep.muertas)
+                          };
 
-                    const finBody: RepeticionFinalDto = {
-                      activo: true,
-                      germinacionId: germinacionId,
-                      numeroRepeticion: this.parseNumLocale(rep.numero),
-                      anormal: this.parseNumLocale(rep.anormales),
-                      duras: this.parseNumLocale(rep.duras),
-                      frescas: this.parseNumLocale(rep.frescas),
-                      muertas: this.parseNumLocale(rep.muertas)
-                    };
-
-                    ops$.push(
-                      this.tablasSvc.upsertFinales(k, finBody).pipe(
-                        catchError(err => {
-                          console.error('VALIDACION ERROR: Error guardando finales', {
-                            error: err,
-                            tabla: k,
-                            body: finBody,
-                            url: `${this.tablasSvc['urls'].baseUrl}${this.tablasSvc['base']}/finales/${encodeURIComponent(k)}`
-                          });
-                          return of(null);
-                        })
-                      )
-                    );
-                  });
+                          datosOps$.push(
+                            this.tablasSvc.upsertFinales(k, finBody).pipe(
+                              catchError(err => {
+                                console.error('VALIDACION ERROR: Error guardando finales', {
+                                  error: err,
+                                  tabla: k,
+                                  body: finBody
+                                });
+                                return of(null);
+                              })
+                            )
+                          );
+                        });
+                        
+                        return datosOps$.length ? forkJoin(datosOps$) : of([]);
+                      })
+                    )
+                  );
                 });
 
                 const exec$ = ops$.length ? forkJoin(ops$) : of([] as any[]);
