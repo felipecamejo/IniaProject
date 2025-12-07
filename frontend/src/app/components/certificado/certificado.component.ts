@@ -14,9 +14,6 @@ import { LoteDto } from '../../../models/Lote.dto';
 import { PurezaService } from '../../../services/PurezaService';
 import { GerminacionService } from '../../../services/GerminacionService';
 import { DOSNService } from '../../../services/DOSNService';
-import { PurezaDto } from '../../../models/Pureza.dto';
-import { GerminacionDto } from '../../../models/Germinacion.dto';
-import { DOSNDto } from '../../../models/DOSN.dto';
 import { jsPDF } from 'jspdf';
 // @ts-ignore - jspdf-autotable puede no tener tipos TypeScript completos
 import autoTable from 'jspdf-autotable';
@@ -27,7 +24,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-certificado',
@@ -42,7 +38,6 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     InputNumberModule,
     ButtonModule,
     TableModule,
-    ConfirmDialogComponent,
   ]
 })
 export class CertificadoComponent implements OnInit {
@@ -122,9 +117,6 @@ export class CertificadoComponent implements OnInit {
   reciboId: number | null = null;
   isEditing: boolean = false;
   isViewing: boolean = false;
-
-  // Popup de confirmación de éxito
-  mostrarConfirmExito: boolean = false;
 
   // Datos del recibo
   recibo: ReciboDto | null = null;
@@ -675,6 +667,7 @@ export class CertificadoComponent implements OnInit {
 
   onSubmit() {
     if (this.manejarProblemas()) {
+      alert(this.errores.join('\n'));
       return;
     }
 
@@ -799,6 +792,7 @@ export class CertificadoComponent implements OnInit {
     this.certificadoService.crearCertificado(payload).subscribe({
       next: (certificadoCreado: CertificadoDto) => {
         console.log('Certificado creado:', certificadoCreado);
+        alert('Certificado creado exitosamente.');
         // Navegar según si hay loteId y reciboId
         if (this.loteId != null && this.reciboId != null) {
           this.router.navigate([`/${this.loteId}/${this.reciboId}/lote-analisis`]);
@@ -917,8 +911,8 @@ export class CertificadoComponent implements OnInit {
     this.certificadoService.editarCertificado(payload).subscribe({
       next: (mensaje: string) => {
         console.log('Certificado actualizado:', mensaje);
-        // Mostrar popup de éxito
-        this.mostrarConfirmExito = true;
+        alert('Certificado actualizado exitosamente.');
+
       },
       error: (err) => {
         console.error('Error actualizando certificado:', err);
@@ -1497,19 +1491,5 @@ export class CertificadoComponent implements OnInit {
     }
   }
 
-  onConfirmExito() {
-    // Cerrar el popup y redirigir
-    this.mostrarConfirmExito = false;
-    if (this.loteId != null && this.reciboId != null) {
-      this.router.navigate([`/${this.loteId}/${this.reciboId}/lote-analisis`]);
-    } else {
-      this.router.navigate(['/listado-lotes']);
-    }
-  }
-
-  onCancelExito() {
-    // Cerrar el popup sin redirigir (aunque normalmente no debería cancelarse)
-    this.mostrarConfirmExito = false;
-  }
 }
 

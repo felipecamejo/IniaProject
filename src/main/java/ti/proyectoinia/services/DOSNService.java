@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ti.proyectoinia.api.responses.ResponseListadoDOSN;
 import ti.proyectoinia.business.entities.DOSN;
@@ -27,6 +28,12 @@ public class DOSNService {
 
     @Autowired
     private MalezaRepository malezaRepository;
+
+    @Autowired
+    private ti.proyectoinia.business.repositories.DOSNCultivoRepository dosnCultivoRepository;
+
+    @Autowired
+    private ti.proyectoinia.business.repositories.DOSNMalezaRepository dosnMalezaRepository;
 
     public DOSNService(DOSNRepository dosnRepository, MapsDtoEntityService mapsDtoEntityService) {
         this.mapsDtoEntityService = mapsDtoEntityService;
@@ -82,6 +89,7 @@ public class DOSNService {
         return "DOSN eliminada correctamente ID:" + id;
     }
 
+    @Transactional
     public String editarDOSN(DOSNDto dosnDto) {
         // Validaciones para arrays de IDs actuales (compatibilidad)
         if (dosnDto.getCultivosINIAId() != null) {
@@ -110,6 +118,28 @@ public class DOSNService {
         validateMalezasCantidad(dosnDto.getMalezasToleradasINASE(), "INASE", "TOLERADA");
         validateMalezasCantidad(dosnDto.getMalezasToleranciaCeroINASE(), "INASE", "CERO");
 
+        // --- Borrado de relaciones anteriores ---
+        if (dosnDto.getId() != null) {
+            // Borrar detalle (tablas DOSN_CULTIVO y DOSN_MALEZA)
+            dosnCultivoRepository.deleteByDosnId(dosnDto.getId());
+            dosnMalezaRepository.deleteByDosnId(dosnDto.getId());
+        }
+
+        // Borrar relaciones ManyToMany (tablas intermedias)
+        DOSN dosnEntity = dosnRepository.findById(dosnDto.getId()).orElse(null);
+        if (dosnEntity != null) {
+            dosnEntity.setCultivosINIA(null);
+            dosnEntity.setCultivosINASE(null);
+            dosnEntity.setMalezasNormalesINIA(null);
+            dosnEntity.setMalezasNormalesINASE(null);
+            dosnEntity.setMalezasToleradasINIA(null);
+            dosnEntity.setMalezasToleradasINASE(null);
+            dosnEntity.setMalezasToleranciaCeroListaINIA(null);
+            dosnEntity.setMalezasToleranciaCeroListaINASE(null);
+            dosnRepository.save(dosnEntity);
+        }
+
+        // Guardar nuevas relaciones
         DOSN dosn = mapsDtoEntityService.mapToEntityDOSN(dosnDto);
         this.dosnRepository.save(dosn);
         return "DOSN actualizada correctamente ID:" + dosn.getId();

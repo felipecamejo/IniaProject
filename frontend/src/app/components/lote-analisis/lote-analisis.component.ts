@@ -388,14 +388,28 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
       alert('No hay certificado disponible para eliminar.');
       return;
     }
-    // Cargar el certificado para mostrar su información en el popup
-    this.certificadoService.obtenerCertificado(this.certificadoId).subscribe({
-      next: (certificado: CertificadoDto) => {
-        this.certificadoAEliminar = certificado;
+    // Confirmar con el usuario antes de eliminar
+    const confirmar = confirm('¿Está seguro que desea eliminar el certificado de este lote? Esta acción no se puede deshacer.');
+    if (!confirmar) {
+      return;
+    }
+    // Proceder a eliminar directamente
+    this.certificadoService.eliminarCertificado(this.certificadoId).subscribe({
+      next: (mensaje: string) => {
+        console.log('Certificado eliminado:', mensaje);
+        this.confirmLoading = false;
+        this.certificadoAEliminar = null;
+        // Actualizar estado local
+        this.tieneCertificado = false;
+        this.certificadoId = null;
+        // Recargar datos para actualizar la UI
+        this.verificarCertificado();
       },
       error: (error) => {
-        console.error('Error cargando certificado:', error);
-        alert('Error al cargar el certificado. Por favor, intente nuevamente.');
+        console.error('Error eliminando certificado:', error);
+        this.confirmLoading = false;
+        this.certificadoAEliminar = null;
+        alert('Error al eliminar el certificado. Por favor, intente nuevamente.');
       }
     });
   }
