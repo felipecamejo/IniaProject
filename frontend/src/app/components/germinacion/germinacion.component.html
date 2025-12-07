@@ -59,7 +59,7 @@
       </div>
 
       <!-- Aviso destacado de Pre-frío: justo debajo de la tabla de conteos -->
-      <div class="prefrio-highlight" *ngIf="preFrio && preFrio !== 'No'">
+      <div class="prefrio-highlight" *ngIf="preFrio && preFrio !== 'NINGUNO' && diasDuracionPreFrio > 0">
         <div class="prefrio-content">
           <span class="prefrio-badge">Pre‑frío</span>
           <div class="prefrio-lines">
@@ -114,14 +114,14 @@
         <div class="form-field" style="margin-bottom: 0;">
           <label for="preFrio" style="font-weight:600; margin-right:0.5rem; color: var(--azul)">Pre-frío:</label>
           <select id="preFrio" [(ngModel)]="preFrio" name="preFrio" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;" (change)="manejarProblemas()">
-            <option value="NINGUNO">Ninguno</option>
+            <option value="NINGUNO" selected>Ninguno</option>
             <option *ngFor="let d of diasPreFrio" [value]="d">{{d}}</option>
           </select>
         </div>
         <div class="form-field" style="margin-bottom: 0;">
           <label for="preTratamiento" style="font-weight:600; margin-right:0.5rem; color: var(--azul)">Pre-tratamiento:</label>
           <select id="preTratamiento" [(ngModel)]="preTratamiento" name="preTratamiento" style="padding:0.4rem 1rem; border-radius:8px; border:1px solid #cbd5e1;" (change)="manejarProblemas()">
-            <option value="No">No</option>
+            <option value="NINGUNO">NINGUNO</option>
             <option value="KNO3">KNO3</option>
             <option value="Pre-lavado">Pre-lavado</option>
             <option value="Pre-secado">Pre-secado</option>

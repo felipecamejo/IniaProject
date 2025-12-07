@@ -41,7 +41,7 @@ public class Germinacion {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "GERMINACION_PRETRATAMIENTO")
-    private PreTratamiento preTratamiento;
+    private PreTratamientoGerminacion preTratamiento;
 
     @Column(name = "GERMINACION_NRODIAS")
     private Integer nroDias;

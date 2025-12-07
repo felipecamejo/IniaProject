@@ -288,7 +288,7 @@ export class GerminacionComponent implements OnInit {
   metodo: string = '';
   temperatura: string = '';
   preFrio: string = 'NINGUNO';
-  preTratamiento: string = '';
+  preTratamiento: string = 'NINGUNO';
   productoDosis: string = '';
   fechas = {
     inicio: '',
@@ -318,7 +318,7 @@ export class GerminacionComponent implements OnInit {
   // Las variables actuales ya están declaradas arriba, eliminamos duplicados
     // Fecha de salida de pre-frío calculada
     get fechaSalidaPreFrio(): string {
-      if (!this.fechas.inicio || this.preFrio === 'No') return '';
+      if (!this.fechas.inicio || this.preFrio === 'NINGUNO') return '';
       const diasMatch = this.preFrio.match(/(\d+)/);
       const dias = diasMatch ? parseInt(diasMatch[1], 10) : 0;
       if (dias === 0) return '';
@@ -333,7 +333,7 @@ export class GerminacionComponent implements OnInit {
 
     // Versión ISO (YYYY-MM-DD) para comparaciones con inputs tipo date
     get fechaSalidaPreFrioISO(): string {
-      if (!this.fechas.inicio || this.preFrio === 'No') return '';
+      if (!this.fechas.inicio || this.preFrio === 'NINGUNO') return '';
       const diasMatch = this.preFrio.match(/(\d+)/);
       const dias = diasMatch ? parseInt(diasMatch[1], 10) : 0;
       if (dias === 0) return '';
@@ -348,7 +348,7 @@ export class GerminacionComponent implements OnInit {
 
       // Días de pre-frío: solo los días extraídos del selector de pre-frío
       get diasDuracionPreFrio(): number {
-        if (!this.preFrio || this.preFrio === 'No') return 0;
+        if (!this.preFrio || this.preFrio === 'NINGUNO') return 0;
         const diasMatch = this.preFrio.match(/(\d+)/);
         return diasMatch ? parseInt(diasMatch[1], 10) : 0;
       }
@@ -356,7 +356,7 @@ export class GerminacionComponent implements OnInit {
       // N° de Dias: suma de totalDias y días de pre-frío
       get numeroDias(): number {
         const totalDias = Number(this.fechas.totalDias) || 0;
-        if (!this.preFrio || this.preFrio === 'No') return totalDias;
+        if (!this.preFrio || this.preFrio === 'NINGUNO') return totalDias;
         const diasMatch = this.preFrio.match(/(\d+)/);
         const diasPreFrio = diasMatch ? parseInt(diasMatch[1], 10) : 0;
         return totalDias + diasPreFrio;
@@ -390,8 +390,8 @@ export class GerminacionComponent implements OnInit {
       numSemillas: '50',
       metodo: 'A',
       temperatura: '20°C',
-      preFrio: 'No',
-      preTratamiento: 'No',
+      preFrio: 'NINGUNO',
+      preTratamiento: 'NINGUNO',
       productoDosis: 'Producto X',
       tratamientoSemillas: 'sin curar',
       fechas: {
@@ -487,18 +487,18 @@ export class GerminacionComponent implements OnInit {
     return 'sin curar';
   }
 
-  private mapPreFrioToEnum(val: string | null | undefined): 'PREFRIO' | 'SIN_PREFRIO' | null {
-    const v = (val || '').trim().toLowerCase();
-    if (!v || v === 'no') return 'SIN_PREFRIO';
-    return 'PREFRIO';
+  private mapPreFrioToEnum(val: string | null | undefined): string | null {
+    const v = (val || '').trim();
+    if (!v || v === 'NINGUNO') return 'NINGUNO';
+    // Devolver el valor tal cual viene (ej: '3 dias', '4 dias', etc.)
+    return v;
   }
 
-  private mapPreTratamientoToEnum(val: string | null | undefined): 'NINGUNO' | 'ESCARIFICADO' | 'OTRO' | null {
-    const v = (val || '').trim().toLowerCase();
-    if (!v || v === 'no' || v === 'ninguno') return 'NINGUNO';
-    // No tenemos un mapeo exacto para KNO3/GA3/Pre-lavado/Pre-secado en el enum backend; usar OTRO
-    if (v.includes('escarific')) return 'ESCARIFICADO';
-    return 'OTRO';
+  private mapPreTratamientoToEnum(val: string | null | undefined): string | null {
+    const v = (val || '').trim();
+    if (!v || v === 'NINGUNO') return 'NINGUNO';
+    // Devolver el valor tal cual viene (KNO3, Pre-lavado, Pre-secado, GA3)
+    return v;
   }
 
   private parseTemperaturaToFloat(val: string | null | undefined): number | null {
@@ -881,18 +881,11 @@ export class GerminacionComponent implements OnInit {
         } else {
           this.temperatura = '';
         }
-        // Pre-frío: el backend solo reporta enum (PREFRIO | SIN_PREFRIO). El selector usa 'No' o días.
-        // Si viene PREFRIO, seleccionar el primer valor disponible de días para reflejar "sí hay pre-frío".
-        this.preFrio = (dto?.preFrio === 'PREFRIO')
-          ? (this.diasPreFrio && this.diasPreFrio.length ? String(this.diasPreFrio[0]) : 'No')
-          : 'No';
-        // Pre-tratamiento: mapear NINGUNO a 'No', otros a una opción visible (usamos 'KNO3' como comodín UI)
-        if (dto?.preTratamiento === 'NINGUNO' || dto?.preTratamiento === 'SIN_PRETRATAMIENTO') {
-          this.preTratamiento = 'No';
-        } else {
-          // Valores como ESCARIFICADO, EP_16_HORAS, AGUA_7_HORAS, OTRO → mostrar una opción válida
-          this.preTratamiento = 'KNO3';
-        }
+        // Pre-frío: ahora el backend envía el valor completo ('NINGUNO', '3 dias', etc.)
+        this.preFrio = dto?.preFrio || 'NINGUNO';
+        
+        // Pre-tratamiento: ahora el backend envía 'NINGUNO', 'X' o 'Y'
+        this.preTratamiento = dto?.preTratamiento || 'NINGUNO';
         this.productoDosis = dto?.productoDosis || '';
         // Tratamiento (mapear enum a etiqueta UI)
         this.tratamientoSemillas = this.mapKeyToUiTabla(dto?.tratamiento);

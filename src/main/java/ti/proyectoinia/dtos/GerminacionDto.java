@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import ti.proyectoinia.business.entities.Metodo;
 import ti.proyectoinia.business.entities.PreFrio;
-import ti.proyectoinia.business.entities.PreTratamiento;
+import ti.proyectoinia.business.entities.PreTratamientoGerminacion;
 import ti.proyectoinia.business.entities.Tratamiento;
 
 
@@ -30,7 +30,7 @@ public class GerminacionDto {
 
     private String observaciones;
 
-    private PreTratamiento preTratamiento;
+    private PreTratamientoGerminacion preTratamiento;
 
     private Integer nroDias;
 

@@ -12,7 +12,7 @@ export type PreFrio = 'NINGUNO' |'3 dias'
   | '13 dias'
   | '14 dias'
   | '15 dias';
-export type PreTratamiento = 'NINGUNO' | 'X' | 'Y';
+export type PreTratamiento = 'NINGUNO' | 'KNO3' | 'Pre-lavado' | 'Pre-secado' | 'GA3';
 export type Tratamiento = 'NINGUNO' | 'T1' | 'T2';
 
 export interface GerminacionDto {

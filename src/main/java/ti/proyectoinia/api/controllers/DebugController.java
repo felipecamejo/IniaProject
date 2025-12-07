@@ -961,8 +961,8 @@ public class DebugController {
                         germinacion.setMetodo(metodos.get(0));
                     }
                     germinacion.setTemperatura(20.0f);
-                    germinacion.setPreFrio(PreFrio.SIN_PREFRIO);
-                    germinacion.setPreTratamiento(PreTratamiento.NINGUNO);
+                    germinacion.setPreFrio(PreFrio.NINGUNO);
+                    germinacion.setPreTratamiento(PreTratamientoGerminacion.NINGUNO);
                     germinacion.setNroDias(14);
                     calendar.add(Calendar.DAY_OF_MONTH, 14);
                     // fechaFinal - Campo no existe en la entidad Germinacion
