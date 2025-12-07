@@ -1738,7 +1738,11 @@ public class MapsDtoEntityService {
         dto.setFrescas(e.getFrescas());
         dto.setMuertas(e.getMuertas());
         dto.setTotales(e.getTotales());
-        dto.setPromedioRedondeado(e.getPromedioRedondeado());
+        dto.setPromedioAnormal(e.getPromedioAnormal());
+        dto.setPromedioDuras(e.getPromedioDuras());
+        dto.setPromedioFrescas(e.getPromedioFrescas());
+        dto.setPromedioMuertas(e.getPromedioMuertas());
+        dto.setPromedioTotal(e.getPromedioTotal());
         return dto;
     }
 
@@ -1754,7 +1758,11 @@ public class MapsDtoEntityService {
         dto.setFrescas(e.getFrescas());
         dto.setMuertas(e.getMuertas());
         dto.setTotales(e.getTotales());
-        dto.setPromedioRedondeado(e.getPromedioRedondeado());
+        dto.setPromedioAnormal(e.getPromedioAnormal());
+        dto.setPromedioDuras(e.getPromedioDuras());
+        dto.setPromedioFrescas(e.getPromedioFrescas());
+        dto.setPromedioMuertas(e.getPromedioMuertas());
+        dto.setPromedioTotal(e.getPromedioTotal());
         return dto;
     }
 
@@ -1770,7 +1778,11 @@ public class MapsDtoEntityService {
         dto.setFrescas(e.getFrescas());
         dto.setMuertas(e.getMuertas());
         dto.setTotales(e.getTotales());
-        dto.setPromedioRedondeado(e.getPromedioRedondeado());
+        dto.setPromedioAnormal(e.getPromedioAnormal());
+        dto.setPromedioDuras(e.getPromedioDuras());
+        dto.setPromedioFrescas(e.getPromedioFrescas());
+        dto.setPromedioMuertas(e.getPromedioMuertas());
+        dto.setPromedioTotal(e.getPromedioTotal());
         return dto;
     }
 
@@ -1786,7 +1798,11 @@ public class MapsDtoEntityService {
         e.setFrescas(dto.getFrescas());
         e.setMuertas(dto.getMuertas());
         e.setTotales(dto.getTotales());
-        e.setPromedioRedondeado(dto.getPromedioRedondeado());
+        e.setPromedioAnormal(dto.getPromedioAnormal());
+        e.setPromedioDuras(dto.getPromedioDuras());
+        e.setPromedioFrescas(dto.getPromedioFrescas());
+        e.setPromedioMuertas(dto.getPromedioMuertas());
+        e.setPromedioTotal(dto.getPromedioTotal());
         return e;
     }
 
@@ -1802,7 +1818,11 @@ public class MapsDtoEntityService {
         e.setFrescas(dto.getFrescas());
         e.setMuertas(dto.getMuertas());
         e.setTotales(dto.getTotales());
-        e.setPromedioRedondeado(dto.getPromedioRedondeado());
+        e.setPromedioAnormal(dto.getPromedioAnormal());
+        e.setPromedioDuras(dto.getPromedioDuras());
+        e.setPromedioFrescas(dto.getPromedioFrescas());
+        e.setPromedioMuertas(dto.getPromedioMuertas());
+        e.setPromedioTotal(dto.getPromedioTotal());
         return e;
     }
 
@@ -1818,7 +1838,11 @@ public class MapsDtoEntityService {
         e.setFrescas(dto.getFrescas());
         e.setMuertas(dto.getMuertas());
         e.setTotales(dto.getTotales());
-        e.setPromedioRedondeado(dto.getPromedioRedondeado());
+        e.setPromedioAnormal(dto.getPromedioAnormal());
+        e.setPromedioDuras(dto.getPromedioDuras());
+        e.setPromedioFrescas(dto.getPromedioFrescas());
+        e.setPromedioMuertas(dto.getPromedioMuertas());
+        e.setPromedioTotal(dto.getPromedioTotal());
         return e;
     }
 
@@ -1832,6 +1856,7 @@ public class MapsDtoEntityService {
         dto.setNumeroRepeticion(e.getNumeroRepeticion());
         dto.setConteoId(e.getConteoId());
         dto.setNormal(e.getNormal());
+        dto.setPromedioNormal(e.getPromedioNormal());
         return dto;
     }
 
@@ -1845,6 +1870,7 @@ public class MapsDtoEntityService {
         e.setNumeroRepeticion(dto.getNumeroRepeticion());
         e.setConteoId(dto.getConteoId());
         e.setNormal(dto.getNormal());
+        e.setPromedioNormal(dto.getPromedioNormal());
         return e;
     }
 

@@ -39,4 +39,7 @@ public class NormalPorConteo {
 
     @Column(name = "NORMAL")
     private Integer normal;
+
+    @Column(name = "PROMEDIO_NORMAL")
+    private Float promedioNormal;
 }

@@ -35,8 +35,21 @@ public class RepeticionesGerminacion {
     @Column(name = "TOTALES")
     private Integer totales;
 
-    @Column(name = "PROMEDIO_REDONDEADO")
-    private Float promedioRedondeado;
+    // Promedios redondeados por cada columna
+    @Column(name = "PROMEDIO_ANORMAL")
+    private Float promedioAnormal;
+
+    @Column(name = "PROMEDIO_DURAS")
+    private Float promedioDuras;
+
+    @Column(name = "PROMEDIO_FRESCAS")
+    private Float promedioFrescas;
+
+    @Column(name = "PROMEDIO_MUERTAS")
+    private Float promedioMuertas;
+
+    @Column(name = "PROMEDIO_TOTAL")
+    private Float promedioTotal;
 
     @Column(name = "NUMERO_REPETICION")
     private Integer numeroRepeticion;

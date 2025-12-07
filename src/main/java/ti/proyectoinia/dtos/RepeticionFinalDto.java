@@ -21,5 +21,9 @@ public class RepeticionFinalDto {
     @Schema(accessMode = Schema.AccessMode.READ_ONLY, description = "Campo calculado en backend (fines de documentación; derivable si aplica)")
     private Integer totales;
 
-    private Float promedioRedondeado;
+    private Float promedioAnormal;
+    private Float promedioDuras;
+    private Float promedioFrescas;
+    private Float promedioMuertas;
+    private Float promedioTotal;
 }

@@ -29,6 +29,30 @@ export interface RepeticionGerminacion {
   muertas: number;
 }
 
+export interface PromediosRedondeados {
+  normales: number[];
+  anormal: number;
+  duras: number;
+  frescas: number;
+  muertas: number;
+  total: number;
+}
+
+export interface TratamientoData {
+  comentarios: string;
+  numSemillas: string;
+  metodo: string;
+  temperatura: string;
+  preFrio: string;
+  preTratamiento: string;
+  productoDosis: string;
+  fechas: { inicio: string; conteos: string[] };
+  inia: any;
+  inase: any;
+  repeticiones: RepeticionGerminacion[];
+  promedios: PromediosRedondeados;
+}
+
 @Component({
   selector: 'app-germinacion.component',
   imports: [
@@ -73,21 +97,38 @@ export class GerminacionComponent implements OnInit {
     if (prevKey) {
       this.tratamientosData[prevKey] = this.tratamientosData[prevKey] || {
         comentarios: '', numSemillas: '', metodo: '', temperatura: '', preFrio: '', preTratamiento: '', productoDosis: '',
-        fechas: { inicio: '', conteos: [] }, inia: {}, inase: {}, repeticiones: [], fechaINASE: ''
-      } as any;
+        fechas: { inicio: '', conteos: [] }, inia: {}, inase: {}, repeticiones: [],
+        promedios: { normales: [], anormal: 0, duras: 0, frescas: 0, muertas: 0, total: 0 }
+      };
       this.tratamientosData[prevKey].repeticiones = JSON.parse(JSON.stringify(this.repeticiones));
-      this.tratamientosData[prevKey].fechaINASE = this.fechaINASE;
+      this.tratamientosData[prevKey].promedios = {
+        normales: [...this.promedioManualNormales],
+        anormal: this.promedioManualAnormales,
+        duras: this.promedioManualDuras,
+        frescas: this.promedioManualFrescas,
+        muertas: this.promedioManualMuertas,
+        total: this.promedioManualTotal
+      };
     }
 
     // Cargar repeticiones del tratamiento seleccionado
     const data = this.tratamientosData[currKey];
     if (data && Array.isArray(data.repeticiones) && data.repeticiones.length > 0) {
       this.repeticiones = JSON.parse(JSON.stringify(data.repeticiones));
-      this.fechaINASE = data.fechaINASE || '';
+      if (data.promedios) {
+        this.promedioManualNormales = [...(data.promedios.normales || [])];
+        this.promedioManualAnormales = data.promedios.anormal || 0;
+        this.promedioManualDuras = data.promedios.duras || 0;
+        this.promedioManualFrescas = data.promedios.frescas || 0;
+        this.promedioManualMuertas = data.promedios.muertas || 0;
+        this.promedioManualTotal = data.promedios.total || 0;
+      } else {
+        this.resetPromedios();
+      }
     } else {
       this.repeticiones = [this.nuevaRepeticion(1)];
       this.repeticiones[0].normales = Array(this.fechas.conteos.length).fill(0);
-      this.fechaINASE = '';
+      this.resetPromedios();
     }
     this.syncNormalesConConteos();
     // Actualizar el valor anterior (mantener etiqueta UI para el selector pero normalizamos al leer)
@@ -154,6 +195,15 @@ export class GerminacionComponent implements OnInit {
     });
   }
 
+  resetPromedios() {
+    this.promedioManualNormales = Array(this.fechas.conteos.length).fill(0);
+    this.promedioManualAnormales = 0;
+    this.promedioManualDuras = 0;
+    this.promedioManualFrescas = 0;
+    this.promedioManualMuertas = 0;
+    this.promedioManualTotal = 0;
+  }
+
   // Variables para manejar navegación
   isEditing: boolean = false;
   editingId: number | null = null;
@@ -162,20 +212,7 @@ export class GerminacionComponent implements OnInit {
   tratamientoSemillas: string = 'sin curar';
 
   // Estructura para almacenar los datos por tratamiento
-  tratamientosData: {[key: string]: {
-    comentarios: string;
-    numSemillas: string;
-    metodo: string;
-    temperatura: string;
-    preFrio: string;
-    preTratamiento: string;
-    productoDosis: string;
-    fechas: any;
-    inia: any;
-    inase: any;
-    repeticiones: RepeticionGerminacion[];
-    fechaINASE: string;
-  }} = {};
+  tratamientosData: {[key: string]: TratamientoData} = {};
 
   // Variables actuales (se actualizan según el tratamiento seleccionado)
   comentarios: string = '';
@@ -613,7 +650,7 @@ export class GerminacionComponent implements OnInit {
         this.syncNormalesConConteos();
 
         // Helper para construir repeticiones desde finales + normales
-        const buildReps = (tablaKey: string): RepeticionGerminacion[] => {
+        const buildReps = (tablaKey: string): { reps: RepeticionGerminacion[], promedios: PromediosRedondeados } => {
           let finales: RepeticionFinalDto[] = [];
           let normalesPorConteo: Record<number, NormalPorConteoDto[]> = {} as any;
           if (tablaKey === 'SIN_CURAR') {
@@ -630,6 +667,26 @@ export class GerminacionComponent implements OnInit {
             else if (tablaKey === 'CURADA_LABORATORIO') normalesPorConteo[cid] = res?.normalesCuradaLaboratorio?.[cid] ?? [];
           }
           console.log(`[buildReps] Normales por conteo para ${tablaKey}:`, normalesPorConteo);
+          
+          // Extraer promedios de la primera repetición (todos tienen el mismo valor global)
+          const primeraFinal = finales[0];
+          const promediosFinales = {
+            anormal: primeraFinal?.promedioAnormal ?? 0,
+            duras: primeraFinal?.promedioDuras ?? 0,
+            frescas: primeraFinal?.promedioFrescas ?? 0,
+            muertas: primeraFinal?.promedioMuertas ?? 0,
+            total: primeraFinal?.promedioTotal ?? 0
+          };
+          const promediosNormales: number[] = Array(conteosLen).fill(0);
+          const primeraRep = finales[0];
+          if (primeraRep) {
+            conteoIds.forEach((cid, idx) => {
+              const lista = normalesPorConteo[cid] || [];
+              const celda = lista.find(n => (n.numeroRepeticion ?? -1) === (primeraRep.numeroRepeticion ?? 0));
+              promediosNormales[idx] = (celda?.promedioNormal ?? 0) as number;
+            });
+          }
+          
           const reps: RepeticionGerminacion[] = [];
           for (const f of (finales || [])) {
             const rep: RepeticionGerminacion = {
@@ -654,13 +711,23 @@ export class GerminacionComponent implements OnInit {
             reps.push(r);
           }
           reps.sort((a, b) => (a.numero || 0) - (b.numero || 0));
-          return reps;
+          return { 
+            reps, 
+            promedios: {
+              normales: promediosNormales,
+              anormal: promediosFinales.anormal,
+              duras: promediosFinales.duras,
+              frescas: promediosFinales.frescas,
+              muertas: promediosFinales.muertas,
+              total: promediosFinales.total
+            }
+          };
         };
 
         // Construir datasets por cada tabla y guardarlos en tratamientosData
         const tablasKeys = ['SIN_CURAR', 'CURADA_PLANTA', 'CURADA_LABORATORIO'];
         for (const k of tablasKeys) {
-          const repsK = buildReps(k);
+          const { reps: repsK, promedios } = buildReps(k);
           this.tratamientosData[k] = this.tratamientosData[k] || {
             comentarios: this.comentarios,
             numSemillas: this.numSemillas,
@@ -673,10 +740,12 @@ export class GerminacionComponent implements OnInit {
             inia: { ...this.inia },
             inase: { ...this.inase },
             repeticiones: [] as RepeticionGerminacion[],
+            promedios: { normales: [], anormal: 0, duras: 0, frescas: 0, muertas: 0, total: 0 }
           };
           // Actualizar siempre conteos y repeticiones desde backend
           this.tratamientosData[k].fechas.conteos = [...fechasConteo];
           this.tratamientosData[k].repeticiones = JSON.parse(JSON.stringify(repsK));
+          this.tratamientosData[k].promedios = promedios;
         }
 
         // Reflejar en la UI el tratamiento actualmente seleccionado (usando clave backend)
@@ -685,6 +754,14 @@ export class GerminacionComponent implements OnInit {
         if (dataSel) {
           this.fechas.conteos = [...dataSel.fechas.conteos];
           this.repeticiones = JSON.parse(JSON.stringify(dataSel.repeticiones));
+          if (dataSel.promedios) {
+            this.promedioManualNormales = [...dataSel.promedios.normales];
+            this.promedioManualAnormales = dataSel.promedios.anormal;
+            this.promedioManualDuras = dataSel.promedios.duras;
+            this.promedioManualFrescas = dataSel.promedios.frescas;
+            this.promedioManualMuertas = dataSel.promedios.muertas;
+            this.promedioManualTotal = dataSel.promedios.total;
+          }
         }
         this.syncNormalesConConteos();
         
@@ -1411,6 +1488,19 @@ export class GerminacionComponent implements OnInit {
                           const n = Number((c as any)?.numeroConteo || 0);
                           if (n > 0) mapaConteo.set(n, c);
                         });
+                        
+                        // Obtener promedios globales de la tabla actual
+                        const promediosGlobales = k === selKey ? {
+                          normales: this.promedioManualNormales,
+                          anormal: this.promedioManualAnormales,
+                          duras: this.promedioManualDuras,
+                          frescas: this.promedioManualFrescas,
+                          muertas: this.promedioManualMuertas,
+                          total: this.promedioManualTotal
+                        } : (this.tratamientosData[k]?.promedios || { normales: [], anormal: 0, duras: 0, frescas: 0, muertas: 0, total: 0 });
+                        
+                        console.log(`[persistirTodos] Tabla:${k}, Promedios:`, promediosGlobales);
+                        
                         reps.forEach(rep => {
                           for (let n = 1; n <= conteosOrdenados.length; n++) {
                             const c = mapaConteo.get(n) || conteosOrdenados[n - 1];
@@ -1420,14 +1510,16 @@ export class GerminacionComponent implements OnInit {
                             }
                             const idx = n - 1;
                             const valorNormal = this.parseNumLocale(rep.normales?.[idx]);
+                            const valorPromedioNormal = this.parseNumLocale(promediosGlobales.normales?.[idx]);
                             const body: NormalPorConteoDto = {
                               germinacionId: germinacionId,
                               tabla: k,
                               numeroRepeticion: this.parseNumLocale(rep.numero),
                               conteoId: Number(c.id),
-                              normal: valorNormal
+                              normal: valorNormal,
+                              promedioNormal: valorPromedioNormal
                             };
-                            console.log(`[persistirTodos] Guardando Normal - Tabla:${k}, Rep:${rep.numero}, Conteo${n}, Valor:${valorNormal}`);
+                            console.log(`[persistirTodos] Guardando Normal - Tabla:${k}, Rep:${rep.numero}, Conteo${n}, Normal:${valorNormal}, PromedioNormal:${valorPromedioNormal}`);
                             datosOps$.push(
                               this.tablasSvc.upsertNormal(k, body).pipe(
                                 catchError(err => {
@@ -1458,7 +1550,12 @@ export class GerminacionComponent implements OnInit {
                             anormal: this.parseNumLocale(rep.anormales),
                             duras: this.parseNumLocale(rep.duras),
                             frescas: this.parseNumLocale(rep.frescas),
-                            muertas: this.parseNumLocale(rep.muertas)
+                            muertas: this.parseNumLocale(rep.muertas),
+                            promedioAnormal: this.parseNumLocale(promediosGlobales.anormal),
+                            promedioDuras: this.parseNumLocale(promediosGlobales.duras),
+                            promedioFrescas: this.parseNumLocale(promediosGlobales.frescas),
+                            promedioMuertas: this.parseNumLocale(promediosGlobales.muertas),
+                            promedioTotal: this.parseNumLocale(promediosGlobales.total)
                           };
 
                           datosOps$.push(

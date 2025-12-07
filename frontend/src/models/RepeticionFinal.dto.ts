@@ -8,5 +8,9 @@ export interface RepeticionFinalDto {
   frescas?: number | null;
   muertas?: number | null;
   totales?: number | null; // read-only in backend
-  promedioRedondeado?: number | null;
+  promedioAnormal?: number | null;
+  promedioDuras?: number | null;
+  promedioFrescas?: number | null;
+  promedioMuertas?: number | null;
+  promedioTotal?: number | null;
 }

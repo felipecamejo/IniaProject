@@ -114,6 +114,7 @@ public class GerminacionMatrizService {
             + ", numeroRepeticion=" + dto.getNumeroRepeticion() 
             + ", conteoId=" + dto.getConteoId() 
             + ", normal=" + dto.getNormal() 
+            + ", promedioNormal=" + dto.getPromedioNormal()
             + ", tabla=" + tabla);
         
         if (dto == null) throw new IllegalArgumentException("dto es requerido");
@@ -157,6 +158,7 @@ public class GerminacionMatrizService {
         entity.setNumeroRepeticion(dto.getNumeroRepeticion());
         entity.setConteoId(dto.getConteoId());
         entity.setNormal(dto.getNormal());
+        entity.setPromedioNormal(dto.getPromedioNormal());
         
         System.out.println("[upsertNormal] Entity antes de guardar: germinacionId=" + entity.getGerminacionId() 
             + ", numeroRepeticion=" + entity.getNumeroRepeticion() 
@@ -463,7 +465,11 @@ public class GerminacionMatrizService {
                 e.setDuras(null);
                 e.setFrescas(null);
                 e.setMuertas(null);
-                e.setPromedioRedondeado(null);
+                e.setPromedioAnormal(null);
+                e.setPromedioDuras(null);
+                e.setPromedioFrescas(null);
+                e.setPromedioMuertas(null);
+                e.setPromedioTotal(null);
                 normalizeRepeticionFinal(e);
                 sinCurarRepository.save(e);
                 return true;
@@ -480,7 +486,11 @@ public class GerminacionMatrizService {
                 e.setDuras(null);
                 e.setFrescas(null);
                 e.setMuertas(null);
-                e.setPromedioRedondeado(null);
+                e.setPromedioAnormal(null);
+                e.setPromedioDuras(null);
+                e.setPromedioFrescas(null);
+                e.setPromedioMuertas(null);
+                e.setPromedioTotal(null);
                 normalizeRepeticionFinal(e);
                 curadaPlantaRepository.save(e);
                 return true;
@@ -497,7 +507,11 @@ public class GerminacionMatrizService {
                 e.setDuras(null);
                 e.setFrescas(null);
                 e.setMuertas(null);
-                e.setPromedioRedondeado(null);
+                e.setPromedioAnormal(null);
+                e.setPromedioDuras(null);
+                e.setPromedioFrescas(null);
+                e.setPromedioMuertas(null);
+                e.setPromedioTotal(null);
                 normalizeRepeticionFinal(e);
                 curadaLaboratorioRepository.save(e);
                 return true;
