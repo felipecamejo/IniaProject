@@ -523,12 +523,24 @@ export class GerminacionComponent implements OnInit {
   private toDateOnlyString(value: any): string {
     if (!value) return '';
     try {
+      // Si viene un string ISO, extraer solo la parte de la fecha (YYYY-MM-DD)
+      if (typeof value === 'string') {
+        // Verificar si tiene formato ISO como "2025-12-06T00:00:00" o "2025-12-06"
+        const match = value.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (match) {
+          console.log(`[toDateOnlyString] Input: "${value}" -> Output: "${match[1]}"`);
+          return match[1]; // Retornar solo YYYY-MM-DD
+        }
+      }
+      // Fallback: intentar parsear como Date
       const d = new Date(value);
       if (isNaN(d.getTime())) return '';
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const dd = String(d.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}`;
+      const result = `${yyyy}-${mm}-${dd}`;
+      console.log(`[toDateOnlyString FALLBACK] Input: "${value}" -> Output: "${result}"`);
+      return result;
     } catch {
       return '';
     }
@@ -585,14 +597,19 @@ export class GerminacionComponent implements OnInit {
         }
         console.groupEnd();
         const conteos: ConteoGerminacionDto[] = res?.conteos ?? [];
+        console.log('[cargarResumenBackend] Conteos recibidos:', conteos);
         const conteosLen = (conteos?.length || 0) > 0 ? conteos.length : 1;
         const conteoIds = (conteos ?? []).map(c => c.id as number).filter(Boolean);
         // Fechas de conteo formateadas a YYYY-MM-DD
         const fechasConteo = Array.from({ length: conteosLen }, (_, i) => {
           const c = conteos[i];
-          return (c && (c as any).fechaConteo) ? this.toDateOnlyString((c as any).fechaConteo) : '';
+          const fechaRaw = (c && (c as any).fechaConteo) ? (c as any).fechaConteo : '';
+          const fechaProcessed = fechaRaw ? this.toDateOnlyString(fechaRaw) : '';
+          console.log(`[cargarResumenBackend] Conteo ${i+1}: Raw="${fechaRaw}" -> Processed="${fechaProcessed}"`);
+          return fechaProcessed;
         });
         this.fechas.conteos = [...fechasConteo];
+        console.log('[cargarResumenBackend] fechas.conteos asignadas:', this.fechas.conteos);
         this.syncNormalesConConteos();
 
         // Helper para construir repeticiones desde finales + normales
@@ -667,6 +684,10 @@ export class GerminacionComponent implements OnInit {
           this.repeticiones = JSON.parse(JSON.stringify(dataSel.repeticiones));
         }
         this.syncNormalesConConteos();
+        
+        // DEBUG: Verificar que fechas.inicio no se haya sobrescrito
+        console.log('[cargarResumenBackend] FIN - fechas.inicio final:', this.fechas.inicio);
+        console.log('[cargarResumenBackend] FIN - fechaINASE final:', this.fechaINASE);
       },
       error: (err) => {
         console.error('Error al cargar resumen de germinación', err);
@@ -829,14 +850,23 @@ export class GerminacionComponent implements OnInit {
           // Valores como ESCARIFICADO, EP_16_HORAS, AGUA_7_HORAS, OTRO → mostrar una opción válida
           this.preTratamiento = 'KNO3';
         }
-        this.productoDosis = '';
+        this.productoDosis = dto?.productoDosis || '';
         // Tratamiento (mapear enum a etiqueta UI)
         this.tratamientoSemillas = this.mapKeyToUiTabla(dto?.tratamiento);
         this.tratamientoSemillasAnterior = this.tratamientoSemillas;
 
+        // DEBUG: Ver qué fechas llegan del backend
+        console.log('[cargarDatosParaEdicion] Fechas recibidas del DTO:', {
+          fechaInicio: dto?.fechaInicio,
+          fechaINASE: dto?.fechaINASE
+        });
+
         // Fechas
+        const fechaInicioProcessed = this.toDateOnlyString(dto?.fechaInicio);
+        console.log('[cargarDatosParaEdicion] fechaInicio procesada:', fechaInicioProcessed);
+        
         this.fechas = {
-          inicio: this.toDateOnlyString(dto?.fechaInicio),
+          inicio: fechaInicioProcessed,
           conteos: this.fechas?.conteos?.length ? this.fechas.conteos : [''],
           get totalDias() {
             const fechasConteo = this.conteos.filter((f: string) => !!f);
@@ -1034,6 +1064,7 @@ export class GerminacionComponent implements OnInit {
       temperatura: this.parseTemperaturaToFloat(this.temperatura),
       preFrio: this.mapPreFrioToEnum(this.preFrio),
       preTratamiento: this.mapPreTratamientoToEnum(this.preTratamiento),
+      productoDosis: this.productoDosis || '',
       nroDias: this.numeroDias || 0,
       fechaFinal: null,
       pRedondeo: 0,
@@ -1060,6 +1091,13 @@ export class GerminacionComponent implements OnInit {
       fechaINASE: this.fechaINASE || null,
     });
     const payload: any = buildPayload(false);
+    
+    // DEBUG: Ver qué fechas se están enviando
+    console.log('[onSubmit] Fechas en el payload:', {
+      fechaInicio: payload.fechaInicio,
+      fechaINASE: payload.fechaINASE,
+      conteosArray: this.fechas?.conteos
+    });
 
     if (this.isEditing && this.editingId) {
       const gid = this.editingId;
@@ -1156,13 +1194,32 @@ export class GerminacionComponent implements OnInit {
         console.log('VALIDACION: Conteos faltantes:', faltan);
         const desde = yaHay; // crear desde este índice (0-based)
         const crear$: any[] = [];
+        
+        // Crear conteos faltantes
         for (let i = desde; i < deseados; i++) {
           const fecha = this.fechas.conteos[i] || null;
-          const fechaIso = fecha ? new Date(fecha).toISOString() : null;
-          const body: Partial<ConteoGerminacionDto> = { fechaConteo: fechaIso };
+          console.log(`[persistirFormulario] Crear conteo ${i+1}: fecha="${fecha}"`);
+          const body: Partial<ConteoGerminacionDto> = { fechaConteo: fecha };
           crear$.push(this.tablasSvc.addConteo(germinacionId, body).pipe(catchError(err => { console.error('Error creando conteo', err); return of(null); })));
         }
-  const cuandoCreados = crear$.length ? forkJoin(crear$) : of([] as any[]);
+        
+        // Actualizar fechas de conteos existentes
+        const actualizar$: any[] = [];
+        for (let i = 0; i < Math.min(yaHay, this.fechas.conteos.length); i++) {
+          const conteoExistente = existentes[i];
+          const fechaNueva = this.fechas.conteos[i] || null;
+          if (conteoExistente && fechaNueva) {
+            console.log(`[persistirFormulario] Actualizar conteo ${i+1} (ID=${conteoExistente.id}): fecha="${fechaNueva}"`);
+            // Actualizar la fecha del conteo existente
+            actualizar$.push(
+              this.tablasSvc.updateConteoFecha(conteoExistente.id!, fechaNueva)
+                .pipe(catchError(err => { console.error('Error actualizando fecha de conteo', err); return of(null); }))
+            );
+          }
+        }
+        
+        const todasLasOps$ = [...crear$, ...actualizar$];
+        const cuandoCreados = todasLasOps$.length ? forkJoin(todasLasOps$) : of([] as any[]);
         cuandoCreados.subscribe({
           next: () => {
             // 2) Obtener conteos con IDs
@@ -1260,13 +1317,31 @@ export class GerminacionComponent implements OnInit {
         const yaHay = existentes?.length || 0;
         const faltan = Math.max(0, deseados - yaHay);
         const crear$: any[] = [];
+        const actualizar$: any[] = [];
+        
+        // Crear conteos faltantes
         for (let i = yaHay; i < deseados; i++) {
           const fecha = this.fechas.conteos[i] || null;
-          const fechaIso = fecha ? new Date(fecha).toISOString() : null;
-          const body: Partial<ConteoGerminacionDto> = { fechaConteo: fechaIso };
+          console.log(`[persistirTodosLosTratamientos] Crear conteo ${i+1}: fecha="${fecha}"`);
+          const body: Partial<ConteoGerminacionDto> = { fechaConteo: fecha };
           crear$.push(this.tablasSvc.addConteo(germinacionId, body).pipe(catchError(err => { console.error('Error creando conteo', err); return of(null); })));
         }
-        const cuandoCreados = crear$.length ? forkJoin(crear$) : of([] as any[]);
+        
+        // Actualizar fechas de conteos existentes
+        for (let i = 0; i < Math.min(yaHay, this.fechas.conteos.length); i++) {
+          const conteoExistente = existentes[i];
+          const fechaNueva = this.fechas.conteos[i] || null;
+          if (conteoExistente && fechaNueva) {
+            console.log(`[persistirTodosLosTratamientos] Actualizar conteo ${i+1} (ID=${conteoExistente.id}): fecha="${fechaNueva}"`);
+            actualizar$.push(
+              this.tablasSvc.updateConteoFecha(conteoExistente.id!, fechaNueva)
+                .pipe(catchError(err => { console.error('Error actualizando fecha de conteo', err); return of(null); }))
+            );
+          }
+        }
+        
+        const todasLasOps$ = [...crear$, ...actualizar$];
+        const cuandoCreados = todasLasOps$.length ? forkJoin(todasLasOps$) : of([] as any[]);
         cuandoCreados.subscribe({
           next: () => {
             // 2) Obtener conteos

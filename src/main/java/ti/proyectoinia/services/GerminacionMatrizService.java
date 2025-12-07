@@ -97,6 +97,17 @@ public class GerminacionMatrizService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Actualiza la fecha de un conteo existente.
+     */
+    public void updateConteoFecha(Long conteoId, String fechaConteo) {
+        if (conteoId == null) throw new IllegalArgumentException("conteoId es requerido");
+        ConteoGerminacion conteo = conteoGerminacionRepository.findById(conteoId)
+                .orElseThrow(() -> new IllegalArgumentException("Conteo no encontrado: " + conteoId));
+        conteo.setFechaConteo(maps.parseDate(fechaConteo));
+        conteoGerminacionRepository.save(conteo);
+    }
+
     // Nuevos upserts
     public NormalPorConteoDto upsertNormal(String tabla, NormalPorConteoDto dto) {
         if (dto == null) throw new IllegalArgumentException("dto es requerido");
