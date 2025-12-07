@@ -60,6 +60,8 @@ export class TetrazolioComponent implements OnInit {
   errores: string[] = [];
   advertencias: string[] = [];
 
+  comentarios: string = '';
+
   // Pretratamiento: seleccionar o especificar
   pretratamientoOptions: { label: string; value: any }[] = [
     { label: 'EP 16 horas', value: 'EP_16_HORAS' },
@@ -158,7 +160,7 @@ export class TetrazolioComponent implements OnInit {
       this.repetidoOriginal = false;
     }
 
-    // Si está intentando marcar como estándar, mostrar confirmación con alert
+    // Si está intentando marcar como estándar, mostrar confirmación with alert
     if (this.estandar) {
       const confirmar = confirm('¿Estás seguro de que deseas marcar este análisis como estándar? Una vez marcado, no podrás cambiarlo.');
       if (!confirmar) {
@@ -188,7 +190,7 @@ export class TetrazolioComponent implements OnInit {
       this.estandarOriginal = false;
     }
 
-    // Si está intentando marcar como repetido, mostrar confirmación con alert
+    // Si está intentando marcar como repetido, mostrar confirmación with alert
     if (this.repetido) {
       const confirmar = confirm('¿Estás seguro de que deseas marcar este análisis como repetido? Una vez marcado, no podrás cambiarlo.');
       if (!confirmar) {
@@ -213,6 +215,9 @@ export class TetrazolioComponent implements OnInit {
   // IDs de contexto
   loteId: string | null = null;
   reciboId: string | null = null;
+
+  // Fecha de repetición (para edición)
+  fechaRepeticion: string | null = null;
 
   repeticiones: RepeticionTetrazolio[] = [
     { numero: 1, viables: 0, noViables: 0, duras: 0 }
@@ -896,6 +901,8 @@ export class TetrazolioComponent implements OnInit {
         this.estandarOriginal = item.estandar || false;
         this.repetidoOriginal = item.repetido || false;
 
+        this.comentarios = item.observaciones || '';
+
         // Cargar promedios redondeados si existen
         if (item.promedio) {
           this.promedioViablesRedondeado = parseFloat(item.promedio);
@@ -1148,12 +1155,20 @@ export class TetrazolioComponent implements OnInit {
       estandar: this.estandar || false,
       repetido: this.repetido || false,
       activo: true,
-      reciboId: this.reciboId ? parseInt(this.reciboId) : null
+      reciboId: this.reciboId ? parseInt(this.reciboId) : null,
+      observaciones: this.comentarios || null,
+      fechaRepeticion: null, 
     };
 
     // Agregar ID para edición
     if (this.isEditing && this.editingId) {
       tetrazolioData.id = this.editingId;
+      // PMS-style: Si repetido pasa de false a true, guardar fecha de edición
+      if (!this.repetidoOriginal && this.repetido) {
+        tetrazolioData.fechaRepeticion = new Date().toISOString().split('T')[0];
+      } else {
+        tetrazolioData.fechaRepeticion = null;
+      }
     }
 
     // ===== PRIMER CONJUNTO DE DATOS =====

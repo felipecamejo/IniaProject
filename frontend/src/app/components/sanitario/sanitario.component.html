@@ -442,13 +442,6 @@
                     </div>
                 </div>
 
-          <div class="form-grid">
-            <div class="form-field">
-              <label for="comentarios">Observaciones</label>
-              <textarea id="comentarios" rows="3" [(ngModel)]="observaciones" name="comentarios" [readonly]="isReadonly"></textarea>
-            </div>
-          </div>
-
         <div *ngIf="errores.length > 0" class="error-container">
           <p class="error-message">
             {{ errores.length === 1 ? '1 error encontrado' : errores.length + ' errores encontrados' }}

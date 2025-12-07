@@ -7,7 +7,6 @@ import ti.proyectoinia.business.entities.PreFrio;
 import ti.proyectoinia.business.entities.PreTratamiento;
 import ti.proyectoinia.business.entities.Tratamiento;
 
-import java.util.Date;
 
 @Data
 public class GerminacionDto {
@@ -28,6 +27,8 @@ public class GerminacionDto {
     private Float temperatura;
 
     private PreFrio preFrio;
+
+    private String observaciones;
 
     private PreTratamiento preTratamiento;
 

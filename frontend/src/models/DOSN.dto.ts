@@ -51,5 +51,5 @@ export interface DOSNDto {
   fechaRepeticion: string | null;
 
   // Campo opcional usado en vistas de listado
-  observaciones?: string | null;
+  observaciones: string | null;
 }

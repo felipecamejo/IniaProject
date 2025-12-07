@@ -57,7 +57,7 @@ public class GerminacionTablasSecurityTest {
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeCrearConteo() throws Exception {
         ConteoGerminacionDto dto = new ConteoGerminacionDto();
-        Date now = new Date();
+        String now = new Date().toString();
         dto.setFechaConteo(now);
         dto.setId(1L);
 
@@ -73,7 +73,8 @@ public class GerminacionTablasSecurityTest {
     @WithMockUser(authorities = "OBSERVADOR")
     void userNoPuedeCrearConteo() throws Exception {
         ConteoGerminacionDto dto = new ConteoGerminacionDto();
-        dto.setFechaConteo(new Date());
+        String now = new Date().toString();
+        dto.setFechaConteo(now);
 
         mockMvc.perform(post(apiUrl + "/1/conteos")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -58,8 +58,8 @@ public class GerminacionSecurityTest {
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeCrear() throws Exception {
         GerminacionDto dto = new GerminacionDto();
-        Date now = new Date();
-        dto.setFechaCreacion(now);
+        String now = new Date().toString();
+        dto.setFechaINASE(now);
 
         when(germinacionService.crearGerminacion(any())).thenReturn(String.valueOf(dto.getId()));
 
@@ -73,7 +73,7 @@ public class GerminacionSecurityTest {
     @WithMockUser(authorities = "OBSERVADOR")
     void userNoPuedeCrear() throws Exception {
         GerminacionDto dto = new GerminacionDto();
-        Date now = new Date();
+        String now = new Date().toString();
         dto.setFechaCreacion(now);
 
         mockMvc.perform(post(apiUrl + "/crear")
@@ -131,7 +131,7 @@ public class GerminacionSecurityTest {
     void analistaPuedeVerPorId() throws Exception {
         GerminacionDto dto = new GerminacionDto();
         dto.setId(1L);
-        Date now = new Date();
+        String now = new Date().toString();
         dto.setFechaCreacion(now);
 
         when(germinacionService.obtenerGerminacionPorId(1L)).thenReturn(dto);
@@ -162,7 +162,7 @@ public class GerminacionSecurityTest {
     void adminPuedeEditar() throws Exception {
         GerminacionDto dto = new GerminacionDto();
         dto.setId(1L);
-        Date now = new Date();
+        String now = new Date().toString();
         dto.setFechaCreacion(now);
 
         when(germinacionService.editarGerminacion(any())).thenReturn("Editado");

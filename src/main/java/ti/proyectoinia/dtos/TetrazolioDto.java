@@ -18,6 +18,8 @@ public class TetrazolioDto {
     private Integer nroSemillasPorRepeticion;
     
     private PreTratamiento pretratamiento;
+
+    private String observaciones;
     
     private String concentracion;
     

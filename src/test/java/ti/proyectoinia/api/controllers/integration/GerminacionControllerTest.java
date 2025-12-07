@@ -43,7 +43,7 @@ public class GerminacionControllerTest {
     void getById_ReturnsOk() throws Exception {
         GerminacionDto dto = new GerminacionDto();
         dto.setId(1L);
-        dto.setFechaCreacion(new Date());
+        dto.setFechaCreacion(new Date().toString());
 
         Mockito.when(service.obtenerGerminacionPorId(1L)).thenReturn(dto);
 
@@ -73,7 +73,7 @@ public class GerminacionControllerTest {
     void crear_ReturnsCreated() throws Exception {
         GerminacionDto input = new GerminacionDto();
         input.setId(null);
-        input.setFechaCreacion(new Date());
+        input.setFechaCreacion(new Date().toString());
 
         Mockito.when(service.crearGerminacion(any(GerminacionDto.class))).thenReturn(null);
 
@@ -90,7 +90,7 @@ public class GerminacionControllerTest {
     void editar_ReturnsOk() throws Exception {
         GerminacionDto input = new GerminacionDto();
         input.setId(1L);
-        input.setFechaCreacion(new Date());
+        input.setFechaCreacion(new Date().toString());
 
         Mockito.when(service.editarGerminacion(any(GerminacionDto.class))).thenReturn("Actualizado");
 
@@ -106,7 +106,7 @@ public class GerminacionControllerTest {
     @WithMockUser(authorities = "ADMIN")
     void editar_ReturnsBadRequest_WhenIdNull() throws Exception {
         GerminacionDto input = new GerminacionDto();
-        input.setFechaCreacion(new Date());
+        input.setFechaCreacion(new Date().toString());
 
         mockMvc.perform(put(baseUrl + "/editar")
                         .with(csrf())

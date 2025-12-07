@@ -477,6 +477,13 @@
                 </div>
             </div>
 
+            <div class="form-grid">
+                <div class="form-field">
+                <label for="comentarios">Observaciones</label>
+                <textarea id="comentarios" rows="3" [(ngModel)]="comentarios" name="comentarios" [readonly]="isReadonly"></textarea>
+                </div>
+              </div>
+
             <!-- Checkboxes - visible solo para admin al editar -->
                 <div class="checkbox-container" *ngIf="isEditing && isAdmin">
                     <h4 class="checkbox-title">Opciones De Edición</h4>

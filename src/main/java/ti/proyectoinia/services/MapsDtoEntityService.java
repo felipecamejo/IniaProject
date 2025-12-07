@@ -913,6 +913,7 @@ public class MapsDtoEntityService {
         if (dosn.getRecibo() != null) {
             dto.setReciboId(dosn.getRecibo().getId());
         }
+        dto.setObservaciones(dosn.getObservaciones());
         // Fechas
         dto.setFechaINIA(dosn.getFechaINIA());
         dto.setFechaINASE(dosn.getFechaINASE());
@@ -1018,6 +1019,7 @@ public class MapsDtoEntityService {
         }
         DOSN dosn = new DOSN();
         dosn.setId(dto.getId());
+        dosn.setObservaciones(dto.getObservaciones());
         // Fechas
         dosn.setFechaINIA(dto.getFechaINIA());
         dosn.setFechaINASE(dto.getFechaINASE());
@@ -1331,6 +1333,7 @@ public class MapsDtoEntityService {
         }
         TetrazolioDto dto = new TetrazolioDto();
         dto.setId(tetrazolio.getId());
+        dto.setObservaciones(tetrazolio.getObservaciones());
         dto.setRepeticion(tetrazolio.getRepeticion());
         dto.setNroSemillasPorRepeticion(tetrazolio.getNroSemillasPorRepeticion());
         if (tetrazolio.getPretratamiento() != null) {
@@ -1400,6 +1403,7 @@ public class MapsDtoEntityService {
         tetrazolio.setId(dto.getId());
         tetrazolio.setRepeticion(dto.getRepeticion());
         tetrazolio.setNroSemillasPorRepeticion(dto.getNroSemillasPorRepeticion());
+        tetrazolio.setObservaciones(dto.getObservaciones());
 
         if (dto.getPretratamiento() != null) {
             tetrazolio.setPretratamiento(dto.getPretratamiento());

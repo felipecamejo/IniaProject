@@ -17,6 +17,8 @@ public class DOSNDto {
     private Date fechaINIA;
     private Date fechaINASE;
 
+    private String observaciones;
+
     // Gramos analizados INIA / INASE
     private Float gramosAnalizadosINIA;
     private Float gramosAnalizadosINASE;

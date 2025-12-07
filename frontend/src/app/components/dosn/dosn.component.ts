@@ -46,6 +46,8 @@ import { AuthService } from '../../../services/AuthService';
         { label: 'Cuscuta spp.', contiene: false, gramos: 0 }
       ];
 
+      observaciones: string = '';
+
       // INASE
       fechaInase: string = '';
       gramosInase: number = 0;
@@ -354,6 +356,8 @@ import { AuthService } from '../../../services/AuthService';
             const payload = this.buildPayloadFromView();
             this.loading = true;
 
+            console.log('Payload construido', payload);
+
             if (this.isEditing) {
               // Modo edición: editar devuelve Observable<string>
               //payload.estandar = this.estandar;
@@ -589,6 +593,7 @@ import { AuthService } from '../../../services/AuthService';
     this.selectedMalezasToleradasInase = d.malezasToleradasINASEId ?? [];
     this.selectedMalezasCeroInase = d.malezasToleranciaCeroINASEId ?? [];
     this.selectedCultivosInase = d.cultivosINASEId ?? [];
+    this.observaciones = d.observaciones ?? '';
     // Si vienen cantidades (nuevo backend opcional), mapeamos a los count maps y aseguramos selección
     if (d.malezasNormalesINASE?.length) {
       d.malezasNormalesINASE.forEach(({ id, cantidad }) => {
@@ -727,6 +732,7 @@ import { AuthService } from '../../../services/AuthService';
     let fechaRepeticion = this.dosn?.fechaRepeticion || null;
     const fechaActual = new Date().toISOString().split('T')[0];
 
+  
     // Si es creación, asignar fecha actual
     if (!this.isEditing) {
       fechaCreacion = fechaActual;
@@ -779,7 +785,8 @@ import { AuthService } from '../../../services/AuthService';
       activo: this.dosn?.activo ?? true,
       repetido: this.repetido ?? false,
       fechaCreacion,
-      fechaRepeticion
+      fechaRepeticion,
+      observaciones: this.observaciones ?? null
     };
   }
 

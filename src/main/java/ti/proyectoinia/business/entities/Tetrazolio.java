@@ -18,6 +18,9 @@ public class Tetrazolio {
     @Column(name = "TETRAZOLIO_REPETICION")
     private Integer repeticion;
 
+    @Column(name = "OBSERVACIONES")
+    private String observaciones;
+
     @Column(name = "TETRAZOLIO_NRO_SEMILLAS_POR_REPETICION")
     private Integer nroSemillasPorRepeticion;
 

@@ -19,6 +19,9 @@ public class DOSN {
     @Column(name = "DOSN_FECHA_INIA")
     private Date fechaINIA;
 
+    @Column(name = "OBSERVACIONES")
+    private String observaciones;
+
     @Column(name = "DOSN_FECHA_INASE")
     private Date fechaINASE;
 

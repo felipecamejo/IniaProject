@@ -116,7 +116,6 @@ public class GerminacionMatrizService {
             + ", promedioNormal=" + dto.getPromedioNormal()
             + ", tabla=" + tabla);
         
-        if (dto == null) throw new IllegalArgumentException("dto es requerido");
         if (dto.getConteoId() == null) throw new IllegalArgumentException("conteoId es requerido");
         if (dto.getNumeroRepeticion() == null) throw new IllegalArgumentException("numeroRepeticion es requerido");
         String key = tabla == null ? "" : tabla.trim().toUpperCase();

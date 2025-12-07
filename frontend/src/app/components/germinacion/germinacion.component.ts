@@ -244,79 +244,45 @@ export class GerminacionComponent implements OnInit {
     return this.authService.isAdmin();
   }
 
-  // Métodos para hacer checkboxes mutuamente excluyentes con confirmación
+  // Lógica mutuamente excluyente para checkboxes, usando window.confirm como en PMS
   onEstandarChange() {
-    // Si ya estaba marcado como estándar, no permitir cambiar
     if (this.estandarOriginal) {
-      this.estandar = true; // Revertir
+      this.estandar = true;
       return;
     }
-
-    // Si está intentando marcar como estándar y ya está marcado como repetido
     if (this.estandar && this.repetido) {
-      this.repetido = false;
-      this.repetidoOriginal = false;
+      if (window.confirm('No puedes marcar "Estándar" si "Repetido" ya está seleccionado. ¿Deseas desmarcar "Repetido" y marcar "Estándar"?')) {
+        this.repetido = false;
+      } else {
+        this.estandar = false;
+        return;
+      }
     }
-
-    // Si está intentando marcar como estándar, mostrar confirmación
-    if (this.estandar && !this.mostrarConfirmEstandar) {
-      this.estandarPendiente = true;
-      this.mostrarConfirmEstandar = true;
-      // Revertir el cambio hasta que se confirme
-      this.estandar = false;
+    if (this.estandar) {
+      if (!window.confirm('¿Estás seguro que quieres marcar como "Estándar"? Esta acción no se puede deshacer.')) {
+        this.estandar = false;
+      }
     }
   }
 
   onRepetidoChange() {
-    // Si ya estaba marcado como repetido, no permitir cambiar
     if (this.repetidoOriginal) {
-      this.repetido = true; // Revertir
+      this.repetido = true;
       return;
     }
-
-    // Si está intentando marcar como repetido y ya está marcado como estándar
     if (this.repetido && this.estandar) {
-      this.estandar = false;
-      this.estandarOriginal = false;
+      if (window.confirm('No puedes marcar "Repetido" si "Estándar" ya está seleccionado. ¿Deseas desmarcar "Estándar" y marcar "Repetido"?')) {
+        this.estandar = false;
+      } else {
+        this.repetido = false;
+        return;
+      }
     }
-
-    // Si está intentando marcar como repetido, mostrar confirmación
-    if (this.repetido && !this.mostrarConfirmRepetido) {
-      this.repetidoPendiente = true;
-      this.mostrarConfirmRepetido = true;
-      // Revertir el cambio hasta que se confirme
-      this.repetido = false;
+    if (this.repetido) {
+      if (!window.confirm('¿Estás seguro que quieres marcar como "Repetido"? Esta acción no se puede deshacer.')) {
+        this.repetido = false;
+      }
     }
-  }
-
-  confirmarEstandar() {
-    this.estandar = true;
-    this.repetido = false;
-    this.estandarOriginal = true; // Marcar como original para que no se pueda cambiar
-    this.repetidoOriginal = false;
-    this.mostrarConfirmEstandar = false;
-    this.estandarPendiente = false;
-  }
-
-  cancelarEstandar() {
-    this.estandar = false;
-    this.mostrarConfirmEstandar = false;
-    this.estandarPendiente = false;
-  }
-
-  confirmarRepetido() {
-    this.repetido = true;
-    this.estandar = false;
-    this.repetidoOriginal = true; // Marcar como original para que no se pueda cambiar
-    this.estandarOriginal = false;
-    this.mostrarConfirmRepetido = false;
-    this.repetidoPendiente = false;
-  }
-
-  cancelarRepetido() {
-    this.repetido = false;
-    this.mostrarConfirmRepetido = false;
-    this.repetidoPendiente = false;
   }
   numSemillas: string = '';
   // Listado de métodos expuestos por backend y selección actual

@@ -73,7 +73,6 @@ export class ListadoSanitarioComponent implements OnInit {
     isLoading: boolean = false;
 
     // Propiedades para el popup de confirmación
-    mostrarConfirmEliminar: boolean = false;
     sanitarioAEliminar: SanitarioDto | null = null;
     confirmLoading: boolean = false;
 
@@ -211,44 +210,27 @@ export class ListadoSanitarioComponent implements OnInit {
 
     eliminarItem(item: SanitarioDto) {
       console.log('Eliminar Sanitario:', item);
-      
       if (!item.id) {
         console.error('El sanitario no tiene un ID válido');
         return;
       }
-
-      this.sanitarioAEliminar = item;
-      this.mostrarConfirmEliminar = true;
-    }
-
-    confirmarEliminacion() {
-      const sanitario = this.sanitarioAEliminar;
-      if (!sanitario || sanitario.id == null) return;
-      this.confirmLoading = true;
-      
-      this.sanitarioService.eliminar(sanitario.id).subscribe({
-        next: (response) => {
-          console.log('Sanitario eliminado:', response);
-          this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
-          this.sanitarioAEliminar = null;
-          // Recargar la lista después de eliminar
-          this.cargarSanitarios();
-          this.logService.crearLog(Number(this.loteId), Number(sanitario.id), 'Sanitario', 'eliminado').subscribe();
-        },
-        error: (error) => {
-          console.error('Error al eliminar sanitario:', error);
-          this.confirmLoading = false;
-          this.mostrarConfirmEliminar = false;
-          this.sanitarioAEliminar = null;
-          alert('Error al eliminar el sanitario. Por favor, inténtalo de nuevo.');
-        }
-      });
-    }
-
-    cancelarEliminacion() {
-      this.mostrarConfirmEliminar = false;
-      this.sanitarioAEliminar = null;
+      if (window.confirm('¿Estás seguro que quieres eliminar este sanitario? Esta acción no se puede deshacer.')) {
+        this.confirmLoading = true;
+        this.sanitarioService.eliminar(item.id).subscribe({
+          next: (response) => {
+            console.log('Sanitario eliminado:', response);
+            this.confirmLoading = false;
+            // Recargar la lista después de eliminar
+            this.cargarSanitarios();
+            this.logService.crearLog(Number(this.loteId), Number(item.id), 'Sanitario', 'eliminado').subscribe();
+          },
+          error: (error) => {
+            console.error('Error al eliminar sanitario:', error);
+            this.confirmLoading = false;
+            alert('Error al eliminar el sanitario. Por favor, inténtalo de nuevo.');
+          }
+        });
+      }
     }
 
     /**
