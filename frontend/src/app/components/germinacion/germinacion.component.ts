@@ -209,7 +209,7 @@ export class GerminacionComponent implements OnInit {
   isEditing: boolean = false;
   editingId: number | null = null;
 
-  diasPreFrio: PreFrio[] = ['NINGUNO', '3 dias', '4 dias', '5 dias', '6 dias', '7 dias', '8 dias', '9 dias', '10 dias', '11 dias', '12 dias', '13 dias', '14 dias', '15 dias']; // 3 a 15 días
+  diasPreFrio: PreFrio[] = ['3 dias', '4 dias', '5 dias', '6 dias', '7 dias', '8 dias', '9 dias', '10 dias', '11 dias', '12 dias', '13 dias', '14 dias', '15 dias']; // 3 a 15 días
   tratamientoSemillas: string = 'sin curar';
 
   // Estructura para almacenar los datos por tratamiento
@@ -287,7 +287,7 @@ export class GerminacionComponent implements OnInit {
   metodoId: number | null = null;
   metodo: string = '';
   temperatura: string = '';
-  preFrio: string = '';
+  preFrio: string = 'NINGUNO';
   preTratamiento: string = '';
   productoDosis: string = '';
   fechas = {
