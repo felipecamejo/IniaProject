@@ -1,5 +1,17 @@
 export type Metodo = 'A' | 'B' | 'C';
-export type PreFrio = 'NINGUNO' | 'CORTO' | 'LARGO';
+export type PreFrio = 'NINGUNO' |'3 dias'
+  | '4 dias'
+  | '5 dias'
+  | '6 dias'
+  | '7 dias'
+  | '8 dias'
+  | '9 dias'
+  | '10 dias'
+  | '11 dias'
+  | '12 dias'
+  | '13 dias'
+  | '14 dias'
+  | '15 dias';
 export type PreTratamiento = 'NINGUNO' | 'X' | 'Y';
 export type Tratamiento = 'NINGUNO' | 'T1' | 'T2';
 

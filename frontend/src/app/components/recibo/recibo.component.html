@@ -16,12 +16,12 @@
                 <!-- Campos de texto -->
                 <div class="form-field">
                     <label for="nLab">N° Analisis</label>
-                    <input id="nLab" type="text" [(ngModel)]="nLab" name="nLab" pInputText [readonly]="isEditing && isObservador()" />
+                    <input id="nLab" type="text" [(ngModel)]="nLab" name="nLab" pInputText [disabled]="isObservador()" />
                 </div>
 
                 <div class="form-field">
                     <label for="especie">Especie</label>
-                    <select id="especie" [(ngModel)]="selectedEspecieId" name="especieId" [disabled]="isEditing && isObservador()">
+                    <select id="especie" [(ngModel)]="selectedEspecieId" name="especieId" [disabled]="isObservador()">
                         <option [ngValue]="null">Seleccionar especie</option>
                         <option *ngFor="let e of especies" [ngValue]="e.value">{{ e.label }}</option>
                     </select>
@@ -29,7 +29,7 @@
 
                 <div class="form-field">
                     <label for="cultivar">Cultivar</label>
-                    <select id="cultivar" [(ngModel)]="selectedCultivarId" name="cultivarId" [disabled]="isEditing && isObservador()">
+                    <select id="cultivar" [(ngModel)]="selectedCultivarId" name="cultivarId" [disabled]="isObservador()">
                         <option [ngValue]="null">Seleccionar cultivar</option>
                         <option *ngFor="let c of cultivares" [ngValue]="c.value">{{ c.label }}</option>
                     </select>
@@ -38,13 +38,13 @@
                 <div class="form-field">
                     <label for="articulo">Artículo</label>
                           <input id="articulo" type="number" [(ngModel)]="articulo" name="articulo" pInputText
-                              [ngClass]="{ 'input-error': articulo != null && articulo < 0 }" [readonly]="isEditing && isObservador()"/>
+                              [ngClass]="{ 'input-error': articulo != null && articulo < 0 }" [disabled]="isObservador()"/>
                               <span *ngIf="articulo != null && articulo < 0" class="error-message">El artículo no puede ser negativo.</span>
                 </div>
 
                 <div class="form-field">
                     <label for="ficha">Ficha</label>
-                    <input id="ficha" type="text" [(ngModel)]="ficha" name="ficha" pInputText [readonly]="isEditing && isObservador()" />
+                    <input id="ficha" type="text" [(ngModel)]="ficha" name="ficha" pInputText [disabled]=" isObservador()" />
                 </div>
 
                 <div class="form-field">
@@ -56,13 +56,13 @@
                         [(ngModel)]="fechaRecibo"
                         [ngClass]="{ 'input-error': isFechaReciboInvalida }"
                         name="fechaRecibo"
-                        [readonly]="isEditing && isObservador()"
+                        [disabled]=" isObservador()"
                     />
                 </div>
 
                 <div class="form-field">
                     <label for="origen">Origen</label>
-                    <input id="origen" type="text" [(ngModel)]="origen" name="origen" pInputText [readonly]="isEditing && isObservador()" />
+                    <input id="origen" type="text" [(ngModel)]="origen" name="origen" pInputText [disabled]=" isObservador()" />
                 </div>
 
                 <div class="form-field">
@@ -73,18 +73,18 @@
                 <div class="form-field">
                     <label for="kilos">Kilos Limpios</label>
                           <input id="kilos" type="number" [(ngModel)]="kilos" name="kilos" pInputText
-                              [ngClass]="{ 'input-error': kilos != null && kilos < 0 }" [readonly]="isEditing && isObservador()"/>
+                              [ngClass]="{ 'input-error': kilos != null && kilos < 0 }" [disabled]=" isObservador()"/>
                           <span *ngIf="kilos != null && kilos < 0" class="error-message">Los kilos no pueden ser negativos.</span>
                 </div>
 
                 <div class="form-field">
                     <label for="remite">Remitente</label>
-                    <input id="remite" type="text" [(ngModel)]="remite" name="remite" pInputText [readonly]="isEditing && isObservador()" />
+                    <input id="remite" type="text" [(ngModel)]="remite" name="remite" pInputText [disabled]=" isObservador()" />
                 </div>
 
                 <div class="form-field">
                     <label for="deposito">Depósito</label>
-                    <select id="deposito" [(ngModel)]="selectedDepositoId" name="deposito" class="mes-select" [disabled]="isEditing && isObservador()">
+                    <select id="deposito" [(ngModel)]="selectedDepositoId" name="deposito" class="mes-select" [disabled]=" isObservador()">
                         <option [value]="null">Seleccionar depósito</option>
                         <option *ngFor="let d of depositos || []" [value]="d.id">{{ d.nombre }}</option>
                     </select>
@@ -92,7 +92,7 @@
 
                 <div class="form-field">
                     <label for="estado">Estado</label>
-                    <select id="estado" [(ngModel)]="selectedEstado" name="estado" class="mes-select" [disabled]="isEditing && isObservador()">
+                    <select id="estado" [(ngModel)]="selectedEstado" name="estado" class="mes-select" [disabled]=" isObservador()">
                         <option *ngFor="let e of estadosOptions || []" [value]="e.value">{{ e.label }}</option>
                     </select>
                 </div>
@@ -121,7 +121,7 @@
                                 <select [(ngModel)]="humedad.lugar"
                                     name="humedadLugar{{i}}"
                                     class="form-control"
-                                    [disabled]="isEditing && isObservador()">
+                                    [disabled]=" isObservador()">
                                     <option [value]="null">Seleccionar lugar</option>
                                     <option *ngFor="let lugar of lugaresHumedad"
                                             [value]="lugar.value">
@@ -135,16 +135,17 @@
                                         name="humedadNumero{{i}}"
                                         placeholder="Número"
                                         [ngClass]="{ 'input-error': humedad.numero != null && humedad.numero < 0 }"
-                                        [readonly]="isEditing && isObservador()"/>
+                                        [disabled]=" isObservador()"/>
                             </td>
                         </tr>
                     </tbody>
                 </table>
                 <button pButton type="button"
+                    *ngIf="!isObservador()"
                     label="Agregar Humedad"
                     class="btn-agregar-rep"
                     (click)="agregarHumedad()"
-                    [disabled]="isEditing && isObservador()">
+                    >
                 </button>
             </div>
 
@@ -155,7 +156,7 @@
                 <p *ngFor="let error of errores" class="error-message">{{ error }}</p>
             </div>
 
-            <div class="submit-btn" *ngIf="!(isEditing && isObservador())">
+            <div class="submit-btn" *ngIf="!isObservador()">
                 <button pButton type="submit"
                         [disabled]="errores.length > 0"
                         [label]="isEditing ? 'Editar Recibo' : 'Crear Recibo'"

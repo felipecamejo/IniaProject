@@ -75,23 +75,13 @@
         </div>
       </div>
 
-      <!-- Select Tratamiento de semillas -->
-      <div class="form-field" style="margin-bottom: 2.5rem; display: flex; flex-direction: column; align-items: flex-start;">
-        <label for="tratamientoSemillas" style="font-weight:700; font-size:1.2em; margin-bottom:0.7rem; color:var(--azul); letter-spacing:0.5px;">Tipo de tratamiento de semillas</label>
-        <select id="tratamientoSemillas" [(ngModel)]="tratamientoSemillas" (change)="onSelectChanges()" name="tratamientoSemillas" [disabled]="isReadonly"
-          style="padding:0.7rem 1.5rem; border-radius:12px; border:2px solid var(--gris); background:#f7fbff; font-size:1.15em; font-weight:600; color:var(--azul); box-shadow:0 2px 8px rgba(38,99,235,0.08); transition:border 0.2s;">
-          <option value="sin curar">Sin curar</option>
-          <option value="curada en planta">Curada en planta</option>
-          <option value="curada en laboratorio">Curada en Laboratorio</option>
-        </select>
-        <span style="margin-top:0.7rem; font-weight:500; font-size:1em;">Elige el tratamiento para mostrar y editar su tabla correspondiente.</span>
-      </div>
+      
 
       <!-- Producto y dosis (destacado) -->
       <div class="producto-dosis-group">
         <label for="productoDosis">Producto y dosis:</label>
         <input id="productoDosis" type="text" [(ngModel)]="productoDosis" name="productoDosis" pInputText [readonly]="isReadonly"
-               placeholder="Ingrese producto y dosis..." />
+                />
       </div>
 
       <!-- Selects adicionales en una sola fila -->
@@ -139,6 +129,19 @@
           </select>
         </div>
       </div>
+
+      <!-- Select Tratamiento de semillas -->
+      <div class="form-field" style="margin-bottom: 2.5rem; display: flex; flex-direction: column; align-items: flex-start;">
+        <label for="tratamientoSemillas" style="font-weight:700; font-size:1.2em; margin-bottom:0.7rem; color:var(--azul); letter-spacing:0.5px;">Tipo de tratamiento de semillas</label>
+        <select id="tratamientoSemillas" [(ngModel)]="tratamientoSemillas" (change)="onSelectChanges()" name="tratamientoSemillas" [disabled]="isReadonly"
+          style="padding:0.7rem 1.5rem; border-radius:12px; border:2px solid var(--gris); background:#f7fbff; font-size:1.15em; font-weight:600; color:var(--azul); box-shadow:0 2px 8px rgba(38,99,235,0.08); transition:border 0.2s;">
+          <option value="sin curar">Sin curar</option>
+          <option value="curada en planta">Curada en planta</option>
+          <option value="curada en laboratorio">Curada en Laboratorio</option>
+        </select>
+        <span style="margin-top:0.7rem; font-weight:500; font-size:1em;">Elige el tratamiento para mostrar y editar su tabla correspondiente.</span>
+      </div>
+
       <!-- Tabla de repeticiones para germinación adaptada a PrimeNG -->
       <div class="table-section" style="margin: 2.5rem 0 3rem 0;">
         <h3 style="margin-bottom: 1rem; color: var(--azul); font-weight: 600;">Repeticiones - Germinación</h3>

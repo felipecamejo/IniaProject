@@ -10,12 +10,11 @@ import { ActivatedRoute } from '@angular/router';
 import { SanitarioService } from '../../../services/SanitarioService';
 import { LogService } from '../../../services/LogService';
 import { AuthService } from '../../../services/AuthService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-listado-sanitario.component',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule],
   templateUrl: './listado-sanitario.component.html',
   styleUrls: ['./listado-sanitario.component.scss']
 })

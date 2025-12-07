@@ -9,6 +9,7 @@ import { MiddlewareService } from '../../../services/MiddlewareService';
 import { LoteDto } from '../../../models/Lote.dto';
 import { ReciboDto } from '../../../models/Recibo.dto';
 import { CertificadoDto } from '../../../models/Certificado.dto';
+import { AuthService } from '../../../services/AuthService';
 // ...existing code...
 
 @Component({
@@ -36,17 +37,21 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   // Propiedades para quick export
   isExporting: boolean = false;
 
+  isAdmin: boolean = false; 
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private reciboService: ReciboService,
     private loteService: LoteService,
     private certificadoService: CertificadoService,
-    private middlewareService: MiddlewareService
+    private middlewareService: MiddlewareService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     // Cargar datos iniciales
+    this.isAdmin = this.authService.isAdmin();
     this.cargarDatosIniciales();
     
     // Suscribirse a cambios de navegación para detectar regresos
@@ -196,7 +201,7 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   }
 
   verificarCertificado(): void {
-    if (this.reciboId) {
+    if (this.reciboId && this.isAdmin) {
       this.certificadoService.listarPorRecibo(this.reciboId).subscribe({
         next: (certificados: CertificadoDto[]) => {
           if (certificados && certificados.length > 0) {

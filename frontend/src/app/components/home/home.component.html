@@ -30,15 +30,9 @@
 
     </section>
 
-    <!-- Sección Analista - Solo visible para ANALISTA -->
-    <section class="section" *ngIf="isAnalista">
-        <h2 class="section-title">Panel Analista</h2>
-        <div class="button-grid">
-        </div>
-    </section>
 
-    <!-- Sección Excel - Visible para ADMIN y ANALISTA -->
-    <section class="section" *ngIf="canExportImport">
+    <!-- Sección Excel - Visible para ADMIN y ANALISTA 
+    <section class="section" *ngIf="!canExportImport">
         <h2 class="section-title">Gestión de Excel</h2>
         <div class="button-group">
             <button 
@@ -51,6 +45,7 @@
             </button>
         </div>
     </section>
+    -->
 
     <!-- Footer -->
     <footer class="footer">

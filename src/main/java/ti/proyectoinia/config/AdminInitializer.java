@@ -39,7 +39,7 @@ public class AdminInitializer implements CommandLineRunner {
             
             UsuarioDto adminDto = new UsuarioDto();
             adminDto.setEmail("admin@inia.com");
-            adminDto.setNombre("Administrador");
+            adminDto.setNombre("Renzo");
             adminDto.setPassword("password123"); // El servicio se encargará de encriptarla
             adminDto.setTelefono("+598-099-000-001");
             adminDto.setActivo(true);

@@ -86,6 +86,7 @@
     <!-- Botón de Certificado -->
     <div class="certificado-button-container">
 
+       <!-- 
       <div class="certificado-main-button">
         <div class="analisis-button certificado-button" 
              [class.disabled]="isExporting || !loteId"
@@ -96,8 +97,9 @@
           <span class="button-text">{{ isExporting ? 'Exportando...' : 'Quick Export' }}</span>
         </div>
       </div>
+      -->
 
-      <div class="certificado-main-button">
+      <div class="certificado-main-button" *ngIf="isAdmin">
         <!-- Botón pequeño para eliminar -->
         <button *ngIf="tieneCertificado && certificadoId"
           class="certificado-delete-button"

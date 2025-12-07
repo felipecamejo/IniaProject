@@ -19,6 +19,7 @@ import { RepeticionFinalDto } from '../../../models/RepeticionFinal.dto';
 import { forkJoin, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { LogService } from '../../../services/LogService';
+import { PreFrio } from '../../../models/Germinacion.dto';
 
 export interface RepeticionGerminacion {
   numero: number;
@@ -208,7 +209,7 @@ export class GerminacionComponent implements OnInit {
   isEditing: boolean = false;
   editingId: number | null = null;
 
-  diasPreFrio: string[] = Array.from({length: 13}, (_, i) => `${i+3} dias`); // 3 a 15 días
+  diasPreFrio: PreFrio[] = ['NINGUNO', '3 dias', '4 dias', '5 dias', '6 dias', '7 dias', '8 dias', '9 dias', '10 dias', '11 dias', '12 dias', '13 dias', '14 dias', '15 dias']; // 3 a 15 días
   tratamientoSemillas: string = 'sin curar';
 
   // Estructura para almacenar los datos por tratamiento
@@ -250,14 +251,12 @@ export class GerminacionComponent implements OnInit {
       this.estandar = true;
       return;
     }
+
     if (this.estandar && this.repetido) {
-      if (window.confirm('No puedes marcar "Estándar" si "Repetido" ya está seleccionado. ¿Deseas desmarcar "Repetido" y marcar "Estándar"?')) {
-        this.repetido = false;
-      } else {
-        this.estandar = false;
-        return;
-      }
+      this.repetido = false;
+      this.repetidoOriginal = false;
     }
+    
     if (this.estandar) {
       if (!window.confirm('¿Estás seguro que quieres marcar como "Estándar"? Esta acción no se puede deshacer.')) {
         this.estandar = false;
@@ -270,14 +269,12 @@ export class GerminacionComponent implements OnInit {
       this.repetido = true;
       return;
     }
+
     if (this.repetido && this.estandar) {
-      if (window.confirm('No puedes marcar "Repetido" si "Estándar" ya está seleccionado. ¿Deseas desmarcar "Estándar" y marcar "Repetido"?')) {
-        this.estandar = false;
-      } else {
-        this.repetido = false;
-        return;
-      }
+          this.estandar = false;
+          this.estandarOriginal = false;
     }
+    
     if (this.repetido) {
       if (!window.confirm('¿Estás seguro que quieres marcar como "Repetido"? Esta acción no se puede deshacer.')) {
         this.repetido = false;

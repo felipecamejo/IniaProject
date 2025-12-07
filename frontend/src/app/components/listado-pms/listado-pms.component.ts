@@ -139,6 +139,9 @@ export class ListadoPmsComponent implements OnInit {
       if (item.repetido && item.fechaRepeticion) {
         return { fecha: item.fechaRepeticion, tipo: 'Repetición' };
       }
+      if (item.repetido){
+        return { fecha: item.fechaCreacion || '', tipo: 'Repetición' };
+      }
       return { fecha: item.fechaCreacion || '', tipo: 'Creación' };
     }
 

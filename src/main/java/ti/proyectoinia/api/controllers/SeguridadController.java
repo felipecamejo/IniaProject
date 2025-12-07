@@ -164,10 +164,10 @@ public class SeguridadController {
             
             // Definir usuarios a crear usando DTOs
             List<UsuarioDto> usuariosParaCrear = List.of(
-                crearUsuarioDto("admin@inia.com", "Administrador", RolUsuario.ADMIN),
-                crearUsuarioDto("analista@inia.com", "Analista", RolUsuario.ANALISTA),
-                crearUsuarioDto("observador1@inia.com", "Observador 1", RolUsuario.OBSERVADOR),
-                crearUsuarioDto("observador2@inia.com", "Observador 2", RolUsuario.OBSERVADOR)
+                crearUsuarioDto("admin@inia.com", "Renzo", RolUsuario.ADMIN),
+                crearUsuarioDto("analista@inia.com", "Felipe", RolUsuario.ANALISTA),
+                crearUsuarioDto("observador1@inia.com", "Alex", RolUsuario.OBSERVADOR),
+                crearUsuarioDto("observador2@inia.com", "Juan Pablo", RolUsuario.OBSERVADOR)
             );
             
             // Crear usuarios usando el servicio
@@ -227,7 +227,7 @@ public class SeguridadController {
             // No existe ningún admin, crear uno por defecto
             logger.warn("No se encontró ningún usuario admin activo. Creando usuario admin por defecto...");
             
-            UsuarioDto adminDto = crearUsuarioDto("admin@inia.com", "Administrador", RolUsuario.ADMIN);
+            UsuarioDto adminDto = crearUsuarioDto("admin@inia.com", "Renzo", RolUsuario.ADMIN);
             
             try {
                 usuarioService.crearUsuario(adminDto);

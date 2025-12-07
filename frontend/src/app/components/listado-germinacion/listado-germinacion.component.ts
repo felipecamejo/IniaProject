@@ -111,11 +111,32 @@ export class ListadoGerminacionComponent implements OnInit {
     }
 
     getFechaConTipo(item: GerminacionDto): { fecha: string, tipo: string } {
-      if (item.repetido && item.fechaRepeticion) {
-        return { fecha: item.fechaRepeticion, tipo: 'Repetición' };
-      }
-      return { fecha: item.fechaCreacion || '', tipo: 'Creación' };
-    }
+          let rawDate = '';
+          let tipo = '';
+          if (item.repetido) {
+            rawDate = item.fechaRepeticion || '';
+            tipo = 'Repetición';
+          } else {
+            rawDate = item.fechaCreacion || '';
+            tipo = 'Creación';
+          }
+          // Format date to DD-MM-YYYY if possible
+          if (rawDate) {
+            const d = new Date(rawDate);
+            if (!isNaN(d.getTime())) {
+              const day = String(d.getDate()).padStart(2, '0');
+              const month = String(d.getMonth() + 1).padStart(2, '0');
+              const year = d.getFullYear();
+              return { fecha: `${day}-${month}-${year}`, tipo };
+            }
+            // If parsing fails, fallback to first 10 chars (YYYY-MM-DD)
+            if (rawDate.length >= 10) {
+              const [year, month, day] = rawDate.slice(0, 10).split('-');
+              return { fecha: `${day}-${month}-${year}`, tipo };
+            }
+          }
+          return { fecha: '', tipo };
+        }
 
     getMesFromFecha(fecha: string): number {
       if (!fecha) return NaN;
