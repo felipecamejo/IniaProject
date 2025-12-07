@@ -363,18 +363,4 @@
 
   </div>
 
-  <!-- Popup de confirmación de éxito -->
-  <app-confirm-dialog
-      [visible]="mostrarConfirmExito"
-      title="Certificado Actualizado"
-      message="El certificado se ha actualizado correctamente."
-      confirmText="Aceptar"
-      cancelText="Cancelar"
-      [loading]="false"
-      buttonType="success"
-      [hideItemDetails]="true"
-      [centerMessage]="true"
-      (confirm)="onConfirmExito()"
-      (cancel)="onCancelExito()">
-  </app-confirm-dialog>
 </div>

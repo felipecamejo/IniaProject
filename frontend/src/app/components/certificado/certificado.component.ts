@@ -123,9 +123,6 @@ export class CertificadoComponent implements OnInit {
   isEditing: boolean = false;
   isViewing: boolean = false;
 
-  // Popup de confirmación de éxito
-  mostrarConfirmExito: boolean = false;
-
   // Datos del recibo
   recibo: ReciboDto | null = null;
   analisisSolicitados: string | null = null;
@@ -675,6 +672,7 @@ export class CertificadoComponent implements OnInit {
 
   onSubmit() {
     if (this.manejarProblemas()) {
+      alert(this.errores.join('\n'));
       return;
     }
 
@@ -799,6 +797,7 @@ export class CertificadoComponent implements OnInit {
     this.certificadoService.crearCertificado(payload).subscribe({
       next: (certificadoCreado: CertificadoDto) => {
         console.log('Certificado creado:', certificadoCreado);
+        alert('Certificado creado exitosamente.');
         // Navegar según si hay loteId y reciboId
         if (this.loteId != null && this.reciboId != null) {
           this.router.navigate([`/${this.loteId}/${this.reciboId}/lote-analisis`]);
@@ -917,8 +916,8 @@ export class CertificadoComponent implements OnInit {
     this.certificadoService.editarCertificado(payload).subscribe({
       next: (mensaje: string) => {
         console.log('Certificado actualizado:', mensaje);
-        // Mostrar popup de éxito
-        this.mostrarConfirmExito = true;
+        alert('Certificado actualizado exitosamente.');
+
       },
       error: (err) => {
         console.error('Error actualizando certificado:', err);
@@ -1497,19 +1496,5 @@ export class CertificadoComponent implements OnInit {
     }
   }
 
-  onConfirmExito() {
-    // Cerrar el popup y redirigir
-    this.mostrarConfirmExito = false;
-    if (this.loteId != null && this.reciboId != null) {
-      this.router.navigate([`/${this.loteId}/${this.reciboId}/lote-analisis`]);
-    } else {
-      this.router.navigate(['/listado-lotes']);
-    }
-  }
-
-  onCancelExito() {
-    // Cerrar el popup sin redirigir (aunque normalmente no debería cancelarse)
-    this.mostrarConfirmExito = false;
-  }
 }
 

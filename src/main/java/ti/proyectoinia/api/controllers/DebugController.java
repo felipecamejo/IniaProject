@@ -109,12 +109,13 @@ public class DebugController {
             // Crear 5 Especies (especies forrajeras comunes en Uruguay)
             resultado.append("\n2. CREANDO ESPECIES:\n");
             String[][] especies = {
-                {"Trifolium repens", "Trébol blanco, especie forrajera perenne de la familia Fabaceae"},
-                {"Lolium perenne", "Rye grass perenne, gramínea forrajera de la familia Poaceae"},
-                {"Festuca arundinacea", "Festuca alta, gramínea perenne de la familia Poaceae"},
-                {"Dactylis glomerata", "Dactilis o pasto ovillo, gramínea perenne de la familia Poaceae"},
-                {"Poa pratensis", "Poa de los prados, gramínea perenne de la familia Poaceae"}
+                    {"Medicago sativa", "Alfalfa, leguminosa perenne muy usada en pasturas por su alto valor nutritivo"},
+                    {"Bromus catharticus", "Cebadilla criolla, gramínea anual o bianual común en zonas templadas"},
+                    {"Cynodon dactylon", "Pasto bermuda, gramínea perenne resistente al tránsito y a la sequía"},
+                    {"Phalaris aquatica", "Falaris, gramínea perenne vigorosa utilizada en pasturas mixtas"},
+                    {"Trifolium pratense", "Trébol rojo, leguminosa bianual de uso frecuente en praderas y mezclas forrajeras"}
             };
+
             for (String[] especieData : especies) {
                 Especie especie = new Especie();
                 especie.setNombre(especieData[0]);
