@@ -10,11 +10,11 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { HongoDto } from '../../../models/Hongo.dto';
 import { HongoService } from '../../../services/HongoService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+// ...existing code...
 
 @Component({
   selector: 'app-listado-hongos.component',
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule],
   templateUrl: './listado-hongos.component.html',
   styleUrls: ['./listado-hongos.component.scss']
 })

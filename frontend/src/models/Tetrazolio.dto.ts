@@ -64,4 +64,5 @@ export interface TetrazolioDto {
   fechaRepeticion: string | null;
   reciboId: number | null;
   reporte: ReporteTetrazolio | null;
+  observaciones?: string | null;
 }

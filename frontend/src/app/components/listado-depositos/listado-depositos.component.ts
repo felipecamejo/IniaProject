@@ -9,12 +9,11 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../services/AuthService';
 import { DepositoDto } from '../../../models/Deposito.dto';
 import { DepositoService } from '../../../services/DepositoService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-listado-depositos.component',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule],
   templateUrl: './listado-depositos.component.html',
   styleUrls: ['./listado-depositos.component.scss']
 })

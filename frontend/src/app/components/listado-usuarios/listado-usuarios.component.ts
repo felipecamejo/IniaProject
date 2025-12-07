@@ -11,7 +11,7 @@ import { AuthService } from '../../../services/AuthService';
 import { UsuarioService } from '../../../services/UsuarioService';
 import { UsuarioDto} from '../../../models/Usuario.dto';
 import { UserRole } from '../../../models/enums';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+// ...existing code...
 
 @Component({
   selector: 'app-listado-usuarios',
@@ -22,7 +22,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     ButtonModule,
     InputTextModule,
     DialogModule,
-    ConfirmDialogComponent
+    // ...existing code...
   ],
   templateUrl: './listado-usuarios.component.html',
   styleUrls: ['./listado-usuarios.component.scss']

@@ -10,11 +10,11 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { AutocompletadoDto } from '../../../models/Autocompletado.dto';
 import { AutocompletadoService } from '../../../services/AutocompletadoService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+
 
 @Component({
   selector: 'app-listado-autocompletados.component',
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule],
   templateUrl: './listado-autocompletados.component.html',
   styleUrls: ['./listado-autocompletados.component.scss']
 })

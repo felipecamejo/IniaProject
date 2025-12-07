@@ -9,11 +9,11 @@ import { MiddlewareService } from '../../../services/MiddlewareService';
 import { LoteDto } from '../../../models/Lote.dto';
 import { ReciboDto } from '../../../models/Recibo.dto';
 import { CertificadoDto } from '../../../models/Certificado.dto';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+// ...existing code...
 
 @Component({
   selector: 'app-lote-analisis.component',
-  imports: [CommonModule, ConfirmDialogComponent],
+  imports: [CommonModule],
   templateUrl: './lote-analisis.component.html',
   styleUrl: './lote-analisis.component.scss'
 })

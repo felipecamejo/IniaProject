@@ -10,12 +10,12 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { MetodoDto } from '../../../models/Metodo.dto';
 import { MetodoService } from '../../../services/MetodoService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+// ...existing code...
 
 @Component({
   selector: 'app-listado-metodos.component',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule],
   templateUrl: './listado-metodos.component.html',
   styleUrls: ['./listado-metodos.component.scss']
 })

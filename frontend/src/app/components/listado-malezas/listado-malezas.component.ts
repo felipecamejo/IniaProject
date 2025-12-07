@@ -10,11 +10,11 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/AuthService';
 import { MalezaDto } from '../../../models/Maleza.dto';
 import { MalezaService } from '../../../services/MalezaService';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+// ...existing code...
 
 @Component({
   selector: 'app-listado-malezas.component',
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, DialogModule],
   templateUrl: './listado-malezas.component.html',
   styleUrls: ['./listado-malezas.component.scss']
 })
