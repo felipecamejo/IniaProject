@@ -2,6 +2,7 @@ package ti.proyectoinia.security;
 
 import io.jsonwebtoken.*;
 import jakarta.servlet.FilterChain;
+import org.springframework.lang.NonNull;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -53,7 +54,7 @@ public class FiltroJWTAutorizacion extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         try{
             if (esRutaPublica(request)) {
                 filterChain.doFilter(request, response);

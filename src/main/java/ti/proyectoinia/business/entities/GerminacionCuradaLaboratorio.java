@@ -3,7 +3,6 @@ package ti.proyectoinia.business.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.Where;
 import java.util.List;
 
 @Entity
@@ -25,7 +24,7 @@ public class GerminacionCuradaLaboratorio extends RepeticionesGerminacion {
         @JoinColumn(name = "GERMINACION_ID", referencedColumnName = "GERMINACION_ID"),
         @JoinColumn(name = "NUMERO_REPETICION", referencedColumnName = "NUMERO_REPETICION")
     })
-    @Where(clause = "TABLA='CURADA_LABORATORIO' AND ACTIVO=true")
+
     @OrderBy("conteoId ASC")
     private List<NormalPorConteo> normales;
 }

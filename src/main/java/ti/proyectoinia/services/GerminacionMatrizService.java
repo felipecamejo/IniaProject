@@ -2,7 +2,6 @@ package ti.proyectoinia.services;
 
 import org.springframework.stereotype.Service;
 import ti.proyectoinia.business.entities.ConteoGerminacion;
-import ti.proyectoinia.business.entities.Germinacion;
 import ti.proyectoinia.business.entities.GerminacionCuradaLaboratorio;
 import ti.proyectoinia.business.entities.GerminacionCuradaPlanta;
 import ti.proyectoinia.business.entities.GerminacionSinCurar;
@@ -51,7 +50,7 @@ public class GerminacionMatrizService {
     public ConteoGerminacionDto addConteo(Long germinacionId, ConteoGerminacionDto dto) {
         if (germinacionId == null) throw new IllegalArgumentException("germinacionId es requerido");
         // 1) Validar germinación activa
-        Germinacion germ = germinacionRepository.findByIdAndActivoTrue(germinacionId)
+        germinacionRepository.findByIdAndActivoTrue(germinacionId)
                 .orElseThrow(() -> new IllegalArgumentException("Germinación no encontrada o inactiva: " + germinacionId));
 
         // 2) Determinar numeroConteo si no viene
@@ -188,14 +187,6 @@ public class GerminacionMatrizService {
 
     private int safeInt(Integer v) { return v == null ? 0 : v; }
 
-    private boolean isUltimoConteo(ConteoGerminacion conteo) {
-        if (conteo == null || conteo.getGerminacionId() == null) return true;
-        List<ConteoGerminacion> conteos = conteoGerminacionRepository.findByGerminacionIdOrderByNumeroConteoAsc(conteo.getGerminacionId());
-        if (conteos.isEmpty()) return true;
-        int max = conteos.get(conteos.size() - 1).getNumeroConteo();
-        return conteo.getNumeroConteo() != null && conteo.getNumeroConteo() == max;
-    }
-
     /**
      * Al crear un nuevo conteo, genera celdas "en blanco" para todas las repeticiones existentes
      * en cada tabla (SIN_CURAR, CURADA_PLANTA, CURADA_LABORATORIO) para esa germinación.
@@ -331,7 +322,7 @@ public class GerminacionMatrizService {
         // 2) Obtener conteos o crear Conteo 1 si aún no hay
         List<ConteoGerminacion> conteos = conteoGerminacionRepository.findByGerminacionIdOrderByNumeroConteoAsc(germinacionId);
         if (conteos.isEmpty()) {
-            ConteoGerminacionDto creado = addConteo(germinacionId, new ConteoGerminacionDto());
+            addConteo(germinacionId, new ConteoGerminacionDto());
             // recargar
             conteos = conteoGerminacionRepository.findByGerminacionIdOrderByNumeroConteoAsc(germinacionId);
         }

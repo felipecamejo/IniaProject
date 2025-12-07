@@ -608,7 +608,7 @@ public class PythonMiddlewareHttpService {
                 
                 // Intentar parsear como formato FastAPI {"detail": {...}}
                 try {
-                    @SuppressWarnings("unchecked")
+                    
                     java.util.Map<String, Object> jsonMap = objectMapper.readValue(
                         responseBody, 
                         objectMapper.getTypeFactory().constructMapType(

@@ -54,7 +54,7 @@ public class ReciboSecurityTest {
     @WithMockUser(authorities = "ADMIN")
     void adminPuedeCrear() throws Exception {
         ReciboDto dto = new ReciboDto();
-        dto.setAnalisisSolicitados("a");
+        dto.setFicha("a");
 
         when(reciboService.crearRecibo(any())).thenReturn(dto);
 
@@ -68,7 +68,7 @@ public class ReciboSecurityTest {
     @WithMockUser(authorities = "OBSERVADOR")
     void userNoPuedeCrear() throws Exception {
         ReciboDto dto = new ReciboDto();
-        dto.setAnalisisSolicitados("a");
+        dto.setFicha("a");
 
         mockMvc.perform(post(apiUrl + "/crear")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -92,7 +92,7 @@ public class ReciboSecurityTest {
     @WithMockUser(authorities = "ANALISTA")
     void analistaPuedeVerPorId() throws Exception {
         ReciboDto dto = new ReciboDto();
-        dto.setAnalisisSolicitados("a");
+        dto.setFicha("a");
 
         when(reciboService.obtenerReciboPorId(1L)).thenReturn(dto);
 
