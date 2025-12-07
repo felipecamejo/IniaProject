@@ -14,9 +14,6 @@ import { LoteDto } from '../../../models/Lote.dto';
 import { PurezaService } from '../../../services/PurezaService';
 import { GerminacionService } from '../../../services/GerminacionService';
 import { DOSNService } from '../../../services/DOSNService';
-import { PurezaDto } from '../../../models/Pureza.dto';
-import { GerminacionDto } from '../../../models/Germinacion.dto';
-import { DOSNDto } from '../../../models/DOSN.dto';
 import { jsPDF } from 'jspdf';
 // @ts-ignore - jspdf-autotable puede no tener tipos TypeScript completos
 import autoTable from 'jspdf-autotable';
@@ -27,7 +24,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-certificado',
@@ -42,7 +38,6 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     InputNumberModule,
     ButtonModule,
     TableModule,
-    ConfirmDialogComponent,
   ]
 })
 export class CertificadoComponent implements OnInit {
