@@ -13,4 +13,5 @@ public class NormalPorConteoDto {
     private Long conteoId;
 
     private Integer normal;
+    private Float promedioNormal;
 }

@@ -775,6 +775,8 @@ export class TetrazolioComponent implements OnInit {
       duras: '5',
       total: '100',
       promedio: '85',
+      promedioNoViables: '10',
+      promedioDuras: '5',
       porcentaje: 85,
       viabilidadPorTetrazolio: 'ALTA',
       nroSemillas: 100,
@@ -894,9 +896,15 @@ export class TetrazolioComponent implements OnInit {
         this.estandarOriginal = item.estandar || false;
         this.repetidoOriginal = item.repetido || false;
 
-        // Cargar promedio redondeado si existe
+        // Cargar promedios redondeados si existen
         if (item.promedio) {
           this.promedioViablesRedondeado = parseFloat(item.promedio);
+        }
+        if ((item as any).promedioNoViables) {
+          this.promedioNoViablesRedondeado = parseFloat((item as any).promedioNoViables);
+        }
+        if ((item as any).promedioDuras) {
+          this.promedioDurasRedondeado = parseFloat((item as any).promedioDuras);
         }
 
         // ===== CARGAR SEGUNDO CONJUNTO DE DATOS =====
@@ -1135,6 +1143,8 @@ export class TetrazolioComponent implements OnInit {
       duras: this.getTotalDuras(),
       total: (parseFloat(this.getTotalViables()) + parseFloat(this.getTotalNoViables()) + parseFloat(this.getTotalDuras())).toString(),
       promedio: this.promedioViablesRedondeado.toString(),
+      promedioNoViables: this.promedioNoViablesRedondeado.toString(),
+      promedioDuras: this.promedioDurasRedondeado.toString(),
       estandar: this.estandar || false,
       repetido: this.repetido || false,
       activo: true,

@@ -72,6 +72,12 @@ public class Tetrazolio {
     @Column(name = "TETRAZOLIO_PROMEDIO")
     private Float promedio;
 
+    @Column(name = "TETRAZOLIO_PROMEDIO_NO_VIABLES")
+    private Float promedioNoViables;
+
+    @Column(name = "TETRAZOLIO_PROMEDIO_DURAS")
+    private Float promedioDuras;
+
     @Column(name = "TETRAZOLIO_PORCENTAJE")
     private Integer porcentaje;
 

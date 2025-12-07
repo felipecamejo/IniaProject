@@ -50,6 +50,10 @@ public class TetrazolioDto {
     
     private String promedio;
     
+    private String promedioNoViables;
+    
+    private String promedioDuras;
+    
     private Integer porcentaje;
     
     private ViabilidadPorTz viabilidadPorTetrazolio;

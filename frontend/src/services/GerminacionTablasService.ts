@@ -26,6 +26,13 @@ export class GerminacionTablasService {
     );
   }
 
+  updateConteoFecha(conteoId: number, fechaIso: string): Observable<any> {
+    return this.http.put<any>(
+      `${this.urls.baseUrl}${this.base}/conteos/${conteoId}/fecha`,
+      { fechaConteo: fechaIso }
+    );
+  }
+
   // Normales (por conteo)
   upsertNormal(tabla: string, body: NormalPorConteoDto): Observable<NormalPorConteoDto> {
     return this.http.put<NormalPorConteoDto>(

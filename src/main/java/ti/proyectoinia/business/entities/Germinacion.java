@@ -46,6 +46,9 @@ public class Germinacion {
     @Column(name = "GERMINACION_NRODIAS")
     private Integer nroDias;
 
+    @Column(name = "GERMINACION_PRODUCTODOSIS")
+    private String productoDosis;
+
     @Column(name = "GERMINACION_PREDONDEO")
     private Integer pRedondeo;
 

@@ -48,6 +48,19 @@ public class GerminacionTablasController {
         return ResponseEntity.ok(lista);
     }
 
+    @PutMapping("/conteos/{conteoId}/fecha")
+    @Secured({"ADMIN", "ANALISTA"})
+    @Operation(description = "Actualiza la fecha de un conteo existente.")
+    public ResponseEntity<?> actualizarFechaConteo(@PathVariable Long conteoId, @RequestBody Map<String, String> body) {
+        try {
+            String fechaConteo = body.get("fechaConteo");
+            service.updateConteoFecha(conteoId, fechaConteo);
+            return ResponseEntity.ok().build();
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar fecha de conteo: " + ex.getMessage());
+        }
+    }
+
     @PutMapping("/normales/{tabla}")
     @Secured({"ADMIN", "ANALISTA"})
     @Operation(description = "Crea o actualiza el valor 'normal' para una repetición en un conteo específico. Tabla: SIN_CURAR | CURADA_PLANTA | CURADA_LABORATORIO.")

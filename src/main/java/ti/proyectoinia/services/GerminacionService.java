@@ -10,6 +10,11 @@ import ti.proyectoinia.business.repositories.GerminacionRepository;
 import ti.proyectoinia.dtos.GerminacionDto;
 import ti.proyectoinia.dtos.ConteoGerminacionDto;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+
 
 @Service
 public class GerminacionService {
@@ -60,11 +65,8 @@ public class GerminacionService {
                     "germinacionINASE=" + saved.getGerminacionINASE());
         } catch (Exception ignored) {}
 
-        // 2) Crear automáticamente el Conteo 1 usando la fechaInicio como fechaConteo (si está presente)
-        ConteoGerminacionDto conteoInicial = new ConteoGerminacionDto();
-        conteoInicial.setNumeroConteo(1);
-        conteoInicial.setFechaConteo(saved.getFechaInicio());
-        germinacionMatrizService.addConteo(germinacionId, conteoInicial);
+        // 2) NO crear conteo automáticamente - el frontend se encarga de crear los conteos con sus fechas correctas
+        // El frontend llama a persistirTodosLosTratamientos que crea los conteos necesarios
 
         // 3) Inicializar las 3 tablas de tratamientos (crear repetición 1 vacía para cada una)
         germinacionMatrizService.initializeTablasForGerminacion(germinacionId);

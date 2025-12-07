@@ -6,4 +6,5 @@ export interface NormalPorConteoDto {
   numeroRepeticion?: number | null;
   conteoId?: number | null;
   normal?: number | null;
+  promedioNormal?: number | null;
 }

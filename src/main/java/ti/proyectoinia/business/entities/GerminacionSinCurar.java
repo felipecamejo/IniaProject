@@ -21,8 +21,8 @@ public class GerminacionSinCurar extends RepeticionesGerminacion {
     // Navegación a normales por conteo para esta repetición y tratamiento (solo lectura)
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumns({
-        @JoinColumn(name = "GERMINACION_ID", referencedColumnName = "GERMINACION_ID"),
-        @JoinColumn(name = "NUMERO_REPETICION", referencedColumnName = "NUMERO_REPETICION")
+        @JoinColumn(name = "GERMINACION_ID", referencedColumnName = "GERMINACION_ID", insertable = false, updatable = false),
+        @JoinColumn(name = "NUMERO_REPETICION", referencedColumnName = "NUMERO_REPETICION", insertable = false, updatable = false)
     })
     @OrderBy("conteoId ASC")
     private List<NormalPorConteo> normales;

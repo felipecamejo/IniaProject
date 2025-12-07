@@ -42,7 +42,7 @@ public class MapsDtoEntityService {
         return ISO_LOCAL_DATE_TIME.format(localDateTime);
     }
 
-    private Date parseDate(String value) {
+    public Date parseDate(String value) {
         if (value == null || value.isBlank()) {
             return null;
         }
@@ -70,7 +70,14 @@ public class MapsDtoEntityService {
                 java.time.LocalDate localDate = java.time.LocalDate.of(year, month, day);
                 return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
             }
-            return null;
+            
+            // Si el formato es solo fecha (YYYY-MM-DD), agregar hora por defecto
+            if (cleanValue.matches("^\\d{4}-\\d{2}-\\d{2}$")) {
+                cleanValue = cleanValue + "T00:00:00";
+            }
+            
+            LocalDateTime localDateTime = LocalDateTime.parse(cleanValue, ISO_LOCAL_DATE_TIME);
+            return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
         } catch (Exception ignored) {
             // Si no matchea el formato esperado, devolver null de forma segura
             return null;
@@ -213,7 +220,7 @@ public class MapsDtoEntityService {
 
         GerminacionDto dto = new GerminacionDto();
         dto.setId(germinacion.getId());
-        dto.setFechaInicio(germinacion.getFechaInicio());
+        dto.setFechaInicio(formatDate(germinacion.getFechaInicio()));
         dto.setTotalDias(germinacion.getTotalDias());
         dto.setTratamiento(germinacion.getTratamiento());
         dto.setNroSemillaPorRepeticion(germinacion.getNroSemillaPorRepeticion());
@@ -222,6 +229,7 @@ public class MapsDtoEntityService {
         dto.setPreFrio(germinacion.getPreFrio());
         dto.setPreTratamiento(germinacion.getPreTratamiento());
         dto.setNroDias(germinacion.getNroDias());
+        dto.setProductoDosis(germinacion.getProductoDosis());
         dto.setPRedondeo(germinacion.getPRedondeo());
         dto.setPNormalINIA(germinacion.getPNormalINIA());
         dto.setPNormalINASE(germinacion.getPNormalINASE());
@@ -237,9 +245,9 @@ public class MapsDtoEntityService {
         dto.setGerminacionINASE(germinacion.getGerminacionINASE());
         dto.setComentarios(germinacion.getComentarios());
         dto.setRepetido(germinacion.isRepetido());
-        dto.setFechaCreacion(germinacion.getFechaCreacion());
-        dto.setFechaRepeticion(germinacion.getFechaRepeticion());
-        dto.setFechaINASE(germinacion.getFechaINASE());
+        dto.setFechaCreacion(formatDate(germinacion.getFechaCreacion()));
+        dto.setFechaRepeticion(formatDate(germinacion.getFechaRepeticion()));
+        dto.setFechaINASE(formatDate(germinacion.getFechaINASE()));
         dto.setEstandar(germinacion.isEstandar());
 
 
@@ -262,6 +270,8 @@ public class MapsDtoEntityService {
         // Fallback de depuración: imprimir lo que llega antes de mapear
         try {
             System.out.println("[mapToEntityGerminacion] DTO -> " +
+                    "fechaInicio=" + dto.getFechaInicio() + ", " +
+                    "fechaINASE=" + dto.getFechaINASE() + ", " +
                     "pNormalINIA=" + dto.getPNormalINIA() + ", " +
                     "pNormalINASE=" + dto.getPNormalINASE() + ", " +
                     "pAnormalINIA=" + dto.getPAnormalINIA() + ", " +
@@ -276,7 +286,7 @@ public class MapsDtoEntityService {
                     "germinacionINASE=" + dto.getGerminacionINASE());
         } catch (Exception ignored) {}
         germinacion.setId(dto.getId());
-        germinacion.setFechaInicio(dto.getFechaInicio());
+        germinacion.setFechaInicio(parseDate(dto.getFechaInicio()));
         germinacion.setTotalDias(dto.getTotalDias());
         germinacion.setTratamiento(dto.getTratamiento());
         germinacion.setNroSemillaPorRepeticion(dto.getNroSemillaPorRepeticion());
@@ -285,6 +295,7 @@ public class MapsDtoEntityService {
         germinacion.setPreFrio(dto.getPreFrio());
         germinacion.setPreTratamiento(dto.getPreTratamiento());
         germinacion.setNroDias(dto.getNroDias());
+        germinacion.setProductoDosis(dto.getProductoDosis());
         germinacion.setPRedondeo(dto.getPRedondeo());
         germinacion.setPNormalINIA(dto.getPNormalINIA());
         germinacion.setPNormalINASE(dto.getPNormalINASE());
@@ -301,9 +312,9 @@ public class MapsDtoEntityService {
         germinacion.setComentarios(dto.getComentarios());
         germinacion.setRepetido(dto.isRepetido());
         germinacion.setActivo(dto.isActivo());
-        germinacion.setFechaCreacion(dto.getFechaCreacion());
-        germinacion.setFechaRepeticion(dto.getFechaRepeticion());
-        germinacion.setFechaINASE(dto.getFechaINASE());
+        germinacion.setFechaCreacion(parseDate(dto.getFechaCreacion()));
+        germinacion.setFechaRepeticion(parseDate(dto.getFechaRepeticion()));
+        germinacion.setFechaINASE(parseDate(dto.getFechaINASE()));
         germinacion.setEstandar(dto.isEstandar());
 
     // Validar y obtener el recibo si existe
@@ -1345,6 +1356,8 @@ public class MapsDtoEntityService {
         dto.setDuras(tetrazolio.getDuras() != null ? tetrazolio.getDuras().toString() : null);
         dto.setTotal(tetrazolio.getTotal() != null ? tetrazolio.getTotal().toString() : null);
         dto.setPromedio(tetrazolio.getPromedio() != null ? tetrazolio.getPromedio().toString() : null);
+        dto.setPromedioNoViables(tetrazolio.getPromedioNoViables() != null ? tetrazolio.getPromedioNoViables().toString() : null);
+        dto.setPromedioDuras(tetrazolio.getPromedioDuras() != null ? tetrazolio.getPromedioDuras().toString() : null);
         dto.setPorcentaje(tetrazolio.getPorcentaje());
         dto.setFechaCreacion(tetrazolio.getFechaCreacion());
         dto.setFechaRepeticion(tetrazolio.getFechaRepeticion());
@@ -1412,6 +1425,8 @@ public class MapsDtoEntityService {
         tetrazolio.setDuras(dto.getDuras() != null ? Float.parseFloat(dto.getDuras()) : null);
         tetrazolio.setTotal(dto.getTotal() != null ? Float.parseFloat(dto.getTotal()) : null);
         tetrazolio.setPromedio(dto.getPromedio() != null ? Float.parseFloat(dto.getPromedio()) : null);
+        tetrazolio.setPromedioNoViables(dto.getPromedioNoViables() != null ? Float.parseFloat(dto.getPromedioNoViables()) : null);
+        tetrazolio.setPromedioDuras(dto.getPromedioDuras() != null ? Float.parseFloat(dto.getPromedioDuras()) : null);
         tetrazolio.setPorcentaje(dto.getPorcentaje());
         tetrazolio.setViabilidadPorTetrazolio(dto.getViabilidadPorTetrazolio());
         tetrazolio.setViabilidadVigorTz(dto.getViabilidadVigorTz());
@@ -1669,8 +1684,9 @@ public class MapsDtoEntityService {
         dto.setId(entity.getId());
         dto.setGerminacionId(entity.getGerminacionId());
         dto.setNumeroConteo(entity.getNumeroConteo());
-        dto.setFechaConteo(entity.getFechaConteo());
+        dto.setFechaConteo(formatDate(entity.getFechaConteo()));
         dto.setActivo(entity.isActivo());
+        System.out.println("[mapToDtoConteoGerminacion] ID=" + entity.getId() + ", numeroConteo=" + entity.getNumeroConteo() + ", fechaConteo=" + dto.getFechaConteo());
         return dto;
     }
 
@@ -1681,7 +1697,7 @@ public class MapsDtoEntityService {
         entity.setId(dto.getId() != null && dto.getId() == 0 ? null : dto.getId());
         entity.setGerminacionId(dto.getGerminacionId());
         entity.setNumeroConteo(dto.getNumeroConteo());
-        entity.setFechaConteo(dto.getFechaConteo());
+        entity.setFechaConteo(parseDate(dto.getFechaConteo()));
         entity.setActivo(dto.isActivo());
         return entity;
     }
@@ -1700,7 +1716,11 @@ public class MapsDtoEntityService {
         dto.setFrescas(e.getFrescas());
         dto.setMuertas(e.getMuertas());
         dto.setTotales(e.getTotales());
-        dto.setPromedioRedondeado(e.getPromedioRedondeado());
+        dto.setPromedioAnormal(e.getPromedioAnormal());
+        dto.setPromedioDuras(e.getPromedioDuras());
+        dto.setPromedioFrescas(e.getPromedioFrescas());
+        dto.setPromedioMuertas(e.getPromedioMuertas());
+        dto.setPromedioTotal(e.getPromedioTotal());
         return dto;
     }
 
@@ -1716,7 +1736,11 @@ public class MapsDtoEntityService {
         dto.setFrescas(e.getFrescas());
         dto.setMuertas(e.getMuertas());
         dto.setTotales(e.getTotales());
-        dto.setPromedioRedondeado(e.getPromedioRedondeado());
+        dto.setPromedioAnormal(e.getPromedioAnormal());
+        dto.setPromedioDuras(e.getPromedioDuras());
+        dto.setPromedioFrescas(e.getPromedioFrescas());
+        dto.setPromedioMuertas(e.getPromedioMuertas());
+        dto.setPromedioTotal(e.getPromedioTotal());
         return dto;
     }
 
@@ -1732,7 +1756,11 @@ public class MapsDtoEntityService {
         dto.setFrescas(e.getFrescas());
         dto.setMuertas(e.getMuertas());
         dto.setTotales(e.getTotales());
-        dto.setPromedioRedondeado(e.getPromedioRedondeado());
+        dto.setPromedioAnormal(e.getPromedioAnormal());
+        dto.setPromedioDuras(e.getPromedioDuras());
+        dto.setPromedioFrescas(e.getPromedioFrescas());
+        dto.setPromedioMuertas(e.getPromedioMuertas());
+        dto.setPromedioTotal(e.getPromedioTotal());
         return dto;
     }
 
@@ -1748,7 +1776,11 @@ public class MapsDtoEntityService {
         e.setFrescas(dto.getFrescas());
         e.setMuertas(dto.getMuertas());
         e.setTotales(dto.getTotales());
-        e.setPromedioRedondeado(dto.getPromedioRedondeado());
+        e.setPromedioAnormal(dto.getPromedioAnormal());
+        e.setPromedioDuras(dto.getPromedioDuras());
+        e.setPromedioFrescas(dto.getPromedioFrescas());
+        e.setPromedioMuertas(dto.getPromedioMuertas());
+        e.setPromedioTotal(dto.getPromedioTotal());
         return e;
     }
 
@@ -1764,7 +1796,11 @@ public class MapsDtoEntityService {
         e.setFrescas(dto.getFrescas());
         e.setMuertas(dto.getMuertas());
         e.setTotales(dto.getTotales());
-        e.setPromedioRedondeado(dto.getPromedioRedondeado());
+        e.setPromedioAnormal(dto.getPromedioAnormal());
+        e.setPromedioDuras(dto.getPromedioDuras());
+        e.setPromedioFrescas(dto.getPromedioFrescas());
+        e.setPromedioMuertas(dto.getPromedioMuertas());
+        e.setPromedioTotal(dto.getPromedioTotal());
         return e;
     }
 
@@ -1780,7 +1816,11 @@ public class MapsDtoEntityService {
         e.setFrescas(dto.getFrescas());
         e.setMuertas(dto.getMuertas());
         e.setTotales(dto.getTotales());
-        e.setPromedioRedondeado(dto.getPromedioRedondeado());
+        e.setPromedioAnormal(dto.getPromedioAnormal());
+        e.setPromedioDuras(dto.getPromedioDuras());
+        e.setPromedioFrescas(dto.getPromedioFrescas());
+        e.setPromedioMuertas(dto.getPromedioMuertas());
+        e.setPromedioTotal(dto.getPromedioTotal());
         return e;
     }
 
@@ -1794,6 +1834,7 @@ public class MapsDtoEntityService {
         dto.setNumeroRepeticion(e.getNumeroRepeticion());
         dto.setConteoId(e.getConteoId());
         dto.setNormal(e.getNormal());
+        dto.setPromedioNormal(e.getPromedioNormal());
         return dto;
     }
 
@@ -1807,6 +1848,7 @@ public class MapsDtoEntityService {
         e.setNumeroRepeticion(dto.getNumeroRepeticion());
         e.setConteoId(dto.getConteoId());
         e.setNormal(dto.getNormal());
+        e.setPromedioNormal(dto.getPromedioNormal());
         return e;
     }
 

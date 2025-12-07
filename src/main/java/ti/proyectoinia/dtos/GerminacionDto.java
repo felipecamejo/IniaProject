@@ -14,7 +14,7 @@ public class GerminacionDto {
 
     private Long id;
 
-    private Date fechaInicio;
+    private String fechaInicio;
 
     private Integer totalDias;
 
@@ -32,6 +32,8 @@ public class GerminacionDto {
     private PreTratamiento preTratamiento;
 
     private Integer nroDias;
+
+    private String productoDosis;
 
     @JsonProperty("pRedondeo")
     private Integer pRedondeo;
@@ -73,9 +75,9 @@ public class GerminacionDto {
 
     private boolean estandar;
 
-    private Date fechaCreacion;
+    private String fechaCreacion;
 
-    private Date fechaRepeticion;
+    private String fechaRepeticion;
 
-    private Date fechaINASE;
+    private String fechaINASE;
 }
