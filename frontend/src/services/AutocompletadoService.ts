@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { UrlService } from './url.service';
 import { AutocompletadoDto } from '../models/Autocompletado.dto';
 
@@ -51,8 +52,12 @@ export class AutocompletadoService {
   }
 
   obtenerPorParametro(parametro: string): Observable<AutocompletadoDto[]> {
-    return this.http.get<AutocompletadoDto[]>(
+    return this.http.get<ResponseListadoAutocompletados>(
       `${this.urlService.baseUrl}${this.endpoint}/por-parametro/${parametro}`
+    ).pipe(
+      map((response: ResponseListadoAutocompletados) => {
+        return response?.autocompletados || [];
+      })
     );
   }
 }
