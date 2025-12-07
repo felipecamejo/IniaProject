@@ -30,6 +30,10 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
   private navigationSubscription: any;
   private currentUrl: string = '';
 
+
+  certificadoAEliminar: CertificadoDto | null = null;
+  confirmLoading: boolean = false;
+
   // Propiedades para quick export
   isExporting: boolean = false;
 
@@ -384,24 +388,61 @@ export class LoteAnalisisComponent implements OnInit, OnDestroy {
       alert('No hay certificado disponible para eliminar.');
       return;
     }
-    
-    const confirmed = window.confirm('¿Estás seguro que deseas eliminar el certificado de este lote?');
-    if (confirmed && this.certificadoId != null) {
-      this.certificadoService.eliminarCertificado(this.certificadoId).subscribe({
-        next: (response) => {
-          console.log('Certificado eliminado:', response);
-          // Actualizar estado local
-          this.tieneCertificado = false;
-          this.certificadoId = null;
-          // Recargar datos para actualizar la UI
-          this.verificarCertificado();
-        },
-        error: (error) => {
-          console.error('Error al eliminar certificado:', error);
-          alert('Error al eliminar el certificado. Por favor, intente nuevamente.');
-        }
-      });
+    // Confirmar con el usuario antes de eliminar
+    const confirmar = confirm('¿Está seguro que desea eliminar el certificado de este lote? Esta acción no se puede deshacer.');
+    if (!confirmar) {
+      return;
     }
+    // Proceder a eliminar directamente
+    this.certificadoService.eliminarCertificado(this.certificadoId).subscribe({
+      next: (mensaje: string) => {
+        console.log('Certificado eliminado:', mensaje);
+        this.confirmLoading = false;
+        this.certificadoAEliminar = null;
+        // Actualizar estado local
+        this.tieneCertificado = false;
+        this.certificadoId = null;
+        // Recargar datos para actualizar la UI
+        this.verificarCertificado();
+      },
+      error: (error) => {
+        console.error('Error eliminando certificado:', error);
+        this.confirmLoading = false;
+        this.certificadoAEliminar = null;
+        alert('Error al eliminar el certificado. Por favor, intente nuevamente.');
+      }
+    });
+  }
+
+  confirmarEliminacion(): void {
+    if (!this.certificadoAEliminar || !this.certificadoAEliminar.id) return;
+    
+    this.confirmLoading = true;
+    const certificadoId = this.certificadoAEliminar.id;
+
+    this.certificadoService.eliminarCertificado(certificadoId).subscribe({
+      next: (mensaje: string) => {
+        console.log('Certificado eliminado:', mensaje);
+        this.confirmLoading = false;
+        this.certificadoAEliminar = null;
+        // Actualizar estado local
+        this.tieneCertificado = false;
+        this.certificadoId = null;
+        // Recargar datos para actualizar la UI
+        this.verificarCertificado();
+      },
+      error: (error) => {
+        console.error('Error eliminando certificado:', error);
+        this.confirmLoading = false;
+        this.certificadoAEliminar = null;
+        alert('Error al eliminar el certificado. Por favor, intente nuevamente.');
+      }
+    });
+  }
+
+  cancelarEliminacion(): void {
+    this.certificadoAEliminar = null;
+    this.confirmLoading = false;
   }
 
   isButtonDisabled(component: string): boolean {
