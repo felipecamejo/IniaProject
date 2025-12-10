@@ -164,10 +164,10 @@ public class SeguridadController {
             
             // Definir usuarios a crear usando DTOs
             List<UsuarioDto> usuariosParaCrear = List.of(
-                crearUsuarioDto("admin@inia.com", "Renzo", RolUsuario.ADMIN),
-                crearUsuarioDto("analista@inia.com", "Felipe", RolUsuario.ANALISTA),
-                crearUsuarioDto("observador1@inia.com", "Alex", RolUsuario.OBSERVADOR),
-                crearUsuarioDto("observador2@inia.com", "Juan Pablo", RolUsuario.OBSERVADOR)
+                crearUsuarioDto("admin@inia.com", "Admin", RolUsuario.ADMIN),
+                crearUsuarioDto("analista@inia.com", "Analista", RolUsuario.ANALISTA),
+                crearUsuarioDto("observador1@inia.com", "Observador1", RolUsuario.OBSERVADOR),
+                crearUsuarioDto("observador2@inia.com", "Observador2", RolUsuario.OBSERVADOR)
             );
             
             // Crear usuarios usando el servicio
