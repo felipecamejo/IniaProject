@@ -78,7 +78,5 @@ public class GerminacionDto {
 
     private String fechaCreacion;
 
-    private String fechaRepeticion;
-
     private String fechaINASE;
 }

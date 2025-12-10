@@ -48,7 +48,6 @@ export interface DOSNDto {
   activo: boolean;
   repetido: boolean;
   fechaCreacion: string | null;
-  fechaRepeticion: string | null;
 
   // Campo opcional usado en vistas de listado
   observaciones: string | null;

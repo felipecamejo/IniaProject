@@ -1,3 +1,4 @@
+
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -1122,8 +1123,10 @@ export class GerminacionComponent implements OnInit {
       activo: true,
       estandar: this.estandar || false,
       repetido: this.repetido || false,
-      fechaCreacion: null,
-      fechaRepeticion: null,
+      // Guardar fechaCreacion igual que PMS
+      fechaCreacion: (window as any).DateService && typeof (window as any).DateService.ajustarFecha === 'function'
+        ? (window as any).DateService.ajustarFecha(new Date().toISOString().split('T')[0])
+        : new Date().toISOString().split('T')[0],
       fechaINASE: this.fechaINASE || null,
     });
     const payload: any = buildPayload(false);

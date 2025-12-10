@@ -729,18 +729,12 @@ import { AuthService } from '../../../services/AuthService';
 
     // Manejo de fechas igual que PMS
     let fechaCreacion = this.dosn?.fechaCreacion || null;
-    let fechaRepeticion = this.dosn?.fechaRepeticion || null;
     const fechaActual = new Date().toISOString().split('T')[0];
 
   
     // Si es creación, asignar fecha actual
     if (!this.isEditing) {
       fechaCreacion = fechaActual;
-    }
-
-    // Si es edición y repetido pasa de false a true, asignar fecha actual
-    if (this.isEditing && !this.dosn?.repetido && this.repetido) {
-      fechaRepeticion = fechaActual;
     }
 
     return {
@@ -785,7 +779,6 @@ import { AuthService } from '../../../services/AuthService';
       activo: this.dosn?.activo ?? true,
       repetido: this.repetido ?? false,
       fechaCreacion,
-      fechaRepeticion,
       observaciones: this.observaciones ?? null
     };
   }

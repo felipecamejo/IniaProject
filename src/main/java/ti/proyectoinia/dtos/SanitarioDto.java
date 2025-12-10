@@ -41,6 +41,4 @@ public class SanitarioDto {
 
     private String fechaCreacion;
 
-    private String fechaRepeticion;
-
 }

@@ -43,9 +43,6 @@ public class PurezaPNotatum {
     @Column(name = "PUREZA_PNOTATUM_FECHA_CREACION")
     private Date fechaCreacion;
 
-    @Column(name = "PUREZA_PNOTATUM_FECHA_REPETICION")
-    private Date fechaRepeticion;
-
     @Column(name = "PUREZA_PNOTATUM_OBSERVACIONES")
     private String observaciones;
 

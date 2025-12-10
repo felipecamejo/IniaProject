@@ -1,3 +1,4 @@
+    
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,6 +11,8 @@ import { GerminacionService } from '../../../services/GerminacionService';
 import { LogService } from '../../../services/LogService';
 import { AuthService } from '../../../services/AuthService';
 
+import { FechaListadosService } from '../../../services/fechaListadosService';
+
 @Component({
   selector: 'app-listado-germinacion',
   standalone: true,
@@ -18,7 +21,7 @@ import { AuthService } from '../../../services/AuthService';
   styleUrl: './listado-germinacion.component.scss'
 })
 export class ListadoGerminacionComponent implements OnInit {
-  constructor(private router: Router, private route: ActivatedRoute, private germSvc: GerminacionService, private logService : LogService, private authService: AuthService) {}
+  constructor(private fechaListadosService: FechaListadosService, private router: Router, private route: ActivatedRoute, private germSvc: GerminacionService, private logService : LogService, private authService: AuthService) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
@@ -63,6 +66,10 @@ export class ListadoGerminacionComponent implements OnInit {
     mostrarConfirmEliminar: boolean = false;
     germinacionAEliminar: GerminacionDto | null = null;
     confirmLoading: boolean = false;
+
+    formatFecha(fecha: string | null | undefined | Date): string {
+      return this.fechaListadosService.formatFecha(fecha);
+    }
 
     ngOnInit(): void {
       this.isObserver = this.authService.isObservador();
@@ -110,33 +117,9 @@ export class ListadoGerminacionComponent implements OnInit {
       return filtrados.slice(startIndex, endIndex);
     }
 
-    getFechaConTipo(item: GerminacionDto): { fecha: string, tipo: string } {
-          let rawDate = '';
-          let tipo = '';
-          if (item.repetido) {
-            rawDate = item.fechaRepeticion || '';
-            tipo = 'Repetición';
-          } else {
-            rawDate = item.fechaCreacion || '';
-            tipo = 'Creación';
-          }
-          // Format date to DD-MM-YYYY if possible
-          if (rawDate) {
-            const d = new Date(rawDate);
-            if (!isNaN(d.getTime())) {
-              const day = String(d.getDate()).padStart(2, '0');
-              const month = String(d.getMonth() + 1).padStart(2, '0');
-              const year = d.getFullYear();
-              return { fecha: `${day}-${month}-${year}`, tipo };
-            }
-            // If parsing fails, fallback to first 10 chars (YYYY-MM-DD)
-            if (rawDate.length >= 10) {
-              const [year, month, day] = rawDate.slice(0, 10).split('-');
-              return { fecha: `${day}-${month}-${year}`, tipo };
-            }
-          }
-          return { fecha: '', tipo };
-        }
+    getFechaConTipo(item: GerminacionDto): { fecha: string} {
+      return this.fechaListadosService.getFechaConTipo(item);
+    }
 
     getMesFromFecha(fecha: string): number {
       if (!fecha) return NaN;

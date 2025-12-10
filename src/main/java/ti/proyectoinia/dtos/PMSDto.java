@@ -25,8 +25,6 @@ public class PMSDto {
 
     private Date fechaCreacion;
 
-    private Date fechaRepeticion;
-
     private boolean estandar;
 
     @Generated

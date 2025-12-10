@@ -56,5 +56,4 @@ export interface GerminacionDto {
   estandar: boolean;
   repetido: boolean;
   fechaCreacion: string | null;
-  fechaRepeticion: string | null;
 }

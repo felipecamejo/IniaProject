@@ -90,8 +90,6 @@ public class TetrazolioDto {
 
     private Date fechaCreacion;
 
-    private Date fechaRepeticion;
-
     private Long reciboId;
 
     private ReporteTetrazolioDto reporte;

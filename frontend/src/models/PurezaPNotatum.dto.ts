@@ -9,7 +9,6 @@ export interface PurezaPNotatumDto {
   repetido: boolean | null;
   reciboId: number | null;
   fechaCreacion: string | null;
-  fechaRepeticion: string | null;
   observaciones: string | null;
 
   semillaPuraPorcentaje?: number | null;

@@ -28,8 +28,6 @@ public class PurezaPNotatumDto {
 
     private Date fechaCreacion;
 
-    private Date fechaRepeticion;
-
     private String observaciones;
 
     private Integer semillaPuraPorcentaje;
@@ -56,6 +54,6 @@ public class PurezaPNotatumDto {
 
     @Generated
     public String toString() {
-        return "PurezaPnotatumDto(id=" + id + ", gramosSemillaPura=" + gramosSemillaPura + ", gramosSemillasCultivos=" + gramosSemillasCultivos + ", gramosSemillasMalezas=" + gramosSemillasMalezas + ", gramosMateriaInerte=" + gramosMateriaInerte + ", activo=" + activo + ", repetido=" + repetido + ", reciboId=" + reciboId + ", fechaCreacion=" + fechaCreacion + ", fechaRepeticion=" + fechaRepeticion + ")";
+        return "PurezaPnotatumDto(id=" + id + ", gramosSemillaPura=" + gramosSemillaPura + ", gramosSemillasCultivos=" + gramosSemillasCultivos + ", gramosSemillasMalezas=" + gramosSemillasMalezas + ", gramosMateriaInerte=" + gramosMateriaInerte + ", activo=" + activo + ", repetido=" + repetido + ", reciboId=" + reciboId + ", fechaCreacion=" + fechaCreacion +  ")";
     }
 }

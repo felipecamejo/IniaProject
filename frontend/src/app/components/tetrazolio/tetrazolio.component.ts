@@ -799,7 +799,6 @@ export class TetrazolioComponent implements OnInit {
       estandar: false,
       repetido: false,
       fechaCreacion: '2023-01-15',
-      fechaRepeticion: null,
       reciboId: null,
       reporte: null,
       observaciones: null
@@ -1156,19 +1155,12 @@ export class TetrazolioComponent implements OnInit {
       repetido: this.repetido || false,
       activo: true,
       reciboId: this.reciboId ? parseInt(this.reciboId) : null,
-      observaciones: this.comentarios || null,
-      fechaRepeticion: null, 
+      observaciones: this.comentarios || null, 
     };
 
     // Agregar ID para edición
     if (this.isEditing && this.editingId) {
       tetrazolioData.id = this.editingId;
-      // PMS-style: Si repetido pasa de false a true, guardar fecha de edición
-      if (!this.repetidoOriginal && this.repetido) {
-        tetrazolioData.fechaRepeticion = new Date().toISOString().split('T')[0];
-      } else {
-        tetrazolioData.fechaRepeticion = null;
-      }
     }
 
     // ===== PRIMER CONJUNTO DE DATOS =====

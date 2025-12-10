@@ -775,7 +775,6 @@ export class PurezaComponent implements OnInit {
     reciboId: null,
     repetido: false,
     fechaCreacion: null,
-    fechaRepeticion: null,
     malezasNormalesId: null,
     malezasToleradasId: null,
     malezasToleranciaCeroId: null,
@@ -1155,7 +1154,6 @@ export class PurezaComponent implements OnInit {
       purezaData.activo = true; 
       purezaData.repetido = false; 
       purezaData.fechaCreacion = new Date().toISOString();
-      purezaData.fechaRepeticion = null;
       
       console.log('Creando nueva pureza');
       console.log('purezaData:', JSON.stringify(purezaData, null, 2));
@@ -1239,7 +1237,6 @@ export class PurezaComponent implements OnInit {
       repetido: this.repetido || false,
       // En edición mantener valores originales, en creación serán establecidos en onSubmit
       fechaCreacion: this.isEditing ? this.fechaCreacionOriginal : null,
-      fechaRepeticion: this.repetido ? new Date().toISOString() : null
     };
   }
 

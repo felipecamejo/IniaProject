@@ -198,7 +198,6 @@ export class PmsComponent implements OnInit {
               this.fechaMedicion = data.fechaMedicion ? data.fechaMedicion.split('T')[0] : '';
               this.reciboId = this.route.snapshot.params['reciboId'];
               this.fechaCreacion = data.fechaCreacion || null;
-              this.fechaRepeticion = data.fechaRepeticion || null;
               // Cargar los gramos asociados a este PMS (entidad separada)
               this.gramosPmsService.listarGramosPorPms(this.editingId!).subscribe({
                 next: (grams: GramosPmsDto[]) => {
@@ -468,13 +467,11 @@ export class PmsComponent implements OnInit {
         reciboId: this.route.snapshot.params['reciboId'] ? Number(this.route.snapshot.params['reciboId']) : null,
         fechaMedicion: this.fechaMedicion ? this.fechaMedicion.split('T')[0] : null,
         fechaCreacion: this.fechaCreacion ? this.fechaCreacion.split('T')[0] : null,
-        fechaRepeticion: this.fechaRepeticion ? this.fechaRepeticion.split('T')[0] : null,
         estandar: this.estandar
       };
 
       console.log("fechaMedicion antes de ajustar:", pmsData.fechaMedicion);
       console.log("fechaCreacion antes de ajustar:", pmsData.fechaCreacion);
-      console.log("fechaRepeticion antes de ajustar:", pmsData.fechaRepeticion);
 
       console.log('📋 PMS DTO:', pmsData);
 

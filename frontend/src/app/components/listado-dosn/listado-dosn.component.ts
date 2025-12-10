@@ -10,6 +10,7 @@ import { DOSNDto } from '../../../models/DOSN.dto';
 import { DOSNService } from '../../../services/DOSNService';
 import { LogService } from '../../../services/LogService';
 import { AuthService } from '../../../services/AuthService';
+import { FechaListadosService } from '../../../services/fechaListadosService';
 
 @Component({
   selector: 'app-listado-dosn.component',
@@ -24,7 +25,8 @@ export class ListadoDosnComponent implements OnInit {
         private route: ActivatedRoute,
         private dosnService: DOSNService,
         private logService: LogService,
-        private authService: AuthService
+        private authService: AuthService,
+        private fechaListadosService: FechaListadosService
     ) {}
 
     selectedMes: string = '';
@@ -154,14 +156,8 @@ export class ListadoDosnComponent implements OnInit {
       return filtrados.slice(startIndex, endIndex);
     }
 
-    getFechaConTipo(item: DOSNDto): { fecha: string, tipo: string } {
-      if (!item) {
-        return { fecha: '', tipo: 'Creación' };
-      }
-      if (item.repetido && item.fechaRepeticion) {
-        return { fecha: item.fechaRepeticion || '', tipo: 'Repetición' };
-      }
-      return { fecha: item.fechaCreacion || '', tipo: 'Creación' };
+    getFechaConTipo(item: DOSNDto): { fecha: string } {
+      return this.fechaListadosService.getFechaConTipo(item);
     }
 
     /**
@@ -169,33 +165,10 @@ export class ListadoDosnComponent implements OnInit {
      */
     getFechaFormateada(item: DOSNDto): string {
       const fechaConTipo = this.getFechaConTipo(item);
-      return this.formatFecha(fechaConTipo.fecha);
+      return this.fechaListadosService.formatFecha(fechaConTipo.fecha);
     }
 
-    /**
-     * Formatea una fecha (posiblemente en ISO o YYYY-MM-DD[T...] ) a DD/MM/YYYY.
-     * Devuelve cadena vacía si la fecha es inválida o no está presente.
-     */
-    formatFecha(fecha: string | null | undefined): string {
-      if (!fecha) return '';
-      // Extraer la parte de fecha si viene con hora
-      const fechaSolo = fecha.split('T')[0];
-      const partes = fechaSolo.split('-');
-      if (partes.length >= 3 && partes[0].length === 4) {
-        const year = partes[0];
-        const month = partes[1];
-        const day = partes[2];
-        return `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
-      }
-      // Intentar parsear con Date como fallback
-      const d = new Date(fecha);
-      if (isNaN(d.getTime())) return '';
-      const dd = String(d.getDate()).padStart(2, '0');
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const yyyy = d.getFullYear();
-      return `${dd}-${mm}-${yyyy}`;
-    }
-
+    
     getMesFromFecha(fecha: string): number {
       if (!fecha) return NaN;
       const fechaSolo = fecha.split('T')[0];

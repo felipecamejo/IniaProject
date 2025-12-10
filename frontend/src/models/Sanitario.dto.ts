@@ -16,5 +16,4 @@ export interface SanitarioDto {
   repetido: boolean;
   sanitarioHongosId: number[] | null;
   fechaCreacion: string | null;
-  fechaRepeticion: string | null;
 }

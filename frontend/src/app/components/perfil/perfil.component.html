@@ -24,7 +24,7 @@
             </div>
         </div>
         <div class="perfil-acciones">
-            <button type="button" class="p-button perfil-boton" (click)="abrirModal()" [disabled]="loading">
+            <button *ngIf="isAdmin()" type="button" class="p-button perfil-boton" (click)="abrirModal()" [disabled]="loading">
                 {{ loading ? 'Cargando...' : 'Editar' }}
             </button>
         </div>

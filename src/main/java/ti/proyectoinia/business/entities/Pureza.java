@@ -106,10 +106,6 @@ public class Pureza {
     @Column(name = "PUREZA_FECHA_CREACION")
     private Date fechaCreacion;
 
-    @Column(name = "PUREZA_FECHA_REPETICION")
-    private Date fechaRepeticion;
-
-
     @OneToMany
     @JoinColumn(name = "PUREZA_ID")
     private List<Cultivo> cultivos;

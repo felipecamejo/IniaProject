@@ -246,7 +246,7 @@ public class MapsDtoEntityService {
         dto.setComentarios(germinacion.getComentarios());
         dto.setRepetido(germinacion.isRepetido());
         dto.setFechaCreacion(formatDate(germinacion.getFechaCreacion()));
-        dto.setFechaRepeticion(formatDate(germinacion.getFechaRepeticion()));
+
         dto.setFechaINASE(formatDate(germinacion.getFechaINASE()));
         dto.setEstandar(germinacion.isEstandar());
 
@@ -313,7 +313,6 @@ public class MapsDtoEntityService {
         germinacion.setRepetido(dto.isRepetido());
         germinacion.setActivo(dto.isActivo());
         germinacion.setFechaCreacion(parseDate(dto.getFechaCreacion()));
-        germinacion.setFechaRepeticion(parseDate(dto.getFechaRepeticion()));
         germinacion.setFechaINASE(parseDate(dto.getFechaINASE()));
         germinacion.setEstandar(dto.isEstandar());
 
@@ -491,7 +490,6 @@ public class MapsDtoEntityService {
         sanitarioDto.setEstandar(sanitario.isEstandar());
         sanitarioDto.setRepetido(sanitario.isRepetido());
         sanitarioDto.setFechaCreacion(formatDate(sanitario.getFechaCreacion()));
-        sanitarioDto.setFechaRepeticion(formatDate(sanitario.getFechaRepeticion()));
 
         if (sanitario.getRecibo() != null) {
             sanitarioDto.setReciboId(sanitario.getRecibo().getId());
@@ -527,7 +525,6 @@ public class MapsDtoEntityService {
         sanitario.setEstandar(sanitarioDto.isEstandar());
         sanitario.setRepetido(sanitarioDto.isRepetido());
         sanitario.setFechaCreacion(parseDate(sanitarioDto.getFechaCreacion()));
-        sanitario.setFechaRepeticion(parseDate(sanitarioDto.getFechaRepeticion()));
 
         if (sanitarioDto.getReciboId() != null) {
             Recibo recibo = getValidRecibo(sanitarioDto.getReciboId());
@@ -563,7 +560,6 @@ public class MapsDtoEntityService {
         pmsDto.setActivo(pms.isActivo());
         pmsDto.setRepetido(pms.isRepetido());
         pmsDto.setFechaCreacion(pms.getFechaCreacion());
-        pmsDto.setFechaRepeticion(pms.getFechaRepeticion());
         pmsDto.setFechaMedicion(pms.getFechaMedicion());
         pmsDto.setEstandar(pms.isEstandar());
 
@@ -589,7 +585,6 @@ public class MapsDtoEntityService {
         pms.setActivo(pmsDto.isActivo());
         pms.setRepetido(pmsDto.isRepetido());
         pms.setFechaCreacion(pmsDto.getFechaCreacion());
-        pms.setFechaRepeticion(pmsDto.getFechaRepeticion());
         pms.setFechaMedicion(pmsDto.getFechaMedicion());
         pms.setEstandar(pmsDto.isEstandar());
 
@@ -640,7 +635,6 @@ public class MapsDtoEntityService {
         dto.setActivo(pureza.isActivo());
         dto.setRepetido(pureza.isRepetido());
         dto.setFechaCreacion(pureza.getFechaCreacion());
-        dto.setFechaRepeticion(pureza.getFechaRepeticion());
         dto.setMateriaInerteTipo(pureza.getMateriaInerteTipo());
         dto.setMateriaInerteTipoInase(pureza.getMateriaInerteTipoInase());
 
@@ -722,7 +716,6 @@ public class MapsDtoEntityService {
         pureza.setActivo(dto.isActivo());
         pureza.setRepetido(dto.isRepetido());
         pureza.setFechaCreacion(dto.getFechaCreacion());
-        pureza.setFechaRepeticion(dto.getFechaRepeticion());
         pureza.setMateriaInerteTipo(dto.getMateriaInerteTipo());
         pureza.setMateriaInerteTipoInase(dto.getMateriaInerteTipoInase());
 
@@ -935,7 +928,6 @@ public class MapsDtoEntityService {
         dto.setActivo(dosn.isActivo());
         dto.setRepetido(dosn.isRepetido());
         dto.setFechaCreacion(dosn.getFechaCreacion());
-        dto.setFechaRepeticion(dosn.getFechaRepeticion());
         dto.setEstandar(dosn.isEstandar());
 
         // Colecciones -> listas de IDs
@@ -1045,7 +1037,6 @@ public class MapsDtoEntityService {
         dosn.setActivo(dto.isActivo());
         dosn.setRepetido(dto.isRepetido());
         dosn.setFechaCreacion(dto.getFechaCreacion());
-        dosn.setFechaRepeticion(dto.getFechaRepeticion());
         dosn.setEstandar(dto.isEstandar());
 
         // Vincular recibo si viene en el DTO
@@ -1279,7 +1270,6 @@ public class MapsDtoEntityService {
         dto.setActivo(pureza.isActivo());
         dto.setRepetido(pureza.isRepetido());
         dto.setFechaCreacion(pureza.getFechaCreacion());
-        dto.setFechaRepeticion(pureza.getFechaRepeticion());
         dto.setObservaciones(pureza.getObservaciones());
         dto.setEstandar(pureza.isEstandar());
 
@@ -1310,7 +1300,6 @@ public class MapsDtoEntityService {
         pureza.setActivo(dto.isActivo());
         pureza.setRepetido(dto.isRepetido());
         pureza.setFechaCreacion(dto.getFechaCreacion());
-        pureza.setFechaRepeticion(dto.getFechaRepeticion());
         pureza.setObservaciones(dto.getObservaciones());
         pureza.setEstandar(dto.isEstandar());
 
@@ -1363,7 +1352,6 @@ public class MapsDtoEntityService {
         dto.setPromedioDuras(tetrazolio.getPromedioDuras() != null ? tetrazolio.getPromedioDuras().toString() : null);
         dto.setPorcentaje(tetrazolio.getPorcentaje());
         dto.setFechaCreacion(tetrazolio.getFechaCreacion());
-        dto.setFechaRepeticion(tetrazolio.getFechaRepeticion());
 
         if (tetrazolio.getViabilidadPorTetrazolio() != null) {
             dto.setViabilidadPorTetrazolio(tetrazolio.getViabilidadPorTetrazolio());
@@ -1447,7 +1435,6 @@ public class MapsDtoEntityService {
         tetrazolio.setActivo(dto.isActivo());
         tetrazolio.setRepetido(dto.isRepetido());
         tetrazolio.setFechaCreacion(dto.getFechaCreacion());
-        tetrazolio.setFechaRepeticion(dto.getFechaRepeticion());
         tetrazolio.setEstandar(dto.isEstandar());
 
         // Validar y obtener el recibo si existe

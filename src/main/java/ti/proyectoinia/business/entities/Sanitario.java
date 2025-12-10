@@ -60,12 +60,8 @@ public class Sanitario {
     @Column(name = "SANITARIO_REPETIDO")
     private boolean repetido;
 
-
     @Column(name = "SANITARIO_FECHACREACION")
     private Date fechaCreacion;
-
-    @Column(name = "SANITARIO_FECHAREPETICION")
-    private Date fechaRepeticion;
 
     @OneToMany(mappedBy = "sanitario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SanitarioHongo> sanitarioHongos;

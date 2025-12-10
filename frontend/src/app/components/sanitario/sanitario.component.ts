@@ -444,7 +444,6 @@ export class SanitarioComponent implements OnInit {
         this.estandar = item.estandar;
         this.repetido = item.repetido;
         this.fechaCreacion = item.fechaCreacion;
-        this.fechaRepeticion = item.fechaRepeticion;
         
         this.isLoading = false;
       },
@@ -508,7 +507,6 @@ export class SanitarioComponent implements OnInit {
       repetido: this.repetido,
       sanitarioHongosId: null,
       fechaCreacion: DateService.ajustarFecha(this.fechaCreacion),
-      fechaRepeticion: DateService.ajustarFecha(this.fechaRepeticion)
     };
 
     // LOG FINAL ANTES DE ENVIAR
@@ -570,9 +568,7 @@ export class SanitarioComponent implements OnInit {
 
   private actualizarSanitario(sanitarioData: SanitarioDto) {
     const hoyYmd = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-    const fechaRepeticionFinal = this.repetido && !sanitarioData.fechaRepeticion
-      ? DateService.ajustarFecha(hoyYmd)
-      : (sanitarioData.fechaRepeticion || null);
+    
 
     const sanitarioPayload = {
       id: this.editingId!,
@@ -592,7 +588,6 @@ export class SanitarioComponent implements OnInit {
       repetido: this.repetido,
       sanitarioHongosId: [],
       fechaCreacion: this.fechaCreacion ? DateService.ajustarFecha(this.fechaCreacion.slice(0, 10)) : DateService.ajustarFecha(hoyYmd),
-      fechaRepeticion: fechaRepeticionFinal
     };
     
     this.sanitarioService.editar(sanitarioPayload as any).subscribe({

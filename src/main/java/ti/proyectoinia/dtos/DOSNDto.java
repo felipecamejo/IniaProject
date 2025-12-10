@@ -61,7 +61,6 @@ public class DOSNDto {
     private boolean activo;
     private boolean repetido;
     private Date fechaCreacion;
-    private Date fechaRepeticion;
 
     @Generated
     public boolean equals(final Object o) {

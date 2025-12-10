@@ -62,8 +62,6 @@ public class PurezaDto {
 
     private Date fechaCreacion;
 
-    private Date fechaRepeticion;
-
     // Listas de malezas
     private List<Long> malezasNormalesId;
     private List<Long> malezasToleradasId;

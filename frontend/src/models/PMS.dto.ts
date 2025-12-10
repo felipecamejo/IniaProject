@@ -9,6 +9,5 @@ export interface PMSDto {
   reciboId: number | null;
   fechaMedicion: string | null;
   fechaCreacion: string | null;
-  fechaRepeticion: string | null;
   estandar: boolean
 }

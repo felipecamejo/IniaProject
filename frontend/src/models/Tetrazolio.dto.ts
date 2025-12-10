@@ -63,7 +63,6 @@ export interface TetrazolioDto {
   estandar: boolean;
   repetido: boolean;
   fechaCreacion: string | null;
-  fechaRepeticion: string | null;
   reciboId: number | null;
   reporte: ReporteTetrazolio | null;
   observaciones: string | null;

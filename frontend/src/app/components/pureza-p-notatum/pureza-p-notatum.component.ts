@@ -248,7 +248,6 @@ export class PurezaPNotatumComponent implements OnInit {
         this.estandarOriginal = data.estandar ?? false;
         this.repetidoOriginal = data.repetido ?? false;
         this.fechaCreacion = data.fechaCreacion || null;
-        this.fechaRepeticion = data.fechaRepeticion || null;
         this.reciboId = this.route.snapshot.params['reciboId'];
 
         // Cargar las repeticiones asociadas
@@ -386,7 +385,6 @@ export class PurezaPNotatumComponent implements OnInit {
       repetido: this.repetido ?? false,
       reciboId: reciboIdNum,
       fechaCreacion: this.fechaCreacion,
-      fechaRepeticion: this.fechaRepeticion,
       observaciones: this.comentarios,
       semillaPuraPorcentaje: this.semillaPuraPct,
       semillacultivoPorcentaje: this.semillaCultivosPct,
@@ -396,9 +394,8 @@ export class PurezaPNotatumComponent implements OnInit {
 
     if (this.isEditing && this.editingId) {
       // Actualizar Pureza P. notatum existente
-      if (this.repetido && (!purezaData.repetido || purezaData.fechaRepeticion == null)) {
+      if (this.repetido && !purezaData.repetido) {
         purezaData.repetido = true;
-        purezaData.fechaRepeticion = new Date().toISOString().split('T')[0];
       }
       // Si estandarOriginal está marcado, asegurar que se envía como true
       if (this.estandarOriginal) {
@@ -426,7 +423,6 @@ export class PurezaPNotatumComponent implements OnInit {
     } else {
       // Crear nueva Pureza P. notatum
       console.log('Creando nueva Pureza P. notatum:', purezaData);
-      purezaData.fechaRepeticion = null;
       purezaData.repetido = false;
       purezaData.estandar = this.estandar ?? false;
       purezaData.fechaCreacion = new Date().toISOString().split('T')[0];

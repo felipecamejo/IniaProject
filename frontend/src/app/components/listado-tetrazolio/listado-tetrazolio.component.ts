@@ -1,3 +1,4 @@
+    
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +10,7 @@ import { TetrazolioDto } from '../../../models/Tetrazolio.dto';
 import { TetrazolioService } from '../../../services/TetrazolioService';
 import { LogService } from '../../../services/LogService';
 import { AuthService } from '../../../services/AuthService';
+import { FechaListadosService } from '../../../services/fechaListadosService';
 
 @Component({
   selector: 'app-listado-tetrazolio.component',
@@ -23,7 +25,8 @@ export class ListadoTetrazolioComponent implements OnInit {
         private route: ActivatedRoute,
         private tetrazolioService: TetrazolioService,
         private logService: LogService,
-        private authService: AuthService
+        private authService: AuthService,
+        private fechaListadosService: FechaListadosService
     ) {}
 
     selectedMes: string = '';
@@ -74,6 +77,10 @@ export class ListadoTetrazolioComponent implements OnInit {
       const reciboId = this.route.snapshot.paramMap.get('reciboId');
       console.log('Navegando para ver Tetrazolio:', item);
       this.router.navigate([loteId, reciboId, 'tetrazolio', item.id], { queryParams: { view: 'true' } });
+    }
+
+    formatFecha(fecha: string | null | undefined | Date): string {
+      return this.fechaListadosService.formatFecha(fecha);
     }
 
     private cargarDatos() {
@@ -148,34 +155,8 @@ export class ListadoTetrazolioComponent implements OnInit {
       return filtrados.slice(startIndex, endIndex);
     }
 
-
-
-    getFechaConTipo(item: TetrazolioDto): { fecha: string, tipo: string } {
-      let rawDate = '';
-      let tipo = '';
-      if (item.repetido) {
-        rawDate = item.fechaRepeticion || '';
-        tipo = 'Repetición';
-      } else {
-        rawDate = item.fechaCreacion || '';
-        tipo = 'Creación';
-      }
-      // Format date to DD-MM-YYYY if possible
-      if (rawDate) {
-        const d = new Date(rawDate);
-        if (!isNaN(d.getTime())) {
-          const day = String(d.getDate()).padStart(2, '0');
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          const year = d.getFullYear();
-          return { fecha: `${day}-${month}-${year}`, tipo };
-        }
-        // If parsing fails, fallback to first 10 chars (YYYY-MM-DD)
-        if (rawDate.length >= 10) {
-          const [year, month, day] = rawDate.slice(0, 10).split('-');
-          return { fecha: `${day}-${month}-${year}`, tipo };
-        }
-      }
-      return { fecha: '', tipo };
+    getFechaConTipo(item: TetrazolioDto): { fecha: string} {
+      return this.fechaListadosService.getFechaConTipo(item);
     }
 
     getMesFromFecha(fecha: string): number {

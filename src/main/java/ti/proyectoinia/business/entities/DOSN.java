@@ -70,9 +70,6 @@ public class DOSN {
     @Column(name = "DOSN_FECHA_CREACION")
     private Date fechaCreacion;
 
-    @Column(name = "DOSN_FECHA_REPETICION")
-    private Date fechaRepeticion;
-
     // Colecciones de malezas (INIA / INASE), siguiendo el modelo de Pureza
 
     @ManyToMany

@@ -9,6 +9,7 @@ import { PMSDto } from '../../../models/PMS.dto';
 import { PMSService } from '../../../services/PMSService';
 import { LogService } from '../../../services/LogService';
 import { AuthService } from '../../../services/AuthService';
+import { FechaListadosService } from '../../../services/fechaListadosService';
 
 @Component({
   selector: 'app-listado-pms.component',
@@ -18,7 +19,7 @@ import { AuthService } from '../../../services/AuthService';
   styleUrl: './listado-pms.component.scss'
 })
 export class ListadoPmsComponent implements OnInit {
-  constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute, private pmsService: PMSService, private logService: LogService) {}
+  constructor(private fechaListadosService: FechaListadosService, private authService: AuthService, private router: Router, private route: ActivatedRoute, private pmsService: PMSService, private logService: LogService) {}
 
     selectedMes: string = '';
     selectedAnio: string = '';
@@ -135,14 +136,8 @@ export class ListadoPmsComponent implements OnInit {
 
 
 
-    getFechaConTipo(item: PMSDto): { fecha: string, tipo: string } {
-      if (item.repetido && item.fechaRepeticion) {
-        return { fecha: item.fechaRepeticion, tipo: 'Repetición' };
-      }
-      if (item.repetido){
-        return { fecha: item.fechaCreacion || '', tipo: 'Repetición' };
-      }
-      return { fecha: item.fechaCreacion || '', tipo: 'Creación' };
+    getFechaConTipo(item: PMSDto): { fecha: string} {
+      return this.fechaListadosService.getFechaConTipo(item);
     }
 
     getMesFromFecha(fecha: string): number {
@@ -160,23 +155,7 @@ export class ListadoPmsComponent implements OnInit {
      * Devuelve cadena vacía si la fecha es inválida o no está presente.
      */
     formatFecha(fecha: string | null | undefined): string {
-      if (!fecha) return '';
-      // Extraer la parte de fecha si viene con hora
-      const fechaSolo = fecha.split('T')[0];
-      const partes = fechaSolo.split('-');
-      if (partes.length >= 3 && partes[0].length === 4) {
-        const year = partes[0];
-        const month = partes[1];
-        const day = partes[2];
-        return `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
-      }
-      // Intentar parsear con Date como fallback
-      const d = new Date(fecha);
-      if (isNaN(d.getTime())) return '';
-      const dd = String(d.getDate()).padStart(2, '0');
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const yyyy = d.getFullYear();
-      return `${dd}-${mm}-${yyyy}`;
+      return this.fechaListadosService.formatFecha(fecha);
     }
 
     onAnioChange() {

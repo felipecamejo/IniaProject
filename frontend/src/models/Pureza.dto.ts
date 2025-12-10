@@ -52,5 +52,4 @@ export interface PurezaDto {
   reciboId: number | null;
   repetido: boolean;
   fechaCreacion: string | null;
-  fechaRepeticion: string | null;
 }
