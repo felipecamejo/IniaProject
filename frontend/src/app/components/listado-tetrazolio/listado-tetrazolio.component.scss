@@ -190,6 +190,14 @@
             box-shadow: 0 2px 8px rgba(218, 105, 106, 0.4);
         }
     }
+    &.view-button {
+    background-color: var(--turquesa);
+    
+    &:hover {
+      background-color: var(--turquesa);
+      box-shadow: 0 2px 8px rgba(100, 149, 237, 0.4);
+    }
+  }
 }
 
 // Responsive para botones

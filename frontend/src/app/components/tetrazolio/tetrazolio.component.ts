@@ -894,6 +894,13 @@ export class TetrazolioComponent implements OnInit {
           this.fecha = null;
         }
 
+        // Mantener fechaCreacion original si existe
+        if (item.fechaCreacion) {
+          (this as any).fechaCreacionOriginal = item.fechaCreacion;
+        } else {
+          (this as any).fechaCreacionOriginal = null;
+        }
+
         this.estandar = item.estandar || false;
         this.repetido = item.repetido || false;
         // Guardar valores originales para deshabilitar checkboxes si ya están marcados
@@ -1194,15 +1201,25 @@ export class TetrazolioComponent implements OnInit {
         // Usar UTC para evitar problemas de zona horaria
         const fechaDate = new Date(this.fecha + 'T00:00:00.000Z');
         (tetrazolioData as any).fecha = fechaDate;
+        // Si existe fechaCreacionOriginal, mantenerla
+        if ((this as any).fechaCreacionOriginal) {
+          (tetrazolioData as any).fechaCreacion = (this as any).fechaCreacionOriginal;
+        } else {
+          // Guardar fechaCreacion como pms (milisegundos desde epoch)
+          (tetrazolioData as any).fechaCreacion = fechaDate.getTime();
+        }
         console.log('Fecha original (string):', this.fecha);
         console.log('Fecha convertida para envío (Date):', fechaDate);
         console.log('Fecha ISO string:', fechaDate.toISOString());
+        console.log('fechaCreacion (pms):', tetrazolioData.fechaCreacion);
       } catch (error) {
         console.error('Error convirtiendo fecha:', error);
         console.log('Fecha original:', this.fecha);
+        (tetrazolioData as any).fechaCreacion = (this as any).fechaCreacionOriginal ?? null;
       }
     } else {
       (tetrazolioData as any).fecha = null;
+      (tetrazolioData as any).fechaCreacion = (this as any).fechaCreacionOriginal ?? null;
     }
 
     // ===== SEGUNDO CONJUNTO DE DATOS =====

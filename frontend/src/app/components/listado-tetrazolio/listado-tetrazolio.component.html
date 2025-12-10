@@ -62,17 +62,24 @@
         <!-- Lista de Tetrazolios filtrados -->
         <ng-container *ngIf="!loading">
             <div class="blue-rectangle" *ngFor="let item of itemsFiltrados" [ngClass]="{
-                   'pendiente': !item.repetido,
-                   'repetido': item.repetido
-                 }">
+                                     'pendiente': !item.repetido && !item.estandar,
+                                     'repetido': item.repetido,
+                                     'estandar': item.estandar
+                                 }">
                 <div class="item-header">
                     <div class="item-info">
                         <h3 class="item-title">Tetrazolio #{{ item.id }}</h3>
                     </div>
                     <div class="item-status">
-                        <span class="status-badge">
-                        {{ item.repetido ? 'Repetido' : 'Pendiente' }}
-                    </span>
+                            <span class="status-badge" *ngIf="item.estandar" style="background-color: var(--verde); color: white;">
+                                Estándar
+                            </span>
+                            <span class="status-badge" *ngIf="!item.estandar && item.repetido" style="background-color: var(--rojo); color: white;">
+                                Repetido
+                            </span>
+                            <span class="status-badge" *ngIf="!item.estandar && !item.repetido" style="background-color: var(--naranja); color: white;">
+                                Pendiente
+                            </span>
                     </div>
                 </div>
                 <div class="divider-line"></div>
