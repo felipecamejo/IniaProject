@@ -1,8 +1,0 @@
-﻿usuario_id,usuario_activo,email,nombre,password,rol,telefono
-1,true,admin@inia.com,Administrador,$2a$10$fJ0KQJpXJA2Q2Xb08dDJYOmHlbFhTDMbvRZyhFCFJcJstzTiNowhu,ADMIN,+598-099-000-001
-2,true,analista@inia.com,Analista,$2a$10$nvH3bKzfeyO2FGGMMjfLfu8dtFrQFdzrVSCfSkT9sz76S2jfKursq,ANALISTA,+598-099-000-002
-3,true,observador1@inia.com,Observador 1,$2a$10$gS9yb9j1Jd6kjFZvXzvPaehuUFAzCe0kgkBhLxlqVbnXWz9a9QJt6,OBSERVADOR,+598-099-000-003
-4,true,observador2@inia.com,Observador 2,$2a$10$87QcGZwIncgUgVeMGOIPMuKCrOV2yb9sJufo3BK8GyTyJciZcyW3.,OBSERVADOR,+598-099-000-003
-52,true,adriambonjour2015@gmail.com,Alex,,ANALISTA,
-102,true,alexzimmer.zimmer3@outlook.es,PEPE,$2a$10$louRTcsBrWZ5qIzmpXe26u/WcJdVlYAq.4AefBXRZxr.if53c/Byy,ANALISTA,2314
-103,true,alexzimmer.zimmer5@outlook.es,PEPE3,$2a$10$Kea.NZVTd9i7wfgsgrsCQeJBPKGrBSfjd.7IWoR3OUvMzs3w9CIem,ANALISTA,24153524
