@@ -336,9 +336,10 @@ def sincronizar_secuencia_tabla(engine, tabla_nombre: str, columna_id: str = Non
                 logger.warning(f"Valor máximo de tabla ({max_val}) es menor que valor actual de secuencia ({current_val}). Usando {current_val}.")
                 max_val = current_val
             
-            # Sincronizar la secuencia - usar false para que el próximo nextval() devuelva max_val + 1
-            # Esto asegura que no haya conflictos con IDs existentes
-            query_sync = text(f"SELECT setval('{seq_name}', {max_val}, false)")
+            # Sincronizar la secuencia - usar true para que el próximo nextval() devuelva max_val + 1
+            # En PostgreSQL: setval(seq, val, false) -> próximo nextval() devuelve val
+            #                setval(seq, val, true) -> próximo nextval() devuelve val + 1
+            query_sync = text(f"SELECT setval('{seq_name}', {max_val}, true)")
             conn.execute(query_sync)
             conn.commit()
             logger.info(f"✓ Secuencia de '{tabla_nombre}' ({seq_name}) sincronizada: MAX tabla={max_val}, anterior={current_val}, próximo={max_val + 1}")
