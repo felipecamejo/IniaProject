@@ -20,7 +20,7 @@
             <button pButton type="button" label="Listar Usuario" class="btn-secondary" (click)="goToListadoUsuarios()"></button>
             <button pButton type="button" label="Listar Depositos" class="btn-secondary" (click)="goToListadoDepositos()"></button>
             <button pButton type="button" label="Listar Cultivares" class="btn-secondary" (click)="goToListadoCultivos()"></button>
-             <button pButton type="button" label="Listar Especies" class="btn-secondary" (click)="goToListadoEspecies()"></button>
+            <button pButton type="button" label="Listar Especies" class="btn-secondary" (click)="goToListadoEspecies()"></button>
             <button pButton type="button" label="Listar Malezas" class="btn-secondary" (click)="goToListadoMalezas()"></button>
             <button pButton type="button" label="Listar Hongos" class="btn-secondary" (click)="goToListadoHongos()"></button>
             <button pButton type="button" label="Listar Métodos" class="btn-secondary" (click)="goToListadoMetodos()"></button>
@@ -31,21 +31,14 @@
     </section>
 
 
-    <!-- Sección Excel - Visible para ADMIN y ANALISTA 
-    <section class="section" *ngIf="!canExportImport">
+    <!-- Sección Excel - Visible para ADMIN y ANALISTA -->
+    <section class="section" *ngIf="canExportImport">
         <h2 class="section-title">Gestión de Excel</h2>
         <div class="button-group">
-            <button 
-                pButton 
-                type="button" 
-                label="Gestor Import/Export Excels" 
-                class="btn-primary" 
-                [disabled]="isExporting || isImporting"
-                (click)="goToExcelMiddleware()">
+            <button pButton type="button" label="Gestor Import/Export Excels" class="btn-primary" [disabled]="isExporting || isImporting" (click)="goToExcelMiddleware()">
             </button>
         </div>
     </section>
-    -->
 
     <!-- Footer -->
     <footer class="footer">

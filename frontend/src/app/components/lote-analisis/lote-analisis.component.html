@@ -1,148 +1,121 @@
 <div class="home-container">
-  <!-- Imagen principal -->
-  <div class="banner responsive-banner">
-    <img src="assets/banner_home.jpg" alt="Banner principal" class="banner-img" />
-  </div>
-
-  <!-- Botones de análisis -->
-  <div class="analisis-buttons-container responsive-container">
-    <!-- Grid de botones responsive -->
-    <div class="buttons-grid">
-      <!-- Fila 1 -->
-      <div class="analisis-button" (click)="navigateToComponent('recibo')">
-        <div class="button-circle naranja">
-          <img src="assets/Recibo.svg" alt="Recibo" class="button-icon" />
-        </div>
-        <span class="button-text">Recibo</span>
-      </div>
-
-      <div class="analisis-button"
-           [class.disabled]="isButtonDisabled('pureza')"
-           (click)="navigateToComponent('pureza')">
-        <div class="button-circle azul">
-          <img src="assets/Pureza.svg" alt="Pureza" class="button-icon" />
-        </div>
-        <span class="button-text">Pureza</span>
-      </div>
-
-      <div class="analisis-button"
-           [class.disabled]="isButtonDisabled('pureza-p-notatum')"
-           (click)="navigateToComponent('pureza-p-notatum')">
-        <div class="button-circle rojo">
-          <img src="assets/PurezaPN.svg" alt="Pureza P notatum" class="button-icon" />
-        </div>
-        <span class="button-text">Pureza P Notatum</span>
-      </div>
-
-      <div class="analisis-button"
-           [class.disabled]="isButtonDisabled('pms')"
-           (click)="navigateToComponent('pms')">
-        <div class="button-circle color-marino">
-          <img src="assets/Pms.svg" alt="PMS" class="button-icon" />
-        </div>
-        <span class="button-text">PMS</span>
-      </div>
-
-      <!-- Fila 2 -->
-      <div class="analisis-button"
-           [class.disabled]="isButtonDisabled('dosn')"
-           (click)="navigateToComponent('dosn')">
-        <div class="button-circle naranja">
-          <img src="assets/Dosn.svg" alt="DOSN" class="button-icon" />
-        </div>
-        <span class="button-text">DOSN</span>
-      </div>
-
-      <div class="analisis-button"
-           [class.disabled]="isButtonDisabled('germinacion')"
-           (click)="navigateToComponent('germinacion')">
-        <div class="button-circle azul">
-          <img src="assets/Germinacion.svg" alt="Germinación" class="button-icon" />
-        </div>
-        <span class="button-text">Germinación</span>
-      </div>
-
-      <div class="analisis-button"
-           [class.disabled]="isButtonDisabled('tetrazolio')"
-           (click)="navigateToComponent('tetrazolio')">
-        <div class="button-circle rojo">
-          <img src="assets/Tetrazolio.svg" alt="Tetrazolio" class="button-icon" />
-        </div>
-        <span class="button-text">Tetrazolio</span>
-      </div>
-
-      <div class="analisis-button"
-           [class.disabled]="isButtonDisabled('sanitario')"
-           (click)="navigateToComponent('sanitario')">
-        <div class="button-circle color-marino">
-          <img src="assets/Sanitario.svg" alt="Sanitario" class="button-icon" />
-        </div>
-        <span class="button-text">Sanitario</span>
-      </div>
+    <!-- Imagen principal -->
+    <div class="banner responsive-banner">
+        <img src="assets/banner_home.jpg" alt="Banner principal" class="banner-img" />
     </div>
 
+    <!-- Botones de análisis -->
+    <div class="analisis-buttons-container responsive-container">
+        <!-- Grid de botones responsive -->
+        <div class="buttons-grid">
+            <!-- Fila 1 -->
+            <div class="analisis-button" (click)="navigateToComponent('recibo')">
+                <div class="button-circle naranja">
+                    <img src="assets/Recibo.svg" alt="Recibo" class="button-icon" />
+                </div>
+                <span class="button-text">Recibo</span>
+            </div>
 
+            <div class="analisis-button" [class.disabled]="isButtonDisabled('pureza')" (click)="navigateToComponent('pureza')">
+                <div class="button-circle azul">
+                    <img src="assets/Pureza.svg" alt="Pureza" class="button-icon" />
+                </div>
+                <span class="button-text">Pureza</span>
+            </div>
 
-    <!-- Botón de Certificado -->
-    <div class="certificado-button-container">
+            <div class="analisis-button" [class.disabled]="isButtonDisabled('pureza-p-notatum')" (click)="navigateToComponent('pureza-p-notatum')">
+                <div class="button-circle rojo">
+                    <img src="assets/PurezaPN.svg" alt="Pureza P notatum" class="button-icon" />
+                </div>
+                <span class="button-text">Pureza P Notatum</span>
+            </div>
 
-       <!-- 
-      <div class="certificado-main-button">
-        <div class="analisis-button certificado-button" 
-             [class.disabled]="isExporting || !loteId"
-             (click)="quickExport()">
-          <div class="button-circle rosa">
-            <img src="assets/excel.svg" alt="Exportar" class="button-icon" />
-          </div>
-          <span class="button-text">{{ isExporting ? 'Exportando...' : 'Quick Export' }}</span>
+            <div class="analisis-button" [class.disabled]="isButtonDisabled('pms')" (click)="navigateToComponent('pms')">
+                <div class="button-circle color-marino">
+                    <img src="assets/Pms.svg" alt="PMS" class="button-icon" />
+                </div>
+                <span class="button-text">PMS</span>
+            </div>
+
+            <!-- Fila 2 -->
+            <div class="analisis-button" [class.disabled]="isButtonDisabled('dosn')" (click)="navigateToComponent('dosn')">
+                <div class="button-circle naranja">
+                    <img src="assets/Dosn.svg" alt="DOSN" class="button-icon" />
+                </div>
+                <span class="button-text">DOSN</span>
+            </div>
+
+            <div class="analisis-button" [class.disabled]="isButtonDisabled('germinacion')" (click)="navigateToComponent('germinacion')">
+                <div class="button-circle azul">
+                    <img src="assets/Germinacion.svg" alt="Germinación" class="button-icon" />
+                </div>
+                <span class="button-text">Germinación</span>
+            </div>
+
+            <div class="analisis-button" [class.disabled]="isButtonDisabled('tetrazolio')" (click)="navigateToComponent('tetrazolio')">
+                <div class="button-circle rojo">
+                    <img src="assets/Tetrazolio.svg" alt="Tetrazolio" class="button-icon" />
+                </div>
+                <span class="button-text">Tetrazolio</span>
+            </div>
+
+            <div class="analisis-button" [class.disabled]="isButtonDisabled('sanitario')" (click)="navigateToComponent('sanitario')">
+                <div class="button-circle color-marino">
+                    <img src="assets/Sanitario.svg" alt="Sanitario" class="button-icon" />
+                </div>
+                <span class="button-text">Sanitario</span>
+            </div>
         </div>
-      </div>
-      -->
 
-      <div class="certificado-main-button" *ngIf="isAdmin">
-        <!-- Botón pequeño para eliminar -->
-        <button *ngIf="tieneCertificado && certificadoId"
-          class="certificado-delete-button"
-          (click)="eliminarCertificado()"
-          title="Eliminar certificado">
+
+
+        <!-- Botón de Certificado -->
+        <div class="certificado-button-container">
+
+            <div class="certificado-main-button">
+                <div class="analisis-button certificado-button" [class.disabled]="isExporting || !loteId" (click)="quickExport()">
+                    <div class="button-circle rosa">
+                        <img src="assets/excel.svg" alt="Exportar" class="button-icon" />
+                    </div>
+                    <span class="button-text">{{ isExporting ? 'Exportando...' : 'Quick Export' }}</span>
+                </div>
+            </div>
+
+            <div class="certificado-main-button" *ngIf="isAdmin">
+                <!-- Botón pequeño para eliminar -->
+                <button *ngIf="tieneCertificado && certificadoId" class="certificado-delete-button" (click)="eliminarCertificado()" title="Eliminar certificado">
           <span class="pi pi-trash"></span>
         </button>
-        <div class="analisis-button certificado-button"
-             [class.disabled]="isButtonDisabled('certificado')"
-             (click)="navigateToComponent('certificado')">
-          <div class="button-circle verde">
-            <img src="assets/Certificado.svg" alt="Certificado" class="button-icon" />
-          </div>
-          <span class="button-text">{{ tieneCertificado ? 'Editar' : 'Certificado' }}</span>
-        </div>
-        <!-- Botón pequeño para visualizar/descargar -->
-        <button *ngIf="tieneCertificado && certificadoId"
-                class="certificado-view-button"
-                (click)="verCertificado()"
-                title="Ver certificado">
+                <div class="analisis-button certificado-button" [class.disabled]="isButtonDisabled('certificado')" (click)="navigateToComponent('certificado')">
+                    <div class="button-circle verde">
+                        <img src="assets/Certificado.svg" alt="Certificado" class="button-icon" />
+                    </div>
+                    <span class="button-text">{{ tieneCertificado ? 'Editar' : 'Certificado' }}</span>
+                </div>
+                <!-- Botón pequeño para visualizar/descargar -->
+                <button *ngIf="tieneCertificado && certificadoId" class="certificado-view-button" (click)="verCertificado()" title="Ver certificado">
                 <span class="pi pi-eye"></span>
         </button>
-      </div>
+            </div>
 
-      <div class="certificado-main-button">
-        <div class="analisis-button certificado-button"
-             (click)="goToListadoLogs()">
-          <div class="button-circle morado">
-            <img src="assets/Historial.svg" alt="Historial" class="button-icon" />
-          </div>
-          <span class="button-text">Historial</span>
+            <div class="certificado-main-button">
+                <div class="analisis-button certificado-button" (click)="goToListadoLogs()">
+                    <div class="button-circle morado">
+                        <img src="assets/Historial.svg" alt="Historial" class="button-icon" />
+                    </div>
+                    <span class="button-text">Historial</span>
+                </div>
+            </div>
+
+
+
         </div>
-      </div>
-
-
 
     </div>
 
-  </div>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <p>© Inia 2025</p>
-  </footer>
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© Inia 2025</p>
+    </footer>
 
 </div>
