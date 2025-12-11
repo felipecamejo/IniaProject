@@ -176,15 +176,43 @@ def exportar_tradicional(
 ) -> List[str]:
     """
     Exporta tablas de forma tradicional (sin filtros).
+    Por defecto exporta todos los análisis, lote y recibos asociados (excluyendo certificado).
     Retorna lista de nombres de archivos generados.
     """
     # Procesar lista de tablas
     tablas_list = [t.strip() for t in tablas.split(",") if t.strip()] if tablas else []
     if not tablas_list:
-        # Por defecto exportar todas las tablas definidas en ExportExcel.MODELS
-        tablas_list = list(MODELS.keys())
-        logger.info(f"[{request_id}] No se especificaron tablas, exportando todas las disponibles: {len(tablas_list)} tablas")
+        # Inicializar MODELS primero para poder verificar qué tablas están disponibles
+        engine = obtener_engine()
+        inicializar_automap(engine)
+        
+        # Por defecto exportar todos los análisis, lote y recibos (excluyendo certificado)
+        tablas_analisis = ['dosn', 'pureza', 'germinacion', 'pms', 'sanitario', 'tetrazolio', 'pureza_pnotatum']
+        tablas_principales = ['lote', 'recibo']
+        
+        # Filtrar solo las tablas que existen en MODELS y excluir certificado
+        tablas_disponibles = set(MODELS.keys())
+        tablas_a_exportar = []
+        
+        # Agregar análisis disponibles
+        for tabla in tablas_analisis:
+            if tabla in tablas_disponibles:
+                tablas_a_exportar.append(tabla)
+        
+        # Agregar lote y recibo si están disponibles
+        for tabla in tablas_principales:
+            if tabla in tablas_disponibles:
+                tablas_a_exportar.append(tabla)
+        
+        # Excluir certificado explícitamente
+        tablas_a_exportar = [t for t in tablas_a_exportar if t.lower() != 'certificado']
+        
+        tablas_list = tablas_a_exportar
+        logger.info(f"[{request_id}] No se especificaron tablas, exportando análisis, lote y recibos (excluyendo certificado): {len(tablas_list)} tablas")
+        logger.info(f"[{request_id}] Tablas a exportar: {', '.join(tablas_list)}")
     else:
+        # Si se especifican tablas, excluir certificado explícitamente
+        tablas_list = [t for t in tablas_list if t.lower() != 'certificado']
         logger.info(f"[{request_id}] Exportando {len(tablas_list)} tabla(s) especificada(s): {', '.join(tablas_list)}")
     
     # Ejecutar exportación (incluyendo tablas sin PK por defecto)

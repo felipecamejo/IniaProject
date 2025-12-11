@@ -940,7 +940,8 @@ def export_selected_tables(tables: list, output_dir: str, fmt: str, incluir_sin_
                         tablas_relacionadas = obtener_tablas_relacionadas(session, tabla_principal)
                         for tabla_rel in tablas_relacionadas:
                             tabla_rel_lower = tabla_rel.lower()
-                            if tabla_rel_lower not in tablas_a_exportar:
+                            # Excluir certificado explícitamente
+                            if tabla_rel_lower != 'certificado' and tabla_rel_lower not in tablas_a_exportar:
                                 log_step(f"Incluyendo tabla relacionada con {tabla_principal}: {tabla_rel}")
                                 tablas_a_exportar.add(tabla_rel_lower)
                     except Exception as e:
@@ -957,7 +958,8 @@ def export_selected_tables(tables: list, output_dir: str, fmt: str, incluir_sin_
                     tablas_sin_pk = obtener_tablas_sin_pk(session)
                     for tabla_sin_pk in tablas_sin_pk:
                         tabla_lower = tabla_sin_pk.lower()
-                        if tabla_lower not in tablas_a_exportar:
+                        # Excluir certificado explícitamente
+                        if tabla_lower != 'certificado' and tabla_lower not in tablas_a_exportar:
                             # Intentar obtener el modelo o crear uno dinámico
                             if tabla_lower in MODELS:
                                 tablas_a_exportar.add(tabla_lower)
@@ -972,6 +974,9 @@ def export_selected_tables(tables: list, output_dir: str, fmt: str, incluir_sin_
                         session.rollback()
                     except:
                         pass
+            
+            # Excluir certificado explícitamente de la lista final
+            tablas_a_exportar = {t for t in tablas_a_exportar if t.lower() != 'certificado'}
             
             log_step(f"Total de tablas a exportar: {len(tablas_a_exportar)}")
             

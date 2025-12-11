@@ -617,14 +617,17 @@ def verificar_tabla_existe(engine, tabla_nombre: str) -> bool:
     return tabla_nombre in tablas
 
 def validar_dependencias_disponibles(tabla: str, mapeo: Dict[str, Dict[str, Any]], ids_referencias: Dict[str, List[int]]) -> bool:
-    """Valida que todas las dependencias de una tabla tengan IDs disponibles."""
+    """Valida que todas las dependencias NO NULLABLE de una tabla tengan IDs disponibles."""
     info_tabla = mapeo.get(tabla, {})
     dependencias = info_tabla.get('dependencias', [])
+    dependencias_nullable = set(info_tabla.get('dependencias_nullable', []))
     
-    for tabla_ref, _ in dependencias:
-        if tabla_ref not in ids_referencias or not ids_referencias[tabla_ref]:
-            logger.error(f"Tabla '{tabla}' requiere '{tabla_ref}' pero no hay IDs disponibles")
-            return False
+    for tabla_ref, columna_fk in dependencias:
+        # Solo requerir IDs para dependencias que NO son nullable
+        if (tabla_ref, columna_fk) not in dependencias_nullable:
+            if tabla_ref not in ids_referencias or not ids_referencias[tabla_ref]:
+                logger.error(f"Tabla '{tabla}' requiere '{tabla_ref}' (columna '{columna_fk}' es NOT NULL) pero no hay IDs disponibles")
+                return False
     
     return True
 
