@@ -308,6 +308,13 @@ def exportar_por_lote(
     Exporta todos los análisis asociados a un lote específico.
     Retorna lista de archivos generados.
     """
+    # #region agent log
+    import json as _json_log
+    try:
+        with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+            _f.write(_json_log.dumps({"location": "export_service.py:exportar_por_lote", "message": "Starting export", "data": {"request_id": request_id, "lote_id": lote_id, "formato": formato}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "E"}) + "\n")
+    except: pass
+    # #endregion
     logger.info(f"[{request_id}] Exportando análisis para lote {lote_id}")
     
     # Inicializar engine y sesión
@@ -315,6 +322,19 @@ def exportar_por_lote(
     inicializar_automap(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
+    
+    # #region agent log
+    try:
+        # Check encoding settings
+        encoding_result = session.execute(__import__('sqlalchemy').text("SHOW client_encoding")).fetchone()
+        with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+            _f.write(_json_log.dumps({"location": "export_service.py:exportar_por_lote_encoding", "message": "DB client encoding", "data": {"client_encoding": str(encoding_result[0]) if encoding_result else "unknown"}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "E"}) + "\n")
+    except Exception as _e:
+        try:
+            with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+                _f.write(_json_log.dumps({"location": "export_service.py:exportar_por_lote_encoding_error", "message": "Error checking encoding", "data": {"error": str(_e)}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "E"}) + "\n")
+        except: pass
+    # #endregion
     
     try:
         # Ejecutar exportación por lote
@@ -325,6 +345,13 @@ def exportar_por_lote(
             fmt=formato
         )
         
+        # #region agent log
+        try:
+            with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+                _f.write(_json_log.dumps({"location": "export_service.py:exportar_por_lote_success", "message": "Export completed", "data": {"archivos": archivos_generados}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "E"}) + "\n")
+        except: pass
+        # #endregion
+        
         if not archivos_generados:
             respuesta_error = crear_respuesta_error(
                 mensaje="No se generaron archivos de exportación",
@@ -334,6 +361,15 @@ def exportar_por_lote(
             raise HTTPException(status_code=404, detail=respuesta_error)
         
         return [os.path.basename(f) for f in archivos_generados]
+    except Exception as _export_err:
+        # #region agent log
+        try:
+            import traceback as _tb
+            with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+                _f.write(_json_log.dumps({"location": "export_service.py:exportar_por_lote_error", "message": "EXPORT ERROR", "data": {"error": str(_export_err), "type": type(_export_err).__name__, "traceback": _tb.format_exc()}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "E"}) + "\n")
+        except: pass
+        # #endregion
+        raise
     finally:
         session.close()
 

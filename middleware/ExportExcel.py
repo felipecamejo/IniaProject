@@ -52,12 +52,31 @@ def ensure_output_dir(path: str) -> str:
 
 def serialize_value(value):
     """Serializa un valor para exportación."""
+    # #region agent log
+    import json as _json_log
+    try:
+        _log_data = {"value_type": str(type(value).__name__), "value_repr": repr(value)[:200] if value is not None else "None"}
+        with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+            _f.write(_json_log.dumps({"location": "ExportExcel.py:serialize_value", "message": "serialize_value called", "data": _log_data, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "B"}) + "\n")
+    except: pass
+    # #endregion
     if value is None:
         return ""
     if isinstance(value, (datetime, date)):
         return value.isoformat(sep=" ")
     if isinstance(value, bool):
         return "true" if value else "false"
+    # #region agent log
+    if isinstance(value, str):
+        try:
+            _encoded = value.encode('utf-8')
+            with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+                _f.write(_json_log.dumps({"location": "ExportExcel.py:serialize_value_str", "message": "string value OK", "data": {"value_preview": value[:100] if len(value) > 100 else value}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "B"}) + "\n")
+        except UnicodeEncodeError as _ue:
+            with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+                _f.write(_json_log.dumps({"location": "ExportExcel.py:serialize_value_str_error", "message": "UNICODE ERROR in string", "data": {"error": str(_ue), "value_repr": repr(value)[:200]}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "B"}) + "\n")
+        except: pass
+    # #endregion
     return value
 
 # ================================
@@ -242,6 +261,13 @@ def obtener_datos_tabla(session, tabla_nombre: str, columnas: list, filtro_where
     Returns:
         Lista de filas de resultados
     """
+    # #region agent log
+    import json as _json_log
+    try:
+        with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+            _f.write(_json_log.dumps({"location": "ExportExcel.py:obtener_datos_tabla", "message": "Query start", "data": {"tabla": tabla_nombre, "columnas": columnas[:5], "filtro": filtro_where}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "C"}) + "\n")
+    except: pass
+    # #endregion
     query_str = f"SELECT {', '.join(columnas)} FROM {tabla_nombre}"
     if filtro_where:
         query_str += f" WHERE {filtro_where}"
@@ -251,7 +277,37 @@ def obtener_datos_tabla(session, tabla_nombre: str, columnas: list, filtro_where
         result = session.execute(query, filtro_params)
     else:
         result = session.execute(query)
-    return result.fetchall()
+    rows = result.fetchall()
+    # #region agent log
+    try:
+        with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+            _f.write(_json_log.dumps({"location": "ExportExcel.py:obtener_datos_tabla_result", "message": "Query result", "data": {"tabla": tabla_nombre, "row_count": len(rows)}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "C"}) + "\n")
+        # Log first row data types and sample values
+        if rows:
+            first_row_info = []
+            for i, val in enumerate(rows[0]):
+                col_info = {"col_idx": i, "type": str(type(val).__name__)}
+                if isinstance(val, str):
+                    try:
+                        val.encode('utf-8')
+                        col_info["utf8_ok"] = True
+                        col_info["preview"] = val[:50] if len(val) > 50 else val
+                    except UnicodeEncodeError as ue:
+                        col_info["utf8_ok"] = False
+                        col_info["error"] = str(ue)
+                        col_info["repr"] = repr(val)[:100]
+                elif val is not None:
+                    col_info["repr"] = repr(val)[:50]
+                first_row_info.append(col_info)
+            with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+                _f.write(_json_log.dumps({"location": "ExportExcel.py:obtener_datos_tabla_first_row", "message": "First row analysis", "data": {"tabla": tabla_nombre, "columns_info": first_row_info}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "A"}) + "\n")
+    except Exception as _e:
+        try:
+            with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+                _f.write(_json_log.dumps({"location": "ExportExcel.py:obtener_datos_tabla_log_error", "message": "Error logging row data", "data": {"error": str(_e)}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "A"}) + "\n")
+        except: pass
+    # #endregion
+    return rows
 
 # ================================
 # MÓDULO: MAPEO DE CAMPOS DE FECHA
@@ -479,6 +535,13 @@ def escribir_encabezados_excel(ws, encabezados: list):
 
 def escribir_filas_excel(ws, rows: list):
     """Escribe las filas de datos en una hoja de Excel con formato profesional."""
+    # #region agent log
+    import json as _json_log
+    try:
+        with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+            _f.write(_json_log.dumps({"location": "ExportExcel.py:escribir_filas_excel", "message": "Starting to write rows", "data": {"row_count": len(rows)}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "D"}) + "\n")
+    except: pass
+    # #endregion
     if not OPENPYXL_AVAILABLE:
         for row in rows:
             values = [serialize_value(value) for value in row]
@@ -492,7 +555,22 @@ def escribir_filas_excel(ws, rows: list):
         # Guardar valores originales para determinar tipo
         original_values = list(row)
         values = [serialize_value(value) for value in row]
-        ws.append(values)
+        # #region agent log
+        try:
+            with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+                _f.write(_json_log.dumps({"location": "ExportExcel.py:escribir_filas_excel_before_append", "message": f"Appending row {row_num}", "data": {"row_num": row_num}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "D"}) + "\n")
+        except: pass
+        # #endregion
+        try:
+            ws.append(values)
+        except Exception as _append_err:
+            # #region agent log
+            try:
+                with open(r"c:\Github\IniaProject\.cursor\debug.log", "a", encoding="utf-8") as _f:
+                    _f.write(_json_log.dumps({"location": "ExportExcel.py:escribir_filas_excel_append_error", "message": "ERROR appending row", "data": {"row_num": row_num, "error": str(_append_err), "values_repr": [repr(v)[:100] for v in values]}, "timestamp": __import__('time').time(), "sessionId": "debug-session", "hypothesisId": "D"}) + "\n")
+            except: pass
+            # #endregion
+            raise
         row_idx = start_row + row_num
         
         if estilo:
