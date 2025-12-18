@@ -52,13 +52,13 @@
                 <!-- Campos de texto -->
 
                 <div class="form-field">
-                    <label for="pesoPromedioCienSemillas">Peso Promedio Cien Semillas</label>
+                    <label for="pesoPromedioCienSemillas">Peso Promedio Cien Semillas (g)</label>
                     <input id="pesoPromedioCienSemillas" type="number" [value]="promedioCienSemillas()" name="pesoPromedioCienSemillas" pInputText step="0.0001" [readonly]="true" />
                 </div>
 
 
                 <div class="form-field">
-                    <label for="pesoMilSemillas">Peso Mil Semillas</label>
+                    <label for="pesoMilSemillas">Peso Mil Semillas (g)</label>
                     <input id="pesoMilSemillas" type="number" [(ngModel)]="pesoMilSemillas" name="pesoMilSemillas" pInputText step="0.0001" [readonly]="isReadonly" [ngClass]="{ 'input-error': pesoMilSemillas != null && pesoMilSemillas < 0 }" />
                     <span *ngIf="pesoMilSemillas != null && pesoMilSemillas < 0" class="error-message">El valor no puede ser negativo.</span>
                 </div>
