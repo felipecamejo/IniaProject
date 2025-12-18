@@ -4,6 +4,7 @@
  */
 package ti.proyectoinia.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -28,6 +29,9 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 @Profile("!test")
 public class WebSecurityConfig {
 
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -37,7 +41,7 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .addFilterBefore(new FiltroJWTAutorizacion(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new FiltroJWTAutorizacion(jwtSecret), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas (no requieren autenticación ni token)
                         .requestMatchers(antMatcher("/actuator/**")).permitAll() // Health checks y métricas

@@ -7,6 +7,7 @@ import ti.proyectoinia.security.SeguridadService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
@@ -35,6 +36,9 @@ import org.slf4j.LoggerFactory;
 public class SeguridadController {
 
     private static final Logger logger = LoggerFactory.getLogger(SeguridadController.class);
+
+    @Value("${jwt.secret}")
+    private String jwtSecret;
 
     @Autowired
     private SeguridadService seguridadService;
@@ -124,14 +128,13 @@ public class SeguridadController {
     }
 
     private String generarToken(Usuario usuario) {
-        String clave = System.getenv("JWT_SECRET");
-        if (clave == null || clave.trim().isEmpty()) {
+        if (jwtSecret == null || jwtSecret.trim().isEmpty()) {
             throw new IllegalStateException(
-                "JWT_SECRET environment variable is required for JWT security. " +
-                "Generate one with: openssl rand -base64 32"
+                "JWT_SECRET is required for JWT security. " +
+                "Configure it in application.properties"
             );
         }
-        if (clave.length() < 32) {
+        if (jwtSecret.length() < 32) {
             throw new IllegalArgumentException("JWT_SECRET must be at least 32 characters long");
         }
         List<GrantedAuthority> grantedAuthorityList
@@ -149,7 +152,7 @@ public class SeguridadController {
                 )
                 .setIssuedAt(new Date(java.lang.System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + (1000 * 60 * 60 * 8)))
-                .signWith(SignatureAlgorithm.HS512, clave.getBytes())
+                .signWith(SignatureAlgorithm.HS512, jwtSecret.getBytes())
                 .compact();
         return token;
     }
