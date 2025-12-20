@@ -14,6 +14,11 @@ db_name = "Inia"
 db_username = "postgres"
 db_password = "CHANGE_THIS_PASSWORD_IN_PRODUCTION"
 
+# RDS Protection and Backup
+rds_deletion_protection = true  # Habilitar protección contra eliminación
+rds_backup_retention_period = 7  # Días de retención de backups (7-30 recomendado)
+rds_enable_multi_az = false  # Habilitar Multi-AZ para alta disponibilidad (aumenta costos)
+
 # Application Configuration
 jwt_secret = "CHANGE_THIS_JWT_SECRET_IN_PRODUCTION"
 image_tag = "latest"
@@ -34,8 +39,83 @@ cpu_middleware = 512
 memory_middleware = 1024
 
 # Domain and SSL Configuration
+# Opcion 1: Usar certificado existente
 domain_name = "zimmzimmgames.com"
 ssl_certificate_arn = "arn:aws:acm:us-east-1:ACCOUNT_ID:certificate/CERTIFICATE_ID"
+create_acm_certificate = false
+
+# Opcion 2: Crear nuevo certificado ACM automaticamente
+# domain_name = "zimmzimmgames.com"
+# ssl_certificate_arn = ""
+# create_acm_certificate = true
+# subject_alternative_names = ["www.zimmzimmgames.com"]
+
+# Route53 Configuration
 create_route53_record = false
 route53_zone_id = ""
+
+# VPC Endpoints (Eliminar NAT Gateway y reducir costos)
+enable_vpc_endpoints = true
+enable_s3_endpoint = true
+enable_ecr_endpoints = true
+enable_logs_endpoint = true
+enable_secretsmanager_endpoint = true
+
+# Auto Scaling Configuration
+enable_autoscaling = true
+backend_min_capacity = 1
+backend_max_capacity = 5
+backend_cpu_target = 70
+backend_memory_target = 75
+frontend_min_capacity = 1
+frontend_max_capacity = 3
+frontend_cpu_target = 70
+middleware_min_capacity = 1
+middleware_max_capacity = 5
+middleware_cpu_target = 70
+middleware_memory_target = 75
+
+# IAM Roles Configuration
+# Opcion 1: Crear roles nuevos con permisos minimos (RECOMENDADO para produccion)
+create_iam_roles = true
+# Roles se crearan automaticamente: inia-prod-ecs-task-execution-role y inia-prod-ecs-task-role
+
+# Opcion 2: Usar roles existentes
+# create_iam_roles = false
+# ecs_task_execution_role_name = "LabRole"
+# ecs_task_role_name = "LabRole"
+
+# RDS Monitoring (opcional)
+rds_monitoring_role_name = ""
+
+# CloudWatch Alarms
+enable_cloudwatch_alarms = true
+alarm_notification_email = "admin@example.com"  # Email para notificaciones de alarmas
+
+# Middleware Configuration
+# Configuracion optimizada segun recursos de CPU/memoria asignados
+# Para 512 CPU / 1GB RAM:
+middleware_uvicorn_workers = "2"
+middleware_max_concurrent_requests = "50"
+middleware_max_request_timeout = "300"
+middleware_rate_limit_requests = "100"
+middleware_rate_limit_window = "60"
+middleware_thread_pool_workers = "10"
+middleware_db_pool_size = "10"
+middleware_db_max_overflow = "20"
+middleware_log_level = "info"
+
+# Para 1024 CPU / 2GB RAM (si aumentas recursos):
+# middleware_uvicorn_workers = "4"
+# middleware_max_concurrent_requests = "100"
+# middleware_thread_pool_workers = "20"
+# middleware_db_pool_size = "20"
+# middleware_db_max_overflow = "30"
+
+# Deployment Circuit Breaker
+enable_circuit_breaker = true
+enable_circuit_breaker_rollback = true
+
+# CloudWatch Logs Retention
+log_retention_days = 30  # Dias de retencion (7, 30, 60, 90 recomendados)
 

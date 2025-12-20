@@ -1,6 +1,6 @@
-# Script para construir imágenes Docker - Modo Desarrollo
-# Ubicación: IniaProject/scriptDockers/build-docker-dev.ps1
-# Uso: .\scriptDockers\build-docker-dev.ps1 [--no-cache]
+# Script para construir imágenes Docker - Modo Testing ECS
+# Ubicación: IniaProject/scriptDockers/build-docker-ecs.ps1
+# Uso: .\scriptDockers\build-docker-ecs.ps1 [--no-cache]
 
 param(
     [switch]$NoCache = $false,
@@ -9,7 +9,7 @@ param(
 )
 
 if ($Help) {
-    Write-Host "Uso: .\scriptDockers\build-docker-dev.ps1 [opciones]" -ForegroundColor Cyan
+    Write-Host "Uso: .\scriptDockers\build-docker-ecs.ps1 [opciones]" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "Opciones:" -ForegroundColor Yellow
     Write-Host "  -NoCache          Reconstruir sin usar cache" -ForegroundColor White
@@ -17,15 +17,20 @@ if ($Help) {
     Write-Host "  -Help             Mostrar esta ayuda" -ForegroundColor White
     Write-Host ""
     Write-Host "Ejemplos:" -ForegroundColor Yellow
-    Write-Host "  .\scriptDockers\build-docker-dev.ps1" -ForegroundColor Gray
-    Write-Host "  .\scriptDockers\build-docker-dev.ps1 -NoCache" -ForegroundColor Gray
-    Write-Host "  .\scriptDockers\build-docker-dev.ps1 -Service frontend" -ForegroundColor Gray
+    Write-Host "  .\scriptDockers\build-docker-ecs.ps1" -ForegroundColor Gray
+    Write-Host "  .\scriptDockers\build-docker-ecs.ps1 -NoCache" -ForegroundColor Gray
+    Write-Host "  .\scriptDockers\build-docker-ecs.ps1 -Service frontend" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "NOTA: Este script construye imágenes para TESTING ECS" -ForegroundColor Yellow
+    Write-Host "      Usa configuración de producción, no desarrollo" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Ver: README-DOCKER-COMPOSE.md para diferencias con modo desarrollo" -ForegroundColor Cyan
     Write-Host ""
     exit 0
 }
 
 Write-Host "==================================" -ForegroundColor Cyan
-Write-Host "  Construir Imagenes - Desarrollo" -ForegroundColor Cyan
+Write-Host "  Construir Imagenes - Testing ECS" -ForegroundColor Cyan
 Write-Host "==================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -57,7 +62,7 @@ Write-Host "Directorio: $projectRoot" -ForegroundColor Yellow
 Write-Host ""
 
 # Construir comando
-$composeFile = "-f docker-compose.dev.yml"
+$composeFile = "-f docker-compose.ecs.yml --env-file .env"
 $buildCommand = "docker compose $composeFile build"
 
 if ($NoCache) {
@@ -74,6 +79,11 @@ if (-not [string]::IsNullOrWhiteSpace($Service)) {
     Write-Host "Servicios: Todos (backend, frontend, middleware)" -ForegroundColor Cyan
 }
 
+Write-Host ""
+Write-Host "CONFIGURACION: Testing ECS (produccion)" -ForegroundColor Magenta
+Write-Host "  - Frontend: Nginx (puerto 80)" -ForegroundColor Gray
+Write-Host "  - Backend: Perfil produccion" -ForegroundColor Gray
+Write-Host "  - Middleware: 2 workers (512 CPU / 1GB RAM)" -ForegroundColor Gray
 Write-Host ""
 
 # Mostrar tamaño de imágenes antes
@@ -104,7 +114,10 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host ""
     
     Write-Host "Para iniciar los servicios:" -ForegroundColor Cyan
-    Write-Host "  .\scriptDockers\iniciar-docker-dev.ps1" -ForegroundColor White
+    Write-Host "  .\scriptDockers\iniciar-docker-ecs.ps1" -ForegroundColor White
+    Write-Host ""
+    Write-Host "RECORDATORIO: Asegurate de tener archivo .env configurado" -ForegroundColor Yellow
+    Write-Host "  Ver: env.ecs.example para plantilla" -ForegroundColor Gray
     Write-Host ""
 } else {
     Write-Host "ERROR: La construccion fallo" -ForegroundColor Red
@@ -113,4 +126,3 @@ if ($LASTEXITCODE -eq 0) {
 }
 
 Read-Host "Presiona Enter para salir"
-

@@ -56,3 +56,21 @@ variable "rds_monitoring_role_name" {
   default     = ""
 }
 
+variable "deletion_protection" {
+  description = "Enable deletion protection for RDS instance"
+  type        = bool
+  default     = true
+}
+
+variable "backup_retention_period" {
+  description = "Number of days to retain backups (1-35)"
+  type        = number
+  default     = 7
+}
+
+variable "enable_multi_az" {
+  description = "Enable Multi-AZ for RDS instance"
+  type        = bool
+  default     = false
+}
+

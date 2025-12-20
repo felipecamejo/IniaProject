@@ -14,7 +14,7 @@ locals {
 # CloudWatch Log Groups
 resource "aws_cloudwatch_log_group" "backend" {
   name              = "/ecs/${var.project_name}-${var.environment}-backend"
-  retention_in_days = 7
+  retention_in_days = var.log_retention_days
 
   tags = {
     Name = "${var.project_name}-${var.environment}-backend-logs"
@@ -23,7 +23,7 @@ resource "aws_cloudwatch_log_group" "backend" {
 
 resource "aws_cloudwatch_log_group" "frontend" {
   name              = "/ecs/${var.project_name}-${var.environment}-frontend"
-  retention_in_days = 7
+  retention_in_days = var.log_retention_days
 
   tags = {
     Name = "${var.project_name}-${var.environment}-frontend-logs"
@@ -32,7 +32,7 @@ resource "aws_cloudwatch_log_group" "frontend" {
 
 resource "aws_cloudwatch_log_group" "middleware" {
   name              = "/ecs/${var.project_name}-${var.environment}-middleware"
-  retention_in_days = 7
+  retention_in_days = var.log_retention_days
 
   tags = {
     Name = "${var.project_name}-${var.environment}-middleware-logs"
@@ -326,14 +326,6 @@ resource "aws_ecs_task_definition" "backend" {
         value = var.db_username
       },
       {
-        name  = "DB_PASS"
-        value = var.db_password
-      },
-      {
-        name  = "JWT_SECRET"
-        value = var.jwt_secret
-      },
-      {
         name  = "JWT_EXPIRATION"
         value = "86400000"
       },
@@ -348,6 +340,17 @@ resource "aws_ecs_task_definition" "backend" {
       {
         name  = "PYTHON_MIDDLEWARE_BASE_URL"
         value = local.middleware_base_url
+      }
+    ]
+
+    secrets = [
+      {
+        name      = "DB_PASS"
+        valueFrom = var.db_password_secret_arn
+      },
+      {
+        name      = "JWT_SECRET"
+        valueFrom = var.jwt_secret_arn
       }
     ]
 
@@ -456,10 +459,6 @@ resource "aws_ecs_task_definition" "middleware" {
         value = var.db_username
       },
       {
-        name  = "DB_PASSWORD"
-        value = var.db_password
-      },
-      {
         name  = "DB_HOST"
         value = split(":", var.db_endpoint)[0]
       },
@@ -472,10 +471,6 @@ resource "aws_ecs_task_definition" "middleware" {
         value = var.db_name
       },
       {
-        name  = "DATABASE_URL"
-        value = "postgresql://${var.db_username}:${var.db_password}@${split(":", var.db_endpoint)[0]}:5432/${var.db_name}"
-      },
-      {
         name  = "PYTHONPATH"
         value = "/app"
       },
@@ -485,35 +480,35 @@ resource "aws_ecs_task_definition" "middleware" {
       },
       {
         name  = "UVICORN_WORKERS"
-        value = "8"
+        value = var.middleware_uvicorn_workers
       },
       {
         name  = "MAX_CONCURRENT_REQUESTS"
-        value = "200"
+        value = var.middleware_max_concurrent_requests
       },
       {
         name  = "MAX_REQUEST_TIMEOUT"
-        value = "600"
+        value = var.middleware_max_request_timeout
       },
       {
         name  = "RATE_LIMIT_REQUESTS"
-        value = "200"
+        value = var.middleware_rate_limit_requests
       },
       {
         name  = "RATE_LIMIT_WINDOW"
-        value = "60"
+        value = var.middleware_rate_limit_window
       },
       {
         name  = "THREAD_POOL_WORKERS"
-        value = "50"
+        value = var.middleware_thread_pool_workers
       },
       {
         name  = "DB_POOL_SIZE"
-        value = "30"
+        value = var.middleware_db_pool_size
       },
       {
         name  = "DB_MAX_OVERFLOW"
-        value = "50"
+        value = var.middleware_db_max_overflow
       },
       {
         name  = "DB_POOL_RECYCLE"
@@ -525,11 +520,18 @@ resource "aws_ecs_task_definition" "middleware" {
       },
       {
         name  = "LOG_LEVEL"
-        value = "info"
+        value = var.middleware_log_level
       },
       {
         name  = "CORS_ORIGINS"
         value = var.cors_origins != "" ? var.cors_origins : "https://zimmzimmgames.com,https://www.zimmzimmgames.com"
+      }
+    ]
+
+    secrets = [
+      {
+        name      = "DB_PASSWORD"
+        valueFrom = var.db_password_secret_arn
       }
     ]
 
@@ -579,6 +581,11 @@ resource "aws_ecs_service" "backend" {
     container_port   = 8080
   }
 
+  deployment_circuit_breaker {
+    enable   = var.enable_circuit_breaker
+    rollback = var.enable_circuit_breaker_rollback
+  }
+
   depends_on = [
     aws_lb_listener_rule.swagger,
     aws_lb_listener_rule.backend,
@@ -613,6 +620,11 @@ resource "aws_ecs_service" "frontend" {
     container_port   = 80
   }
 
+  deployment_circuit_breaker {
+    enable   = var.enable_circuit_breaker
+    rollback = var.enable_circuit_breaker_rollback
+  }
+
   depends_on = [
     aws_lb_listener.http_redirect,
     aws_lb_listener.http_forward,
@@ -642,6 +654,11 @@ resource "aws_ecs_service" "middleware" {
     target_group_arn = aws_lb_target_group.middleware.arn
     container_name   = "middleware"
     container_port   = 9099
+  }
+
+  deployment_circuit_breaker {
+    enable   = var.enable_circuit_breaker
+    rollback = var.enable_circuit_breaker_rollback
   }
 
   depends_on = [

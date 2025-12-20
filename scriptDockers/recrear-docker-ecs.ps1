@@ -1,9 +1,9 @@
-# Script para recrear completamente los contenedores Docker de INIA - Modo Desarrollo
-# Ubicación: IniaProject/scriptDockers/recrear-docker-dev.ps1
-# Uso: .\scriptDockers\recrear-docker-dev.ps1
+# Script para recrear completamente los contenedores Docker de INIA - Modo Testing ECS
+# Ubicación: IniaProject/scriptDockers/recrear-docker-ecs.ps1
+# Uso: .\scriptDockers\recrear-docker-ecs.ps1
 
 Write-Host "==================================" -ForegroundColor Cyan
-Write-Host "  Recrear INIA - Desarrollo      " -ForegroundColor Cyan
+Write-Host "  Recrear INIA - Testing ECS     " -ForegroundColor Cyan
 Write-Host "==================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -62,6 +62,31 @@ function Stop-LocalPostgreSQL {
     }
 }
 
+# Navegar al directorio raíz del proyecto
+$projectRoot = Split-Path -Parent $PSScriptRoot
+Set-Location $projectRoot
+
+# [CRITICO] Verificar que existe archivo .env
+Write-Host "Verificando archivo .env..." -ForegroundColor Yellow
+
+if (-not (Test-Path ".env")) {
+    Write-Host ""
+    Write-Host "ERROR: Archivo .env no encontrado" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Para usar docker-compose.ecs.yml necesitas:" -ForegroundColor Yellow
+    Write-Host "  1. Copiar env.ecs.example a .env" -ForegroundColor White
+    Write-Host "     Comando: cp env.ecs.example .env" -ForegroundColor Gray
+    Write-Host "  2. Editar .env con tus credenciales" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Ver: README-DOCKER-COMPOSE.md para mas detalles" -ForegroundColor Cyan
+    Write-Host ""
+    Read-Host "Presiona Enter para salir"
+    exit 1
+}
+
+Write-Host "OK Archivo .env encontrado" -ForegroundColor Green
+Write-Host ""
+
 # Verificar Docker Desktop
 Write-Host "Verificando Docker Desktop..." -ForegroundColor Yellow
 
@@ -113,12 +138,8 @@ if (Test-PortInUse -Port 5432) {
 }
 
 Write-Host ""
-Write-Host "ADVERTENCIA: Esto recreara todos los contenedores de desarrollo" -ForegroundColor Yellow
+Write-Host "ADVERTENCIA: Esto recreara todos los contenedores de testing ECS" -ForegroundColor Yellow
 Write-Host ""
-
-# Navegar al directorio raíz del proyecto
-$projectRoot = Split-Path -Parent $PSScriptRoot
-Set-Location $projectRoot
 Write-Host "Directorio: $projectRoot" -ForegroundColor Yellow
 Write-Host ""
 
@@ -134,19 +155,19 @@ switch ($opcion) {
     "1" {
         Write-Host ""
         Write-Host "[1/5] Deteniendo servicios..." -ForegroundColor Yellow
-        docker compose -f docker-compose.dev.yml down
+        docker compose -f docker-compose.ecs.yml --env-file .env down
         
         Write-Host "[2/5] Reconstruyendo imagenes..." -ForegroundColor Yellow
-        docker compose -f docker-compose.dev.yml build --no-cache
+        docker compose -f docker-compose.ecs.yml --env-file .env build --no-cache
         
         Write-Host "[3/5] Levantando servicios..." -ForegroundColor Yellow
-        docker compose -f docker-compose.dev.yml up -d
+        docker compose -f docker-compose.ecs.yml --env-file .env up -d
         
         Write-Host "[4/5] Esperando servicios..." -ForegroundColor Yellow
         Start-Sleep -Seconds 10
         
         Write-Host "[5/5] Verificando estado..." -ForegroundColor Yellow
-        docker compose -f docker-compose.dev.yml ps
+        docker compose -f docker-compose.ecs.yml --env-file .env ps
         
         Write-Host ""
         Write-Host "Contenedores recreados exitosamente (datos mantenidos)" -ForegroundColor Green
@@ -154,7 +175,7 @@ switch ($opcion) {
         
         $openBrowser = Read-Host "Abrir Frontend y Swagger? (S/N)"
         if ($openBrowser -eq "S" -or $openBrowser -eq "s") {
-            Start-Process "http://localhost:4200"
+            Start-Process "http://localhost"
             Start-Sleep -Seconds 1
             Start-Process "http://localhost:8080/swagger-ui/index.html"
         }
@@ -169,22 +190,22 @@ switch ($opcion) {
         if ($confirmar -eq "ELIMINAR") {
             Write-Host ""
             Write-Host "[1/6] Deteniendo y eliminando contenedores con volumenes..." -ForegroundColor Yellow
-            docker compose -f docker-compose.dev.yml down -v
+            docker compose -f docker-compose.ecs.yml --env-file .env down -v
             
             Write-Host "[2/6] Limpiando sistema Docker..." -ForegroundColor Yellow
             docker system prune -f
             
             Write-Host "[3/6] Reconstruyendo imagenes..." -ForegroundColor Yellow
-            docker compose -f docker-compose.dev.yml build --no-cache
+            docker compose -f docker-compose.ecs.yml --env-file .env build --no-cache
             
             Write-Host "[4/6] Levantando servicios..." -ForegroundColor Yellow
-            docker compose -f docker-compose.dev.yml up -d
+            docker compose -f docker-compose.ecs.yml --env-file .env up -d
             
             Write-Host "[5/6] Esperando servicios..." -ForegroundColor Yellow
             Start-Sleep -Seconds 15
             
             Write-Host "[6/6] Verificando estado..." -ForegroundColor Yellow
-            docker compose -f docker-compose.dev.yml ps
+            docker compose -f docker-compose.ecs.yml --env-file .env ps
             
             Write-Host ""
             Write-Host "Sistema completamente recreado" -ForegroundColor Green
@@ -193,7 +214,7 @@ switch ($opcion) {
             
             $openBrowser = Read-Host "Abrir Frontend y Swagger? (S/N)"
             if ($openBrowser -eq "S" -or $openBrowser -eq "s") {
-                Start-Process "http://localhost:4200"
+                Start-Process "http://localhost"
                 Start-Sleep -Seconds 1
                 Start-Process "http://localhost:8080/swagger-ui/index.html"
             }
@@ -216,4 +237,3 @@ switch ($opcion) {
 }
 
 Read-Host "Presiona Enter para salir"
-

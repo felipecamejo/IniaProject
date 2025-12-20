@@ -1,9 +1,9 @@
-# Script para detener INIA Docker - Modo Desarrollo
-# Ubicación: IniaProject/scriptDockers/detener-docker-dev.ps1
-# Uso: .\scriptDockers\detener-docker-dev.ps1
+# Script para detener INIA Docker - Modo Testing ECS
+# Ubicación: IniaProject/scriptDockers/detener-docker-ecs.ps1
+# Uso: .\scriptDockers\detener-docker-ecs.ps1
 
 Write-Host "==================================" -ForegroundColor Cyan
-Write-Host "  Deteniendo INIA - Desarrollo   " -ForegroundColor Cyan
+Write-Host "  Deteniendo INIA - Testing ECS  " -ForegroundColor Cyan
 Write-Host "==================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -38,23 +38,23 @@ Write-Host "Directorio: $projectRoot" -ForegroundColor Yellow
 Write-Host ""
 
 # Mostrar servicios en ejecución
-Write-Host "Servicios actuales (desarrollo):" -ForegroundColor Yellow
-docker compose -f docker-compose.dev.yml ps
+Write-Host "Servicios actuales (testing ECS):" -ForegroundColor Yellow
+docker compose -f docker-compose.ecs.yml --env-file .env ps
 Write-Host ""
 
 # Preguntar confirmación
-$confirm = Read-Host "Detener todos los servicios de desarrollo? (S/N)"
+$confirm = Read-Host "Detener todos los servicios de testing ECS? (S/N)"
 if ($confirm -eq "S" -or $confirm -eq "s") {
     Write-Host ""
     Write-Host "Deteniendo servicios..." -ForegroundColor Yellow
-    docker compose -f docker-compose.dev.yml down
+    docker compose -f docker-compose.ecs.yml --env-file .env down
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host ""
         Write-Host "Servicios detenidos exitosamente" -ForegroundColor Green
         Write-Host "Los datos de la base de datos se han conservado" -ForegroundColor Cyan
         Write-Host ""
-        Write-Host "Para iniciar nuevamente: .\scriptDockers\iniciar-docker-dev.ps1" -ForegroundColor Yellow
+        Write-Host "Para iniciar nuevamente: .\scriptDockers\iniciar-docker-ecs.ps1" -ForegroundColor Yellow
         Write-Host ""
     } else {
         Write-Host ""
@@ -68,4 +68,3 @@ if ($confirm -eq "S" -or $confirm -eq "s") {
 }
 
 Read-Host "Presiona Enter para salir"
-

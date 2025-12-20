@@ -14,7 +14,11 @@ CREATE SCHEMA IF NOT EXISTS inia;
 
 -- Configurar contraseña del usuario postgres para el middleware
 -- El usuario postgres ya existe por defecto en PostgreSQL
-ALTER USER postgres WITH PASSWORD '897888fg2';
+-- NOTA: La contraseña se configura en docker-compose mediante POSTGRES_PASSWORD
+-- Para docker-compose.dev.yml: usa contraseña hardcodeada (897888fg2)
+-- Para docker-compose.ecs.yml: usa contraseña desde .env (${DB_PASSWORD})
+-- ALTER USER postgres WITH PASSWORD '897888fg2';  -- COMENTADO: causa conflicto con .env
+
 
 -- Configurar permisos para postgres (usado por el middleware)
 GRANT ALL PRIVILEGES ON DATABASE "Inia" TO postgres;
@@ -32,9 +36,12 @@ CREATE TABLE IF NOT EXISTS inia.AUTOCOMPLETADO (
     AUTOCOMPLETADO_TIPO_DATO VARCHAR(50),
     AUTOCOMPLETADO_PARAMETRO VARCHAR(100) NOT NULL,
     AUTOCOMPLETADO_VALOR VARCHAR(500) NOT NULL,
-    AUTOCOMPLETADO_ACTIVO BOOLEAN DEFAULT TRUE,
-    CONSTRAINT uk_autocompletado_parametro_valor UNIQUE (AUTOCOMPLETADO_PARAMETRO, LOWER(AUTOCOMPLETADO_VALOR))
+    AUTOCOMPLETADO_ACTIVO BOOLEAN DEFAULT TRUE
 );
+
+-- Crear índice único con función LOWER para evitar duplicados case-insensitive
+CREATE UNIQUE INDEX IF NOT EXISTS uk_autocompletado_parametro_valor 
+ON inia.AUTOCOMPLETADO(AUTOCOMPLETADO_PARAMETRO, LOWER(AUTOCOMPLETADO_VALOR));
 
 -- Crear índice para búsquedas rápidas por parámetro
 CREATE INDEX IF NOT EXISTS idx_autocompletado_parametro_activo 

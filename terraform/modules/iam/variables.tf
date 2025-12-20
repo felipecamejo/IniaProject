@@ -23,3 +23,15 @@ variable "ecs_task_role_name" {
   type        = string
 }
 
+variable "secrets_arns" {
+  description = "List of Secrets Manager ARNs that ECS tasks need to access"
+  type        = list(string)
+  default     = []
+}
+
+variable "create_iam_roles" {
+  description = "Whether to create new IAM roles (true) or use existing ones (false)"
+  type        = bool
+  default     = false
+}
+

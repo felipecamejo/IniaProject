@@ -1,26 +1,79 @@
-# Docker Compose para Configuración ECS - Proyecto INIA
+# Docker Compose para Testing de Configuracion ECS - Proyecto INIA
 # Uso: docker-compose -f docker-compose.ecs.yml up -d
-# 
-# NOTA: Este archivo replica la configuración exacta de ECS en AWS
-# para pruebas locales. En AWS, ECS usa las Task Definitions creadas por Terraform.
 #
-# Características:
-# - Configuración idéntica a ECS Task Definitions en Terraform
-# - Variables de entorno coinciden con ECS
-# - Health checks iguales a ECS
-# - Frontend con Nginx ECS (sin proxy)
+# =============================================================================
+# PROPOSITO: Testing local que replica configuracion de ECS en AWS
+# =============================================================================
+# Este archivo simula el ambiente de produccion de AWS ECS para testing local
+# antes de desplegar. Usa la misma configuracion que Terraform aplica en AWS.
+#
+# CUANDO USAR ESTE ARCHIVO:
+# - Testing de configuracion antes de deploy a AWS
+# - Validar que la app funciona con configuracion de produccion
+# - Testing de integracion completa
+# - Verificar health checks y timeouts
+# - Puerto 80 para frontend (como en produccion con Nginx)
+#
+# CUANDO USAR docker-compose.dev.yml:
+# - Desarrollo activo con hot reload
+# - Debugging de frontend con Angular DevTools
+# - Iteracion rapida de codigo
+# - Puerto 4200 para desarrollo con ng serve
+#
+# =============================================================================
+# CONFIGURACION REQUERIDA
+# =============================================================================
+# Debes tener un archivo .env en la raiz con las siguientes variables:
+#
+# DB_PASSWORD=tu_contraseña_segura
+# JWT_SECRET=tu_jwt_secret
+# MIDDLEWARE_UVICORN_WORKERS=2
+# MIDDLEWARE_MAX_CONCURRENT_REQUESTS=50
+# MIDDLEWARE_THREAD_POOL_WORKERS=10
+# MIDDLEWARE_DB_POOL_SIZE=10
+# MIDDLEWARE_DB_MAX_OVERFLOW=20
+# MIDDLEWARE_MAX_REQUEST_TIMEOUT=300
+# MIDDLEWARE_RATE_LIMIT_REQUESTS=100
+# MIDDLEWARE_RATE_LIMIT_WINDOW=60
+# MIDDLEWARE_LOG_LEVEL=info
+# BACKEND_URL=http://localhost:8080/Inia
+# MIDDLEWARE_URL=http://localhost:9099
+#
+# Ver .env.ecs.example para un ejemplo completo
+#
+# =============================================================================
+# LIMITACIONES (no replica completamente ECS)
+# =============================================================================
+# Este archivo NO simula:
+# - Application Load Balancer (ALB) - aqui se accede directamente a puertos
+# - Auto-scaling de ECS (1-5 tareas por servicio)
+# - Circuit breaker de ECS (rollback automatico)
+# - CloudWatch Alarms y metricas
+# - VPC Endpoints
+# - AWS Secrets Manager (aqui usamos .env)
+#
+# En AWS ECS real:
+# - Credenciales en AWS Secrets Manager
+# - Auto-scaling basado en CPU/memoria
+# - ALB con routing /Inia, /middleware, /
+# - Circuit breaker para deployments seguros
+# - 11 alarmas de CloudWatch monitoreando salud
+#
+# =============================================================================
 
 version: '3.8'
 
 services:
+  # ===========================================================================
   # Base de datos PostgreSQL (simula RDS)
+  # ===========================================================================
   database:
-    image: postgres:15-alpine  # Misma versión que RDS en ECS (PostgreSQL 15.15)
+    image: postgres:15-alpine  # Misma version que RDS en ECS (PostgreSQL 15.15)
     container_name: inia-database-ecs
     environment:
       POSTGRES_DB: Inia
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Inia2024SecurePass!
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     volumes:
       - postgres_data_ecs:/var/lib/postgresql/data
@@ -37,7 +90,11 @@ services:
       retries: 3
       start_period: 30s
 
-  # Backend Spring Boot - Configuración ECS
+  # ===========================================================================
+  # Backend Spring Boot - Configuracion ECS
+  # ===========================================================================
+  # Configuracion identica a terraform/modules/ecs/main.tf (Backend Task Definition)
+  # CPU: 512, Memoria: 1024 MB
   backend:
     build:
       context: .
@@ -46,18 +103,20 @@ services:
     environment:
       # Variables de base de datos
       DB_USER: postgres
-      DB_PASS: Inia2024SecurePass!
+      DB_PASS: ${DB_PASSWORD}
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/Inia
       
-      # Variables JWT
-      JWT_SECRET: inia-jwt-secret-key-2024-change-in-production
+      # Variables JWT (desde Secrets Manager en AWS, desde .env aqui)
+      JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: 86400000
       
-      # Configuración de producción
+      # Configuracion de produccion
       SPRING_PROFILES_ACTIVE: prod
       SERVER_PORT: 8080
       
-      # URL del middleware (en ECS sería la URL del ALB, en Docker Compose usamos nombre de servicio)
+      # URL del middleware
+      # En ECS: http://inia-prod-alb-XXXXX.us-east-1.elb.amazonaws.com/middleware
+      # Aqui: comunicacion directa via nombre de servicio
       PYTHON_MIDDLEWARE_BASE_URL: http://middleware:9099
     depends_on:
       database:
@@ -68,16 +127,21 @@ services:
       - inia-network-ecs
     restart: unless-stopped
     healthcheck:
-      # Health check idéntico a ECS Task Definition
-      # Nota: El health check interno usa /actuator/health (sin /Inia)
-      # El ALB Target Group usa /Inia/actuator/health, pero el contenedor expone /actuator/health
+      # Health check identico a ECS Task Definition
+      # Container expone: /actuator/health
+      # ALB Target Group verifica: /Inia/actuator/health
       test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 60s
 
-  # Middleware Python/FastAPI - Configuración ECS
+  # ===========================================================================
+  # Middleware Python/FastAPI - Configuracion ECS
+  # ===========================================================================
+  # Configuracion identica a terraform/modules/ecs/main.tf (Middleware Task Definition)
+  # CPU: 512, Memoria: 1024 MB
+  # Valores ajustados para 512 CPU / 1GB RAM (no 1024 CPU / 2GB RAM)
   middleware:
     build:
       context: .
@@ -86,26 +150,27 @@ services:
     environment:
       # Variables de base de datos
       DB_USER: postgres
-      DB_PASSWORD: Inia2024SecurePass!
+      DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: database
       DB_PORT: 5432
       DB_NAME: Inia
-      DATABASE_URL: postgresql://postgres:Inia2024SecurePass!@database:5432/Inia
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@database:5432/Inia
       PYTHONPATH: /app
       PYTHONUNBUFFERED: 1
       
-      # Configuración de producción (igual que ECS)
-      UVICORN_WORKERS: 8
-      MAX_CONCURRENT_REQUESTS: 200
-      MAX_REQUEST_TIMEOUT: 600
-      RATE_LIMIT_REQUESTS: 200
-      RATE_LIMIT_WINDOW: 60
-      THREAD_POOL_WORKERS: 50
-      DB_POOL_SIZE: 30
-      DB_MAX_OVERFLOW: 50
+      # Configuracion de produccion optimizada para 512 CPU / 1GB RAM
+      # Coincide exactamente con terraform/terraform.tfvars
+      UVICORN_WORKERS: ${MIDDLEWARE_UVICORN_WORKERS:-2}
+      MAX_CONCURRENT_REQUESTS: ${MIDDLEWARE_MAX_CONCURRENT_REQUESTS:-50}
+      MAX_REQUEST_TIMEOUT: ${MIDDLEWARE_MAX_REQUEST_TIMEOUT:-300}
+      RATE_LIMIT_REQUESTS: ${MIDDLEWARE_RATE_LIMIT_REQUESTS:-100}
+      RATE_LIMIT_WINDOW: ${MIDDLEWARE_RATE_LIMIT_WINDOW:-60}
+      THREAD_POOL_WORKERS: ${MIDDLEWARE_THREAD_POOL_WORKERS:-10}
+      DB_POOL_SIZE: ${MIDDLEWARE_DB_POOL_SIZE:-10}
+      DB_MAX_OVERFLOW: ${MIDDLEWARE_DB_MAX_OVERFLOW:-20}
       DB_POOL_RECYCLE: 3600
       PY_MIDDLEWARE_PORT: 9099
-      LOG_LEVEL: info
+      LOG_LEVEL: ${MIDDLEWARE_LOG_LEVEL:-info}
     depends_on:
       database:
         condition: service_healthy
@@ -117,14 +182,21 @@ services:
       - inia-network-ecs
     restart: unless-stopped
     healthcheck:
-      # Health check idéntico a ECS Task Definition
+      # Health check identico a ECS Task Definition
+      # Container expone: /health
+      # ALB Target Group verifica: /middleware/health
       test: ["CMD-SHELL", "python -c 'import requests; r=requests.get(\"http://localhost:9099/health\", timeout=2); exit(0 if r.status_code==200 else 1)' || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 60s
 
-  # Frontend Angular + Nginx - Configuración ECS (sin proxy)
+  # ===========================================================================
+  # Frontend Angular + Nginx - Configuracion ECS
+  # ===========================================================================
+  # Configuracion identica a terraform/modules/ecs/main.tf (Frontend Task Definition)
+  # CPU: 256, Memoria: 512 MB
+  # Usa Nginx (puerto 80), NO ng serve (puerto 4200)
   frontend:
     build:
       context: .
@@ -132,10 +204,12 @@ services:
     container_name: inia-frontend-ecs
     environment:
       USE_ECS_NGINX: "true"  # Usar nginx.conf.ecs (sin proxy, como en ECS)
-      # En ECS estas URLs serían del ALB (ej: http://inia-prod-alb-XXXXX.us-east-1.elb.amazonaws.com/Inia)
-      # En Docker Compose usamos localhost con puertos expuestos (accesibles desde el navegador)
-      BACKEND_URL: http://localhost:8080/Inia
-      MIDDLEWARE_URL: http://localhost:9099
+      
+      # URLs del backend y middleware
+      # En ECS: URLs del ALB (ej: https://zimmzimmgames.com/Inia)
+      # Aqui: localhost con puertos expuestos (accesibles desde navegador)
+      BACKEND_URL: ${BACKEND_URL:-http://localhost:8080/Inia}
+      MIDDLEWARE_URL: ${MIDDLEWARE_URL:-http://localhost:9099}
     depends_on:
       - backend
       - middleware
@@ -145,19 +219,25 @@ services:
       - inia-network-ecs
     restart: unless-stopped
     healthcheck:
-      # Health check idéntico a ECS Task Definition
+      # Health check identico a ECS Task Definition
+      # Container expone: /health
+      # ALB Target Group verifica: /health
       test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 30s
 
-# Volúmenes persistentes
+# =============================================================================
+# Volumenes persistentes
+# =============================================================================
 volumes:
   postgres_data_ecs:
     driver: local
 
+# =============================================================================
 # Red personalizada
+# =============================================================================
 networks:
   inia-network-ecs:
     driver: bridge
@@ -165,3 +245,35 @@ networks:
       config:
         - subnet: 172.21.0.0/16
 
+# =============================================================================
+# COMANDOS UTILES
+# =============================================================================
+# Levantar servicios:
+#   docker compose -f docker-compose.ecs.yml --env-file .env up -d
+#
+# Ver estado de servicios:
+#   docker compose -f docker-compose.ecs.yml --env-file .env ps
+#
+# Ver logs:
+#   docker compose -f docker-compose.ecs.yml --env-file .env logs -f
+#   docker compose -f docker-compose.ecs.yml --env-file .env logs -f middleware
+#
+# Detener servicios:
+#   docker compose -f docker-compose.ecs.yml --env-file .env down
+#
+# Reconstruir imagenes:
+#   docker compose -f docker-compose.ecs.yml --env-file .env build
+#   docker compose -f docker-compose.ecs.yml --env-file .env up -d --build
+#
+# Verificar health checks:
+#   curl http://localhost/health              # Frontend
+#   curl http://localhost:8080/actuator/health # Backend
+#   curl http://localhost:9099/health          # Middleware
+#
+# Verificar configuracion de middleware:
+#   docker compose -f docker-compose.ecs.yml --env-file .env exec middleware env | grep UVICORN
+#
+# Limpiar todo (incluye volumenes):
+#   docker compose -f docker-compose.ecs.yml --env-file .env down -v
+#
+# =============================================================================

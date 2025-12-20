@@ -160,3 +160,89 @@ variable "cors_origins" {
   default     = ""
 }
 
+variable "db_password_secret_arn" {
+  description = "ARN of the database password secret in Secrets Manager"
+  type        = string
+  sensitive   = true
+}
+
+variable "jwt_secret_arn" {
+  description = "ARN of the JWT secret in Secrets Manager"
+  type        = string
+  sensitive   = true
+}
+
+# Middleware Configuration Variables
+variable "middleware_uvicorn_workers" {
+  description = "Number of Uvicorn workers for middleware"
+  type        = string
+  default     = "2"
+}
+
+variable "middleware_max_concurrent_requests" {
+  description = "Maximum concurrent requests for middleware"
+  type        = string
+  default     = "50"
+}
+
+variable "middleware_max_request_timeout" {
+  description = "Maximum request timeout in seconds for middleware"
+  type        = string
+  default     = "300"
+}
+
+variable "middleware_rate_limit_requests" {
+  description = "Rate limit requests per window for middleware"
+  type        = string
+  default     = "100"
+}
+
+variable "middleware_rate_limit_window" {
+  description = "Rate limit window in seconds for middleware"
+  type        = string
+  default     = "60"
+}
+
+variable "middleware_thread_pool_workers" {
+  description = "Number of thread pool workers for middleware"
+  type        = string
+  default     = "10"
+}
+
+variable "middleware_db_pool_size" {
+  description = "Database connection pool size for middleware"
+  type        = string
+  default     = "10"
+}
+
+variable "middleware_db_max_overflow" {
+  description = "Database connection pool max overflow for middleware"
+  type        = string
+  default     = "20"
+}
+
+variable "middleware_log_level" {
+  description = "Log level for middleware (debug, info, warning, error)"
+  type        = string
+  default     = "info"
+}
+
+# Deployment Circuit Breaker Configuration
+variable "enable_circuit_breaker" {
+  description = "Enable deployment circuit breaker for ECS services"
+  type        = bool
+  default     = true
+}
+
+variable "enable_circuit_breaker_rollback" {
+  description = "Enable automatic rollback when circuit breaker triggers"
+  type        = bool
+  default     = true
+}
+
+variable "log_retention_days" {
+  description = "Number of days to retain CloudWatch logs"
+  type        = number
+  default     = 30
+}
+

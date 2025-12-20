@@ -1,6 +1,6 @@
-# Script para ver logs de servicios Docker - Modo Desarrollo
-# Ubicación: IniaProject/scriptDockers/logs-docker-dev.ps1
-# Uso: .\scriptDockers\logs-docker-dev.ps1 [servicio] [--tail N]
+# Script para ver logs de servicios Docker - Modo Testing ECS
+# Ubicación: IniaProject/scriptDockers/logs-docker-ecs.ps1
+# Uso: .\scriptDockers\logs-docker-ecs.ps1 [servicio] [--tail N]
 
 param(
     [string]$Servicio = "",
@@ -10,7 +10,7 @@ param(
 )
 
 if ($Help) {
-    Write-Host "Uso: .\scriptDockers\logs-docker-dev.ps1 [opciones]" -ForegroundColor Cyan
+    Write-Host "Uso: .\scriptDockers\logs-docker-ecs.ps1 [opciones]" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "Opciones:" -ForegroundColor Yellow
     Write-Host "  -Servicio <nombre>  Servicio especifico (backend, frontend, middleware, database)" -ForegroundColor White
@@ -19,16 +19,16 @@ if ($Help) {
     Write-Host "  -Help               Mostrar esta ayuda" -ForegroundColor White
     Write-Host ""
     Write-Host "Ejemplos:" -ForegroundColor Yellow
-    Write-Host "  .\scriptDockers\logs-docker-dev.ps1" -ForegroundColor Gray
-    Write-Host "  .\scriptDockers\logs-docker-dev.ps1 -Servicio backend" -ForegroundColor Gray
-    Write-Host "  .\scriptDockers\logs-docker-dev.ps1 -Servicio frontend -Follow" -ForegroundColor Gray
-    Write-Host "  .\scriptDockers\logs-docker-dev.ps1 -Tail 50" -ForegroundColor Gray
+    Write-Host "  .\scriptDockers\logs-docker-ecs.ps1" -ForegroundColor Gray
+    Write-Host "  .\scriptDockers\logs-docker-ecs.ps1 -Servicio backend" -ForegroundColor Gray
+    Write-Host "  .\scriptDockers\logs-docker-ecs.ps1 -Servicio frontend -Follow" -ForegroundColor Gray
+    Write-Host "  .\scriptDockers\logs-docker-ecs.ps1 -Tail 50" -ForegroundColor Gray
     Write-Host ""
     exit 0
 }
 
 Write-Host "==================================" -ForegroundColor Cyan
-Write-Host "  Logs INIA - Desarrollo         " -ForegroundColor Cyan
+Write-Host "  Logs INIA - Testing ECS        " -ForegroundColor Cyan
 Write-Host "==================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -59,7 +59,7 @@ if ([string]::IsNullOrWhiteSpace($Servicio)) {
     Write-Host "Servicios disponibles:" -ForegroundColor Yellow
     Write-Host "  1. Todos los servicios" -ForegroundColor White
     Write-Host "  2. Backend (Spring Boot)" -ForegroundColor White
-    Write-Host "  3. Frontend (Angular)" -ForegroundColor White
+    Write-Host "  3. Frontend (Angular + Nginx)" -ForegroundColor White
     Write-Host "  4. Middleware (FastAPI)" -ForegroundColor White
     Write-Host "  5. Database (PostgreSQL)" -ForegroundColor White
     Write-Host ""
@@ -86,7 +86,7 @@ if ([string]::IsNullOrWhiteSpace($Servicio)) {
 }
 
 # Construir comando docker compose logs
-$composeFile = "-f docker-compose.dev.yml"
+$composeFile = "-f docker-compose.ecs.yml --env-file .env"
 $logCommand = "docker compose $composeFile logs"
 
 if ($Follow) {
@@ -122,12 +122,11 @@ Write-Host ""
 if (-not $Follow) {
     Write-Host "Para seguir logs en tiempo real, ejecuta:" -ForegroundColor Yellow
     if ([string]::IsNullOrWhiteSpace($Servicio)) {
-        Write-Host "  docker compose -f docker-compose.dev.yml logs -f" -ForegroundColor White
+        Write-Host "  docker compose -f docker-compose.ecs.yml --env-file .env logs -f" -ForegroundColor White
     } else {
-        Write-Host "  docker compose -f docker-compose.dev.yml logs -f $Servicio" -ForegroundColor White
+        Write-Host "  docker compose -f docker-compose.ecs.yml --env-file .env logs -f $Servicio" -ForegroundColor White
     }
     Write-Host ""
 }
 
 Read-Host "Presiona Enter para salir"
-

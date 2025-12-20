@@ -1,10 +1,22 @@
-# Script para iniciar INIA con Docker - Modo Desarrollo
-# Ubicación: IniaProject/scriptDockers/iniciar-docker-dev.ps1
-# Uso: .\scriptDockers\iniciar-docker-dev.ps1
+# Script para iniciar INIA con Docker - Modo Testing ECS
+# Ubicación: IniaProject/scriptDockers/iniciar-docker-ecs.ps1
+# Uso: .\scriptDockers\iniciar-docker-ecs.ps1
 
 Write-Host "==================================" -ForegroundColor Cyan
-Write-Host "  Iniciando INIA - Desarrollo    " -ForegroundColor Cyan
+Write-Host "  Iniciando INIA - Testing ECS   " -ForegroundColor Cyan
 Write-Host "==================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "MODO: Testing de configuracion ECS" -ForegroundColor Magenta
+Write-Host "      Replica ambiente de produccion AWS" -ForegroundColor Magenta
+Write-Host ""
+Write-Host "DIFERENCIAS con docker-compose.dev.yml:" -ForegroundColor Yellow
+Write-Host "  - Frontend en puerto 80 (Nginx, no ng serve)" -ForegroundColor Gray
+Write-Host "  - Sin hot reload (imagen compilada)" -ForegroundColor Gray
+Write-Host "  - Configuracion de produccion (desde .env)" -ForegroundColor Gray
+Write-Host "  - Middleware: 2 workers (512 CPU / 1GB RAM)" -ForegroundColor Gray
+Write-Host ""
+Write-Host "Para desarrollo con hot reload usa:" -ForegroundColor Cyan
+Write-Host "  .\scriptDockers\iniciar-docker-dev.ps1" -ForegroundColor White
 Write-Host ""
 
 # Función para verificar Docker
@@ -43,7 +55,7 @@ function Stop-LocalPostgreSQL {
                     Write-Host "  OK Servicio $($service.Name) detenido" -ForegroundColor Green
                 }
                 catch {
-                    Write-Host "  ADVERTENCIA: No se pudo detener el servicio $($service.Name) automáticamente" -ForegroundColor Yellow
+                    Write-Host "  ADVERTENCIA: No se pudo detener el servicio $($service.Name) automaticamente" -ForegroundColor Yellow
                     Write-Host "    Necesitas ejecutar PowerShell como Administrador para detenerlo" -ForegroundColor Yellow
                     return $false
                 }
@@ -62,8 +74,64 @@ function Stop-LocalPostgreSQL {
     }
 }
 
+# Navegar al directorio raíz del proyecto
+$projectRoot = Split-Path -Parent $PSScriptRoot
+Set-Location $projectRoot
+
+# [CRITICO] Verificar que existe archivo .env
+Write-Host "[1/6] Verificando archivo .env..." -ForegroundColor Yellow
+
+if (-not (Test-Path ".env")) {
+    Write-Host ""
+    Write-Host "ERROR: Archivo .env no encontrado" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Para usar docker-compose.ecs.yml necesitas:" -ForegroundColor Yellow
+    Write-Host "  1. Copiar env.ecs.example a .env" -ForegroundColor White
+    Write-Host "     Comando: cp env.ecs.example .env" -ForegroundColor Gray
+    Write-Host "  2. Editar .env con tus credenciales" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Ver: README-DOCKER-COMPOSE.md para mas detalles" -ForegroundColor Cyan
+    Write-Host ""
+    Read-Host "Presiona Enter para salir"
+    exit 1
+}
+
+Write-Host "OK Archivo .env encontrado" -ForegroundColor Green
+
+# Verificar variables críticas en .env
+$envContent = Get-Content ".env" -Raw
+$missingVars = @()
+
+if (-not ($envContent -match "DB_PASSWORD=.+")) {
+    $missingVars += "DB_PASSWORD"
+}
+if (-not ($envContent -match "JWT_SECRET=.+")) {
+    $missingVars += "JWT_SECRET"
+}
+if (-not ($envContent -match "MIDDLEWARE_UVICORN_WORKERS=.+")) {
+    $missingVars += "MIDDLEWARE_UVICORN_WORKERS"
+}
+
+if ($missingVars.Count -gt 0) {
+    Write-Host ""
+    Write-Host "ADVERTENCIA: Variables faltantes o vacias en .env:" -ForegroundColor Yellow
+    foreach ($var in $missingVars) {
+        Write-Host "  - $var" -ForegroundColor Red
+    }
+    Write-Host ""
+    Write-Host "Ver: env.ecs.example para plantilla completa" -ForegroundColor Cyan
+    Write-Host ""
+    $continuar = Read-Host "Continuar de todos modos? (S/N)"
+    if ($continuar -ne "S" -and $continuar -ne "s") {
+        exit 1
+    }
+}
+
+Write-Host "OK Variables principales configuradas" -ForegroundColor Green
+
 # Verificar Docker Desktop
-Write-Host "[1/5] Verificando Docker Desktop..." -ForegroundColor Yellow
+Write-Host ""
+Write-Host "[2/6] Verificando Docker Desktop..." -ForegroundColor Yellow
 
 if (-not (Test-DockerRunning)) {
     Write-Host "Docker Desktop no esta ejecutandose." -ForegroundColor Red
@@ -112,11 +180,11 @@ if (-not (Test-DockerRunning)) {
 
 Write-Host "Docker Desktop esta ejecutandose correctamente" -ForegroundColor Green
 
-# Verificar puertos de desarrollo
+# Verificar puertos de testing ECS
 Write-Host ""
-Write-Host "[2/5] Verificando puertos..." -ForegroundColor Yellow
+Write-Host "[3/6] Verificando puertos..." -ForegroundColor Yellow
 
-$portsToCheck = @(5432, 4200, 8080, 9099)
+$portsToCheck = @(5432, 80, 8080, 9099)
 $portsInUse = @()
 
 foreach ($port in $portsToCheck) {
@@ -153,24 +221,22 @@ if ($portsInUse.Count -gt 0) {
 
 # Navegar al directorio raíz del proyecto
 Write-Host ""
-Write-Host "[3/5] Navegando al directorio del proyecto..." -ForegroundColor Yellow
-$projectRoot = Split-Path -Parent $PSScriptRoot
-Set-Location $projectRoot
+Write-Host "[4/6] Navegando al directorio del proyecto..." -ForegroundColor Yellow
 Write-Host "Directorio: $projectRoot" -ForegroundColor Green
 
 # Detener servicios anteriores (si existen)
 Write-Host ""
-Write-Host "[4/5] Verificando servicios existentes..." -ForegroundColor Yellow
-$existingContainers = docker compose -f docker-compose.dev.yml ps -q
+Write-Host "[5/6] Verificando servicios existentes..." -ForegroundColor Yellow
+$existingContainers = docker compose -f docker-compose.ecs.yml --env-file .env ps -q
 if ($existingContainers) {
     Write-Host "Deteniendo servicios anteriores..." -ForegroundColor Yellow
-    docker compose -f docker-compose.dev.yml down
+    docker compose -f docker-compose.ecs.yml --env-file .env down
 }
 
 # Levantar servicios
 Write-Host ""
-Write-Host "[5/5] Levantando servicios con Docker Compose (desarrollo)..." -ForegroundColor Yellow
-docker compose -f docker-compose.dev.yml up -d --build
+Write-Host "[6/6] Levantando servicios con Docker Compose (testing ECS)..." -ForegroundColor Yellow
+docker compose -f docker-compose.ecs.yml --env-file .env up -d --build
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""
@@ -180,7 +246,7 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host ""
     
     Write-Host "Estado de los servicios:" -ForegroundColor Cyan
-    docker compose -f docker-compose.dev.yml ps
+    docker compose -f docker-compose.ecs.yml --env-file .env ps
     Write-Host ""
     
     Write-Host "Esperando a que los servicios esten listos..." -ForegroundColor Yellow
@@ -219,10 +285,10 @@ if ($LASTEXITCODE -eq 0) {
         
         if (-not $frontendReady) {
             try {
-                $response = Invoke-WebRequest -Uri "http://localhost:4200" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
-                if ($response.StatusCode -eq 200 -or $response.StatusCode -eq 304) {
+                $response = Invoke-WebRequest -Uri "http://localhost/health" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
+                if ($response.StatusCode -eq 200) {
                     $frontendReady = $true
-                    Write-Host "OK Frontend listo! (puerto 4200 - modo desarrollo)" -ForegroundColor Green
+                    Write-Host "OK Frontend listo! (puerto 80 - modo testing ECS)" -ForegroundColor Green
                 }
             } catch {
             }
@@ -239,8 +305,8 @@ if ($LASTEXITCODE -eq 0) {
     }
     
     Write-Host ""
-    Write-Host "URLs disponibles (Modo Desarrollo):" -ForegroundColor Cyan
-    Write-Host "  Frontend:     http://localhost:4200 (ng serve con hot reload)" -ForegroundColor White
+    Write-Host "URLs disponibles (Modo Testing ECS):" -ForegroundColor Cyan
+    Write-Host "  Frontend:     http://localhost (puerto 80, Nginx)" -ForegroundColor White
     Write-Host "  Backend API:  http://localhost:8080/Inia" -ForegroundColor White
     Write-Host "  Swagger UI:   http://localhost:8080/swagger-ui/index.html" -ForegroundColor White
     Write-Host "  Middleware:   http://localhost:9099" -ForegroundColor White
@@ -250,9 +316,11 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "  Email:        admin@inia.com" -ForegroundColor White
     Write-Host "  Password:     password123" -ForegroundColor White
     Write-Host ""
-    Write-Host "NOTA: Modo desarrollo con hot reload activado" -ForegroundColor Yellow
-    Write-Host "  - Cambios en frontend/src se reflejan automaticamente" -ForegroundColor Gray
-    Write-Host "  - Cambios en middleware se reflejan automaticamente" -ForegroundColor Gray
+    Write-Host "NOTA: Esta configuracion replica AWS ECS" -ForegroundColor Yellow
+    Write-Host "  - Mismo puerto que produccion (80)" -ForegroundColor Gray
+    Write-Host "  - Misma configuracion que Terraform" -ForegroundColor Gray
+    Write-Host "  - Credenciales desde .env (simula Secrets Manager)" -ForegroundColor Gray
+    Write-Host "  - Sin auto-scaling ni ALB (limitaciones locales)" -ForegroundColor Gray
     Write-Host ""
     
     # Abrir navegador automáticamente
@@ -260,11 +328,11 @@ if ($LASTEXITCODE -eq 0) {
     Start-Sleep -Seconds 3
     
     try {
-        Start-Process "http://localhost:4200"
-        Write-Host "OK Frontend abierto en el navegador: http://localhost:4200" -ForegroundColor Green
+        Start-Process "http://localhost"
+        Write-Host "OK Frontend abierto en el navegador: http://localhost" -ForegroundColor Green
     } catch {
         Write-Host "ADVERTENCIA: No se pudo abrir el Frontend automaticamente" -ForegroundColor Yellow
-        Write-Host "  Abre manualmente: http://localhost:4200" -ForegroundColor White
+        Write-Host "  Abre manualmente: http://localhost" -ForegroundColor White
     }
     
     Start-Sleep -Seconds 2
@@ -280,18 +348,17 @@ if ($LASTEXITCODE -eq 0) {
     
     Write-Host ""
     Write-Host "Comandos utiles:" -ForegroundColor Yellow
-    Write-Host "  Ver logs:     docker compose -f docker-compose.dev.yml logs -f [servicio]" -ForegroundColor White
-    Write-Host "  Ver estado:   docker compose -f docker-compose.dev.yml ps" -ForegroundColor White
-    Write-Host "  Detener:      .\scriptDockers\detener-docker-dev.ps1" -ForegroundColor White
-    Write-Host "  Ver logs todos: docker compose -f docker-compose.dev.yml logs -f" -ForegroundColor White
+    Write-Host "  Ver logs:     docker compose -f docker-compose.ecs.yml --env-file .env logs -f [servicio]" -ForegroundColor White
+    Write-Host "  Ver estado:   docker compose -f docker-compose.ecs.yml --env-file .env ps" -ForegroundColor White
+    Write-Host "  Detener:      .\scriptDockers\detener-docker-ecs.ps1" -ForegroundColor White
+    Write-Host "  Ver logs todos: docker compose -f docker-compose.ecs.yml --env-file .env logs -f" -ForegroundColor White
     Write-Host ""
     
 } else {
     Write-Host ""
     Write-Host "ERROR: Fallo al iniciar los servicios" -ForegroundColor Red
-    Write-Host "Revisa los logs con: docker compose -f docker-compose.dev.yml logs" -ForegroundColor Yellow
+    Write-Host "Revisa los logs con: docker compose -f docker-compose.ecs.yml --env-file .env logs" -ForegroundColor Yellow
     Write-Host ""
 }
 
 Read-Host "Presiona Enter para salir"
-

@@ -30,6 +30,7 @@ resource "aws_db_instance" "main" {
   storage_type           = "gp2"  # gp3 puede no estar disponible en todas las instancias
   storage_encrypted      = true
   publicly_accessible    = false  # Importante para seguridad
+  multi_az               = var.enable_multi_az
 
   db_name  = var.db_name
   username = var.db_username
@@ -40,14 +41,14 @@ resource "aws_db_instance" "main" {
   # Usar parameter group por defecto para configuración mínima
   # parameter_group_name   = aws_db_parameter_group.main.name
 
-  # Backup mínimo (1 día) para reducir costos en configuración mínima
-  backup_retention_period = 1
+  # Backup configuration
+  backup_retention_period = var.backup_retention_period
   backup_window          = "03:00-04:00"
   maintenance_window     = "mon:04:00-mon:05:00"
 
   skip_final_snapshot       = false
   final_snapshot_identifier = "${var.project_name}-${var.environment}-db-final-snapshot-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
-  deletion_protection       = false
+  deletion_protection       = var.deletion_protection
 
   # CloudWatch logs deshabilitados para configuración mínima (reduce costos)
   # enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]

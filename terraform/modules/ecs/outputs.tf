@@ -58,3 +58,13 @@ output "route53_name_servers" {
   value       = var.create_route53_record && var.domain_name != "" && var.route53_zone_id == "" ? aws_route53_zone.main[0].name_servers : null
 }
 
+output "alb_arn_suffix" {
+  description = "ARN suffix of the ALB for CloudWatch metrics"
+  value       = aws_lb.main.arn_suffix
+}
+
+output "backend_target_group_arn_suffix" {
+  description = "ARN suffix of the backend target group"
+  value       = aws_lb_target_group.backend.arn_suffix
+}
+
