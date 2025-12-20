@@ -75,7 +75,7 @@ middleware_memory_target = 75
 
 # IAM Roles Configuration
 # Opcion 1: Crear roles nuevos con permisos minimos (RECOMENDADO)
-create_iam_roles = false  # Cambiar a true para crear roles propios
+create_iam_roles = true  # Crear roles propios con permisos minimos
 # Si create_iam_roles = true, los siguientes valores se ignoran
 
 # Opcion 2: Usar roles existentes (para entornos tipo AWS Academy)
