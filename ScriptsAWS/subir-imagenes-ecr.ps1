@@ -540,9 +540,9 @@ foreach ($svc in $services) {
     
     # Determinar nombre de imagen local
     $localImageName = switch ($svc) {
-        "backend" { "inia-backend-ecs" }
-        "frontend" { "inia-frontend-ecs" }
-        "middleware" { "inia-middleware-ecs" }
+        "backend" { "iniaproject-backend" }
+        "frontend" { "iniaproject-frontend" }
+        "middleware" { "iniaproject-middleware" }
     }
     
     $serviceInfo[$svc] = @{
